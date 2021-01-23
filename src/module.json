@@ -1,0 +1,55 @@
+{
+  "name": "foundry-typescript-template",
+  "title": "Typescript Template",
+  "description": "", 
+  "authors": [
+    {
+      "name": "spacemandev",
+      "discord": "spacemandev#6256"
+    }
+  ],
+  "version": "0.0.1",
+  "minimumCoreVersion": "0.7.9",
+  "compatibleCoreVersion": "0.7.9",
+  "manifestPlusVersion": "1.0.0",
+  "url": "",
+  "manifest": "",
+  "download": "",
+  "type": "module",
+  "includes": [
+    "./assets/**",
+    "./lang/**",
+    "./scripts/**",
+    "./styles/**",
+    "./templates/**",
+    "./module.json",
+    "./README.md"
+  ],
+  "media": [
+    {
+      "type": "icon",
+      "location": ""
+    }, 
+    {
+      "type": "cover",
+      "location": ""
+    },
+    {
+      "type": "screenshot",
+      "location": ""
+    }
+  ],
+  "esmodules": [
+    "scripts/module.js"
+  ],
+  "styles": [
+    "styles/module.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}
