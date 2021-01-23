@@ -10,7 +10,7 @@ gulp.task('compile', () => {
 })
 
 gulp.task('copy', async () => {
-  return new Promise((resolve,reject) => {
+  return new Promise<void>((resolve,reject) => {
     gulp.src('README.md').pipe(gulp.dest("dist/"))
     gulp.src("src/module.json").pipe(gulp.dest('dist/'))
     gulp.src("src/lang/**").pipe(gulp.dest('dist/lang/'))
@@ -23,15 +23,11 @@ gulp.task('copy', async () => {
 
 gulp.task('build', gulp.parallel('compile', 'copy'));
 
-
-/*
 // This is supposed to copy the dist folder into the modules directory for testing. Only works if you've set it up the right way
-//This works if development path is FoundryVTT/Data/dev/modules/swade-item-macros
-const MODULEPATH = "../../../modules/swade-item-macros/"
+const MODULEPATH = "../dev-data/Data/modules/fabricate/"
 
 gulp.task('foundry', () => {
-  return gulp.src('dist/**').pipe(gulp.dest(MODULEPATH))
+  return gulp.src('dist/**').pipe(gulp.dest(MODULEPATH));
 })
 
-gulp.task("update", gulp.series('build', 'foundry'))
-*/
+gulp.task("update", gulp.series('build', 'foundry'));

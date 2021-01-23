@@ -1,12 +1,12 @@
 {
-  "name": "foundry-typescript-template",
-  "version": "1.0.0",
-  "description": "Foundry VTT Typescript Template",
+  "name": "Fabricate",
+  "version": "0.0.1",
+  "description": "A system-agnostic, flexible crafting module for FoundryVT",
   "main": "index.js",
   "scripts": {
     "build": "gulp build"
   },
-  "author": "",
+  "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
     "gulp": "^4.0.2",

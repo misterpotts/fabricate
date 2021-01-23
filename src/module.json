@@ -1,11 +1,11 @@
 {
-  "name": "foundry-typescript-template",
-  "title": "Typescript Template",
-  "description": "", 
+  "name": "Fabricate",
+  "title": "Fabricate",
+  "description": "A system-agnostic, flexible crafting module for FoundryVTT",
   "authors": [
     {
-      "name": "spacemandev",
-      "discord": "spacemandev#6256"
+      "name": "misterpotts",
+      "email": "matt@misterpotts.uk"
     }
   ],
   "version": "0.0.1",
