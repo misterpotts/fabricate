@@ -1,7 +1,7 @@
-import {CraftingSystem} from "./core/CraftingSystem";
+import {CraftingSystem} from "./core/CraftingSystem.js";
 
 async function init() {
-    console.log('Module loaded');
+    console.log('Fabricate Module loaded');
     new CraftingSystem("A Test crafting system");
 }
 

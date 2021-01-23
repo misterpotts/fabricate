@@ -1,4 +1,4 @@
-import {Recipe} from "./Recipe";
+import {Recipe} from "./Recipe.js";
 
 class CraftingSystem {
     private name: String;
