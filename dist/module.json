@@ -5,10 +5,11 @@
   "authors": [
     {
       "name": "misterpotts",
-      "email": "matt@misterpotts.uk"
+      "email": "matt@misterpotts.uk",
+      "discord": "ComicXero#0255"
     }
   ],
-  "version": "0.0.1",
+  "version": "0.0.2",
   "minimumCoreVersion": "0.7.9",
   "compatibleCoreVersion": "0.7.9",
   "manifestPlusVersion": "1.0.0",
