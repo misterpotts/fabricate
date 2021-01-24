@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { CraftingSystem } from "./core/CraftingSystem.js";
 function init() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log('Module loaded');
+        console.log('Fabricate Module loaded');
         new CraftingSystem("A Test crafting system");
     });
 }
