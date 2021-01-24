@@ -19,9 +19,9 @@
   "type": "module",
   "packs": [
     {
-      "name": "fabricate-custom",
-      "label": "Custom, user-defined Recipes and Ingredients for Fabricate",
-      "path": "packs/fabricate-custom.db",
+      "name": "fabricate-test",
+      "label": "Fabricate: Test Ingredients and Recipes",
+      "path": "packs/fabricate-test.db",
       "entity": "Item",
       "module": "fabricate"
     }
