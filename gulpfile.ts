@@ -1,7 +1,7 @@
 const gulp = require('gulp')
-const ts = require('gulp-typescript');
+const project = require('gulp-typescript').createProject('tsconfig.json');
 const less = require('gulp-less');
-const project = ts.createProject('tsconfig.json');
+const gulp_mocha = require('gulp-mocha');
 
 gulp.task('compile-ts', () => {
   return gulp.src('src/**/*.ts')
@@ -13,6 +13,14 @@ gulp.task('compile-less', () => {
     return gulp.src('src/styles/**')
         .pipe(less())
         .pipe(gulp.dest('dist/styles/'));
+});
+
+gulp.task('test', () => {
+  return gulp.src('test/**/*.ts')
+      .pipe(gulp_mocha({
+        reporter: 'list',
+        require: ['ts-node/register']
+      }));
 });
 
 gulp.task('copy', async () => {
@@ -28,9 +36,10 @@ gulp.task('copy', async () => {
   });
 });
 
-gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy'));
+gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy', 'test'));
 
-// This is supposed to copy the dist folder into the modules directory for testing. Only works if you've set it up the right way
+// Copy the dist folder into the modules directory for testing
+// TODO - parameterize this property before asking anyone to contribute
 const MODULEPATH = "../../dev-data/Data/modules/fabricate/";
 
 gulp.task('foundry', () => {

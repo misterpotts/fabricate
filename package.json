@@ -9,9 +9,14 @@
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
+    "@types/mocha": "^8.2.0",
+    "chai": "^4.2.0",
     "gulp": "^4.0.2",
     "gulp-less": "^4.0.1",
-    "gulp-typescript": "^6.0.0-alpha.1"
+    "gulp-mocha": "^7.0.2",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "mocha": "^6.2.3",
+    "ts-node": "^9.1.1"
   },
   "dependencies": {
     "@types/node": "^14.10.1",
