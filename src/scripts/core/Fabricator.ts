@@ -5,4 +5,10 @@ interface Fabricator {
     fabricate(recipe: Recipe): RecipeResult[];
 }
 
-export {Fabricator};
+class DefaultFabricator implements Fabricator {
+    fabricate(recipe: Recipe): RecipeResult[] {
+        return recipe.results;
+    }
+}
+
+export {Fabricator, DefaultFabricator};

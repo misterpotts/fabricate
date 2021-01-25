@@ -18,6 +18,12 @@ Hooks.on('createItem', (entity) => {
         console.log(`Fabricate: ${entity.id} is a Fabricate Item`);
     }
 });
+Hooks.on('createOwnedItem', (entity) => {
+    // TODO: Some way to support other systems from the item information?
+    if (entity.data.data.source && entity.data.data.source.startsWith(Properties.crafting.itemSourcePrefix)) {
+        console.log(`Fabricate: ${entity.id} is a Fabricate Item`);
+    }
+});
 function loadCraftingSystems() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Loading ${Properties.module.name} crafting systems`);
