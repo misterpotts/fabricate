@@ -1,17 +1,20 @@
 import {RecipeComponent} from "./RecipeComponent.js";
+import {RecipeResult} from "./RecipeResult";
 
 class Recipe {
     private readonly _components: RecipeComponent[];
-    private readonly _results: Item[];
-    private readonly _name: String;
+    private readonly _results: RecipeResult[];
+    private readonly _name: string;
+    private readonly _itemId: string;
 
     constructor(builder: Recipe.RecipeBuilder) {
         this._components = builder.components;
         this._results = builder.results;
         this._name = builder.name;
+        this._itemId = builder.itemId;
     }
 
-    get name(): String {
+    get name(): string {
         return this._name;
     }
 
@@ -19,8 +22,13 @@ class Recipe {
         return this._components;
     }
 
-    get results(): Item[] {
+    get results(): RecipeResult[] {
         return this._results;
+    }
+
+
+    get itemId(): string {
+        return this._itemId;
     }
 
     public static builder() {
@@ -31,8 +39,9 @@ class Recipe {
 namespace Recipe {
     export class RecipeBuilder {
         public components: RecipeComponent[];
-        public results: Item[];
-        public name: String;
+        public results: RecipeResult[];
+        public name: string;
+        public itemId: string;
 
         constructor() {
             this.components = [];
@@ -43,7 +52,7 @@ namespace Recipe {
             return new Recipe(this);
         }
 
-        withName(value: String) {
+        withName(value: string) {
             this.name = value;
             return this;
         }
@@ -53,11 +62,21 @@ namespace Recipe {
             return this;
         }
 
-        withResult(value: Item) {
+        withResult(value: RecipeResult) {
             this.results.push(value);
+            return this;
+        }
+
+        withResults(value: RecipeResult[]) {
+            this.results = value;
+            return this;
+        }
+
+        withItemId(value: string) {
+            this.itemId = value;
             return this;
         }
     }
 }
 
-export { Recipe };
+export {Recipe};

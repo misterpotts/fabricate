@@ -3,6 +3,7 @@ class Recipe {
         this._components = builder.components;
         this._results = builder.results;
         this._name = builder.name;
+        this._itemId = builder.itemId;
     }
     get name() {
         return this._name;
@@ -12,6 +13,9 @@ class Recipe {
     }
     get results() {
         return this._results;
+    }
+    get itemId() {
+        return this._itemId;
     }
     static builder() {
         return new Recipe.RecipeBuilder();
@@ -36,6 +40,14 @@ class Recipe {
         }
         withResult(value) {
             this.results.push(value);
+            return this;
+        }
+        withResults(value) {
+            this.results = value;
+            return this;
+        }
+        withItemId(value) {
+            this.itemId = value;
             return this;
         }
     }

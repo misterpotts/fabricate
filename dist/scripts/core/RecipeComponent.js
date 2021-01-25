@@ -19,7 +19,7 @@ class RecipeComponent {
 }
 (function (RecipeComponent) {
     class Builder {
-        forIngredient(value) {
+        withIngredient(value) {
             this.ingredient = value;
             return this;
         }
