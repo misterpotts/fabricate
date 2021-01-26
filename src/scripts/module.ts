@@ -3,7 +3,6 @@ import Systems from "./systems/Systems.js"
 import Properties from "./Properties.js";
 import {CraftingElement} from "./core/CraftingElement";
 import {Recipe} from "./core/Recipe.js";
-import {ItemRegistry} from "./core/ItemRegistry.js";
 
 Hooks.once('init', registerModuleSettings);
 

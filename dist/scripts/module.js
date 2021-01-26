@@ -22,11 +22,6 @@ Hooks.on('createOwnedItem', (entity) => {
         console.log(`(Create Owned Item) Fabricate: ${entity.id} is a Fabricate Item`);
     }
 });
-Hooks.on('preCreateItem', (entity) => {
-    if (entity.data.flags.fabricate) {
-        console.log(`(Pre-Create Item) Fabricate: ${entity.id} is a Fabricate Item`);
-    }
-});
 function loadCraftingSystems() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Loading ${Properties.module.name} crafting systems`);
