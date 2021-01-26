@@ -33,7 +33,7 @@ class CraftingSystem {
         if (!this.componentsOwnedBy(actor, recipe)) {
             return;
         }
-        this.consumeComponentsFrom(actor, recipe);
+        this.consumeComponentsFrom(actor, recipe.components);
         let results = this.fabricator.fabricate(recipe);
         this.addResultsTo(actor, results);
     }
@@ -66,9 +66,9 @@ class CraftingSystem {
         });
         return true;
     }
-    consumeComponentsFrom(actor, recipe) {
+    consumeComponentsFrom(actor, components) {
         let consumables = actor.data.items.filter(i => i.type == 'consumable');
-        recipe.components.forEach((recipeComponent) => {
+        components.forEach((recipeComponent) => {
             console.log(recipeComponent.ingredient.name);
             console.log(consumables);
         });

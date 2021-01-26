@@ -3,6 +3,7 @@ import Systems from "./systems/Systems.js"
 import Properties from "./Properties.js";
 import {CraftingElement} from "./core/CraftingElement";
 import {Recipe} from "./core/Recipe.js";
+import {ItemRegistry} from "./core/ItemRegistry.js";
 
 Hooks.once('init', registerModuleSettings);
 
@@ -10,16 +11,14 @@ Hooks.once('ready', extendItemBehaviour);
 Hooks.once('ready', loadCraftingSystems);
 
 Hooks.on('createItem', (entity) => {
-    // TODO: Some way to support other systems from the item information?
-    if (entity.data.data.source && entity.data.data.source.startsWith(Properties.crafting.itemSourcePrefix)) {
-        console.log(`Fabricate: ${entity.id} is a Fabricate Item`);
+    if (entity.data.flags.fabricate) {
+        console.log(`(Create Item) Fabricate: ${entity.id} is a Fabricate Item`);
     }
 });
 
 Hooks.on('createOwnedItem', (entity) => {
-    // TODO: Some way to support other systems from the item information?
-    if (entity.data.data.source && entity.data.data.source.startsWith(Properties.crafting.itemSourcePrefix)) {
-        console.log(`Fabricate: ${entity.id} is a Fabricate Item`);
+    if (entity.data.flags.fabricate) {
+        console.log(`(Create Owned Item) Fabricate: ${entity.id} is a Fabricate Item`);
     }
 });
 
@@ -48,11 +47,7 @@ async function loadCraftingSystem(system: CraftingSystem) {
 }
 
 async function extendItemBehaviour() {
-    Object.defineProperty(CONFIG.Item.entityClass.prototype, "fabricate", {
-        writable: true,
-        configurable: true,
-        value: {}
-    });
+
 }
 
 async function registerModuleSettings() {

@@ -70,7 +70,8 @@ describe('Crafting System |', () => {
                 }
             ]);
         });
-
+    });
+    describe('Craft |', () => {
         it('Should delegate crafting to the system\'s Fabricator', () => {
             let recipeResult = RecipeResult.builder()
                 .withQuantity(1)
@@ -122,6 +123,6 @@ describe('Crafting System |', () => {
                 }
             };
             testSystem.craft(stubActor, testRecipe);
-        } );
-    });
+        });
+    })
 });
