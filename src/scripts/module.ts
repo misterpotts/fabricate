@@ -27,7 +27,8 @@ async function loadCraftingSystem(system: CraftingSystem) {
     let systemPack: Compendium = game.packs.get(system.compendiumPackKey)
     systemPack.getContent().then((content) => {
         content.forEach((item) => {
-            console.log(`Fabricate | compendium: ${system.compendiumPackKey} | id: ${item.id}  | ${item.data.flags}`);
+            console.log(`Fabricate | compendium: ${system.compendiumPackKey} | id: ${item.id}`);
+            console.log(item.data.flags);
         });
     });
     console.log(`Loaded ${system.name}`);

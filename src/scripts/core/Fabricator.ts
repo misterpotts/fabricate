@@ -2,6 +2,7 @@ import {Recipe} from "./Recipe";
 import {CraftingResult} from "./CraftingResult";
 import {CraftingElement} from "./CraftingElement";
 import {Action} from "./Action";
+import {RecipeComponent} from "./RecipeComponent";
 
 interface Fabricator {
     preparedRecipe?: Recipe;
@@ -17,15 +18,21 @@ interface Fabricator {
      *
     * */
     fabricate(): CraftingResult[];
+
+    ready(): boolean;
 }
 
 class DefaultFabricator implements Fabricator {
     private _preparedCraftingElements: CraftingElement[] = [];
     private _preparedRecipe!: Recipe;
+    private _remainingComponents!: Map<string, number>;
 
     fabricate(): CraftingResult[] {
         if (!this._preparedRecipe) {
             throw new Error(`The Default Fabricator requires a recipe and one was not prepared. `);
+        }
+        if (!this.ready()) {
+            throw new Error(`Unable to craft ${this._preparedRecipe.name}`);
         }
         let input: CraftingResult[] = this._preparedRecipe.components.map((component) => {
             return CraftingResult.builder()
@@ -49,10 +56,20 @@ class DefaultFabricator implements Fabricator {
         if (craftingElements && craftingElements.length > 0) {
             this._preparedCraftingElements.concat(craftingElements);
         }
+        this._remainingComponents = new Map(this.preparedRecipe.components.map((component: RecipeComponent) => [component.ingredient.compendiumEntry.itemId, component.quantity]));
+        this._preparedCraftingElements.forEach((craftingElement: CraftingElement) => this.accountFor(craftingElement));
+    }
+
+    private accountFor(craftingElement: CraftingElement) {
+        let remaining: number = this._remainingComponents.get(craftingElement.compendiumEntry.itemId);
+        if (remaining > 0) {
+            this._remainingComponents.set(craftingElement.compendiumEntry.itemId, --remaining);
+        }
     }
 
     add(craftingElement: CraftingElement) {
         this._preparedCraftingElements.push(craftingElement);
+        this.accountFor(craftingElement);
     }
 
     get preparedCraftingElements(): CraftingElement[] {
@@ -68,6 +85,16 @@ class DefaultFabricator implements Fabricator {
         this._preparedRecipe = null;
         this._preparedCraftingElements = [];
         return elementsRemoved;
+    }
+
+    ready() {
+        let ready: boolean = true;
+        this._remainingComponents.forEach((value) => {
+            if (value > 0) {
+                ready = false;
+            }
+        });
+        return ready;
     }
 }
 
