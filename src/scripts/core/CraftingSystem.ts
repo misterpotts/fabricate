@@ -1,8 +1,8 @@
-import {Fabricator} from "./Fabricator.js";
-import {Recipe} from "./Recipe.js";
-import {RecipeComponent} from "./RecipeComponent.js";
-import {RecipeResult} from "./RecipeResult.js";
-import {CraftingElement} from "./CraftingElement.js";
+import {Fabricator} from "./Fabricator";
+import {Recipe} from "./Recipe";
+import {RecipeComponent} from "./RecipeComponent";
+import {CraftingResult} from "./CraftingResult";
+import {CraftingElement} from "./CraftingElement";
 
 class CraftingSystem {
     private readonly _name: string;
@@ -18,28 +18,14 @@ class CraftingSystem {
         this._fabricator = builder.fabricator;
         this._supportedGameSystems = builder.supportedGameSystems;
         this._recipes = builder.recipes;
-        this._includedItems = this.extractIncludedItemsFromRecipes(this._recipes);
-    }
-
-    private extractIncludedItemsFromRecipes(recipes: Recipe[]): CraftingElement[] {
-        let knownItems = new Map<string, CraftingElement>();
-        recipes.forEach((recipe: Recipe) => {
-            recipe.results.forEach((result: RecipeResult) => {
-                if (!knownItems.has(result.item.itemId)) {
-                    knownItems.set(result.item.itemId, result.item);
-                }
-            });
-            recipe.components.forEach((component: RecipeComponent) => {
-                if (!knownItems.has(component.ingredient.itemId)) {
-                    knownItems.set(component.ingredient.itemId, component.ingredient);
-                }
-            });
-        });
-        return Array.from(knownItems.values());
     }
 
     public static builder() {
         return new CraftingSystem.Builder();
+    }
+
+    public getFirstRecipeByName(name: string): Recipe {
+        return this._recipes.find((recipe) => {return recipe.name === name});
     }
 
     get name(): string {
@@ -51,7 +37,7 @@ class CraftingSystem {
             return;
         }
         this.consumeComponentsFrom(actor, recipe.components);
-        let results: RecipeResult[] = this.fabricator.fabricate(recipe);
+        let results: CraftingResult[] = this.fabricator.fabricate();
         this.addResultsTo(actor, results);
     }
 
@@ -99,7 +85,7 @@ class CraftingSystem {
         });
     }
 
-    private addResultsTo(actor: Actor, results: RecipeResult[]) {
+    private addResultsTo(actor: Actor, results: CraftingResult[]) {
 
     }
 }

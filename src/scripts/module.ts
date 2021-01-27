@@ -1,12 +1,11 @@
 import {CraftingSystem} from "./core/CraftingSystem.js";
 import Systems from "./systems/Systems.js"
 import Properties from "./Properties.js";
-import {CraftingElement} from "./core/CraftingElement";
+import {CraftingElement} from "./core/CraftingElement.js";
 import {Recipe} from "./core/Recipe.js";
 
 Hooks.once('init', registerModuleSettings);
 
-Hooks.once('ready', extendItemBehaviour);
 Hooks.once('ready', loadCraftingSystems);
 
 Hooks.on('createItem', (entity) => {
@@ -31,7 +30,7 @@ async function loadCraftingSystem(system: CraftingSystem) {
     systemPack.getContent().then((content) => {
         content.forEach((item) => {
             system.includedItems.forEach((craftingElement: CraftingElement) => {
-                if (craftingElement.itemId == item.id) {
+                if (craftingElement.compendiumEntry.itemId == item.id) {
                     console.log(`Fabricate | Matched the item ${craftingElement.name} to the compendium source for ${system.name}`);
                 }
             });
@@ -43,10 +42,6 @@ async function loadCraftingSystem(system: CraftingSystem) {
         });
     });
     console.log(`Loaded ${system.name}`);
-}
-
-async function extendItemBehaviour() {
-
 }
 
 async function registerModuleSettings() {

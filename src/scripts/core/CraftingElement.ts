@@ -1,18 +1,36 @@
+class CompendiumEntry {
+    private readonly _compendiumKey;
+    private readonly _itemId;
+
+    constructor(compendiumKey, itemId) {
+        this._compendiumKey = compendiumKey;
+        this._itemId = itemId;
+    }
+
+    get compendiumKey() {
+        return this._compendiumKey;
+    }
+
+    get itemId() {
+        return this._itemId;
+    }
+}
+
 class CraftingElement {
     private readonly _name: string;
-    private readonly _itemId: string;
+    private readonly _compendiumEntry: CompendiumEntry;
 
     constructor(builder: CraftingElement.Builder) {
         this._name = builder.name;
-        this._itemId = builder.itemId;
+        this._compendiumEntry = builder.compendiumEntry;
     }
 
     get name(): string {
         return this._name;
     }
 
-    get itemId(): string {
-        return this._itemId;
+    get compendiumEntry(): CompendiumEntry {
+        return this._compendiumEntry;
     }
 
     public static builder() {
@@ -23,19 +41,19 @@ class CraftingElement {
 namespace CraftingElement {
     export class Builder {
         public name: string;
-        public itemId: string;
+        public compendiumEntry: CompendiumEntry;
 
-        public withName(value: string) {
+        public withName(value: string): Builder {
             this.name = value;
             return this;
         }
 
-        withItemId(value: string) {
-            this.itemId = value;
+        withCompendiumEntry(key: string, id: string): Builder {
+            this.compendiumEntry = new CompendiumEntry(key, id);
             return this;
         }
 
-        public build() {
+        public build(): CraftingElement {
             return new CraftingElement(this);
         }
     }

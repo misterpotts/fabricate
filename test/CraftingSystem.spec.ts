@@ -5,22 +5,24 @@ import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
 import {CraftingElement} from "../src/scripts/core/CraftingElement";
-import {RecipeResult} from "../src/scripts/core/RecipeResult";
+import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {Fabricator} from '../src/scripts/core/Fabricator';
+import {Action} from "../src/scripts/core/Action";
 
 describe('Crafting System |', () => {
     describe('Create |', () => {
         it('Should create a Crafting System', () => {
             let mockFabricator = <Fabricator>{
-                fabricate(recipe: Recipe): RecipeResult[] {
+                fabricate(recipe: Recipe): CraftingResult[] {
                     return null;
                 }
             };
             sinon.stub(mockFabricator, "fabricate").returns([]);
 
+            let compendiumKey = 'fabricate.fabricate-test';
             let testSystem = CraftingSystem.builder()
                 .withName('Test System')
-                .withCompendiumPackKey('fabricate.fabricate-test')
+                .withCompendiumPackKey(compendiumKey)
                 .withSupportedGameSystem('dnd5e')
                 .withFabricator(mockFabricator)
                 .withRecipe(Recipe.builder()
@@ -31,7 +33,7 @@ describe('Crafting System |', () => {
                         .withQuantity(2)
                         .withIngredient(CraftingElement.builder()
                             .withName('Mud')
-                            .withItemId('tCmAnq9zcESt0ULf')
+                            .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
                             .build())
                         .build())
                     .withComponent(RecipeComponent.builder()
@@ -39,14 +41,15 @@ describe('Crafting System |', () => {
                         .withQuantity(1)
                         .withIngredient(CraftingElement.builder()
                             .withName('Sticks')
-                            .withItemId('arWeEYkLkubimBz3')
+                            .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
                             .build())
                         .build())
-                    .withResult(RecipeResult.builder()
+                    .withResult(CraftingResult.builder()
+                        .withAction(Action.ADD)
                         .withQuantity(1)
                         .withItem(CraftingElement.builder()
                             .withName('Mud Pie')
-                            .withItemId('nWhTa8gD1QL1f9O3')
+                            .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
                             .build())
                         .build())
                     .build())
@@ -61,11 +64,11 @@ describe('Crafting System |', () => {
                     _name: 'Recipe: Mud Pie',
                     _itemId: '4iHqWSLTMFjPbpuI',
                     _components: [
-                        { _ingredient: { _name: 'Mud', _itemId: 'tCmAnq9zcESt0ULf' }, _quantity: 2, _consumed: true },
-                        { _ingredient: { _name: 'Sticks', _itemId: 'arWeEYkLkubimBz3' }, _quantity: 1, _consumed: true },
+                        { _ingredient: { _name: 'Mud',_compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _itemId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
+                        { _ingredient: { _name: 'Sticks',_compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _itemId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }
                     ],
                     _results: [
-                        { _item: { _name: 'Mud Pie', _itemId: 'nWhTa8gD1QL1f9O3' }, _quantity : 1 }
+                        { _action: 'ADD', _item: { _name: 'Mud Pie', "_compendiumEntry": { _compendiumKey: 'fabricate.fabricate-test', _itemId: 'nWhTa8gD1QL1f9O3' } }, _quantity : 1 }
                     ],
                 }
             ]);
@@ -73,16 +76,17 @@ describe('Crafting System |', () => {
     });
     describe('Craft |', () => {
         it('Should delegate crafting to the system\'s Fabricator', () => {
-            let recipeResult = RecipeResult.builder()
+            let compendiumKey = 'fabricate.fabricate-test';
+            let recipeResult = CraftingResult.builder()
                 .withQuantity(1)
                 .withItem(CraftingElement.builder()
                     .withName('Mud Pie')
-                    .withItemId('nWhTa8gD1QL1f9O3')
+                    .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
                     .build())
                 .build();
 
             let mockFabricator = <Fabricator>{
-                fabricate(recipe: Recipe): RecipeResult[] {
+                fabricate(recipe: Recipe): CraftingResult[] {
                     return null;
                 }
             };
@@ -96,7 +100,7 @@ describe('Crafting System |', () => {
                     .withQuantity(2)
                     .withIngredient(CraftingElement.builder()
                         .withName('Mud')
-                        .withItemId('tCmAnq9zcESt0ULf')
+                        .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
                         .build())
                     .build())
                 .withComponent(RecipeComponent.builder()
@@ -104,14 +108,14 @@ describe('Crafting System |', () => {
                     .withQuantity(1)
                     .withIngredient(CraftingElement.builder()
                         .withName('Sticks')
-                        .withItemId('arWeEYkLkubimBz3')
+                        .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
                         .build())
                     .build())
                 .withResult(recipeResult)
                 .build();
             let testSystem = CraftingSystem.builder()
                 .withName('Test System')
-                .withCompendiumPackKey('fabricate.fabricate-test')
+                .withCompendiumPackKey(compendiumKey)
                 .withSupportedGameSystem('dnd5e')
                 .withFabricator(mockFabricator)
                 .withRecipe(testRecipe)

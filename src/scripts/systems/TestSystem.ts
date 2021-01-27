@@ -1,21 +1,16 @@
-import {CraftingSystem} from "../core/CraftingSystem.js";
-import {Fabricator} from "../core/Fabricator.js";
-import {Recipe} from "../core/Recipe.js";
-import {RecipeResult} from "../core/RecipeResult.js";
-import {RecipeComponent} from "../core/RecipeComponent.js";
-import {CraftingElement} from "../core/CraftingElement.js";
+import {CraftingSystem} from "../core/CraftingSystem";
+import {DefaultFabricator} from "../core/Fabricator";
+import {Recipe} from "../core/Recipe";
+import {CraftingResult} from "../core/CraftingResult";
+import {RecipeComponent} from "../core/RecipeComponent";
+import {CraftingElement} from "../core/CraftingElement";
 
-class TestSystemFabricator implements Fabricator {
-    fabricate(recipe: Recipe): RecipeResult[] {
-        return recipe.results;
-    }
-}
-
+const testSystemCompendiumKey = 'fabricate.fabricate-test';
 const TestSystem = CraftingSystem.builder()
     .withName('Test System')
-    .withCompendiumPackKey('fabricate.fabricate-test')
+    .withCompendiumPackKey(testSystemCompendiumKey)
     .withSupportedGameSystem('dnd5e')
-    .withFabricator(new TestSystemFabricator())
+    .withFabricator(new DefaultFabricator())
     .withRecipe(Recipe.builder()
         .withName('Recipe: Mud Pie')
         .withItemId('4iHqWSLTMFjPbpuI')
@@ -24,7 +19,7 @@ const TestSystem = CraftingSystem.builder()
             .withQuantity(2)
             .withIngredient(CraftingElement.builder()
                 .withName('Mud')
-                .withItemId('tCmAnq9zcESt0ULf')
+                .withCompendiumEntry(testSystemCompendiumKey, 'tCmAnq9zcESt0ULf')
                 .build())
             .build())
         .withComponent(RecipeComponent.builder()
@@ -32,14 +27,14 @@ const TestSystem = CraftingSystem.builder()
             .withQuantity(1)
             .withIngredient(CraftingElement.builder()
                 .withName('Sticks')
-                .withItemId('arWeEYkLkubimBz3')
+                .withCompendiumEntry(testSystemCompendiumKey, 'arWeEYkLkubimBz3')
                 .build())
             .build())
-        .withResult(RecipeResult.builder()
+        .withResult(CraftingResult.builder()
             .withQuantity(1)
             .withItem(CraftingElement.builder()
                 .withName('Mud Pie')
-                .withItemId('nWhTa8gD1QL1f9O3')
+                .withCompendiumEntry(testSystemCompendiumKey, 'nWhTa8gD1QL1f9O3')
                 .build())
             .build())
         .build())

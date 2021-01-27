@@ -1,8 +1,8 @@
-import {CraftingElement} from "./CraftingElement.js";
+import {CraftingElement} from "./CraftingElement";
 
 class RecipeComponent {
     private readonly _ingredient: CraftingElement;
-    private readonly _quantity: Number;
+    private readonly _quantity: number;
     private readonly _consumed: boolean;
 
     constructor(builder: RecipeComponent.Builder) {
@@ -16,7 +16,7 @@ class RecipeComponent {
         return this._ingredient;
     }
 
-    get quantity(): Number {
+    get quantity(): number {
         return this._quantity;
     }
 
@@ -32,7 +32,7 @@ class RecipeComponent {
 namespace RecipeComponent {
     export class Builder {
         public ingredient: CraftingElement;
-        public quantity: Number;
+        public quantity: number;
         public consumed: boolean;
 
         public withIngredient(value: CraftingElement) {
@@ -40,7 +40,7 @@ namespace RecipeComponent {
             return this;
         }
 
-        public withQuantity(value: Number) {
+        public withQuantity(value: number) {
             this.quantity = value;
             return this;
         }

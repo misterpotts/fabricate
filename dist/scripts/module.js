@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import Systems from "./systems/Systems.js";
 import Properties from "./Properties.js";
 Hooks.once('init', registerModuleSettings);
-Hooks.once('ready', extendItemBehaviour);
 Hooks.once('ready', loadCraftingSystems);
 Hooks.on('createItem', (entity) => {
     if (entity.data.flags.fabricate) {
@@ -34,7 +33,7 @@ function loadCraftingSystem(system) {
         systemPack.getContent().then((content) => {
             content.forEach((item) => {
                 system.includedItems.forEach((craftingElement) => {
-                    if (craftingElement.itemId == item.id) {
+                    if (craftingElement.compendiumEntry.itemId == item.id) {
                         console.log(`Fabricate | Matched the item ${craftingElement.name} to the compendium source for ${system.name}`);
                     }
                 });
@@ -46,10 +45,6 @@ function loadCraftingSystem(system) {
             });
         });
         console.log(`Loaded ${system.name}`);
-    });
-}
-function extendItemBehaviour() {
-    return __awaiter(this, void 0, void 0, function* () {
     });
 }
 function registerModuleSettings() {

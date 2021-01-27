@@ -1,9 +1,9 @@
-import {RecipeComponent} from "./RecipeComponent.js";
-import {RecipeResult} from "./RecipeResult";
+import {RecipeComponent} from "./RecipeComponent";
+import {CraftingResult} from "./CraftingResult";
 
 class Recipe {
     private readonly _components: RecipeComponent[];
-    private readonly _results: RecipeResult[];
+    private readonly _results: CraftingResult[];
     private readonly _name: string;
     private readonly _itemId: string;
 
@@ -22,7 +22,7 @@ class Recipe {
         return this._components;
     }
 
-    get results(): RecipeResult[] {
+    get results(): CraftingResult[] {
         return this._results;
     }
 
@@ -39,7 +39,7 @@ class Recipe {
 namespace Recipe {
     export class RecipeBuilder {
         public components: RecipeComponent[];
-        public results: RecipeResult[];
+        public results: CraftingResult[];
         public name: string;
         public itemId: string;
 
@@ -62,12 +62,12 @@ namespace Recipe {
             return this;
         }
 
-        withResult(value: RecipeResult) {
+        withResult(value: CraftingResult) {
             this.results.push(value);
             return this;
         }
 
-        withResults(value: RecipeResult[]) {
+        withResults(value: CraftingResult[]) {
             this.results = value;
             return this;
         }

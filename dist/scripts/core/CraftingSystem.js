@@ -5,26 +5,12 @@ class CraftingSystem {
         this._fabricator = builder.fabricator;
         this._supportedGameSystems = builder.supportedGameSystems;
         this._recipes = builder.recipes;
-        this._includedItems = this.extractIncludedItemsFromRecipes(this._recipes);
-    }
-    extractIncludedItemsFromRecipes(recipes) {
-        let knownItems = new Map();
-        recipes.forEach((recipe) => {
-            recipe.results.forEach((result) => {
-                if (!knownItems.has(result.item.itemId)) {
-                    knownItems.set(result.item.itemId, result.item);
-                }
-            });
-            recipe.components.forEach((component) => {
-                if (!knownItems.has(component.ingredient.itemId)) {
-                    knownItems.set(component.ingredient.itemId, component.ingredient);
-                }
-            });
-        });
-        return Array.from(knownItems.values());
     }
     static builder() {
         return new CraftingSystem.Builder();
+    }
+    getFirstRecipeByName(name) {
+        return this._recipes.find((recipe) => { return recipe.name === name; });
     }
     get name() {
         return this._name;
@@ -34,7 +20,7 @@ class CraftingSystem {
             return;
         }
         this.consumeComponentsFrom(actor, recipe.components);
-        let results = this.fabricator.fabricate(recipe);
+        let results = this.fabricator.fabricate();
         this.addResultsTo(actor, results);
     }
     get compendiumPackKey() {

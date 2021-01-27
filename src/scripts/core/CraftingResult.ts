@@ -1,16 +1,19 @@
 import {CraftingElement} from "./CraftingElement";
+import {Action} from "./Action";
 
-class RecipeResult {
+class CraftingResult {
     private readonly _item: CraftingElement;
     private readonly _quantity: number;
+    private readonly _action: Action;
 
-    constructor(builder: RecipeResult.Builder) {
+    constructor(builder: CraftingResult.Builder) {
         this._item = builder.item;
         this._quantity = builder.quantity;
+        this._action = builder.action;
     }
 
-    public static builder(): RecipeResult.Builder {
-        return new RecipeResult.Builder();
+    public static builder(): CraftingResult.Builder {
+        return new CraftingResult.Builder();
     }
 
     get item(): CraftingElement {
@@ -22,10 +25,11 @@ class RecipeResult {
     }
 }
 
-namespace RecipeResult {
+namespace CraftingResult {
     export class Builder {
         public item: CraftingElement;
         public quantity: number;
+        public action: Action;
 
         public withItem(value: CraftingElement): Builder {
             this.item = value;
@@ -37,10 +41,15 @@ namespace RecipeResult {
             return this;
         }
 
-        public build(): RecipeResult {
-            return new RecipeResult(this);
+        public withAction(value: Action): Builder {
+            this.action = value;
+            return this;
+        }
+
+        public build(): CraftingResult {
+            return new CraftingResult(this);
         }
     }
 }
 
-export {RecipeResult}
+export {CraftingResult}

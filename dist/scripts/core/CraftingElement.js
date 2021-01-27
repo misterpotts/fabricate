@@ -1,13 +1,25 @@
+class CompendiumEntry {
+    constructor(compendiumKey, itemId) {
+        this._compendiumKey = compendiumKey;
+        this._itemId = itemId;
+    }
+    get compendiumKey() {
+        return this._compendiumKey;
+    }
+    get itemId() {
+        return this._itemId;
+    }
+}
 class CraftingElement {
     constructor(builder) {
         this._name = builder.name;
-        this._itemId = builder.itemId;
+        this._compendiumEntry = builder.compendiumEntry;
     }
     get name() {
         return this._name;
     }
-    get itemId() {
-        return this._itemId;
+    get compendiumEntry() {
+        return this._compendiumEntry;
     }
     static builder() {
         return new CraftingElement.Builder();
@@ -19,8 +31,8 @@ class CraftingElement {
             this.name = value;
             return this;
         }
-        withItemId(value) {
-            this.itemId = value;
+        withCompendiumEntry(key, id) {
+            this.compendiumEntry = new CompendiumEntry(key, id);
             return this;
         }
         build() {
