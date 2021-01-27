@@ -2,7 +2,7 @@ class CompendiumEntry {
     private readonly _compendiumKey;
     private readonly _itemId;
 
-    constructor(compendiumKey, itemId) {
+    constructor(compendiumKey: string, itemId: string) {
         this._compendiumKey = compendiumKey;
         this._itemId = itemId;
     }
@@ -40,8 +40,8 @@ class CraftingElement {
 
 namespace CraftingElement {
     export class Builder {
-        public name: string;
-        public compendiumEntry: CompendiumEntry;
+        public name!: string;
+        public compendiumEntry!: CompendiumEntry;
 
         public withName(value: string): Builder {
             this.name = value;

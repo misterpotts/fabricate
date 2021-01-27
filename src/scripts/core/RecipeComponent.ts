@@ -31,9 +31,9 @@ class RecipeComponent {
 
 namespace RecipeComponent {
     export class Builder {
-        public ingredient: CraftingElement;
-        public quantity: number;
-        public consumed: boolean;
+        public ingredient!: CraftingElement;
+        public quantity!: number;
+        public consumed!: boolean;
 
         public withIngredient(value: CraftingElement) {
             this.ingredient = value;

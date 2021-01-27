@@ -38,15 +38,10 @@ class Recipe {
 
 namespace Recipe {
     export class RecipeBuilder {
-        public components: RecipeComponent[];
-        public results: CraftingResult[];
-        public name: string;
-        public itemId: string;
-
-        constructor() {
-            this.components = [];
-            this.results = [];
-        }
+        public components: RecipeComponent[] = [];
+        public results: CraftingResult[] = [];
+        public name!: string;
+        public itemId!: string;
 
         public build() {
             return new Recipe(this);

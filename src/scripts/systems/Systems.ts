@@ -1,5 +1,5 @@
-import {CraftingSystem} from "../core/CraftingSystem.js";
-import TestSystem from "./TestSystem.js";
+import {CraftingSystem} from "../core/CraftingSystem";
+import TestSystem from "./TestSystem";
 
 const systems: CraftingSystem[] = [];
 systems.push(TestSystem);

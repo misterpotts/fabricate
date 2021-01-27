@@ -23,13 +23,17 @@ class CraftingResult {
     get quantity(): number {
         return this._quantity;
     }
+
+    get action(): Action {
+        return this._action;
+    }
 }
 
 namespace CraftingResult {
     export class Builder {
-        public item: CraftingElement;
-        public quantity: number;
-        public action: Action;
+        public item!: CraftingElement;
+        public quantity!: number;
+        public action!: Action;
 
         public withItem(value: CraftingElement): Builder {
             this.item = value;

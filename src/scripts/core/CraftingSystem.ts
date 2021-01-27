@@ -1,8 +1,6 @@
 import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
 import {RecipeComponent} from "./RecipeComponent";
-import {CraftingResult} from "./CraftingResult";
-import {CraftingElement} from "./CraftingElement";
 
 class CraftingSystem {
     private readonly _name: string;
@@ -10,7 +8,6 @@ class CraftingSystem {
     private readonly _fabricator: Fabricator;
     private readonly _recipes: Recipe[];
     private readonly _supportedGameSystems: string[];
-    private readonly _includedItems: CraftingElement[];
 
     constructor(builder: CraftingSystem.Builder) {
         this._name = builder.name;
@@ -25,7 +22,9 @@ class CraftingSystem {
     }
 
     public getFirstRecipeByName(name: string): Recipe {
-        return this._recipes.find((recipe) => {return recipe.name === name});
+        return <Recipe>this._recipes.find((recipe) => {
+            return recipe.name === name
+        });
     }
 
     get name(): string {
@@ -37,8 +36,7 @@ class CraftingSystem {
             return;
         }
         this.consumeComponentsFrom(actor, recipe.components);
-        let results: CraftingResult[] = this.fabricator.fabricate();
-        this.addResultsTo(actor, results);
+        // let results: CraftingResult[] = this.fabricator.fabricate();
     }
 
     get compendiumPackKey(): string {
@@ -57,10 +55,6 @@ class CraftingSystem {
         return this._recipes;
     }
 
-    get includedItems(): CraftingElement[] {
-        return this._includedItems;
-    }
-
     public supports(gameSystem: string) {
         if (!this._supportedGameSystems || this._supportedGameSystems.length == 0) {
             return true;
@@ -69,7 +63,7 @@ class CraftingSystem {
     }
 
     private componentsOwnedBy(actor: Actor, recipe: Recipe): boolean {
-        let consumables = actor.data.items.filter(i => i.type == 'consumable');
+        let consumables = actor.data.items.filter((i: Item.Data) => i.type == 'consumable');
         return recipe.components.every((component: RecipeComponent) => {
             console.log(component.ingredient.name);
             console.log(consumables);
@@ -78,30 +72,21 @@ class CraftingSystem {
     }
 
     private consumeComponentsFrom(actor: Actor, components: RecipeComponent[]) {
-        let consumables = actor.data.items.filter(i => i.type == 'consumable');
+        let consumables = actor.data.items.filter((i: Item.Data) => i.type == 'consumable');
         components.forEach((recipeComponent) => {
             console.log(recipeComponent.ingredient.name);
             console.log(consumables);
         });
     }
-
-    private addResultsTo(actor: Actor, results: CraftingResult[]) {
-
-    }
 }
 
 namespace CraftingSystem {
     export class Builder {
-        public name: string;
-        public compendiumPackKey: string;
-        public fabricator: Fabricator;
-        public supportedGameSystems: string[];
-        public recipes: Recipe[];
-
-        constructor() {
-            this.supportedGameSystems = [];
-            this.recipes = [];
-        }
+        public name!: string;
+        public compendiumPackKey!: string;
+        public fabricator!: Fabricator;
+        public supportedGameSystems: string[] = [];
+        public recipes: Recipe[] = [];
 
         public withName(value: string) : Builder {
             this.name = value;

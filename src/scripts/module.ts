@@ -1,20 +1,18 @@
-import {CraftingSystem} from "./core/CraftingSystem.js";
-import Systems from "./systems/Systems.js"
-import Properties from "./Properties.js";
-import {CraftingElement} from "./core/CraftingElement.js";
-import {Recipe} from "./core/Recipe.js";
+import {CraftingSystem} from "./core/CraftingSystem";
+import Systems from "./systems/Systems"
+import Properties from "./Properties";
 
 Hooks.once('init', registerModuleSettings);
 
 Hooks.once('ready', loadCraftingSystems);
 
-Hooks.on('createItem', (entity) => {
+Hooks.on('createItem', (entity: Entity) => {
     if (entity.data.flags.fabricate) {
         console.log(`(Create Item) Fabricate: ${entity.id} is a Fabricate Item`);
     }
 });
 
-Hooks.on('createOwnedItem', (entity) => {
+Hooks.on('createOwnedItem', (entity: Entity) => {
     if (entity.data.flags.fabricate) {
         console.log(`(Create Owned Item) Fabricate: ${entity.id} is a Fabricate Item`);
     }
@@ -29,16 +27,7 @@ async function loadCraftingSystem(system: CraftingSystem) {
     let systemPack: Compendium = game.packs.get(system.compendiumPackKey)
     systemPack.getContent().then((content) => {
         content.forEach((item) => {
-            system.includedItems.forEach((craftingElement: CraftingElement) => {
-                if (craftingElement.compendiumEntry.itemId == item.id) {
-                    console.log(`Fabricate | Matched the item ${craftingElement.name} to the compendium source for ${system.name}`);
-                }
-            });
-            system.recipes.forEach((recipe: Recipe) => {
-                if (recipe.itemId == item.id) {
-                    console.log(`Fabricate | Matched the recipe ${recipe.name} to the compendium source for ${system.name}`);
-                }
-            })
+            console.log(`Fabricate | compendium: ${system.compendiumPackKey} | id: ${item.id}  | ${item.data.flags}`);
         });
     });
     console.log(`Loaded ${system.name}`);

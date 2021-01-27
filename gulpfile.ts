@@ -2,11 +2,13 @@ const gulp = require('gulp')
 const project = require('gulp-typescript').createProject('tsconfig.json');
 const less = require('gulp-less');
 const gulp_mocha = require('gulp-mocha');
+const webpack = require('webpack-stream');
+const webpack_config = require('./webpack.config.js');
 
-gulp.task('compile-ts', () => {
-  return gulp.src('src/**/*.ts')
-    .pipe(project())
-    .pipe(gulp.dest('dist/'));
+gulp.task('compile-ts', async () => {
+    return gulp.src('src/**/*.ts')
+        .pipe(webpack(webpack_config))
+        .pipe(gulp.dest('dist/'));
 });
 
 gulp.task('compile-less', () => {
@@ -24,7 +26,7 @@ gulp.task('test', () => {
 });
 
 gulp.task('copy', async () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     gulp.src('README.md').pipe(gulp.dest("dist/"))
     gulp.src("src/module.json").pipe(gulp.dest('dist/'))
     gulp.src("src/packs/**").pipe(gulp.dest('dist/packs'))

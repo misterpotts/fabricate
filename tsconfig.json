@@ -2,13 +2,24 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "allowJs": true,
+    "baseUrl": "./",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "strictNullChecks": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "noErrorTruncation": true,
     "target": "ES6",
     "lib": ["DOM", "ES6", "ES2017", "ES2018"],
-    "types": ["foundry-pc-types", "node", "mocha"],
+    "types": ["foundry-pc-types", "node", "mocha", "chai", "sinon"],
     "allowUmdGlobalAccess": true
   },
-  "files": ["./gulpfile.ts"],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["./src/**/*.ts", "./src/global.d.ts"],
+  "exclude": ["node_modules", "./gulpfile.ts"]
 }

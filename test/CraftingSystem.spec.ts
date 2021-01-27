@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import * as sinon from 'sinon';
+import * as Sinon from 'sinon';
 
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
@@ -14,10 +14,10 @@ describe('Crafting System |', () => {
         it('Should create a Crafting System', () => {
             let mockFabricator = <Fabricator>{
                 fabricate(recipe: Recipe): CraftingResult[] {
-                    return null;
+                    return recipe.results;
                 }
             };
-            sinon.stub(mockFabricator, "fabricate").returns([]);
+            Sinon.stub(mockFabricator, "fabricate").returns([]);
 
             let compendiumKey = 'fabricate.fabricate-test';
             let testSystem = CraftingSystem.builder()
@@ -87,10 +87,10 @@ describe('Crafting System |', () => {
 
             let mockFabricator = <Fabricator>{
                 fabricate(recipe: Recipe): CraftingResult[] {
-                    return null;
+                    return recipe.results;
                 }
             };
-            sinon.stub(mockFabricator, 'fabricate').returns([recipeResult.item]);
+            Sinon.stub(mockFabricator, 'fabricate').returns([]);
 
             let testRecipe = Recipe.builder()
                 .withName('Recipe: Mud Pie')

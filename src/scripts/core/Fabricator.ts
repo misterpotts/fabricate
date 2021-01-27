@@ -20,12 +20,8 @@ interface Fabricator {
 }
 
 class DefaultFabricator implements Fabricator {
-    private _preparedCraftingElements: CraftingElement[];
-    private _preparedRecipe: Recipe;
-
-    constructor() {
-        this._preparedCraftingElements = [];
-    }
+    private _preparedCraftingElements: CraftingElement[] = [];
+    private _preparedRecipe!: Recipe;
 
     fabricate(): CraftingResult[] {
         if (!this._preparedRecipe) {

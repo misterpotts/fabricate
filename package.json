@@ -1,23 +1,29 @@
 {
-  "name": "Fabricate",
+  "name": "fabricate",
   "version": "0.0.2",
   "description": "A system-agnostic, flexible crafting module for FoundryVT",
   "main": "index.js",
   "scripts": {
-    "build": "gulp build"
+    "build": "gulp build",
+    "webpack": "webpack"
   },
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
+    "@types/chai": "^4.2.14",
     "@types/mocha": "^8.2.0",
+    "@types/sinon": "^9.0.10",
     "chai": "^4.2.0",
     "gulp": "^4.0.2",
     "gulp-less": "^4.0.1",
     "gulp-mocha": "^7.0.2",
     "gulp-typescript": "^6.0.0-alpha.1",
+    "gulp-webpack": "^1.5.0",
     "mocha": "^6.2.3",
     "sinon": "^9.2.4",
-    "ts-node": "^9.1.1"
+    "ts-loader": "^8.0.14",
+    "ts-node": "^9.1.1",
+    "webpack-stream": "^6.1.2"
   },
   "dependencies": {
     "@types/node": "^14.10.1",

@@ -9,8 +9,8 @@ describe('Default Fabricator |', () => {
     describe('Crafting |', () => {
         it('Should clear recipes and components', () => {
             let mudPieRecipe: Recipe = TestSystem.getFirstRecipeByName('Recipe: Mud Pie');
-            let mud: CraftingElement = <CraftingElement> sinon.stub();
-            let sticks: CraftingElement = <CraftingElement> sinon.stub();
+            let mud: CraftingElement = <CraftingElement><unknown>sinon.stub();
+            let sticks: CraftingElement = <CraftingElement><unknown>sinon.stub();
 
             let underTest = new DefaultFabricator();
             underTest.prepare(mudPieRecipe, [mud, sticks]);

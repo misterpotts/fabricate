@@ -1,12 +1,12 @@
 const path = require('path');
 
 module.exports = {
-    entry: {
-        main: path.resolve(__dirname, './src/scripts/module.ts'),
-    },
+    mode: 'development',
+    entry: './src/scripts/module.ts',
     output: {
-        path: path.resolve(__dirname, './dist/scripts'),
-        filename: 'module.js'
+        filename: 'scripts/module.js',
+        path: path.resolve(__dirname, 'module/scripts/'),
+        publicPath: path.resolve(__dirname, 'module/scripts/'),
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -14,9 +14,12 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-            }
+                test: /.ts?$/,
+                exclude: /node_modules/,
+                use: [{ loader: require.resolve('ts-loader'), options: { transpileOnly: true } }],
+            },
         ]
-    }
+    },
+    plugins: [],
+    devtool: 'eval-source-map'
 };
