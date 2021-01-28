@@ -33,7 +33,7 @@ async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
         });
     });
     let system: CraftingSystem = systemSpec.build();
-    CraftingSystemRegistry.register(system);
+    CraftingSystemRegistry.register(system); // todo - investigate missing recipes and stuff
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
 }
 

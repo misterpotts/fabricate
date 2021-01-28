@@ -1,5 +1,6 @@
 import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
+import {CraftingSystemRegistry} from "../systems/CraftingSystemRegistry";
 
 class ItemRecipeTab {
     private static readonly recipeType: string = Properties.types.recipe;
@@ -7,12 +8,8 @@ class ItemRecipeTab {
 
     // @ts-ignore
     private _sheetData: ItemSheet;
-    private _sheetHtml: HTMLElement;
+    private _sheetHtml: any;
     private readonly _item: any;
-    // @ts-ignore
-    private _active: boolean = false;
-    // @ts-ignore
-    private _editable: boolean = false;
     private readonly _recipe: Recipe;
 
     public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement, sheetData: any): void {
@@ -31,11 +28,9 @@ class ItemRecipeTab {
         this._sheetData = itemSheet;
         this._item = itemSheet.item;
         this._recipe = Recipe.fromFlags(itemSheet.item.data.flags.fabricate);
-        this._active = false;
     }
 
     private init(sheetHtml: any, itemData: any) {
-        this._editable = itemData.editable;
         this._sheetHtml = sheetHtml;
         this.addTabToItemSheet(sheetHtml);
         this.render();
@@ -43,14 +38,13 @@ class ItemRecipeTab {
 
     private async render(): Promise<void> {
         let template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item});
-        // @ts-ignore
         let element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);
         } else {
-            // @ts-ignore
             this._sheetHtml.find('.tab.fabricate-recipe').append(template);
         }
+        this.handleItemSheetEvents();
     }
 
     private addTabToItemSheet(sheetHtml: any): void {
@@ -62,6 +56,21 @@ class ItemRecipeTab {
         $(sheetHtml.find(`.sheet-body`)).append($(
             '<div class="tab fabricate-recipe" data-group="primary" data-tab="fabricate"></div>'
         ));
+    }
+
+    private handleItemSheetEvents(): void {
+        this._sheetHtml.find('.craft-button').click((event) => {
+            console.log('Craft!');
+            console.log(event);
+            let recipeId = event.target.getAttribute('data-recipe-id');
+            console.log(`Recipe: ${recipeId}`);
+            let actorId = event.target.getAttribute('data-actor-id');
+            console.log(`Actor: ${actorId}`);
+            let craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(recipeId);
+            console.log(craftingSystem)
+            this.render();
+        });
+
     }
 }
 

@@ -1,10 +1,12 @@
 import {CraftingSystem} from "../core/CraftingSystem";
 import {DefaultFabricator} from "../core/Fabricator";
+import {Recipe} from "../core/Recipe";
 
 class CraftingSystemRegistry {
     private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();
 
     private static craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
+    private static craftingSystemsByRecipeId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private static _systemSpecifications: CraftingSystem.Builder[] = [];
 
     constructor() {
@@ -17,15 +19,29 @@ class CraftingSystemRegistry {
         return CraftingSystemRegistry.instance;
     }
 
-    public static register(system: CraftingSystem) {
+    public static register(system: CraftingSystem): void {
         CraftingSystemRegistry.craftingSystemsByCompendiumKey.set(system.compendiumPackKey, system);
+        CraftingSystemRegistry.resolveRecipesForSystem(system);
     }
 
-    public static get(id:string): CraftingSystem {
+    private static resolveRecipesForSystem(system: CraftingSystem): void {
+        system.recipes.forEach((recipe: Recipe) => {
+            CraftingSystemRegistry.craftingSystemsByRecipeId.set(recipe.itemId, system);
+        });
+    }
+
+    public static getSystemByCompendiumPackKey(id:string): CraftingSystem {
         if (CraftingSystemRegistry.craftingSystemsByCompendiumKey.has(id)) {
             return CraftingSystemRegistry.craftingSystemsByCompendiumKey.get(id);
         }
         throw new Error(`No Crafting system is registered with Fabricate for the Compendium Pack Key ${id}. `);
+    }
+
+    public static getSystemByRecipeId(id:string): CraftingSystem {
+        if (CraftingSystemRegistry.craftingSystemsByRecipeId.has(id)) {
+            return CraftingSystemRegistry.craftingSystemsByRecipeId.get(id);
+        }
+        throw new Error(`No Crafting system is registered with Fabricate for the Recipe ${id}. `);
     }
 
     public static get systemSpecifications(): CraftingSystem.Builder[] {

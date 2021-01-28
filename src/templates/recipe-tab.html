@@ -12,8 +12,8 @@
         </div>
         {{#if item.isOwned}}
         <div class="controls">
-            <a class="craft-button" title="Craft" data-recipe-id="{{recipe.itemId}}" data-actor-id="{{item.actor.id}}">
-                <p>Craft</p>
+            <a class="craft-button" title="Craft">
+                <p data-recipe-id="{{recipe.itemId}}" data-actor-id="{{item.actor.id}}">Craft</p>
             </a>
         </div>
         {{else}}
