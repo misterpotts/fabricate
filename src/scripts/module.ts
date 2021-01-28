@@ -18,6 +18,10 @@ Hooks.on('createOwnedItem', (entity: Entity) => {
     }
 });
 
+Hooks.on('renderItemSheet5e', (...args: any) => {
+    console.log('item sheet rendering', ...args);
+});
+
 async function loadCraftingSystems() {
     console.log(`Loading ${Properties.module.name} crafting systems`);
     Systems.forEach(loadCraftingSystem);

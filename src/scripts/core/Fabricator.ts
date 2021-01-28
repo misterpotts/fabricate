@@ -25,14 +25,14 @@ interface Fabricator {
 class DefaultFabricator implements Fabricator {
     private _preparedCraftingElements: CraftingElement[] = [];
     private _preparedRecipe!: Recipe;
-    private _remainingComponents!: Map<string, number>;
+    private _remainingComponents: Map<string, number> = new Map();
 
     fabricate(): CraftingResult[] {
         if (!this._preparedRecipe) {
             throw new Error(`The Default Fabricator requires a recipe and one was not prepared. `);
         }
         if (!this.ready()) {
-            throw new Error(`Unable to craft ${this._preparedRecipe.name}`);
+            throw new Error(`Unable to craft ${this._preparedRecipe.name}. `);
         }
         let input: CraftingResult[] = this._preparedRecipe.components.map((component) => {
             return CraftingResult.builder()
@@ -54,7 +54,7 @@ class DefaultFabricator implements Fabricator {
     prepare(recipe: Recipe, craftingElements?: CraftingElement[]) {
         this._preparedRecipe = recipe;
         if (craftingElements && craftingElements.length > 0) {
-            this._preparedCraftingElements.concat(craftingElements);
+            this._preparedCraftingElements.push(...craftingElements);
         }
         this._remainingComponents = new Map(this.preparedRecipe.components.map((component: RecipeComponent) => [component.ingredient.compendiumEntry.itemId, component.quantity]));
         this._preparedCraftingElements.forEach((craftingElement: CraftingElement) => this.accountFor(craftingElement));
@@ -88,6 +88,9 @@ class DefaultFabricator implements Fabricator {
     }
 
     ready() {
+        if (!this._preparedRecipe) {
+            return false;
+        }
         let ready: boolean = true;
         this._remainingComponents.forEach((value) => {
             if (value > 0) {

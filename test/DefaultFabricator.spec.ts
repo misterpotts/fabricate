@@ -14,6 +14,10 @@ describe('Default Fabricator |', () => {
         const mud: CraftingElement = CraftingElement.builder()
             .withName('Mud')
             .withCompendiumEntry(TestSystem.compendiumPackKey, 'tCmAnq9zcESt0ULf')
+            .build()
+        const moreMud: CraftingElement = CraftingElement.builder()
+            .withName('Mud')
+            .withCompendiumEntry(TestSystem.compendiumPackKey, 'tCmAnq9zcESt0ULf')
             .build();
         const sticks: CraftingElement = CraftingElement.builder()
             .withName('Sticks')
@@ -44,7 +48,7 @@ describe('Default Fabricator |', () => {
         it('Should create a Mud Pie from Recipe and components', () => {
 
             let underTest = new DefaultFabricator();
-            underTest.prepare(mudPieRecipe, [mud, sticks]);
+            underTest.prepare(mudPieRecipe, [mud, moreMud, sticks]);
             let ready: boolean = underTest.ready();
             expect(ready).to.equal(true);
             let craftingResults: CraftingResult[] = underTest.fabricate();
@@ -86,14 +90,24 @@ describe('Default Fabricator |', () => {
         });
 
         it('Should not create a Mud Pie from Recipe without components', () => {
+
             let underTest = new DefaultFabricator();
             underTest.prepare(mudPieRecipe);
             let ready: boolean = underTest.ready();
             expect(ready).to.equal(false);
-            expect(() => underTest.fabricate()).to.throw('Unable to craft Recipe: Mud Pie');
+            expect(() => underTest.fabricate()).to.throw('Unable to craft Recipe: Mud Pie.');
+
         });
 
         it('Should require a Recipe', () => {
+
+            let underTest = new DefaultFabricator();
+            underTest.add(mud);
+            underTest.add(moreMud);
+            underTest.add(sticks);
+            let ready: boolean = underTest.ready();
+            expect(ready).to.equal(false);
+            expect(() => underTest.fabricate()).to.throw('The Default Fabricator requires a recipe and one was not prepared.');
 
         });
     });
