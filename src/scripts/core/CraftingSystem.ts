@@ -1,20 +1,23 @@
 import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
 import {RecipeComponent} from "./RecipeComponent";
+import {CraftingComponent} from "./CraftingComponent";
 
 class CraftingSystem {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
     private readonly _fabricator: Fabricator;
     private readonly _recipes: Recipe[];
+    private readonly _components: CraftingComponent[];
     private readonly _supportedGameSystems: string[];
 
     constructor(builder: CraftingSystem.Builder) {
         this._name = builder.name;
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
-        this._supportedGameSystems = builder.supportedGameSystems;
         this._recipes = builder.recipes;
+        this._components = builder.components;
+        this._supportedGameSystems = builder.supportedGameSystems;
     }
 
     public static builder() {
@@ -55,6 +58,10 @@ class CraftingSystem {
         return this._recipes;
     }
 
+    get components(): CraftingComponent[] {
+        return this._components;
+    }
+
     public supports(gameSystem: string) {
         if (!this._supportedGameSystems || this._supportedGameSystems.length == 0) {
             return true;
@@ -87,6 +94,7 @@ namespace CraftingSystem {
         public fabricator!: Fabricator;
         public supportedGameSystems: string[] = [];
         public recipes: Recipe[] = [];
+        public components: CraftingComponent[] = [];
 
         public withName(value: string) : Builder {
             this.name = value;
@@ -120,6 +128,16 @@ namespace CraftingSystem {
 
         public withRecipe(value: Recipe) : Builder {
             this.recipes.push(value);
+            return this;
+        }
+
+        public withComponents(value: CraftingComponent[]) : Builder {
+            this.components = value;
+            return this;
+        }
+
+        public withComponent(value: CraftingComponent) : Builder {
+            this.components.push(value);
             return this;
         }
 

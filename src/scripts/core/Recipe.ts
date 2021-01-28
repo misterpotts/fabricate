@@ -15,7 +15,7 @@ class Recipe {
         this._itemId = builder.itemId;
     }
 
-    public static fromFabricateFlags(fabricateFlags: FabricateFlags): Recipe {
+    public static fromFlags(fabricateFlags: FabricateFlags): Recipe {
         if (fabricateFlags.type !== FabricateItemType.RECIPE) {
             throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${fabricateFlags.type} data. `);
         }

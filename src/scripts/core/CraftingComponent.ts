@@ -1,3 +1,5 @@
+import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
+
 class CompendiumEntry {
     private readonly _compendiumKey;
     private readonly _itemId;
@@ -16,11 +18,11 @@ class CompendiumEntry {
     }
 }
 
-class CraftingElement {
+class CraftingComponent {
     private readonly _name: string;
     private readonly _compendiumEntry: CompendiumEntry;
 
-    constructor(builder: CraftingElement.Builder) {
+    constructor(builder: CraftingComponent.Builder) {
         this._name = builder.name;
         this._compendiumEntry = builder.compendiumEntry;
     }
@@ -34,11 +36,18 @@ class CraftingElement {
     }
 
     public static builder() {
-        return new CraftingElement.Builder();
+        return new CraftingComponent.Builder();
+    }
+
+    public static fromFlags(fabricateFlags: FabricateFlags): CraftingComponent {
+        if (fabricateFlags.type !== FabricateItemType.COMPONENT) {
+            throw new Error(`Error attempting to instantiate a Fabricate Crafting Component from ${fabricateFlags.type} data. `);
+        }
+        return new CraftingComponent(fabricateFlags.component);
     }
 }
 
-namespace CraftingElement {
+namespace CraftingComponent {
     export class Builder {
         public name!: string;
         public compendiumEntry!: CompendiumEntry;
@@ -53,10 +62,10 @@ namespace CraftingElement {
             return this;
         }
 
-        public build(): CraftingElement {
-            return new CraftingElement(this);
+        public build(): CraftingComponent {
+            return new CraftingComponent(this);
         }
     }
 }
 
-export {CraftingElement}
+export {CraftingComponent}

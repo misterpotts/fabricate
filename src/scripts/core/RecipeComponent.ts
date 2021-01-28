@@ -1,7 +1,7 @@
-import {CraftingElement} from "./CraftingElement";
+import {CraftingComponent} from "./CraftingComponent";
 
 class RecipeComponent {
-    private readonly _ingredient: CraftingElement;
+    private readonly _ingredient: CraftingComponent;
     private readonly _quantity: number;
     private readonly _consumed: boolean;
 
@@ -12,7 +12,7 @@ class RecipeComponent {
     }
 
 
-    get ingredient(): CraftingElement {
+    get ingredient(): CraftingComponent {
         return this._ingredient;
     }
 
@@ -31,11 +31,11 @@ class RecipeComponent {
 
 namespace RecipeComponent {
     export class Builder {
-        public ingredient!: CraftingElement;
+        public ingredient!: CraftingComponent;
         public quantity!: number;
         public consumed!: boolean;
 
-        public withIngredient(value: CraftingElement) {
+        public withIngredient(value: CraftingComponent) {
             this.ingredient = value;
             return this;
         }

@@ -4,7 +4,7 @@ import * as Sinon from 'sinon';
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
-import {CraftingElement} from "../src/scripts/core/CraftingElement";
+import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {Fabricator} from '../src/scripts/core/Fabricator';
 import {Action} from "../src/scripts/core/Action";
@@ -31,7 +31,7 @@ describe('Crafting System |', () => {
                     .withComponent(RecipeComponent.builder()
                         .isConsumed(true)
                         .withQuantity(2)
-                        .withIngredient(CraftingElement.builder()
+                        .withIngredient(CraftingComponent.builder()
                             .withName('Mud')
                             .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
                             .build())
@@ -39,7 +39,7 @@ describe('Crafting System |', () => {
                     .withComponent(RecipeComponent.builder()
                         .isConsumed(true)
                         .withQuantity(1)
-                        .withIngredient(CraftingElement.builder()
+                        .withIngredient(CraftingComponent.builder()
                             .withName('Sticks')
                             .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
                             .build())
@@ -47,7 +47,7 @@ describe('Crafting System |', () => {
                     .withResult(CraftingResult.builder()
                         .withAction(Action.ADD)
                         .withQuantity(1)
-                        .withItem(CraftingElement.builder()
+                        .withItem(CraftingComponent.builder()
                             .withName('Mud Pie')
                             .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
                             .build())
@@ -79,7 +79,7 @@ describe('Crafting System |', () => {
             let compendiumKey = 'fabricate.fabricate-test';
             let recipeResult = CraftingResult.builder()
                 .withQuantity(1)
-                .withItem(CraftingElement.builder()
+                .withItem(CraftingComponent.builder()
                     .withName('Mud Pie')
                     .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
                     .build())
@@ -98,7 +98,7 @@ describe('Crafting System |', () => {
                 .withComponent(RecipeComponent.builder()
                     .isConsumed(true)
                     .withQuantity(2)
-                    .withIngredient(CraftingElement.builder()
+                    .withIngredient(CraftingComponent.builder()
                         .withName('Mud')
                         .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
                         .build())
@@ -106,7 +106,7 @@ describe('Crafting System |', () => {
                 .withComponent(RecipeComponent.builder()
                     .isConsumed(true)
                     .withQuantity(1)
-                    .withIngredient(CraftingElement.builder()
+                    .withIngredient(CraftingComponent.builder()
                         .withName('Sticks')
                         .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
                         .build())

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import {Recipe} from "../src/scripts/core/Recipe";
-import {CraftingElement} from "../src/scripts/core/CraftingElement";
+import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 
@@ -11,7 +11,7 @@ describe('Recipe |', () => {
                 .withName('Simple mud pie recipe')
                 .withItemId('4')
                 .withComponent(RecipeComponent.builder()
-                    .withIngredient(CraftingElement.builder()
+                    .withIngredient(CraftingComponent.builder()
                         .withName('Mud')
                         .withCompendiumEntry('compendium', '1')
                         .build())
@@ -19,7 +19,7 @@ describe('Recipe |', () => {
                     .isConsumed(true)
                     .build())
                 .withComponent(RecipeComponent.builder()
-                    .withIngredient(CraftingElement.builder()
+                    .withIngredient(CraftingComponent.builder()
                         .withName('Sticks')
                         .withCompendiumEntry('compendium', '2')
                         .build())
@@ -28,7 +28,7 @@ describe('Recipe |', () => {
                     .build())
                 .withResult(CraftingResult.builder()
                     .withQuantity(1)
-                    .withItem(CraftingElement.builder()
+                    .withItem(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withCompendiumEntry('compendium', '3')
                         .build())

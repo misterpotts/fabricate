@@ -1,8 +1,8 @@
-import {CraftingElement} from "./CraftingElement";
+import {CraftingComponent} from "./CraftingComponent";
 import {Action} from "./Action";
 
 class CraftingResult {
-    private readonly _item: CraftingElement;
+    private readonly _item: CraftingComponent;
     private readonly _quantity: number;
     private readonly _action: Action;
 
@@ -16,7 +16,7 @@ class CraftingResult {
         return new CraftingResult.Builder();
     }
 
-    get item(): CraftingElement {
+    get item(): CraftingComponent {
         return this._item;
     }
 
@@ -31,11 +31,11 @@ class CraftingResult {
 
 namespace CraftingResult {
     export class Builder {
-        public item!: CraftingElement;
+        public item!: CraftingComponent;
         public quantity!: number;
         public action!: Action;
 
-        public withItem(value: CraftingElement): Builder {
+        public withItem(value: CraftingComponent): Builder {
             this.item = value;
             return this;
         }

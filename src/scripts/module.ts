@@ -1,44 +1,42 @@
-import {CraftingSystem} from "./core/CraftingSystem";
-import Systems from "./systems/Systems"
-import Properties from "./Properties";
 import {ItemRecipeTab} from "./interface/ItemRecipeTab";
-
-Hooks.once('init', registerModuleSettings);
+import {CraftingSystem} from "./core/CraftingSystem";
+import Properties from "./Properties";
+import {FabricateFlags, FabricateItemType} from "./core/FabricateFlags";
+import {Recipe} from "./core/Recipe";
+import {CraftingComponent} from "./core/CraftingComponent";
+import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
 
 Hooks.once('ready', loadCraftingSystems);
 
-Hooks.on('createItem', (entity: Entity) => {
-    if (entity.data.flags.fabricate) {
-        console.log(`(Create Item) Fabricate: ${entity.id} is a Fabricate Item`);
-    }
-});
+async function loadCraftingSystems() {
+    let systemSpecifications = CraftingSystemRegistry.systemSpecifications;
+    console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
+    systemSpecifications.forEach(loadCraftingSystem);
+}
 
-Hooks.on('createOwnedItem', (entity: Entity) => {
-    if (entity.data.flags.fabricate) {
-        console.log(`(Create Owned Item) Fabricate: ${entity.id} is a Fabricate Item`);
-    }
-});
+async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
+    console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `);
+    let systemPack: Compendium = game.packs.get(systemSpec.compendiumPackKey)
+    systemPack.getContent().then((content) => {
+        content.forEach((item) => {
+            let itemConfig: FabricateFlags = item.data.flags.fabricate;
+            switch (itemConfig.type) {
+                case FabricateItemType.COMPONENT:
+                    systemSpec.withComponent(CraftingComponent.fromFlags(itemConfig));
+                    break;
+                case FabricateItemType.RECIPE:
+                    systemSpec.withRecipe(Recipe.fromFlags(itemConfig));
+                    break;
+                default:
+                    throw new Error(`Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `);
+            }
+        });
+    });
+    let system: CraftingSystem = systemSpec.build();
+    CraftingSystemRegistry.register(system);
+    console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
+}
 
 Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any, itemData: Item.Data) => {
     ItemRecipeTab.bind(sheetData, sheetHtml, itemData);
 });
-
-async function loadCraftingSystems() {
-    console.log(`Loading ${Properties.module.name} crafting systems`);
-    Systems.forEach(loadCraftingSystem);
-}
-
-async function loadCraftingSystem(system: CraftingSystem) {
-    let systemPack: Compendium = game.packs.get(system.compendiumPackKey)
-    systemPack.getContent().then((content) => {
-        content.forEach((item) => {
-            console.log(`Fabricate | compendium: ${system.compendiumPackKey} | id: ${item.id}`);
-            console.log(item.data.flags);
-        });
-    });
-    console.log(`Loaded ${system.name}`);
-}
-
-async function registerModuleSettings() {
-    console.log(`Registering ${Properties.module.name} module settings`);
-}
