@@ -1,5 +1,6 @@
 import {RecipeComponent} from "./RecipeComponent";
 import {CraftingResult} from "./CraftingResult";
+import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
 
 class Recipe {
     private readonly _components: RecipeComponent[];
@@ -7,11 +8,18 @@ class Recipe {
     private readonly _name: string;
     private readonly _itemId: string;
 
-    constructor(builder: Recipe.RecipeBuilder) {
+    constructor(builder: Recipe.Builder) {
         this._components = builder.components;
         this._results = builder.results;
         this._name = builder.name;
         this._itemId = builder.itemId;
+    }
+
+    public static fromFabricateFlags(fabricateFlags: FabricateFlags): Recipe {
+        if (fabricateFlags.type !== FabricateItemType.RECIPE) {
+            throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${fabricateFlags.type} data. `);
+        }
+        return new Recipe(fabricateFlags.recipe);
     }
 
     get name(): string {
@@ -32,12 +40,12 @@ class Recipe {
     }
 
     public static builder() {
-        return new Recipe.RecipeBuilder();
+        return new Recipe.Builder();
     }
 }
 
 namespace Recipe {
-    export class RecipeBuilder {
+    export class Builder {
         public components: RecipeComponent[] = [];
         public results: CraftingResult[] = [];
         public name!: string;

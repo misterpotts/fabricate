@@ -1,6 +1,7 @@
 import {CraftingSystem} from "./core/CraftingSystem";
 import Systems from "./systems/Systems"
 import Properties from "./Properties";
+import {ItemRecipeTab} from "./interface/ItemRecipeTab";
 
 Hooks.once('init', registerModuleSettings);
 
@@ -18,8 +19,8 @@ Hooks.on('createOwnedItem', (entity: Entity) => {
     }
 });
 
-Hooks.on('renderItemSheet5e', (...args: any) => {
-    console.log('item sheet rendering', ...args);
+Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any, itemData: Item.Data) => {
+    ItemRecipeTab.bind(sheetData, sheetHtml, itemData);
 });
 
 async function loadCraftingSystems() {

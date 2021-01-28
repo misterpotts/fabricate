@@ -1,10 +1,13 @@
+import {FabricateItemType} from "./core/FabricateFlags";
+
 const Properties = {
     module: {
         name: 'fabricate',
         label: 'Fabricate'
     },
-    crafting: {
-        itemSourcePrefix: 'Fabricate:'
+    types: {
+        recipe: FabricateItemType.RECIPE,
+        component: FabricateItemType.COMPONENT
     }
 };
 
