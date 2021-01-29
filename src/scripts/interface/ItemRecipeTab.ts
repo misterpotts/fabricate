@@ -12,7 +12,7 @@ class ItemRecipeTab {
     private readonly _item: any;
     private readonly _recipe: Recipe;
 
-    public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement, sheetData: any): void {
+    public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement): void {
         if (itemSheet.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType) {
             return;
         }
@@ -21,7 +21,7 @@ class ItemRecipeTab {
             tab = new ItemRecipeTab(itemSheet);
             ItemRecipeTab.tabs.set(itemSheet.id, tab);
         }
-        tab.init(sheetHtml, sheetData);
+        tab.init(sheetHtml);
     }
 
     constructor(itemSheet: ItemSheet) {
@@ -30,7 +30,7 @@ class ItemRecipeTab {
         this._recipe = Recipe.fromFlags(itemSheet.item.data.flags.fabricate);
     }
 
-    private init(sheetHtml: any, itemData: any) {
+    private init(sheetHtml: any) {
         this._sheetHtml = sheetHtml;
         this.addTabToItemSheet(sheetHtml);
         this.render();
@@ -59,15 +59,11 @@ class ItemRecipeTab {
     }
 
     private handleItemSheetEvents(): void {
-        this._sheetHtml.find('.craft-button').click((event) => {
-            console.log('Craft!');
-            console.log(event);
+        this._sheetHtml.find('.craft-button').click((event: any) => {
             let recipeId = event.target.getAttribute('data-recipe-id');
-            console.log(`Recipe: ${recipeId}`);
             let actorId = event.target.getAttribute('data-actor-id');
-            console.log(`Actor: ${actorId}`);
             let craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(recipeId);
-            console.log(craftingSystem)
+            craftingSystem.craft(actorId, recipeId);
             this.render();
         });
 

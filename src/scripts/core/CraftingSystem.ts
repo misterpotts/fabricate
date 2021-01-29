@@ -1,12 +1,16 @@
 import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
-import {RecipeComponent} from "./RecipeComponent";
 import {CraftingComponent} from "./CraftingComponent";
+import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
+import {CraftingResult} from "./CraftingResult";
+import {InventoryRecord} from "./InventoryRecord";
+import {Action} from "./Action";
 
 class CraftingSystem {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
     private readonly _fabricator: Fabricator;
+    private readonly _fabricatorSupplier: () => Fabricator;
     private readonly _recipes: Recipe[];
     private readonly _components: CraftingComponent[];
     private readonly _supportedGameSystems: string[];
@@ -15,6 +19,7 @@ class CraftingSystem {
         this._name = builder.name;
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
+        this._fabricatorSupplier = builder.fabricatorSupplier;
         this._recipes = builder.recipes;
         this._components = builder.components;
         this._supportedGameSystems = builder.supportedGameSystems;
@@ -34,12 +39,73 @@ class CraftingSystem {
         return this._name;
     }
 
-    public craft(actor: Actor, recipe: Recipe) {
-        if (!this.componentsOwnedBy(actor, recipe)) {
-            return;
+    public async craft(actorId: string, recipeId: string) {
+        const actor: Actor = game.actors.get(actorId);
+        const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.itemId == recipeId);
+        const inventory: Map<string, InventoryRecord[]> = this.scanInventory(actor);
+        const craftingComponents = Array.from(inventory.values()).deepFlatten()
+            .map((inventoryRecord: InventoryRecord) => inventoryRecord.craftingComponent);
+        const fabricatorInstance = this.fabricator;
+        fabricatorInstance.prepare(recipe, craftingComponents);
+        if (!fabricatorInstance.ready()) {
+            throw new Error(`Unable to fabricate ${recipe.name}. `);
         }
-        this.consumeComponentsFrom(actor, recipe.components);
-        // let results: CraftingResult[] = this.fabricator.fabricate();
+        const craftingResults: CraftingResult[] = fabricatorInstance.fabricate();
+        craftingResults.forEach((craftingResult: CraftingResult) => {
+            this.applyCraftingResultToInventory(actor, inventory, craftingResult);
+        });
+    }
+
+    private async applyCraftingResultToInventory(actor: Actor, inventory: Map<string, InventoryRecord[]>, craftingResult: CraftingResult) {
+        const compendium: Compendium = game.packs.get(this.compendiumPackKey);
+        if (craftingResult.action === Action.ADD) {
+            const itemData: Entity = await compendium.getEntity(craftingResult.item.compendiumEntry.itemId);
+            await actor.createOwnedItem(itemData);
+        } else if (craftingResult.action === Action.REMOVE) {
+            const removalCandidates: InventoryRecord[] = inventory.get(craftingResult.item.compendiumEntry.itemId);
+            if (!removalCandidates || removalCandidates.length < craftingResult.quantity) {
+                throw new Error(`Oops! Actor ${actor.id} does not own enough ${craftingResult.item.name}. `);
+            }
+            let remaining: number = craftingResult.quantity;
+            let position = 0;
+            while (remaining > 0) {
+                await actor.deleteOwnedItem(removalCandidates[position].item.id);
+                position++;
+                remaining--;
+            }
+        }
+    }
+
+    private scanInventory(actor: Actor): Map<string, InventoryRecord[]> {
+        const inventoryRecords: InventoryRecord[] = actor.items.filter(this.isFabricateComponent())
+            .map((item: Item) => {
+                return InventoryRecord.builder()
+                    .withItem(item)
+                    .withActor(actor)
+                    .withCraftingComponent(CraftingComponent.fromFlags(item.data.flags.fabricate))
+                    .build()
+            });
+        let result: Map<string, InventoryRecord[]> = new Map();
+        inventoryRecords.forEach((record: InventoryRecord) => {
+            const compendiumItemId = record.craftingComponent.compendiumEntry.itemId;
+            let recordsForItem = result.get(compendiumItemId);
+            if (!recordsForItem) {
+                result.set(compendiumItemId, [record])
+            } else {
+                recordsForItem.push(record);
+            }
+        });
+        return result;
+    }
+
+    private isFabricateComponent(): (item: Item) => boolean {
+        return (item: Item) => {
+            if (!item.data.flags.fabricate) {
+                return false;
+            }
+            const flags: FabricateFlags = item.data.flags.fabricate;
+            return flags.type === FabricateItemType.COMPONENT;
+        }
     }
 
     get compendiumPackKey(): string {
@@ -47,7 +113,7 @@ class CraftingSystem {
     }
 
     get fabricator(): Fabricator {
-        return this._fabricator;
+        return this._fabricatorSupplier ? this._fabricatorSupplier() : this._fabricator;
     }
 
     get supportedGameSystems(): string[] {
@@ -68,23 +134,6 @@ class CraftingSystem {
         }
         return this._supportedGameSystems.indexOf(gameSystem) > -1;
     }
-
-    private componentsOwnedBy(actor: Actor, recipe: Recipe): boolean {
-        let consumables = actor.data.items.filter((i: Item.Data) => i.type == 'consumable');
-        return recipe.components.every((component: RecipeComponent) => {
-            console.log(component.ingredient.name);
-            console.log(consumables);
-        });
-        return true;
-    }
-
-    private consumeComponentsFrom(actor: Actor, components: RecipeComponent[]) {
-        let consumables = actor.data.items.filter((i: Item.Data) => i.type == 'consumable');
-        components.forEach((recipeComponent) => {
-            console.log(recipeComponent.ingredient.name);
-            console.log(consumables);
-        });
-    }
 }
 
 namespace CraftingSystem {
@@ -92,6 +141,7 @@ namespace CraftingSystem {
         public name!: string;
         public compendiumPackKey!: string;
         public fabricator!: Fabricator;
+        public fabricatorSupplier!: () => Fabricator;
         public supportedGameSystems: string[] = [];
         public recipes: Recipe[] = [];
         public components: CraftingComponent[] = [];
@@ -108,6 +158,11 @@ namespace CraftingSystem {
 
         public withFabricator(value: Fabricator) : Builder {
             this.fabricator = value;
+            return this;
+        }
+
+        public withFabricatorSupplier(value: () => Fabricator) : Builder {
+            this.fabricatorSupplier = value;
             return this;
         }
 

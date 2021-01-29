@@ -38,7 +38,7 @@ class DefaultFabricator implements Fabricator {
             return CraftingResult.builder()
                 .withItem(component.ingredient)
                 .withQuantity(component.quantity)
-                .withAction(component.isConsumed ? Action.REMOVE : Action.ADD)
+                .withAction(component.consumed ? Action.REMOVE : Action.ADD)
                 .build();
         });
         let output: CraftingResult[] = this._preparedRecipe.results.map((result) => {

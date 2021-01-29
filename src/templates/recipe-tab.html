@@ -1,7 +1,7 @@
 <div class="recipe-tab-content">
     <div class="ingredients">
         <div class="description">
-            <p>This recipe requires the following components</p>
+            <p>This recipe requires the following components:</p>
         </div>
         <div class="components">
             <ul>
@@ -10,16 +10,30 @@
                 {{/each}}
             </ul>
         </div>
-        {{#if item.isOwned}}
-        <div class="controls">
-            <a class="craft-button" title="Craft">
-                <p data-recipe-id="{{recipe.itemId}}" data-actor-id="{{item.actor.id}}">Craft</p>
-            </a>
-        </div>
-        {{else}}
-        <div class="no-controls">
-            <p>Add this recipe to an Actor's inventory to use it</p>
-        </div>
-        {{/if}}
     </div>
+    <div class="results">
+        <div class="description">
+            <p>This recipe produces the following results:</p>
+        </div>
+        <div class="components">
+            <ul>
+                {{#each recipe.results}}
+                {{#ifEquals action "ADD"}}
+                <li>{{quantity}} {{item.name}}</li>
+                {{/ifEquals}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    {{#if item.isOwned}}
+    <div class="controls">
+        <a class="craft-button" title="Craft">
+            <p data-recipe-id="{{recipe.itemId}}" data-actor-id="{{item.actor.id}}">Craft</p>
+        </a>
+    </div>
+    {{else}}
+    <div class="no-controls">
+        <p>Add this recipe to an Actor's inventory to use it</p>
+    </div>
+    {{/if}}
 </div>

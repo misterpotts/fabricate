@@ -11,7 +11,6 @@ class RecipeComponent {
         this._consumed = builder.consumed;
     }
 
-
     get ingredient(): CraftingComponent {
         return this._ingredient;
     }
@@ -20,7 +19,7 @@ class RecipeComponent {
         return this._quantity;
     }
 
-    get isConsumed(): boolean {
+    get consumed(): boolean {
         return this._consumed;
     }
 
