@@ -4,9 +4,9 @@ import {Fabricator} from "../src/scripts/core/Fabricator";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
-import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
+import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {Action} from "../src/scripts/core/Action";
+import {ActionType} from "../src/scripts/core/ActionType";
 import {CraftingSystemRegistry} from "../src/scripts/systems/CraftingSystemRegistry";
 
 describe('Crafting System Registry |', () => {
@@ -31,7 +31,7 @@ describe('Crafting System Registry |', () => {
                 .withRecipe(Recipe.builder()
                     .withName('Recipe: Mud Pie')
                     .withItemId(mudPieRecipeId)
-                    .withComponent(RecipeComponent.builder()
+                    .withComponent(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(2)
                         .withIngredient(CraftingComponent.builder()
@@ -39,7 +39,7 @@ describe('Crafting System Registry |', () => {
                             .withCompendiumEntry(testSystemCompendiumKey, 'tCmAnq9zcESt0ULf')
                             .build())
                         .build())
-                    .withComponent(RecipeComponent.builder()
+                    .withComponent(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(1)
                         .withIngredient(CraftingComponent.builder()
@@ -48,7 +48,7 @@ describe('Crafting System Registry |', () => {
                             .build())
                         .build())
                     .withResult(CraftingResult.builder()
-                        .withAction(Action.ADD)
+                        .withAction(ActionType.ADD)
                         .withQuantity(1)
                         .withItem(CraftingComponent.builder()
                             .withName('Mud Pie')

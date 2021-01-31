@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
+import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 
 describe('Recipe |', () => {
@@ -10,7 +10,7 @@ describe('Recipe |', () => {
             let testRecipe = Recipe.builder()
                 .withName('Simple mud pie recipe')
                 .withItemId('4')
-                .withComponent(RecipeComponent.builder()
+                .withComponent(Ingredient.builder()
                     .withIngredient(CraftingComponent.builder()
                         .withName('Mud')
                         .withCompendiumEntry('compendium', '1')
@@ -18,7 +18,7 @@ describe('Recipe |', () => {
                     .withQuantity(2)
                     .isConsumed(true)
                     .build())
-                .withComponent(RecipeComponent.builder()
+                .withComponent(Ingredient.builder()
                     .withIngredient(CraftingComponent.builder()
                         .withName('Sticks')
                         .withCompendiumEntry('compendium', '2')
@@ -39,8 +39,8 @@ describe('Recipe |', () => {
             expect(testRecipe.components.length).to.equal(2);
             expect(testRecipe.itemId).to.equal('4');
             expect(testRecipe.components).to.deep.include.members([
-                { _ingredient: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'compendium', _itemId: '1' } }, _quantity: 2, _consumed: true },
-                { _ingredient: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'compendium', _itemId: '2' } }, _quantity: 1, _consumed: true }
+                { _componentType: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '1' } }, _quantity: 2, _consumed: true },
+                { _componentType: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '2' } }, _quantity: 1, _consumed: true }
             ]);
         });
     });

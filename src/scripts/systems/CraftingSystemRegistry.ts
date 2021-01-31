@@ -1,6 +1,8 @@
 import {CraftingSystem} from "../core/CraftingSystem";
 import {DefaultFabricator} from "../core/Fabricator";
 import {Recipe} from "../core/Recipe";
+import {GameSystemType} from "../core/GameSystemType";
+import {Inventory} from "../core/Inventory";
 
 class CraftingSystemRegistry {
     private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();
@@ -8,6 +10,7 @@ class CraftingSystemRegistry {
     private static craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private static craftingSystemsByRecipeId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private static _systemSpecifications: CraftingSystem.Builder[] = [];
+    private static _managedInventories: Map<string, Inventory> = new Map<string, Inventory>();
 
     constructor() {
         if (CraftingSystemRegistry.instance) {
@@ -51,12 +54,23 @@ class CraftingSystemRegistry {
     public static declareSpecification(spec: CraftingSystem.Builder) {
         CraftingSystemRegistry._systemSpecifications.push(spec);
     }
+
+    public static addManagedInventoryForActor(actorId: string, inventory: Inventory): void {
+        if (this._managedInventories.has(actorId)) {
+            throw new Error(`The Crafting Inventory for Actor[${actorId}] is already managed by Fabricate and should not be overridden. `);
+        }
+        this._managedInventories.set(actorId, inventory);
+    }
+
+    public static getManagedInventoryForActor(actorId: string): Inventory {
+        return this._managedInventories.get(actorId);
+    }
 }
 
 const testSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
     .withName('Test System')
     .withCompendiumPackKey('fabricate.fabricate-test')
-    .withSupportedGameSystem('dnd5e')
+    .withSupportedGameSystem(GameSystemType.DND5E)
     .withFabricator(new DefaultFabricator());
 CraftingSystemRegistry.declareSpecification(testSystemSpec);
 

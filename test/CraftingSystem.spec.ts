@@ -3,11 +3,11 @@ import * as Sinon from 'sinon';
 
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
-import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
+import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {Fabricator} from '../src/scripts/core/Fabricator';
-import {Action} from "../src/scripts/core/Action";
+import {ActionType} from "../src/scripts/core/ActionType";
 
 describe('Crafting System |', () => {
     describe('Create |', () => {
@@ -28,7 +28,7 @@ describe('Crafting System |', () => {
                 .withRecipe(Recipe.builder()
                     .withName('Recipe: Mud Pie')
                     .withItemId('4iHqWSLTMFjPbpuI')
-                    .withComponent(RecipeComponent.builder()
+                    .withComponent(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(2)
                         .withIngredient(CraftingComponent.builder()
@@ -36,7 +36,7 @@ describe('Crafting System |', () => {
                             .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
                             .build())
                         .build())
-                    .withComponent(RecipeComponent.builder()
+                    .withComponent(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(1)
                         .withIngredient(CraftingComponent.builder()
@@ -45,7 +45,7 @@ describe('Crafting System |', () => {
                             .build())
                         .build())
                     .withResult(CraftingResult.builder()
-                        .withAction(Action.ADD)
+                        .withAction(ActionType.ADD)
                         .withQuantity(1)
                         .withItem(CraftingComponent.builder()
                             .withName('Mud Pie')
@@ -64,11 +64,11 @@ describe('Crafting System |', () => {
                     _name: 'Recipe: Mud Pie',
                     _itemId: '4iHqWSLTMFjPbpuI',
                     _components: [
-                        { _ingredient: { _name: 'Mud',_compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _itemId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
-                        { _ingredient: { _name: 'Sticks',_compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _itemId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }
+                        { _componentType: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
+                        { _componentType: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }
                     ],
                     _results: [
-                        { _action: 'ADD', _item: { _name: 'Mud Pie', "_compendiumEntry": { _compendiumKey: 'fabricate.fabricate-test', _itemId: 'nWhTa8gD1QL1f9O3' } }, _quantity : 1 }
+                        { _action: 'ADD', _item: { _name: 'Mud Pie', "_compendiumEntry": { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'nWhTa8gD1QL1f9O3' } }, _quantity : 1 }
                     ],
                 }
             ]);
@@ -95,7 +95,7 @@ describe('Crafting System |', () => {
             // let testRecipe = Recipe.builder()
             //     .withName('Recipe: Mud Pie')
             //     .withItemId('4iHqWSLTMFjPbpuI')
-            //     .withComponent(RecipeComponent.builder()
+            //     .withComponent(Ingredient.builder()
             //         .isConsumed(true)
             //         .withQuantity(2)
             //         .withIngredient(CraftingComponent.builder()
@@ -103,7 +103,7 @@ describe('Crafting System |', () => {
             //             .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
             //             .build())
             //         .build())
-            //     .withComponent(RecipeComponent.builder()
+            //     .withComponent(Ingredient.builder()
             //         .isConsumed(true)
             //         .withQuantity(1)
             //         .withIngredient(CraftingComponent.builder()

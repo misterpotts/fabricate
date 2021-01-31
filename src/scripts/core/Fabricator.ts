@@ -1,8 +1,8 @@
 import {Recipe} from "./Recipe";
 import {CraftingResult} from "./CraftingResult";
 import {CraftingComponent} from "./CraftingComponent";
-import {Action} from "./Action";
-import {RecipeComponent} from "./RecipeComponent";
+import {ActionType} from "./ActionType";
+import {Ingredient} from "./Ingredient";
 
 interface Fabricator {
     preparedRecipe?: Recipe;
@@ -36,15 +36,15 @@ class DefaultFabricator implements Fabricator {
         }
         let input: CraftingResult[] = this._preparedRecipe.components.map((component) => {
             return CraftingResult.builder()
-                .withItem(component.ingredient)
+                .withItem(component.componentType)
                 .withQuantity(component.quantity)
-                .withAction(component.consumed ? Action.REMOVE : Action.ADD)
+                .withAction(component.consumed ? ActionType.REMOVE : ActionType.ADD)
                 .build();
         });
         let output: CraftingResult[] = this._preparedRecipe.results.map((result) => {
             return CraftingResult.builder()
                 .withItem(result.item)
-                .withAction(Action.ADD)
+                .withAction(ActionType.ADD)
                 .withQuantity(result.quantity)
                 .build();
         });
@@ -56,14 +56,14 @@ class DefaultFabricator implements Fabricator {
         if (craftingElements && craftingElements.length > 0) {
             this._preparedCraftingElements.push(...craftingElements);
         }
-        this._remainingComponents = new Map(this.preparedRecipe.components.map((component: RecipeComponent) => [component.ingredient.compendiumEntry.itemId, component.quantity]));
+        this._remainingComponents = new Map(this.preparedRecipe.components.map((component: Ingredient) => [component.componentType.compendiumEntry.entryId, component.quantity]));
         this._preparedCraftingElements.forEach((craftingElement: CraftingComponent) => this.accountFor(craftingElement));
     }
 
     private accountFor(craftingElement: CraftingComponent) {
-        let remaining: number = this._remainingComponents.get(craftingElement.compendiumEntry.itemId);
+        let remaining: number = this._remainingComponents.get(craftingElement.compendiumEntry.entryId);
         if (remaining > 0) {
-            this._remainingComponents.set(craftingElement.compendiumEntry.itemId, --remaining);
+            this._remainingComponents.set(craftingElement.compendiumEntry.entryId, --remaining);
         }
     }
 

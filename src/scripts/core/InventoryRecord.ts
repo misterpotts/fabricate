@@ -3,14 +3,14 @@ import {CraftingComponent} from "./CraftingComponent";
 class InventoryRecord {
     private readonly _actor: Actor;
     private readonly _item: Item;
-    private readonly _craftingComponent: CraftingComponent;
-    private readonly _quantity: number;
+    private readonly _componentType: CraftingComponent;
+    private _quantity: number;
 
     constructor(builder: InventoryRecord.Builder) {
         this._actor = builder.actor;
         this._item = builder.item;
         this._quantity = builder.quantity;
-        this._craftingComponent = builder.craftingComponent;
+        this._componentType = builder.craftingComponent;
     }
 
     public static builder(): InventoryRecord.Builder {
@@ -29,8 +29,12 @@ class InventoryRecord {
         return this._quantity;
     }
 
-    get craftingComponent(): CraftingComponent {
-        return this._craftingComponent;
+    set quantity(value: number) {
+        this._quantity = value;
+    }
+
+    get componentType(): CraftingComponent {
+        return this._componentType;
     }
 }
 
