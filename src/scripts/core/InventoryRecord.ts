@@ -4,7 +4,7 @@ class InventoryRecord {
     private readonly _actor: Actor;
     private readonly _item: Item;
     private readonly _componentType: CraftingComponent;
-    private _quantity: number;
+    private _quantity: number; // TODO: remove this and rely on `item.quantity`
 
     constructor(builder: InventoryRecord.Builder) {
         this._actor = builder.actor;

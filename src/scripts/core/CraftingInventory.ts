@@ -37,8 +37,6 @@ abstract class CraftingInventory implements Inventory {
         return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
     }
 
-    public abstract addMany(components: CraftingComponent[]): Promise<InventoryRecord[]>;
-
     public abstract add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
 
     contains(ingredient: Ingredient): boolean {
@@ -71,8 +69,6 @@ abstract class CraftingInventory implements Inventory {
         }
         return !failedToFind;
     }
-
-    public abstract removeMany(components: CraftingComponent[]): Promise<boolean>;
 
     public abstract remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
 

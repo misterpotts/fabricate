@@ -9,7 +9,8 @@ class CraftingTab {
     private _sheetHtml: any;
     private _inventory: Inventory;
 
-    public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement, actor: any): void {
+    public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement, eventData: any): void {
+        const actor: any = game.actors.get(eventData.actor._id);
         if (!game.user.isGM || !actor.owner ) {
             return;
         }

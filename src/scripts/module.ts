@@ -88,6 +88,20 @@ Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData:
     CraftingTab.bind(sheetData, sheetHtml, eventData);
 });
 
+Hooks.on('createOwnedItem', (actor: any) => {
+    const inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+    if (inventory) {
+        inventory.update();
+    }
+});
+
+Hooks.on('deleteOwnedItem', (actor: any) => {
+    const inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+    if (inventory) {
+        inventory.update();
+    }
+});
+
 Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
     // @ts-ignore
     return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
