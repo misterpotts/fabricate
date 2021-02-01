@@ -1,0 +1,20 @@
+import {GameSystemType} from "./GameSystemType";
+import {InventoryRecord} from "./InventoryRecord";
+import {Ingredient} from "./Ingredient";
+import {CraftingComponent} from "./CraftingComponent";
+import {Recipe} from "./Recipe";
+
+interface Inventory {
+    actor: Actor;
+    supportedGameSystems: GameSystemType[];
+    contents: InventoryRecord[];
+    size: number;
+    supportsGameSystem(gameSystem: GameSystemType): boolean;
+    contains(ingredient: Ingredient): boolean;
+    hasAllIngredientsFor(recipe: Recipe): boolean;
+    add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
+    remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
+    update(): void;
+}
+
+export {Inventory}

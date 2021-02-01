@@ -4,7 +4,7 @@ import {CraftingComponent} from "./CraftingComponent";
 import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
 import {CraftingResult} from "./CraftingResult";
 import {InventoryRecord} from "./InventoryRecord";
-import {Action} from "./Action";
+import {ActionType} from "./ActionType";
 
 class CraftingSystem {
     private readonly _name: string;
@@ -43,8 +43,8 @@ class CraftingSystem {
         const actor: Actor = game.actors.get(actorId);
         const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.itemId == recipeId);
         const inventory: Map<string, InventoryRecord[]> = this.scanInventory(actor);
-        const craftingComponents = Array.from(inventory.values()).deepFlatten()
-            .map((inventoryRecord: InventoryRecord) => inventoryRecord.craftingComponent);
+        const craftingComponents: CraftingComponent[] = Array.from(inventory.values()).deepFlatten()
+            .map((inventoryRecord: InventoryRecord) => inventoryRecord.componentType);
         const fabricatorInstance = this.fabricator;
         fabricatorInstance.prepare(recipe, craftingComponents);
         if (!fabricatorInstance.ready()) {
@@ -58,11 +58,11 @@ class CraftingSystem {
 
     private async applyCraftingResultToInventory(actor: Actor, inventory: Map<string, InventoryRecord[]>, craftingResult: CraftingResult) {
         const compendium: Compendium = game.packs.get(this.compendiumPackKey);
-        if (craftingResult.action === Action.ADD) {
-            const itemData: Entity = await compendium.getEntity(craftingResult.item.compendiumEntry.itemId);
+        if (craftingResult.action === ActionType.ADD) {
+            const itemData: Entity = await compendium.getEntity(craftingResult.item.compendiumEntry.entryId);
             await actor.createOwnedItem(itemData);
-        } else if (craftingResult.action === Action.REMOVE) {
-            const removalCandidates: InventoryRecord[] = inventory.get(craftingResult.item.compendiumEntry.itemId);
+        } else if (craftingResult.action === ActionType.REMOVE) {
+            const removalCandidates: InventoryRecord[] = inventory.get(craftingResult.item.compendiumEntry.entryId);
             if (!removalCandidates || removalCandidates.length < craftingResult.quantity) {
                 throw new Error(`Oops! Actor ${actor.id} does not own enough ${craftingResult.item.name}. `);
             }
@@ -78,16 +78,17 @@ class CraftingSystem {
 
     private scanInventory(actor: Actor): Map<string, InventoryRecord[]> {
         const inventoryRecords: InventoryRecord[] = actor.items.filter(this.isFabricateComponent())
-            .map((item: Item) => {
+            .map((item: any) => { // Expects an Item5E, need type def
                 return InventoryRecord.builder()
                     .withItem(item)
                     .withActor(actor)
+                    .withQuantity(item.data.data.quantity ? item.data.data.quantity : 1)
                     .withCraftingComponent(CraftingComponent.fromFlags(item.data.flags.fabricate))
                     .build()
             });
         let result: Map<string, InventoryRecord[]> = new Map();
         inventoryRecords.forEach((record: InventoryRecord) => {
-            const compendiumItemId = record.craftingComponent.compendiumEntry.itemId;
+            const compendiumItemId = record.componentType.compendiumEntry.entryId;
             let recordsForItem = result.get(compendiumItemId);
             if (!recordsForItem) {
                 result.set(compendiumItemId, [record])

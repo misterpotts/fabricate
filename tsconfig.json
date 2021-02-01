@@ -20,6 +20,6 @@
     "types": ["foundry-pc-types", "node", "mocha", "chai", "sinon"],
     "allowUmdGlobalAccess": true
   },
-  "include": ["./src/**/*.ts", "./src/global.d.ts"],
+  "include": ["./src/**/*.ts"],
   "exclude": ["node_modules", "./gulpfile.ts"]
 }

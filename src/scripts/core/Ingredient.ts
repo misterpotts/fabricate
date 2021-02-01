@@ -1,18 +1,22 @@
 import {CraftingComponent} from "./CraftingComponent";
 
-class RecipeComponent {
-    private readonly _ingredient: CraftingComponent;
+class Ingredient {
+    private readonly _componentType: CraftingComponent;
     private readonly _quantity: number;
     private readonly _consumed: boolean;
 
-    constructor(builder: RecipeComponent.Builder) {
-        this._ingredient = builder.ingredient;
+    constructor(builder: Ingredient.Builder) {
+        this._componentType = builder.ingredient;
         this._quantity = builder.quantity;
         this._consumed = builder.consumed;
     }
 
-    get ingredient(): CraftingComponent {
-        return this._ingredient;
+    public static builder() {
+        return new Ingredient.Builder();
+    }
+
+    get componentType(): CraftingComponent {
+        return this._componentType;
     }
 
     get quantity(): number {
@@ -23,12 +27,18 @@ class RecipeComponent {
         return this._consumed;
     }
 
-    public static builder() {
-        return new RecipeComponent.Builder();
+    public matchesType(other: Ingredient): boolean {
+        return other.componentType.equals(this._componentType);
+    }
+
+    public is(other: Ingredient): boolean {
+        return this._componentType.equals(other.componentType)
+            && (this._quantity === other.quantity)
+            && (this._consumed === other.consumed);
     }
 }
 
-namespace RecipeComponent {
+namespace Ingredient {
     export class Builder {
         public ingredient!: CraftingComponent;
         public quantity!: number;
@@ -50,9 +60,9 @@ namespace RecipeComponent {
         }
 
         public build() {
-            return new RecipeComponent(this);
+            return new Ingredient(this);
         }
     }
 }
 
-export { RecipeComponent };
+export { Ingredient };

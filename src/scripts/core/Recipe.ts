@@ -1,9 +1,9 @@
-import {RecipeComponent} from "./RecipeComponent";
+import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
 
 class Recipe {
-    private readonly _components: RecipeComponent[];
+    private readonly _components: Ingredient[];
     private readonly _results: CraftingResult[];
     private readonly _name: string;
     private readonly _itemId: string;
@@ -26,7 +26,7 @@ class Recipe {
         return this._name;
     }
 
-    get components(): RecipeComponent[] {
+    get components(): Ingredient[] {
         return this._components;
     }
 
@@ -46,7 +46,7 @@ class Recipe {
 
 namespace Recipe {
     export class Builder {
-        public components: RecipeComponent[] = [];
+        public components: Ingredient[] = [];
         public results: CraftingResult[] = [];
         public name!: string;
         public itemId!: string;
@@ -60,7 +60,7 @@ namespace Recipe {
             return this;
         }
 
-        withComponent(value: RecipeComponent) {
+        withComponent(value: Ingredient) {
             this.components.push(value);
             return this;
         }

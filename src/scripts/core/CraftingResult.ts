@@ -1,10 +1,10 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {Action} from "./Action";
+import {ActionType} from "./ActionType";
 
 class CraftingResult {
     private readonly _item: CraftingComponent;
     private readonly _quantity: number;
-    private readonly _action: Action;
+    private readonly _action: ActionType;
 
     constructor(builder: CraftingResult.Builder) {
         this._item = builder.item;
@@ -24,7 +24,7 @@ class CraftingResult {
         return this._quantity;
     }
 
-    get action(): Action {
+    get action(): ActionType {
         return this._action;
     }
 }
@@ -33,7 +33,7 @@ namespace CraftingResult {
     export class Builder {
         public item!: CraftingComponent;
         public quantity!: number;
-        public action!: Action;
+        public action!: ActionType;
 
         public withItem(value: CraftingComponent): Builder {
             this.item = value;
@@ -45,7 +45,7 @@ namespace CraftingResult {
             return this;
         }
 
-        public withAction(value: Action): Builder {
+        public withAction(value: ActionType): Builder {
             this.action = value;
             return this;
         }

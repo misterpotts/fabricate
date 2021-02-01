@@ -2,19 +2,27 @@ import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
 
 class CompendiumEntry {
     private readonly _compendiumKey;
-    private readonly _itemId;
+    private readonly _entryId;
 
-    constructor(compendiumKey: string, itemId: string) {
+    constructor(compendiumKey: string, entryId: string) {
         this._compendiumKey = compendiumKey;
-        this._itemId = itemId;
+        this._entryId = entryId;
     }
 
     get compendiumKey() {
         return this._compendiumKey;
     }
 
-    get itemId() {
-        return this._itemId;
+    get entryId() {
+        return this._entryId;
+    }
+
+    public equals(other: CompendiumEntry): boolean {
+        if (!other) {
+            return false;
+        }
+        return (this.entryId === other.entryId)
+            && (this.compendiumKey === other.compendiumKey);
     }
 }
 
@@ -43,7 +51,18 @@ class CraftingComponent {
         if (fabricateFlags.type !== FabricateItemType.COMPONENT) {
             throw new Error(`Error attempting to instantiate a Fabricate Crafting Component from ${fabricateFlags.type} data. `);
         }
-        return new CraftingComponent(fabricateFlags.component);
+        const compendiumEntryConfig = fabricateFlags.component.compendiumEntry;
+        return CraftingComponent.builder()
+            .withName(fabricateFlags.component.name)
+            .withCompendiumEntry(compendiumEntryConfig.compendiumKey, compendiumEntryConfig.entryId)
+            .build();
+    }
+
+    public equals(other: CraftingComponent): boolean {
+        if (!other) {
+            return false;
+        }
+        return this._compendiumEntry.equals(other.compendiumEntry);
     }
 }
 

@@ -4,8 +4,8 @@ import {DefaultFabricator} from "../src/scripts/core/Fabricator";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
-import {RecipeComponent} from "../src/scripts/core/RecipeComponent";
-import {Action} from "../src/scripts/core/Action";
+import {Ingredient} from "../src/scripts/core/Ingredient";
+import {ActionType} from "../src/scripts/core/ActionType";
 
 describe('Default Fabricator |', () => {
 
@@ -27,18 +27,18 @@ describe('Default Fabricator |', () => {
         const mudPieRecipe: Recipe = Recipe.builder()
             .withName('Recipe: Mud Pie')
             .withItemId('4iHqWSLTMFjPbpuI')
-            .withComponent(RecipeComponent.builder()
+            .withComponent(Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(2)
                 .withIngredient(mud)
                 .build())
-            .withComponent(RecipeComponent.builder()
+            .withComponent(Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(1)
                 .withIngredient(sticks)
                 .build())
             .withResult(CraftingResult.builder()
-                .withAction(Action.ADD)
+                .withAction(ActionType.ADD)
                 .withQuantity(1)
                 .withItem(CraftingComponent.builder()
                     .withName('Mud Pie')
@@ -83,7 +83,7 @@ describe('Default Fabricator |', () => {
                     _name: 'Mud Pie',
                     _compendiumEntry: {
                         _compendiumKey: 'fabricate.fabricate-test',
-                        _itemId: 'nWhTa8gD1QL1f9O3'
+                        _entryId: 'nWhTa8gD1QL1f9O3'
                     }
                 }
             });
@@ -94,7 +94,7 @@ describe('Default Fabricator |', () => {
                     _name: 'Mud',
                     _compendiumEntry: {
                         _compendiumKey: 'fabricate.fabricate-test',
-                        _itemId: 'tCmAnq9zcESt0ULf'
+                        _entryId: 'tCmAnq9zcESt0ULf'
                     }
                 }
             });
@@ -105,7 +105,7 @@ describe('Default Fabricator |', () => {
                     _name: 'Sticks',
                     _compendiumEntry: {
                         _compendiumKey: 'fabricate.fabricate-test',
-                        _itemId: 'arWeEYkLkubimBz3'
+                        _entryId: 'arWeEYkLkubimBz3'
                     }
                 }
             });

@@ -5,6 +5,10 @@ import {FabricateFlags, FabricateItemType} from "./core/FabricateFlags";
 import {Recipe} from "./core/Recipe";
 import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
+import {CraftingTab} from "./interface/CraftingTab";
+
+// Enable as needed for dev. Do not release!
+// CONFIG.debug.hooks = true;
 
 Hooks.once('ready', loadCraftingSystems);
 
@@ -24,6 +28,10 @@ async function loadCraftingSystems() {
  * */
 async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
     console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `);
+    if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
+        console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
+        return;
+    }
     let systemPack: Compendium = game.packs.get(systemSpec.compendiumPackKey)
     let content = await loadCompendiumContent(systemPack, 10);
     content.forEach((item: Entity) => {
@@ -74,6 +82,24 @@ async function wait(delay: number): Promise<void> {
 
 Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any) => {
     ItemRecipeTab.bind(sheetData, sheetHtml);
+});
+
+Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData: any) => {
+    CraftingTab.bind(sheetData, sheetHtml, eventData);
+});
+
+Hooks.on('createOwnedItem', (actor: any) => {
+    const inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+    if (inventory) {
+        inventory.update();
+    }
+});
+
+Hooks.on('deleteOwnedItem', (actor: any) => {
+    const inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+    if (inventory) {
+        inventory.update();
+    }
 });
 
 Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {

@@ -5,12 +5,14 @@ const Properties = {
         name: 'fabricate',
         label: 'Fabricate',
         templates: {
-            recipeTab: 'modules/fabricate/templates/recipe-tab.html'
+            recipeTab: 'modules/fabricate/templates/recipe-tab.html',
+            craftingTab: 'modules/fabricate/templates/crafting-tab.html'
         }
     },
     types: {
         recipe: FabricateItemType.RECIPE,
-        component: FabricateItemType.COMPONENT
+        component: FabricateItemType.COMPONENT,
+        allowableItems: ['consumable', 'loot']
     }
 };
 
