@@ -16,10 +16,6 @@ describe('Default Fabricator |', () => {
             .withName('Mud')
             .withCompendiumEntry(compendiumPackKey, 'tCmAnq9zcESt0ULf')
             .build()
-        const moreMud: CraftingComponent = CraftingComponent.builder()
-            .withName('Mud')
-            .withCompendiumEntry(compendiumPackKey, 'tCmAnq9zcESt0ULf')
-            .build();
         const sticks: CraftingComponent = CraftingComponent.builder()
             .withName('Sticks')
             .withCompendiumEntry(compendiumPackKey, 'arWeEYkLkubimBz3')
@@ -47,34 +43,11 @@ describe('Default Fabricator |', () => {
                 .build())
             .build();
 
-        it('Should clear recipes and components', () => {
-
-            let underTest = new DefaultFabricator();
-            underTest.prepare(mudPieRecipe, [mud, sticks]);
-            expect(underTest.clear()).to.equal(true);
-            expect(underTest.preparedCraftingElements).to.be.empty;
-            expect(underTest.preparedRecipe).to.be.null;
-
-            underTest = new DefaultFabricator();
-            underTest.prepare(mudPieRecipe);
-            expect(underTest.clear()).to.equal(true);
-            expect(underTest.preparedCraftingElements).to.be.empty;
-            expect(underTest.preparedRecipe).to.be.null;
-
-            underTest = new DefaultFabricator();
-            expect(underTest.clear()).to.equal(false);
-            expect(underTest.preparedCraftingElements).to.be.empty;
-            expect(underTest.preparedRecipe).to.be.null;
-
-        });
 
         it('Should create a Mud Pie from Recipe and components', () => {
 
             let underTest = new DefaultFabricator();
-            underTest.prepare(mudPieRecipe, [mud, moreMud, sticks]);
-            let ready: boolean = underTest.ready();
-            expect(ready).to.equal(true);
-            let craftingResults: CraftingResult[] = underTest.fabricate();
+            let craftingResults: CraftingResult[] = underTest.fabricateFromRecipe(mudPieRecipe);
             expect(craftingResults.length).to.equal(3);
             expect(craftingResults).to.deep.include({
                 _quantity: 1,
@@ -112,25 +85,10 @@ describe('Default Fabricator |', () => {
 
         });
 
-        it('Should not create a Mud Pie from Recipe without components', () => {
-
-            let underTest = new DefaultFabricator();
-            underTest.prepare(mudPieRecipe);
-            let ready: boolean = underTest.ready();
-            expect(ready).to.equal(false);
-            expect(() => underTest.fabricate()).to.throw('Unable to craft Recipe: Mud Pie.');
-
-        });
-
         it('Should require a Recipe', () => {
 
             let underTest = new DefaultFabricator();
-            underTest.add(mud);
-            underTest.add(moreMud);
-            underTest.add(sticks);
-            let ready: boolean = underTest.ready();
-            expect(ready).to.equal(false);
-            expect(() => underTest.fabricate()).to.throw('The Default Fabricator requires a recipe and one was not prepared.');
+            expect(() => underTest.fabricateFromComponents()).to.throw('The Default Fabricator requires a Recipe and one was not provided.');
 
         });
     });

@@ -6,18 +6,22 @@ import {Recipe} from "../src/scripts/core/Recipe";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
-import {Fabricator} from '../src/scripts/core/Fabricator';
 import {ActionType} from "../src/scripts/core/ActionType";
+import {Fabricator} from "../src/scripts/core/Fabricator";
 
 describe('Crafting System |', () => {
     describe('Create |', () => {
         it('Should create a Crafting System', () => {
             let mockFabricator = <Fabricator>{
-                fabricate(recipe: Recipe): CraftingResult[] {
-                    return recipe.results;
+                fabricateFromComponents(): CraftingResult[] {
+                    return [];
+                },
+                // @ts-ignore
+                fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
+                    return [];
                 }
             };
-            Sinon.stub(mockFabricator, "fabricate").returns([]);
+            Sinon.stub(mockFabricator, "fabricateFromRecipe").returns([]);
 
             let compendiumKey = 'fabricate.fabricate-test';
             let testSystem = CraftingSystem.builder()
@@ -74,59 +78,4 @@ describe('Crafting System |', () => {
             ]);
         });
     });
-    describe('Craft |', () => {
-        it('Should delegate crafting to the system\'s Fabricator', () => {
-            // let compendiumKey = 'fabricate.fabricate-test';
-            // let recipeResult = CraftingResult.builder()
-            //     .withQuantity(1)
-            //     .withItem(CraftingComponent.builder()
-            //         .withName('Mud Pie')
-            //         .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
-            //         .build())
-            //     .build();
-            //
-            // let mockFabricator = <Fabricator>{
-            //     fabricate(recipe: Recipe): CraftingResult[] {
-            //         return recipe.results;
-            //     }
-            // };
-            // Sinon.stub(mockFabricator, 'fabricate').returns([]);
-            //
-            // let testRecipe = Recipe.builder()
-            //     .withName('Recipe: Mud Pie')
-            //     .withItemId('4iHqWSLTMFjPbpuI')
-            //     .withComponent(Ingredient.builder()
-            //         .isConsumed(true)
-            //         .withQuantity(2)
-            //         .withIngredient(CraftingComponent.builder()
-            //             .withName('Mud')
-            //             .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
-            //             .build())
-            //         .build())
-            //     .withComponent(Ingredient.builder()
-            //         .isConsumed(true)
-            //         .withQuantity(1)
-            //         .withIngredient(CraftingComponent.builder()
-            //             .withName('Sticks')
-            //             .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
-            //             .build())
-            //         .build())
-            //     .withResult(recipeResult)
-            //     .build();
-            // let testSystem = CraftingSystem.builder()
-            //     .withName('Test System')
-            //     .withCompendiumPackKey(compendiumKey)
-            //     .withSupportedGameSystem('dnd5e')
-            //     .withFabricator(mockFabricator)
-            //     .withRecipe(testRecipe)
-            //     .build();
-            //
-            // let stubActor: Actor = <Actor>{
-            //     data: {
-            //         items: []
-            //     }
-            // };
-            // todo: figure out how to test and mock the global game object
-        });
-    })
 });

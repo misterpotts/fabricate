@@ -14,11 +14,14 @@ describe('Crafting System Registry |', () => {
     describe('Register and Retrieve |', () => {
 
         let mockFabricator = <Fabricator>{
-            fabricate(recipe: Recipe): CraftingResult[] {
+            fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
                 return recipe.results;
+            },
+            fabricateFromComponents(): CraftingResult[] {
+                return [];
             }
         };
-        Sinon.stub(mockFabricator, "fabricate").returns([]);
+        Sinon.stub(mockFabricator, "fabricateFromRecipe").returns([]);
 
         let testSystemCompendiumKey = 'fabricate.fabricate-test';
         let mudPieRecipeId = '4iHqWSLTMFjPbpuI';
