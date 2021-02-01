@@ -1,7 +1,7 @@
 import Properties from "../Properties";
 import {Inventory} from "../core/Inventory";
 import {Inventory5E} from "../dnd5e/Inventory5E";
-import {CraftingSystemRegistry} from "../systems/CraftingSystemRegistry";
+import {InventoryRegistry} from "../systems/InventoryRegistry";
 
 class CraftingTab {
     private static readonly tabs: Map<string, CraftingTab> = new Map();
@@ -23,12 +23,12 @@ class CraftingTab {
     }
 
     private init(sheetHtml: any, actor: any) {
-        let inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+        let inventory = InventoryRegistry.getFor(actor.id);
         if (inventory) {
             this._inventory = inventory;
         } else {
             inventory = new Inventory5E(actor);
-            CraftingSystemRegistry.addManagedInventoryForActor(actor.id, inventory);
+            InventoryRegistry.addFor(actor.id, inventory);
         }
         this._inventory = inventory;
         this._inventory = new Inventory5E(actor);

@@ -1,12 +1,12 @@
 import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
 import {CraftingComponent} from "./CraftingComponent";
-import {CraftingSystemRegistry} from "../systems/CraftingSystemRegistry";
 import {Inventory} from "./Inventory";
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
 import {InventoryRecord} from "./InventoryRecord";
+import {InventoryRegistry} from "../systems/InventoryRegistry";
 
 class CraftingSystem {
     private readonly _name: string;
@@ -34,7 +34,7 @@ class CraftingSystem {
     }
 
     public async craft(actorId: string, recipeId: string) {
-        const inventory: Inventory = CraftingSystemRegistry.getManagedInventoryForActor(actorId);
+        const inventory: Inventory = InventoryRegistry.getFor(actorId);
         const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.itemId == recipeId);
 
         let missingIngredients: Ingredient[] = [];

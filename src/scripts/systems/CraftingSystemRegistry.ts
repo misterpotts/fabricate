@@ -1,6 +1,5 @@
 import {CraftingSystem} from "../core/CraftingSystem";
 import {Recipe} from "../core/Recipe";
-import {Inventory} from "../core/Inventory";
 import {GameSystemType} from "../core/GameSystemType";
 import {DefaultFabricator} from "../core/Fabricator";
 
@@ -10,7 +9,6 @@ class CraftingSystemRegistry {
     private static craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private static craftingSystemsByRecipeId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private static _systemSpecifications: CraftingSystem.Builder[] = [];
-    private static _managedInventories: Map<string, Inventory> = new Map<string, Inventory>();
 
     constructor() {
         if (CraftingSystemRegistry.instance) {
@@ -55,16 +53,6 @@ class CraftingSystemRegistry {
         CraftingSystemRegistry._systemSpecifications.push(spec);
     }
 
-    public static addManagedInventoryForActor(actorId: string, inventory: Inventory): void {
-        if (this._managedInventories.has(actorId)) {
-            throw new Error(`The Crafting Inventory for Actor[${actorId}] is already managed by Fabricate and should not be overridden. `);
-        }
-        this._managedInventories.set(actorId, inventory);
-    }
-
-    public static getManagedInventoryForActor(actorId: string): Inventory {
-        return this._managedInventories.get(actorId);
-    }
 }
 
 const testSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
