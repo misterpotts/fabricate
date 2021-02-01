@@ -1,16 +1,17 @@
 import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
 import {CraftingComponent} from "./CraftingComponent";
-import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
+import {CraftingSystemRegistry} from "../systems/CraftingSystemRegistry";
+import {Inventory} from "./Inventory";
+import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
-import {InventoryRecord} from "./InventoryRecord";
 import {ActionType} from "./ActionType";
+import {InventoryRecord} from "./InventoryRecord";
 
 class CraftingSystem {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
     private readonly _fabricator: Fabricator;
-    private readonly _fabricatorSupplier: () => Fabricator;
     private readonly _recipes: Recipe[];
     private readonly _components: CraftingComponent[];
     private readonly _supportedGameSystems: string[];
@@ -19,7 +20,6 @@ class CraftingSystem {
         this._name = builder.name;
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
-        this._fabricatorSupplier = builder.fabricatorSupplier;
         this._recipes = builder.recipes;
         this._components = builder.components;
         this._supportedGameSystems = builder.supportedGameSystems;
@@ -29,84 +29,43 @@ class CraftingSystem {
         return new CraftingSystem.Builder();
     }
 
-    public getFirstRecipeByName(name: string): Recipe {
-        return <Recipe>this._recipes.find((recipe) => {
-            return recipe.name === name
-        });
-    }
-
     get name(): string {
         return this._name;
     }
 
     public async craft(actorId: string, recipeId: string) {
-        const actor: Actor = game.actors.get(actorId);
+        const inventory: Inventory = CraftingSystemRegistry.getManagedInventoryForActor(actorId);
         const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.itemId == recipeId);
-        const inventory: Map<string, InventoryRecord[]> = this.scanInventory(actor);
-        const craftingComponents: CraftingComponent[] = Array.from(inventory.values()).deepFlatten()
-            .map((inventoryRecord: InventoryRecord) => inventoryRecord.componentType);
-        const fabricatorInstance = this.fabricator;
-        fabricatorInstance.prepare(recipe, craftingComponents);
-        if (!fabricatorInstance.ready()) {
-            throw new Error(`Unable to fabricate ${recipe.name}. `);
+
+        let missingIngredients: Ingredient[] = [];
+        recipe.components.forEach((ingredient: Ingredient) => {
+            if (!inventory.contains(ingredient)) {
+                missingIngredients.push(ingredient);
+            }
+        });
+        if (missingIngredients.length > 0) {
+            throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${missingIngredients}`);
         }
-        const craftingResults: CraftingResult[] = fabricatorInstance.fabricate();
+
+        const fabricator: Fabricator = this.fabricator;
+        const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe);
+        const results: Promise<InventoryRecord|boolean>[] = [];
         craftingResults.forEach((craftingResult: CraftingResult) => {
-            this.applyCraftingResultToInventory(actor, inventory, craftingResult);
-        });
-    }
-
-    private async applyCraftingResultToInventory(actor: Actor, inventory: Map<string, InventoryRecord[]>, craftingResult: CraftingResult) {
-        const compendium: Compendium = game.packs.get(this.compendiumPackKey);
-        if (craftingResult.action === ActionType.ADD) {
-            const itemData: Entity = await compendium.getEntity(craftingResult.item.compendiumEntry.entryId);
-            await actor.createOwnedItem(itemData);
-        } else if (craftingResult.action === ActionType.REMOVE) {
-            const removalCandidates: InventoryRecord[] = inventory.get(craftingResult.item.compendiumEntry.entryId);
-            if (!removalCandidates || removalCandidates.length < craftingResult.quantity) {
-                throw new Error(`Oops! Actor ${actor.id} does not own enough ${craftingResult.item.name}. `);
-            }
-            let remaining: number = craftingResult.quantity;
-            let position = 0;
-            while (remaining > 0) {
-                await actor.deleteOwnedItem(removalCandidates[position].item.id);
-                position++;
-                remaining--;
-            }
-        }
-    }
-
-    private scanInventory(actor: Actor): Map<string, InventoryRecord[]> {
-        const inventoryRecords: InventoryRecord[] = actor.items.filter(this.isFabricateComponent())
-            .map((item: any) => { // Expects an Item5E, need type def
-                return InventoryRecord.builder()
-                    .withItem(item)
-                    .withActor(actor)
-                    .withQuantity(item.data.data.quantity ? item.data.data.quantity : 1)
-                    .withCraftingComponent(CraftingComponent.fromFlags(item.data.flags.fabricate))
-                    .build()
-            });
-        let result: Map<string, InventoryRecord[]> = new Map();
-        inventoryRecords.forEach((record: InventoryRecord) => {
-            const compendiumItemId = record.componentType.compendiumEntry.entryId;
-            let recordsForItem = result.get(compendiumItemId);
-            if (!recordsForItem) {
-                result.set(compendiumItemId, [record])
-            } else {
-                recordsForItem.push(record);
+            switch (craftingResult.action) {
+                case ActionType.ADD:
+                    const add = inventory.add(craftingResult.item, craftingResult.quantity);
+                    results.push(add);
+                    break;
+                case ActionType.REMOVE:
+                    const remove = inventory.remove(craftingResult.item, craftingResult.quantity);
+                    results.push(remove);
+                    break;
+                default:
+                    throw new Error(`The Crafting Action Type ${craftingResult.action} is not supported. Allowable 
+                    values are: ADD, REMOVE. `);
             }
         });
-        return result;
-    }
-
-    private isFabricateComponent(): (item: Item) => boolean {
-        return (item: Item) => {
-            if (!item.data.flags.fabricate) {
-                return false;
-            }
-            const flags: FabricateFlags = item.data.flags.fabricate;
-            return flags.type === FabricateItemType.COMPONENT;
-        }
+        return Promise.all(results);
     }
 
     get compendiumPackKey(): string {
@@ -114,7 +73,7 @@ class CraftingSystem {
     }
 
     get fabricator(): Fabricator {
-        return this._fabricatorSupplier ? this._fabricatorSupplier() : this._fabricator;
+        return this._fabricator;
     }
 
     get supportedGameSystems(): string[] {
@@ -142,7 +101,6 @@ namespace CraftingSystem {
         public name!: string;
         public compendiumPackKey!: string;
         public fabricator!: Fabricator;
-        public fabricatorSupplier!: () => Fabricator;
         public supportedGameSystems: string[] = [];
         public recipes: Recipe[] = [];
         public components: CraftingComponent[] = [];
@@ -159,11 +117,6 @@ namespace CraftingSystem {
 
         public withFabricator(value: Fabricator) : Builder {
             this.fabricator = value;
-            return this;
-        }
-
-        public withFabricatorSupplier(value: () => Fabricator) : Builder {
-            this.fabricatorSupplier = value;
             return this;
         }
 

@@ -1,104 +1,41 @@
 import {Recipe} from "./Recipe";
 import {CraftingResult} from "./CraftingResult";
-import {CraftingComponent} from "./CraftingComponent";
 import {ActionType} from "./ActionType";
-import {Ingredient} from "./Ingredient";
 
 interface Fabricator {
-    preparedRecipe?: Recipe;
-    preparedCraftingElements?: CraftingComponent[];
+    fabricateFromRecipe(recipe: Recipe): CraftingResult[];
 
-    prepare(recipe: Recipe, craftingElements?: CraftingComponent[]): void;
-
-    add(craftingElements: CraftingComponent): void;
-
-    clear(): boolean;
-
-    /**
-     *
-    * */
-    fabricate(): CraftingResult[];
-
-    ready(): boolean;
+    fabricateFromComponents(): CraftingResult[];
 }
 
 class DefaultFabricator implements Fabricator {
-    private _preparedCraftingElements: CraftingComponent[] = [];
-    private _preparedRecipe!: Recipe;
-    private _remainingComponents: Map<string, number> = new Map();
 
-    fabricate(): CraftingResult[] {
-        if (!this._preparedRecipe) {
-            throw new Error(`The Default Fabricator requires a recipe and one was not prepared. `);
-        }
-        if (!this.ready()) {
-            throw new Error(`Unable to craft ${this._preparedRecipe.name}. `);
-        }
-        let input: CraftingResult[] = this._preparedRecipe.components.map((component) => {
+    public fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
+
+        let input: CraftingResult[] = recipe.components.map((component) => {
             return CraftingResult.builder()
                 .withItem(component.componentType)
                 .withQuantity(component.quantity)
                 .withAction(component.consumed ? ActionType.REMOVE : ActionType.ADD)
                 .build();
         });
-        let output: CraftingResult[] = this._preparedRecipe.results.map((result) => {
+
+        let output: CraftingResult[] = recipe.results.map((result) => {
             return CraftingResult.builder()
                 .withItem(result.item)
                 .withAction(ActionType.ADD)
                 .withQuantity(result.quantity)
                 .build();
         });
+
         return input.concat(output);
+
     }
 
-    prepare(recipe: Recipe, craftingElements?: CraftingComponent[]) {
-        this._preparedRecipe = recipe;
-        if (craftingElements && craftingElements.length > 0) {
-            this._preparedCraftingElements.push(...craftingElements);
-        }
-        this._remainingComponents = new Map(this.preparedRecipe.components.map((component: Ingredient) => [component.componentType.compendiumEntry.entryId, component.quantity]));
-        this._preparedCraftingElements.forEach((craftingElement: CraftingComponent) => this.accountFor(craftingElement));
+    public fabricateFromComponents(): CraftingResult[] {
+        throw new Error(`The Default Fabricator requires a Recipe and one was not provided. `);
     }
 
-    private accountFor(craftingElement: CraftingComponent) {
-        let remaining: number = this._remainingComponents.get(craftingElement.compendiumEntry.entryId);
-        if (remaining > 0) {
-            this._remainingComponents.set(craftingElement.compendiumEntry.entryId, --remaining);
-        }
-    }
-
-    add(craftingElement: CraftingComponent) {
-        this._preparedCraftingElements.push(craftingElement);
-        this.accountFor(craftingElement);
-    }
-
-    get preparedCraftingElements(): CraftingComponent[] {
-        return this._preparedCraftingElements;
-    }
-
-    get preparedRecipe(): Recipe {
-        return this._preparedRecipe;
-    }
-
-    clear() {
-        let elementsRemoved: boolean = this._preparedRecipe != null || this._preparedCraftingElements.length > 0;
-        this._preparedRecipe = null;
-        this._preparedCraftingElements = [];
-        return elementsRemoved;
-    }
-
-    ready() {
-        if (!this._preparedRecipe) {
-            return false;
-        }
-        let ready: boolean = true;
-        this._remainingComponents.forEach((value) => {
-            if (value > 0) {
-                ready = false;
-            }
-        });
-        return ready;
-    }
 }
 
 export {Fabricator, DefaultFabricator};

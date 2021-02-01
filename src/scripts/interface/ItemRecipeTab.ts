@@ -1,6 +1,7 @@
 import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
 import {CraftingSystemRegistry} from "../systems/CraftingSystemRegistry";
+import {CraftingSystem} from "../core/CraftingSystem";
 
 class ItemRecipeTab {
     private static readonly recipeType: string = Properties.types.recipe;
@@ -59,12 +60,12 @@ class ItemRecipeTab {
     }
 
     private handleItemSheetEvents(): void {
-        this._sheetHtml.find('.craft-button').click((event: any) => {
+        this._sheetHtml.find('.craft-button').click(async (event: any) => {
             let recipeId = event.target.getAttribute('data-recipe-id');
             let actorId = event.target.getAttribute('data-actor-id');
-            let craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(recipeId);
-            craftingSystem.craft(actorId, recipeId);
-            this.render();
+            let craftingSystem: CraftingSystem = CraftingSystemRegistry.getSystemByRecipeId(recipeId);
+            await craftingSystem.craft(actorId, recipeId);
+            await this.render();
         });
 
     }

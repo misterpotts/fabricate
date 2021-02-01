@@ -1,8 +1,8 @@
 import {CraftingSystem} from "../core/CraftingSystem";
-import {DefaultFabricator} from "../core/Fabricator";
 import {Recipe} from "../core/Recipe";
-import {GameSystemType} from "../core/GameSystemType";
 import {Inventory} from "../core/Inventory";
+import {GameSystemType} from "../core/GameSystemType";
+import {DefaultFabricator} from "../core/Fabricator";
 
 class CraftingSystemRegistry {
     private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();
