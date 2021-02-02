@@ -37,14 +37,15 @@ class CraftingSystem {
         const inventory: Inventory = InventoryRegistry.getFor(actorId);
         const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.itemId == recipeId);
 
-        let missingIngredients: Ingredient[] = [];
+        const missingIngredients: Ingredient[] = [];
         recipe.components.forEach((ingredient: Ingredient) => {
             if (!inventory.contains(ingredient)) {
                 missingIngredients.push(ingredient);
             }
         });
         if (missingIngredients.length > 0) {
-            throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${missingIngredients}`);
+            const message = missingIngredients.map((ingredient: Ingredient) => ingredient.quantity + ':' + ingredient.componentType.name).join(',');
+            throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${message}`);
         }
 
         const fabricator: Fabricator = this.fabricator;

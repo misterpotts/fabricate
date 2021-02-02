@@ -29,9 +29,8 @@ class CraftingTab {
         } else {
             inventory = new Inventory5E(actor);
             InventoryRegistry.addFor(actor.id, inventory);
+            this._inventory = inventory;
         }
-        this._inventory = inventory;
-        this._inventory = new Inventory5E(actor);
         this._sheetHtml = sheetHtml;
         this.addTabToCharacterSheet(sheetHtml);
         this.render();

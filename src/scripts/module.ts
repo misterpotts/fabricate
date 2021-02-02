@@ -7,9 +7,10 @@ import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
 import {CraftingTab} from "./interface/CraftingTab";
 import {InventoryRegistry} from "./systems/InventoryRegistry";
+import {Inventory} from "./core/Inventory";
 
 // Enable as needed for dev. Do not release!
-// CONFIG.debug.hooks = true;
+CONFIG.debug.hooks = true;
 
 Hooks.once('ready', loadCraftingSystems);
 
@@ -100,6 +101,15 @@ Hooks.on('deleteOwnedItem', (actor: any) => {
     const inventory = InventoryRegistry.getFor(actor.id);
     if (inventory) {
         inventory.update();
+    }
+});
+
+Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
+    const inventory: Inventory = InventoryRegistry.getFor(actor.id);
+    if (inventory) {
+        if (typeof update.data !== 'undefined') {
+            await inventory.updateQuantityFor(item);
+        }
     }
 });
 

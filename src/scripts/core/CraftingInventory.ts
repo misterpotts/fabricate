@@ -70,6 +70,8 @@ abstract class CraftingInventory implements Inventory {
         return !failedToFind;
     }
 
+    abstract updateQuantityFor(item: any): Promise<InventoryRecord>;
+
     public abstract remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
 
     public abstract update(): void;

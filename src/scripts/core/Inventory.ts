@@ -15,6 +15,7 @@ interface Inventory {
     add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
     remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
     update(): void;
+    updateQuantityFor(item: any): Promise<InventoryRecord>;
 }
 
 export {Inventory}

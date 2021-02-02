@@ -12,10 +12,14 @@ class Inventory5E extends CraftingInventory {
     constructor(actor: any) {
         super(actor);
         this._supportedGameSystems = [GameSystemType.DND5E];
-        this.index(Array.from(actor.items.values()));
+        this.index();
     }
 
-    private index(items: any[]): void {
+    private index(): void {
+        if (!this._actor) {
+            throw new Error(`No Actor was set for this Inventory to index`);
+        }
+        const items: any = Array.from(this._actor.items.values());
         this._itemDirectory.clear();
         const allowableItems: string[] = Properties.types.allowableItems;
         items.filter((item: any) => (allowableItems.indexOf(item.type) >= 0)
@@ -87,7 +91,7 @@ class Inventory5E extends CraftingInventory {
             const remaining = amountToRemove - removed;
             if (remaining < thisRecord.quantity) {
                 const updatedQuantity = thisRecord.quantity - remaining;
-                await thisRecord.item.update({quantity: updatedQuantity});
+                await thisRecord.item.update({data:{quantity: updatedQuantity}});
                 thisRecord.quantity = updatedQuantity;
                 removed += amountToRemove;
             } else {
@@ -102,8 +106,28 @@ class Inventory5E extends CraftingInventory {
         return true;
     }
 
+    public async updateQuantityFor(updatedItem: any): Promise<InventoryRecord> {
+        if (!updatedItem.flags.fabricate || (updatedItem.flags.fabricate.type !== FabricateItemType.COMPONENT)) {
+            return;
+        }
+        const flags: FabricateFlags = updatedItem.flags.fabricate;
+        const matches = this._itemDirectory.get(flags.component.compendiumEntry.entryId)
+            .filter((candidate: InventoryRecord) => candidate.item.id === updatedItem._id);
+        if (matches.length === 0) {
+            throw new Error(`Found no Inventory Records for Item ID ${updatedItem.id} owned by Actor ${this._actor.id}. 
+            Could not update Item quantity.`);
+        } else if (matches.length > 1) {
+            throw new Error(`Found no Inventory Records for Item ID ${updatedItem.id} owned by Actor ${this._actor.id}. 
+            This is a strange place to find ourselves in, but here we are. `);
+        } else {
+            const inventoryRecord = matches[0];
+            inventoryRecord.quantity = updatedItem.data.quantity;
+            return inventoryRecord;
+        }
+    }
+
     update(): void {
-        this.index(this._actor.data.items)
+        this.index()
     }
 }
 
