@@ -6,6 +6,7 @@ import {Recipe} from "./core/Recipe";
 import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
 import {CraftingTab} from "./interface/CraftingTab";
+import {InventoryRegistry} from "./systems/InventoryRegistry";
 
 // Enable as needed for dev. Do not release!
 // CONFIG.debug.hooks = true;
@@ -89,14 +90,14 @@ Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData:
 });
 
 Hooks.on('createOwnedItem', (actor: any) => {
-    const inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+    const inventory = InventoryRegistry.getFor(actor.id);
     if (inventory) {
         inventory.update();
     }
 });
 
 Hooks.on('deleteOwnedItem', (actor: any) => {
-    const inventory = CraftingSystemRegistry.getManagedInventoryForActor(actor.id);
+    const inventory = InventoryRegistry.getFor(actor.id);
     if (inventory) {
         inventory.update();
     }

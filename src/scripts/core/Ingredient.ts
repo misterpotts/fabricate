@@ -1,4 +1,5 @@
 import {CraftingComponent} from "./CraftingComponent";
+import {IngredientFlags} from "./FabricateFlags";
 
 class Ingredient {
     private readonly _componentType: CraftingComponent;
@@ -6,7 +7,7 @@ class Ingredient {
     private readonly _consumed: boolean;
 
     constructor(builder: Ingredient.Builder) {
-        this._componentType = builder.ingredient;
+        this._componentType = builder.componentType;
         this._quantity = builder.quantity;
         this._consumed = builder.consumed;
     }
@@ -36,16 +37,31 @@ class Ingredient {
             && (this._quantity === other.quantity)
             && (this._consumed === other.consumed);
     }
+
+    public static fromFlags(flags: IngredientFlags): Ingredient {
+        return this.builder()
+            .isConsumed(flags.consumed)
+            .withQuantity(flags.quantity)
+            .withComponentType(CraftingComponent.builder()
+                .withName(flags.componentType.name)
+                .withCompendiumEntry(flags.componentType.compendiumEntry.compendiumKey, flags.componentType.compendiumEntry.entryId)
+                .build())
+            .build();
+    }
+
+    public static manyFromFlags(flags: IngredientFlags[]): Ingredient[] {
+        return flags.map((flagData) => Ingredient.fromFlags(flagData));
+    }
 }
 
 namespace Ingredient {
     export class Builder {
-        public ingredient!: CraftingComponent;
+        public componentType!: CraftingComponent;
         public quantity!: number;
         public consumed!: boolean;
 
-        public withIngredient(value: CraftingComponent) {
-            this.ingredient = value;
+        public withComponentType(value: CraftingComponent) {
+            this.componentType = value;
             return this;
         }
 

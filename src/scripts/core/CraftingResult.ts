@@ -1,5 +1,6 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {ActionType} from "./ActionType";
+import {ResultFlags} from "./FabricateFlags";
 
 class CraftingResult {
     private readonly _item: CraftingComponent;
@@ -26,6 +27,21 @@ class CraftingResult {
 
     get action(): ActionType {
         return this._action;
+    }
+
+    public static fromFlags(flags: ResultFlags): CraftingResult {
+        return this.builder()
+            .withAction(flags.action)
+            .withQuantity(flags.quantity)
+            .withItem(CraftingComponent.builder()
+                .withName(flags.item.name)
+                .withCompendiumEntry(flags.item.compendiumEntry.compendiumKey, flags.item.compendiumEntry.entryId)
+                .build())
+            .build();
+    }
+
+    public static manyFromFlags(flags: ResultFlags[]): CraftingResult[] {
+        return flags.map((flagData) => CraftingResult.fromFlags(flagData));
     }
 }
 

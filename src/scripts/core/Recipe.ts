@@ -9,17 +9,22 @@ class Recipe {
     private readonly _itemId: string;
 
     constructor(builder: Recipe.Builder) {
-        this._components = builder.components;
+        this._components = builder.ingredients;
         this._results = builder.results;
         this._name = builder.name;
         this._itemId = builder.itemId;
     }
 
-    public static fromFlags(fabricateFlags: FabricateFlags): Recipe {
-        if (fabricateFlags.type !== FabricateItemType.RECIPE) {
-            throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${fabricateFlags.type} data. `);
+    public static fromFlags(flags: FabricateFlags): Recipe {
+        if (flags.type !== FabricateItemType.RECIPE) {
+            throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${flags.type} data. `);
         }
-        return new Recipe(fabricateFlags.recipe);
+        return Recipe.builder()
+            .withName(flags.recipe.name)
+            .withItemId(flags.recipe.itemId)
+            .withResults(CraftingResult.manyFromFlags(flags.recipe.results))
+            .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients))
+            .build();
     }
 
     get name(): string {
@@ -46,7 +51,7 @@ class Recipe {
 
 namespace Recipe {
     export class Builder {
-        public components: Ingredient[] = [];
+        public ingredients: Ingredient[] = [];
         public results: CraftingResult[] = [];
         public name!: string;
         public itemId!: string;
@@ -60,8 +65,13 @@ namespace Recipe {
             return this;
         }
 
-        withComponent(value: Ingredient) {
-            this.components.push(value);
+        withIngredient(value: Ingredient) {
+            this.ingredients.push(value);
+            return this;
+        }
+
+        withIngredients(value: Ingredient[]) {
+            this.ingredients.push(...value);
             return this;
         }
 

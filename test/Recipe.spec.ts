@@ -3,6 +3,8 @@ import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
+import {FabricateFlags} from "../src/scripts/core/FabricateFlags";
+import {ActionType} from "../src/scripts/core/ActionType";
 
 describe('Recipe |', () => {
     describe('Create |', () => {
@@ -10,16 +12,16 @@ describe('Recipe |', () => {
             let testRecipe = Recipe.builder()
                 .withName('Simple mud pie recipe')
                 .withItemId('4')
-                .withComponent(Ingredient.builder()
-                    .withIngredient(CraftingComponent.builder()
+                .withIngredient(Ingredient.builder()
+                    .withComponentType(CraftingComponent.builder()
                         .withName('Mud')
                         .withCompendiumEntry('compendium', '1')
                         .build())
                     .withQuantity(2)
                     .isConsumed(true)
                     .build())
-                .withComponent(Ingredient.builder()
-                    .withIngredient(CraftingComponent.builder()
+                .withIngredient(Ingredient.builder()
+                    .withComponentType(CraftingComponent.builder()
                         .withName('Sticks')
                         .withCompendiumEntry('compendium', '2')
                         .build())
@@ -42,6 +44,84 @@ describe('Recipe |', () => {
                 { _componentType: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '1' } }, _quantity: 2, _consumed: true },
                 { _componentType: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '2' } }, _quantity: 1, _consumed: true }
             ]);
+        });
+
+        it('Should create a Recipe from flags', () => {
+
+            const recipeFlagData: FabricateFlags = <FabricateFlags>{
+                type: "RECIPE",
+                recipe: {
+                    itemId: '4iHqWSLTMFjPbpuI',
+                    name: 'Recipe: Mud Pie',
+                    ingredients: [
+                        {
+                            componentType: {
+                                name: 'Mud',
+                                compendiumEntry: {
+                                    compendiumKey: 'fabricate.fabricate-test',
+                                    entryId: 'tCmAnq9zcESt0ULf'
+                                }
+                            },
+                            quantity: 2,
+                            consumed: true
+                        },
+                        {
+                            componentType: {
+                                name: 'Sticks',
+                                compendiumEntry: {
+                                    compendiumKey: 'fabricate.fabricate-test',
+                                    entryId: 'arWeEYkLkubimBz3'
+                                }
+                            },
+                            quantity: 1,
+                            consumed: true
+                        }
+                    ],
+                    results: [
+                        {
+                            action: "ADD",
+                            item: {
+                                name: 'Mud Pie',
+                                compendiumEntry: {
+                                    compendiumKey: 'fabricate.fabricate-test',
+                                    entryId: 'nWhTa8gD1QL1f9O3'
+                                }
+                            },
+                            quantity: 1
+                        }
+                    ]
+                }
+            };
+            const underTest = Recipe.fromFlags(recipeFlagData);
+            expect(underTest.name).to.equal('Recipe: Mud Pie');
+            expect(underTest.itemId).to.equal('4iHqWSLTMFjPbpuI');
+            expect(underTest.components.length).to.equal(2);
+            const twoMudConsumed = Ingredient.builder()
+                .isConsumed(true)
+                .withQuantity(2)
+                .withComponentType(CraftingComponent.builder()
+                    .withName('Mud')
+                    .withCompendiumEntry('fabricate.fabricate-test', 'tCmAnq9zcESt0ULf')
+                    .build())
+                .build();
+            expect(twoMudConsumed.is(underTest.components[0])).to.be.true;
+            const oneSticksConsumed = Ingredient.builder()
+                .isConsumed(true)
+                .withQuantity(1)
+                .withComponentType(CraftingComponent.builder()
+                    .withName('Sticks')
+                    .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
+                    .build())
+                .build();
+            expect(oneSticksConsumed.is(underTest.components[1])).to.be.true;
+            expect(underTest.results.length).to.equal(1);
+            expect(underTest.results[0].quantity).to.equal(1);
+            expect(underTest.results[0].action).to.equal(ActionType.ADD);
+            const mudPie = CraftingComponent.builder()
+                .withName('Mud Pie')
+                .withCompendiumEntry('fabricate.fabricate-test', 'nWhTa8gD1QL1f9O3')
+                .build();
+            expect(underTest.results[0].item.equals(mudPie)).to.be.true;
         });
     });
 });

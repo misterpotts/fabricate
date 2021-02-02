@@ -6,8 +6,7 @@ import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {InventoryRecord} from "../src/scripts/core/InventoryRecord";
 
-const addScenariosTestData = require('./resources/actor5e-inventory-add-scenario-data.json');
-const removeScenariosTestData = require('./resources/actor5e-inventory-remove-scenario-data.json');
+const testData = require('./resources/inventory-5e-actor-items-values.json');
 
 const compendiumPackKey: string = 'fabricate.fabricate-test';
 const wax: CraftingComponent = CraftingComponent.builder()
@@ -22,6 +21,11 @@ const sticks: CraftingComponent = CraftingComponent.builder()
     .withName('Sticks')
     .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
     .build();
+const dung: CraftingComponent = CraftingComponent.builder()
+    .withName('Dung')
+    .withCompendiumEntry('fabricate.fabricate-test', 'Ra2Z1ujre76weR0i')
+    .build();
+
 
 beforeEach(() => {
     // @ts-ignore
@@ -36,6 +40,7 @@ beforeEach(() => {
     // @ts-ignore
     game.packs.get.withArgs(compendiumPackKey).returns(compendium);
     compendium.getEntity.withArgs('DPYl8D5QtcRVH5YX').returns({});
+    compendium.getEntity.withArgs('Ra2Z1ujre76weR0i').returns({});
 });
 
 describe('Inventory5E |', () => {
@@ -52,19 +57,19 @@ describe('Inventory5E |', () => {
 
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 }
             };
             const actorId = 'lxQTQkhiymhGyjzx';
-            Sinon.stub(mockActor.data, 'items').value(addScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             Sinon.stub(mockActor, 'id').value(actorId);
             const underTest: Inventory5E = new Inventory5E(mockActor);
             expect(underTest.supportedGameSystems.length).to.equal(1);
             expect(underTest.supportedGameSystems).to.include.members([GameSystemType.DND5E]);
             expect(underTest.supportsGameSystem(GameSystemType.DND5E)).to.be.true;
             expect(underTest.actorId).to.equal(actorId);
-            expect(underTest.size).to.equal(3);
+            expect(underTest.size).to.equal(6);
 
         });
 
@@ -75,75 +80,76 @@ describe('Inventory5E |', () => {
         it('Should add an Item with quantity 1', async () => {
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 },
                 createOwnedItem: Sinon.stub()
             };
-            Sinon.stub(mockActor.data, 'items').value(addScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.createOwnedItem.returns({data: {quantity: 1}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
-            const expectedIngredient = Ingredient.builder()
+            const oneDung = Ingredient.builder()
                 .withQuantity(JUST_ONE)
-                .withIngredient(wax)
+                .withComponentType(dung)
                 .build();
             const initialContents = underTest.contents;
-            expect(initialContents.length).to.equal(3);
-            const initialContains = underTest.contains(expectedIngredient);
+            expect(initialContents.length).to.equal(6);
+            const initialContains = underTest.contains(oneDung);
             expect(initialContains).to.be.false;
-            await underTest.add(wax, JUST_ONE);
+            await underTest.add(dung);
             const postAddOneContents = underTest.contents;
-            expect(postAddOneContents.length).to.equal(4);
-            const postAddOneContains = underTest.contains(expectedIngredient);
+            expect(postAddOneContents.length).to.equal(7);
+            const postAddOneContains = underTest.contains(oneDung);
             expect(postAddOneContains).to.be.true;
         });
 
         it('Should add an Item with quantity 2', async () => {
+
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 },
                 createOwnedItem: Sinon.stub()
             };
-            Sinon.stub(mockActor.data, 'items').value(addScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.createOwnedItem.returns({data: { quantity: 2}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
-            const twoWax = Ingredient.builder()
+            const twoDung = Ingredient.builder()
                 .withQuantity(TWO)
-                .withIngredient(wax)
+                .withComponentType(dung)
                 .build();
             const initialContents = underTest.contents;
-            expect(initialContents.length).to.equal(3);
-            await underTest.add(wax, TWO);
+            expect(initialContents.length).to.equal(6);
+            await underTest.add(dung, TWO);
             const postAddOneContents = underTest.contents;
-            expect(postAddOneContents.length).to.equal(4);
-            expect(underTest.contains(twoWax)).to.be.true;
+            expect(postAddOneContents.length).to.equal(7);
+            expect(underTest.contains(twoDung)).to.be.true;
 
         });
 
         it('Should increase quantity for existing item', async () => {
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 }
             };
-            Sinon.stub(mockActor.data, 'items').value(addScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const twoMudIngredient = Ingredient.builder()
                 .withQuantity(TWO)
-                .withIngredient(mud)
+                .withComponentType(mud)
                 .build();
             const fourMudIngredient = Ingredient.builder()
                 .withQuantity(FOUR)
-                .withIngredient(mud)
+                .withComponentType(mud)
                 .build();
             const initialContents = underTest.contents;
-            expect(initialContents.length).to.equal(3);
+            expect(initialContents.length).to.equal(6);
             initialContents.forEach((record: InventoryRecord) => {
                 if (record.componentType.compendiumEntry.equals(mud.compendiumEntry)) {
                     record.item.update = Sinon.stub();
@@ -157,36 +163,37 @@ describe('Inventory5E |', () => {
             expect(hasTwoBeforehand).to.be.true;
             await underTest.add(mud, TWO);
             const postAddOneContents = underTest.contents;
-            expect(postAddOneContents.length).to.equal(3);
+            expect(postAddOneContents.length).to.equal(6);
             const hasFourAfterwards = underTest.contains(fourMudIngredient);
             expect(hasFourAfterwards).to.be.true;
         });
 
     });
 
-    describe('Remove Items', () => {
+    describe('Remove |', () => {
 
         it('Should remove an Item of quantity 1', async () => {
+
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 }
             };
-            Sinon.stub(mockActor.data, 'items').value(removeScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const oneMudIngredient = Ingredient.builder()
                 .withQuantity(JUST_ONE)
-                .withIngredient(mud)
+                .withComponentType(mud)
                 .build();
             const twoMudIngredient = Ingredient.builder()
                 .withQuantity(TWO)
-                .withIngredient(mud)
+                .withComponentType(mud)
                 .build();
 
             const initialContents = underTest.contents;
-            expect(initialContents.length).to.equal(5);
+            expect(initialContents.length).to.equal(6);
 
             initialContents.forEach((record: InventoryRecord) => {
                 if (record.componentType.compendiumEntry.equals(mud.compendiumEntry)) {
@@ -202,7 +209,7 @@ describe('Inventory5E |', () => {
             await underTest.remove(mud);
 
             const postRemoveOneContents = underTest.contents;
-            expect(postRemoveOneContents.length).to.equal(4);
+            expect(postRemoveOneContents.length).to.equal(5);
 
             const containsTwoAfterwards = underTest.contains(twoMudIngredient);
             expect(containsTwoAfterwards).to.be.false;
@@ -213,26 +220,27 @@ describe('Inventory5E |', () => {
         });
 
         it('Should decrement Item quantity', async () => {
+
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 }
             };
-            Sinon.stub(mockActor.data, 'items').value(removeScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const oneStickIngredient = Ingredient.builder()
                 .withQuantity(JUST_ONE)
-                .withIngredient(sticks)
+                .withComponentType(sticks)
                 .build();
             const twoSticksIngredient = Ingredient.builder()
                 .withQuantity(TWO)
-                .withIngredient(sticks)
+                .withComponentType(sticks)
                 .build();
 
             const initialContents = underTest.contents;
-            expect(initialContents.length).to.equal(5);
+            expect(initialContents.length).to.equal(6);
 
             const containsTwoBeforehand = underTest.contains(twoSticksIngredient);
             expect(containsTwoBeforehand).to.be.true;
@@ -248,7 +256,7 @@ describe('Inventory5E |', () => {
             await underTest.remove(sticks);
 
             const postRemoveOneContents = underTest.contents;
-            expect(postRemoveOneContents.length).to.equal(5);
+            expect(postRemoveOneContents.length).to.equal(6);
 
             const containsTwoAfterwards = underTest.contains(twoSticksIngredient);
             expect(containsTwoAfterwards).to.be.false;
@@ -262,24 +270,24 @@ describe('Inventory5E |', () => {
 
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
-                data: {
-                    items: []
+                items: {
+                    values: () => {}
                 }
             };
-            Sinon.stub(mockActor.data, 'items').value(removeScenariosTestData);
+            Sinon.stub(mockActor.items, 'values').returns(testData);
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const tenWaxIngredient = Ingredient.builder()
                 .withQuantity(TEN)
-                .withIngredient(wax)
+                .withComponentType(wax)
                 .build();
             const threeWaxIngredient = Ingredient.builder()
                 .withQuantity(THREE)
-                .withIngredient(wax)
+                .withComponentType(wax)
                 .build();
 
             const initialContents = underTest.contents;
-            expect(initialContents.length).to.equal(5);
+            expect(initialContents.length).to.equal(6);
 
             const containsTenBeforehand = underTest.contains(tenWaxIngredient);
             expect(containsTenBeforehand).to.be.true;
@@ -298,7 +306,7 @@ describe('Inventory5E |', () => {
             await underTest.remove(wax, 7);
 
             const postRemoveSevenContents = underTest.contents;
-            expect(postRemoveSevenContents.length).to.equal(4);
+            expect(postRemoveSevenContents.length).to.equal(5);
 
             const containsThreeAfterwards = underTest.contains(threeWaxIngredient);
             expect(containsThreeAfterwards).to.be.true;

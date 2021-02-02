@@ -12,21 +12,21 @@ class Inventory5E extends CraftingInventory {
     constructor(actor: any) {
         super(actor);
         this._supportedGameSystems = [GameSystemType.DND5E];
-        this.index(actor.data.items);
+        this.index(Array.from(actor.items.values()));
     }
 
     private index(items: any[]): void {
         this._itemDirectory.clear();
         const allowableItems: string[] = Properties.types.allowableItems;
         items.filter((item: any) => (allowableItems.indexOf(item.type) >= 0)
-            && item.flags.fabricate
-            && item.flags.fabricate.type === FabricateItemType.COMPONENT)
+            && item.data.flags.fabricate
+            && item.data.flags.fabricate.type === FabricateItemType.COMPONENT)
             .map((item: any) => {
-                const itemConfig: FabricateFlags = item.flags.fabricate;
+                const itemConfig: FabricateFlags = item.data.flags.fabricate;
                 return InventoryRecord.builder()
                     .withActor(this._actor)
                     .withItem(item)
-                    .withQuantity(item.data.quantity)
+                    .withQuantity(item.data.data.quantity)
                     .withCraftingComponent(CraftingComponent.fromFlags(itemConfig))
                     .build();
             })
@@ -58,7 +58,7 @@ class Inventory5E extends CraftingInventory {
         } else {
             itemsOfType.sort((left, right) => left.quantity - right.quantity);
             const item: any = itemsOfType[0].item;
-            const updatedQuantity = item.data.quantity + amountToAdd;
+            const updatedQuantity = item.data.data.quantity + amountToAdd;
             await item.update({quantity: updatedQuantity});
             itemsOfType[0].quantity = updatedQuantity;
             return itemsOfType[0];
@@ -74,7 +74,7 @@ class Inventory5E extends CraftingInventory {
     }
 
     async remove(component: CraftingComponent, amountToRemove: number = 1): Promise<boolean> {
-        if (!this.contains(Ingredient.builder().withQuantity(amountToRemove).withIngredient(component).build())) {
+        if (!this.contains(Ingredient.builder().withQuantity(amountToRemove).withComponentType(component).build())) {
             throw new Error(`Cannot remove ${amountToRemove} ${component.name} from Inventory for Actor ${this.actorId} - 
             there is not enough of the component in their inventory! `);
         }
