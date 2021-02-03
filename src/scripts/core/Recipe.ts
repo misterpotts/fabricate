@@ -6,13 +6,13 @@ class Recipe {
     private readonly _components: Ingredient[];
     private readonly _results: CraftingResult[];
     private readonly _name: string;
-    private readonly _itemId: string;
+    private readonly _entryId: string;
 
     constructor(builder: Recipe.Builder) {
         this._components = builder.ingredients;
         this._results = builder.results;
         this._name = builder.name;
-        this._itemId = builder.itemId;
+        this._entryId = builder.entryId;
     }
 
     public static fromFlags(flags: FabricateFlags): Recipe {
@@ -21,7 +21,7 @@ class Recipe {
         }
         return Recipe.builder()
             .withName(flags.recipe.name)
-            .withItemId(flags.recipe.itemId)
+            .withEntryId(flags.recipe.entryId)
             .withResults(CraftingResult.manyFromFlags(flags.recipe.results))
             .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients))
             .build();
@@ -40,8 +40,8 @@ class Recipe {
     }
 
 
-    get itemId(): string {
-        return this._itemId;
+    get entryId(): string {
+        return this._entryId;
     }
 
     public static builder() {
@@ -54,7 +54,7 @@ namespace Recipe {
         public ingredients: Ingredient[] = [];
         public results: CraftingResult[] = [];
         public name!: string;
-        public itemId!: string;
+        public entryId!: string;
 
         public build() {
             return new Recipe(this);
@@ -85,8 +85,8 @@ namespace Recipe {
             return this;
         }
 
-        withItemId(value: string) {
-            this.itemId = value;
+        withEntryId(value: string) {
+            this.entryId = value;
             return this;
         }
     }

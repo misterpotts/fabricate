@@ -9,9 +9,9 @@ import {ActionType} from "../src/scripts/core/ActionType";
 describe('Recipe |', () => {
     describe('Create |', () => {
         it('Should create a Recipe', () => {
-            let testRecipe = Recipe.builder()
+            const testRecipe = Recipe.builder()
                 .withName('Simple mud pie recipe')
-                .withItemId('4')
+                .withEntryId('4')
                 .withIngredient(Ingredient.builder()
                     .withComponentType(CraftingComponent.builder()
                         .withName('Mud')
@@ -39,7 +39,7 @@ describe('Recipe |', () => {
 
             expect(testRecipe.name).to.equal('Simple mud pie recipe');
             expect(testRecipe.components.length).to.equal(2);
-            expect(testRecipe.itemId).to.equal('4');
+            expect(testRecipe.entryId).to.equal('4');
             expect(testRecipe.components).to.deep.include.members([
                 { _componentType: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '1' } }, _quantity: 2, _consumed: true },
                 { _componentType: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '2' } }, _quantity: 1, _consumed: true }
@@ -51,7 +51,7 @@ describe('Recipe |', () => {
             const recipeFlagData: FabricateFlags = <FabricateFlags>{
                 type: "RECIPE",
                 recipe: {
-                    itemId: '4iHqWSLTMFjPbpuI',
+                    entryId: '4iHqWSLTMFjPbpuI',
                     name: 'Recipe: Mud Pie',
                     ingredients: [
                         {
@@ -94,7 +94,7 @@ describe('Recipe |', () => {
             };
             const underTest = Recipe.fromFlags(recipeFlagData);
             expect(underTest.name).to.equal('Recipe: Mud Pie');
-            expect(underTest.itemId).to.equal('4iHqWSLTMFjPbpuI');
+            expect(underTest.entryId).to.equal('4iHqWSLTMFjPbpuI');
             expect(underTest.components.length).to.equal(2);
             const twoMudConsumed = Ingredient.builder()
                 .isConsumed(true)

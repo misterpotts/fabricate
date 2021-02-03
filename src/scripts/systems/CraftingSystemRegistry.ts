@@ -27,7 +27,7 @@ class CraftingSystemRegistry {
 
     private static resolveRecipesForSystem(system: CraftingSystem): void {
         system.recipes.forEach((recipe: Recipe) => {
-            CraftingSystemRegistry.craftingSystemsByRecipeId.set(recipe.itemId, system);
+            CraftingSystemRegistry.craftingSystemsByRecipeId.set(recipe.entryId, system);
         });
     }
 

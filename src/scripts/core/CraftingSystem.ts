@@ -33,9 +33,9 @@ class CraftingSystem {
         return this._name;
     }
 
-    public async craft(actorId: string, recipeId: string) {
+    public async craft(actorId: string, recipeId: string): Promise<CraftingResult[]> {
         const inventory: Inventory = InventoryRegistry.getFor(actorId);
-        const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.itemId == recipeId);
+        const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.entryId == recipeId);
 
         const missingIngredients: Ingredient[] = [];
         recipe.components.forEach((ingredient: Ingredient) => {
@@ -50,23 +50,24 @@ class CraftingSystem {
 
         const fabricator: Fabricator = this.fabricator;
         const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe);
-        const results: Promise<InventoryRecord|boolean>[] = [];
+        const inventoryActions: Promise<InventoryRecord|boolean>[] = [];
         craftingResults.forEach((craftingResult: CraftingResult) => {
             switch (craftingResult.action) {
                 case ActionType.ADD:
                     const add = inventory.add(craftingResult.item, craftingResult.quantity);
-                    results.push(add);
+                    inventoryActions.push(add);
                     break;
                 case ActionType.REMOVE:
                     const remove = inventory.remove(craftingResult.item, craftingResult.quantity);
-                    results.push(remove);
+                    inventoryActions.push(remove);
                     break;
                 default:
                     throw new Error(`The Crafting Action Type ${craftingResult.action} is not supported. Allowable 
                     values are: ADD, REMOVE. `);
             }
         });
-        return Promise.all(results);
+        await Promise.all(inventoryActions);
+        return craftingResults;
     }
 
     get compendiumPackKey(): string {

@@ -3973,7 +3973,7 @@
         "fabricate":{
           "type":"RECIPE",
           "recipe":{
-            "itemId":"4iHqWSLTMFjPbpuI",
+            "entryId":"4iHqWSLTMFjPbpuI",
             "name":"Recipe: Mud Pie",
             "ingredients":[
               {

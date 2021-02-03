@@ -64,7 +64,7 @@ abstract class CraftingInventory implements Inventory {
         });
         if (duplicatedIngredient) {
             throw new Error(`One or more ingredients were duplicated in a call to CraftingInventory.containsMany(ingredients: Ingredient[]). 
-            Recipe[name='${recipe.name}',id='${recipe.itemId}'] seems to be misconfigured! Recipes should be specified as 
+            Recipe[name='${recipe.name}',id='${recipe.entryId}'] seems to be misconfigured! Recipes should be specified as 
             Ingredient[Mud, 2], not [Ingredient[Mud, 1], Ingredient[Mud 1]]. `);
         }
         return !failedToFind;

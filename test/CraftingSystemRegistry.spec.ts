@@ -33,7 +33,7 @@ describe('Crafting System Registry |', () => {
                 .withFabricator(mockFabricator)
                 .withRecipe(Recipe.builder()
                     .withName('Recipe: Mud Pie')
-                    .withItemId(mudPieRecipeId)
+                    .withEntryId(mudPieRecipeId)
                     .withIngredient(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(2)

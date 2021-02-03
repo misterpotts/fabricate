@@ -22,7 +22,7 @@ describe('Default Fabricator |', () => {
             .build();
         const mudPieRecipe: Recipe = Recipe.builder()
             .withName('Recipe: Mud Pie')
-            .withItemId('4iHqWSLTMFjPbpuI')
+            .withEntryId('4iHqWSLTMFjPbpuI')
             .withIngredient(Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(2)

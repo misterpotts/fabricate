@@ -5,6 +5,8 @@ import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {InventoryRecord} from "../src/scripts/core/InventoryRecord";
+import {Recipe} from "../src/scripts/core/Recipe";
+import {CraftingResult} from "../src/scripts/core/CraftingResult";
 
 const testData = require('./resources/inventory-5e-actor-items-values.json');
 
@@ -311,6 +313,90 @@ describe('Inventory5E |', () => {
             const containsThreeAfterwards = underTest.contains(threeWaxIngredient);
             expect(containsThreeAfterwards).to.be.true;
 
+        });
+
+    });
+
+    describe('Recipes |', () => {
+
+        it('Should determine that an Inventory contains insufficient Ingredients for a Recipe', () => {
+            const mudPieRecipe = Recipe.builder()
+                .withName('Simple mud pie recipe')
+                .withEntryId('4')
+                .withIngredient(Ingredient.builder()
+                    .withComponentType(CraftingComponent.builder()
+                        .withName('Mud')
+                        .withCompendiumEntry('compendium', '1')
+                        .build())
+                    .withQuantity(2)
+                    .isConsumed(true)
+                    .build())
+                .withIngredient(Ingredient.builder()
+                    .withComponentType(CraftingComponent.builder()
+                        .withName('Sticks')
+                        .withCompendiumEntry('compendium', '2')
+                        .build())
+                    .withQuantity(1)
+                    .isConsumed(true)
+                    .build())
+                .withResult(CraftingResult.builder()
+                    .withQuantity(1)
+                    .withItem(CraftingComponent.builder()
+                        .withName('Mud Pie')
+                        .withCompendiumEntry('compendium', '3')
+                        .build())
+                    .build())
+                .build();
+
+            const mockActor = <Actor><unknown>{
+                id: 'lxQTQkhiymhGyjzx',
+                items: {
+                    values: () => {}
+                }
+            };
+
+            // @ts-ignore
+            Sinon.stub(mockActor.items, 'values').returns([]);
+            const underTest: Inventory5E = new Inventory5E(mockActor);
+
+            const resultFromEmpty = underTest.hasAllIngredientsFor(mudPieRecipe);
+            expect(resultFromEmpty).to.be.false;
+        });
+
+        it('Should determine that an Inventory contains all Ingredients for a Recipe', () => {
+            const mudPieRecipe = Recipe.builder()
+                .withName('Simple mud pie recipe')
+                .withEntryId('4')
+                .withIngredient(Ingredient.builder()
+                    .withComponentType(mud)
+                    .withQuantity(2)
+                    .isConsumed(true)
+                    .build())
+                .withIngredient(Ingredient.builder()
+                    .withComponentType(sticks)
+                    .withQuantity(1)
+                    .isConsumed(true)
+                    .build())
+                .withResult(CraftingResult.builder()
+                    .withQuantity(1)
+                    .withItem(CraftingComponent.builder()
+                        .withName('Mud Pie')
+                        .withCompendiumEntry('compendium', '3')
+                        .build())
+                    .build())
+                .build();
+
+            const mockActor = <Actor><unknown>{
+                id: 'lxQTQkhiymhGyjzx',
+                items: {
+                    values: () => {}
+                }
+            };
+
+            Sinon.stub(mockActor.items, 'values').returns(testData);
+            const underTest: Inventory5E = new Inventory5E(mockActor);
+            const resultWhenFull = underTest.hasAllIngredientsFor(mudPieRecipe);
+            expect(resultWhenFull).to.be.true;
         });
 
     });

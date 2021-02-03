@@ -28,7 +28,7 @@ interface ResultFlags {
 interface FabricateFlags {
     type: FabricateItemType;
     recipe?: {
-        itemId: string,
+        entryId: string,
         name: string,
         ingredients: IngredientFlags[],
         results: ResultFlags[]
