@@ -1,18 +1,18 @@
-import {ItemRecipeTab} from "./interface/ItemRecipeTab";
-import {CraftingSystem} from "./core/CraftingSystem";
 import Properties from "./Properties";
 import {FabricateFlags, FabricateItemType} from "./core/FabricateFlags";
 import {Recipe} from "./core/Recipe";
 import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
-import {CraftingTab} from "./interface/CraftingTab";
-import {InventoryRegistry} from "./systems/InventoryRegistry";
-import {Inventory} from "./core/Inventory";
+import {Registrar} from "./interface/Registrar";
+import {CraftingSystem} from "./core/CraftingSystem";
 
 // Enable as needed for dev. Do not release!
 CONFIG.debug.hooks = true;
 
 Hooks.once('ready', loadCraftingSystems);
+Hooks.once('ready', () => {
+    Registrar.init();
+});
 
 async function loadCraftingSystems() {
     let systemSpecifications = CraftingSystemRegistry.systemSpecifications;
@@ -82,38 +82,3 @@ async function wait(delay: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any) => {
-    ItemRecipeTab.bind(sheetData, sheetHtml);
-});
-
-Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData: any) => {
-    CraftingTab.bind(sheetData, sheetHtml, eventData);
-});
-
-Hooks.on('createOwnedItem', (actor: any) => {
-    const inventory = InventoryRegistry.getFor(actor.id);
-    if (inventory) {
-        inventory.update();
-    }
-});
-
-Hooks.on('deleteOwnedItem', (actor: any) => {
-    const inventory = InventoryRegistry.getFor(actor.id);
-    if (inventory) {
-        inventory.update();
-    }
-});
-
-Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
-    const inventory: Inventory = InventoryRegistry.getFor(actor.id);
-    if (inventory) {
-        if (typeof update.data !== 'undefined') {
-            await inventory.updateQuantityFor(item);
-        }
-    }
-});
-
-Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
-    // @ts-ignore
-    return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
-});
