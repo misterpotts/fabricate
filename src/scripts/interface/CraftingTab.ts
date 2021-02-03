@@ -8,6 +8,7 @@ class CraftingTab {
 
     private _sheetHtml: any;
     private _inventory: Inventory;
+    private _suppressedInNav: boolean = false;
 
     public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement, eventData: any): void {
         const actor: any = game.actors.get(eventData.actor._id);
@@ -44,10 +45,14 @@ class CraftingTab {
         } else {
             this._sheetHtml.find('.tab.fabricate-recipe').append(template);
         }
+        if (this._suppressedInNav && !this.isActiveInNav()) {
+            this._sheetHtml.find('.item[data-tab="fabricate"]').addClass('active');
+            this._suppressedInNav = false;
+        }
     }
 
     private addTabToCharacterSheet(sheetHtml: any): void {
-        let tabs = sheetHtml.find(`form nav.sheet-navigation.tabs`);
+        const tabs = sheetHtml.find(`.tabs[data-group="primary"]`);
         tabs.append($(
             '<a class="item" data-tab="fabricate">Crafting</a>'
         ));
@@ -55,6 +60,10 @@ class CraftingTab {
         $(sheetHtml.find(`.sheet-body`)).append($(
             '<div class="tab fabricate-recipe" data-group="primary" data-tab="fabricate"></div>'
         ));
+    }
+
+    private isActiveInNav(): boolean {
+        return $(this._sheetHtml).find('a.item[data-tab="magicitems"]').hasClass('active');
     }
 }
 
