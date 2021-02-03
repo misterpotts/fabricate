@@ -5,13 +5,13 @@ import {Inventory} from "../core/Inventory";
 
 class Registrar {
     public static init() {
-        this.registerHandlebardHelperFunctions();
+        this.registerHandlebarsHelperFunctions();
         this.registerItemRecipeTab();
         this.registerActorCraftingTab();
-        this.staticRegisterApplicationListeners()
+        this.registerApplicationListeners()
     }
 
-    private static registerHandlebardHelperFunctions() {
+    private static registerHandlebarsHelperFunctions() {
 
         Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
             // @ts-ignore
@@ -36,7 +36,7 @@ class Registrar {
 
     }
 
-    private static staticRegisterApplicationListeners() {
+    private static registerApplicationListeners() {
 
         Hooks.on('createOwnedItem', (actor: any) => {
             const inventory = InventoryRegistry.getFor(actor.id);
