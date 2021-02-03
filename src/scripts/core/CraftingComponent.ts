@@ -34,10 +34,12 @@ class CompendiumEntry {
 class CraftingComponent {
     private readonly _name: string;
     private readonly _compendiumEntry: CompendiumEntry;
+    private readonly _essences: string[];
 
     constructor(builder: CraftingComponent.Builder) {
         this._name = builder.name;
         this._compendiumEntry = builder.compendiumEntry;
+        this._essences = builder.essences;
     }
 
     get name(): string {
@@ -46,6 +48,10 @@ class CraftingComponent {
 
     get compendiumEntry(): CompendiumEntry {
         return this._compendiumEntry;
+    }
+
+    get essences(): string[] {
+        return this._essences;
     }
 
     public static builder() {
@@ -60,6 +66,7 @@ class CraftingComponent {
         return CraftingComponent.builder()
             .withName(fabricateFlags.component.name)
             .withCompendiumEntry(compendiumEntryConfig.compendiumKey, compendiumEntryConfig.entryId)
+            .withEssences(fabricateFlags.component.essences)
             .build();
     }
 
@@ -72,6 +79,7 @@ class CraftingComponent {
 
     isValid(): boolean {
         return (this.name != null && this.name.length > 0)
+            && (this.essences != null)
             && this.compendiumEntry.isValid();
     }
 }
@@ -80,14 +88,25 @@ namespace CraftingComponent {
     export class Builder {
         public name!: string;
         public compendiumEntry!: CompendiumEntry;
+        public essences: string[] = [];
 
         public withName(value: string): Builder {
             this.name = value;
             return this;
         }
 
-        withCompendiumEntry(key: string, id: string): Builder {
+        public withCompendiumEntry(key: string, id: string): Builder {
             this.compendiumEntry = new CompendiumEntry(key, id);
+            return this;
+        }
+
+        public withEssences(value: string[]): Builder {
+            this.essences = value;
+            return this;
+        }
+
+        public withEssence(value: string): Builder {
+            this.essences.push(value);
             return this;
         }
 

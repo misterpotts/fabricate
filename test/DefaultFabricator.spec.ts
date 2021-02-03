@@ -54,6 +54,7 @@ describe('Default Fabricator |', () => {
                 _action: 'ADD',
                 _item: {
                     _name: 'Mud Pie',
+                    _essences: [],
                     _compendiumEntry: {
                         _compendiumKey: 'fabricate.fabricate-test',
                         _entryId: 'nWhTa8gD1QL1f9O3'
@@ -65,6 +66,7 @@ describe('Default Fabricator |', () => {
                 _action: 'REMOVE',
                 _item: {
                     _name: 'Mud',
+                    _essences: [],
                     _compendiumEntry: {
                         _compendiumKey: 'fabricate.fabricate-test',
                         _entryId: 'tCmAnq9zcESt0ULf'
@@ -76,6 +78,7 @@ describe('Default Fabricator |', () => {
                 _action: 'REMOVE',
                 _item: {
                     _name: 'Sticks',
+                    _essences: [],
                     _compendiumEntry: {
                         _compendiumKey: 'fabricate.fabricate-test',
                         _entryId: 'arWeEYkLkubimBz3'

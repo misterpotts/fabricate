@@ -23,7 +23,16 @@
       "label": "Fabricate: Test Ingredients and Recipes",
       "path": "packs/fabricate-test.db",
       "entity": "Item",
-      "module": "fabricate"
+      "module": "fabricate",
+      "system": "dnd5e"
+    },
+    {
+      "name": "alchemists-supplies-v11",
+      "label": "Alchemist's Supplies (v1.1)",
+      "path": "packs/alchemists-supplies-v11.db",
+      "entity": "Item",
+      "module": "fabricate",
+      "system": "dnd5e"
     }
   ],
   "includes": [

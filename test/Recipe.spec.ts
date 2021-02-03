@@ -41,8 +41,8 @@ describe('Recipe |', () => {
             expect(testRecipe.components.length).to.equal(2);
             expect(testRecipe.entryId).to.equal('4');
             expect(testRecipe.components).to.deep.include.members([
-                { _componentType: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '1' } }, _quantity: 2, _consumed: true },
-                { _componentType: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '2' } }, _quantity: 1, _consumed: true }
+                { _componentType: { _name: 'Mud', _essences: [], _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '1' } }, _quantity: 2, _consumed: true },
+                { _componentType: { _name: 'Sticks', _essences: [], _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '2' } }, _quantity: 1, _consumed: true }
             ]);
         });
 
