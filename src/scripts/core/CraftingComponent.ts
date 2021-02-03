@@ -24,6 +24,11 @@ class CompendiumEntry {
         return (this.entryId === other.entryId)
             && (this.compendiumKey === other.compendiumKey);
     }
+
+    isValid(): boolean {
+        return (this.entryId != null && this.entryId.length > 0)
+            && (this.compendiumKey != null && this.compendiumKey.length > 0);
+    }
 }
 
 class CraftingComponent {
@@ -63,6 +68,11 @@ class CraftingComponent {
             return false;
         }
         return this._compendiumEntry.equals(other.compendiumEntry);
+    }
+
+    isValid(): boolean {
+        return (this.name != null && this.name.length > 0)
+            && this.compendiumEntry.isValid();
     }
 }
 

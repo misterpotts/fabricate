@@ -43,6 +43,13 @@ class CraftingResult {
     public static manyFromFlags(flags: ResultFlags[]): CraftingResult[] {
         return flags.map((flagData) => CraftingResult.fromFlags(flagData));
     }
+
+    isValid(): boolean {
+        return (this.quantity != null && this.quantity > 0)
+            && (this.action != null)
+            && (this.action == ActionType.ADD || this.action == ActionType.REMOVE)
+            && this.item.isValid();
+    }
 }
 
 namespace CraftingResult {

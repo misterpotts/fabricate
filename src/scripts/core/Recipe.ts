@@ -47,6 +47,24 @@ class Recipe {
     public static builder() {
         return new Recipe.Builder();
     }
+
+    isValid(): boolean {
+        const nameValid = this.name != null && this.name.length > 0;
+        const idValid = this.entryId != null && this.entryId.length > 0;
+        let ingredientsValid = true;
+        this.components.forEach((ingredient: Ingredient) => {
+            if (!ingredient.isValid()) {
+                ingredientsValid = false;
+            }
+        });
+        let resultsValid = true;
+        this.results.forEach((result: CraftingResult) => {
+            if (!result.isValid()) {
+                resultsValid = false;
+            }
+        });
+        return nameValid && idValid && ingredientsValid && resultsValid;
+    }
 }
 
 namespace Recipe {

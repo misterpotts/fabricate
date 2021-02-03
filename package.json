@@ -11,6 +11,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.2.14",
+    "@types/line-reader": "^0.0.32",
     "@types/mocha": "^8.2.0",
     "@types/sinon": "^9.0.10",
     "chai": "^4.2.0",
@@ -19,6 +20,7 @@
     "gulp-mocha": "^7.0.2",
     "gulp-typescript": "^6.0.0-alpha.1",
     "gulp-webpack": "^1.5.0",
+    "line-reader": "^0.4.0",
     "mocha": "^6.2.3",
     "nyc": "^15.1.0",
     "sinon": "^9.2.4",

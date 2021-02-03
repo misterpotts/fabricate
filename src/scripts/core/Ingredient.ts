@@ -52,6 +52,11 @@ class Ingredient {
     public static manyFromFlags(flags: IngredientFlags[]): Ingredient[] {
         return flags.map((flagData) => Ingredient.fromFlags(flagData));
     }
+
+    isValid(): boolean {
+        return (this.quantity!= null && this.quantity > 0)
+        && this.componentType.isValid();
+    }
 }
 
 namespace Ingredient {
