@@ -4,6 +4,7 @@ import {InventoryRegistry} from "../systems/InventoryRegistry";
 import {Inventory} from "../core/Inventory";
 
 class Registrar {
+
     public static init() {
         this.registerHandlebarsHelperFunctions();
         this.registerItemRecipeTab();

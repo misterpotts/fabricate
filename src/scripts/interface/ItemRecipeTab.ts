@@ -12,6 +12,7 @@ class ItemRecipeTab {
     private _sheetHtml: any;
     private readonly _item: any;
     private readonly _recipe: Recipe;
+    private _suppressedInNav: boolean = false;
 
     public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement): void {
         if (itemSheet.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType) {
@@ -45,11 +46,17 @@ class ItemRecipeTab {
         } else {
             this._sheetHtml.find('.tab.fabricate-recipe').append(template);
         }
+
         this.handleItemSheetEvents();
+
+        if (this._suppressedInNav && !this.isActiveInNav()) {
+            this._sheetHtml.find('.item[data-tab="fabricate"]').addClass('active');
+            this._suppressedInNav = false;
+        }
     }
 
     private addTabToItemSheet(sheetHtml: any): void {
-        let tabs = sheetHtml.find(`form nav.sheet-navigation.tabs`);
+        const tabs = sheetHtml.find(`.tabs[data-group="primary"]`);
         tabs.append($(
             '<a class="item" data-tab="fabricate">Recipe</a>'
         ));
@@ -65,9 +72,13 @@ class ItemRecipeTab {
             let actorId = event.target.getAttribute('data-actor-id');
             let craftingSystem: CraftingSystem = CraftingSystemRegistry.getSystemByRecipeId(recipeId);
             await craftingSystem.craft(actorId, recipeId);
+            this._suppressedInNav = true;
             await this.render();
         });
+    }
 
+    private isActiveInNav(): boolean {
+        return $(this._sheetHtml).find('a.item[data-tab="magicitems"]').hasClass('active');
     }
 }
 
