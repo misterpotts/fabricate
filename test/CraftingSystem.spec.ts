@@ -77,11 +77,11 @@ describe('Crafting System |', () => {
                     _name: 'Recipe: Mud Pie',
                     _entryId: '4iHqWSLTMFjPbpuI',
                     _components: [
-                        { _componentType: { _name: 'Mud', _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
-                        { _componentType: { _name: 'Sticks', _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }
+                        { _componentType: { _name: 'Mud', _essences: [], _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
+                        { _componentType: { _name: 'Sticks', _essences: [], _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }
                     ],
                     _results: [
-                        { _action: 'ADD', _item: { _name: 'Mud Pie', "_compendiumEntry": { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'nWhTa8gD1QL1f9O3' } }, _quantity : 1 }
+                        { _action: 'ADD', _item: { _name: 'Mud Pie', _essences: [], "_compendiumEntry": { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'nWhTa8gD1QL1f9O3' } }, _quantity : 1 }
                     ],
                 }
             ]);

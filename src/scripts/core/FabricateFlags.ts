@@ -7,6 +7,7 @@ enum FabricateItemType {
 
 interface ComponentFlags {
     name: string,
+    essences: string[];
     compendiumEntry: {
         compendiumKey: string,
         entryId: string
