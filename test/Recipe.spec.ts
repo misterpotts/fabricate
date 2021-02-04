@@ -3,7 +3,7 @@ import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
-import {FabricateFlags} from "../src/scripts/core/FabricateFlags";
+import {FabricateCompendiumData} from "../src/scripts/core/CompendiumData";
 import {ActionType} from "../src/scripts/core/ActionType";
 
 describe('Recipe |', () => {
@@ -38,9 +38,9 @@ describe('Recipe |', () => {
                 .build();
 
             expect(testRecipe.name).to.equal('Simple mud pie recipe');
-            expect(testRecipe.components.length).to.equal(2);
+            expect(testRecipe.ingredients.length).to.equal(2);
             expect(testRecipe.entryId).to.equal('4');
-            expect(testRecipe.components).to.deep.include.members([
+            expect(testRecipe.ingredients).to.deep.include.members([
                 { _componentType: { _name: 'Mud', _essences: [], _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '1' } }, _quantity: 2, _consumed: true },
                 { _componentType: { _name: 'Sticks', _essences: [], _compendiumEntry: { _compendiumKey: 'compendium', _entryId: '2' } }, _quantity: 1, _consumed: true }
             ]);
@@ -48,7 +48,7 @@ describe('Recipe |', () => {
 
         it('Should create a Recipe from flags', () => {
 
-            const recipeFlagData: FabricateFlags = <FabricateFlags>{
+            const recipeFlagData: FabricateCompendiumData = <FabricateCompendiumData>{
                 type: "RECIPE",
                 recipe: {
                     entryId: '4iHqWSLTMFjPbpuI',
@@ -95,7 +95,7 @@ describe('Recipe |', () => {
             const underTest = Recipe.fromFlags(recipeFlagData);
             expect(underTest.name).to.equal('Recipe: Mud Pie');
             expect(underTest.entryId).to.equal('4iHqWSLTMFjPbpuI');
-            expect(underTest.components.length).to.equal(2);
+            expect(underTest.ingredients.length).to.equal(2);
             const twoMudConsumed = Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(2)
@@ -104,7 +104,7 @@ describe('Recipe |', () => {
                     .withCompendiumEntry('fabricate.fabricate-test', 'tCmAnq9zcESt0ULf')
                     .build())
                 .build();
-            expect(twoMudConsumed.is(underTest.components[0])).to.be.true;
+            expect(twoMudConsumed.is(underTest.ingredients[0])).to.be.true;
             const oneSticksConsumed = Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(1)
@@ -113,7 +113,7 @@ describe('Recipe |', () => {
                     .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
                     .build())
                 .build();
-            expect(oneSticksConsumed.is(underTest.components[1])).to.be.true;
+            expect(oneSticksConsumed.is(underTest.ingredients[1])).to.be.true;
             expect(underTest.results.length).to.equal(1);
             expect(underTest.results[0].quantity).to.equal(1);
             expect(underTest.results[0].action).to.equal(ActionType.ADD);

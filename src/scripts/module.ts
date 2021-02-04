@@ -1,5 +1,5 @@
 import Properties from "./Properties";
-import {FabricateFlags, FabricateItemType} from "./core/FabricateFlags";
+import {FabricateCompendiumData, FabricateItemType} from "./core/CompendiumData";
 import {Recipe} from "./core/Recipe";
 import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
@@ -7,7 +7,7 @@ import {Registrar} from "./interface/Registrar";
 import {CraftingSystem} from "./core/CraftingSystem";
 
 // Enable as needed for dev. Do not release!
-CONFIG.debug.hooks = true;
+// CONFIG.debug.hooks = true;
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -37,7 +37,7 @@ async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
     let systemPack: Compendium = game.packs.get(systemSpec.compendiumPackKey)
     let content = await loadCompendiumContent(systemPack, 10);
     content.forEach((item: Entity) => {
-        let itemConfig: FabricateFlags = item.data.flags.fabricate;
+        let itemConfig: FabricateCompendiumData = item.data.flags.fabricate;
         switch (itemConfig.type) {
             case FabricateItemType.COMPONENT:
                 systemSpec.withComponent(CraftingComponent.fromFlags(itemConfig));

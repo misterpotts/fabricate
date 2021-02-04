@@ -1,7 +1,7 @@
 import {CraftingInventory} from "../core/CraftingInventory";
 import {InventoryRecord} from "../core/InventoryRecord";
 import Properties from "../Properties";
-import {FabricateFlags, FabricateItemType} from "../core/FabricateFlags";
+import {FabricateCompendiumData, FabricateItemType} from "../core/CompendiumData";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
@@ -26,7 +26,7 @@ class Inventory5E extends CraftingInventory {
             && item.data.flags.fabricate
             && item.data.flags.fabricate.type === FabricateItemType.COMPONENT)
             .map((item: any) => {
-                const itemConfig: FabricateFlags = item.data.flags.fabricate;
+                const itemConfig: FabricateCompendiumData = item.data.flags.fabricate;
                 return InventoryRecord.builder()
                     .withActor(this._actor)
                     .withItem(item)
@@ -110,7 +110,7 @@ class Inventory5E extends CraftingInventory {
         if (!updatedItem.flags.fabricate || (updatedItem.flags.fabricate.type !== FabricateItemType.COMPONENT)) {
             return;
         }
-        const flags: FabricateFlags = updatedItem.flags.fabricate;
+        const flags: FabricateCompendiumData = updatedItem.flags.fabricate;
         const matches = this._itemDirectory.get(flags.component.compendiumEntry.entryId)
             .filter((candidate: InventoryRecord) => candidate.item.id === updatedItem._id);
         if (matches.length === 0) {

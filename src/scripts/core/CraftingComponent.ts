@@ -1,4 +1,4 @@
-import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
+import {FabricateCompendiumData, FabricateItemType} from "./CompendiumData";
 
 class CompendiumEntry {
     private readonly _compendiumKey;
@@ -58,7 +58,7 @@ class CraftingComponent {
         return new CraftingComponent.Builder();
     }
 
-    public static fromFlags(fabricateFlags: FabricateFlags): CraftingComponent {
+    public static fromFlags(fabricateFlags: FabricateCompendiumData): CraftingComponent {
         if (fabricateFlags.type !== FabricateItemType.COMPONENT) {
             throw new Error(`Error attempting to instantiate a Fabricate Crafting Component from ${fabricateFlags.type} data. `);
         }

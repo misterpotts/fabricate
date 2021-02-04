@@ -1,4 +1,4 @@
-import {FabricateItemType} from "./core/FabricateFlags";
+import {FabricateItemType} from "./core/CompendiumData";
 
 const Properties = {
     module: {

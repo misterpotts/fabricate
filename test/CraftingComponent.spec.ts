@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {FabricateFlags} from "../src/scripts/core/FabricateFlags";
+import {FabricateCompendiumData} from "../src/scripts/core/CompendiumData";
 
 describe('Crafting Component |', () => {
 
@@ -10,7 +10,7 @@ describe('Crafting Component |', () => {
             const name = 'Glass';
             const key = 'test.key';
             const id = '1234';
-            const flags: FabricateFlags = <FabricateFlags>{
+            const flags: FabricateCompendiumData = <FabricateCompendiumData>{
                 type: 'COMPONENT',
                 component: {
                     name: name,

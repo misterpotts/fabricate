@@ -15,7 +15,7 @@ class ItemRecipeTab {
     private _suppressedInNav: boolean = false;
 
     public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement): void {
-        if (itemSheet.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType) {
+        if ((!itemSheet.item.data.flags.fabricate) || (itemSheet.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType)) {
             return;
         }
         let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemSheet.id);

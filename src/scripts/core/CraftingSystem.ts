@@ -38,7 +38,7 @@ class CraftingSystem {
         const recipe: Recipe = this._recipes.find((recipe: Recipe) => recipe.entryId == recipeId);
 
         const missingIngredients: Ingredient[] = [];
-        recipe.components.forEach((ingredient: Ingredient) => {
+        recipe.ingredients.forEach((ingredient: Ingredient) => {
             if (!inventory.contains(ingredient)) {
                 missingIngredients.push(ingredient);
             }

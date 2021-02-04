@@ -1,21 +1,23 @@
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
-import {FabricateFlags, FabricateItemType} from "./FabricateFlags";
+import {FabricateCompendiumData, FabricateItemType} from "./CompendiumData";
 
 class Recipe {
-    private readonly _components: Ingredient[];
+    private readonly _ingredients: Ingredient[];
+    private readonly _essences: Map<string, number>;
     private readonly _results: CraftingResult[];
     private readonly _name: string;
     private readonly _entryId: string;
 
     constructor(builder: Recipe.Builder) {
-        this._components = builder.ingredients;
+        this._ingredients = builder.ingredients;
+        this._essences = builder.essences;
         this._results = builder.results;
         this._name = builder.name;
         this._entryId = builder.entryId;
     }
 
-    public static fromFlags(flags: FabricateFlags): Recipe {
+    public static fromFlags(flags: FabricateCompendiumData): Recipe {
         if (flags.type !== FabricateItemType.RECIPE) {
             throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${flags.type} data. `);
         }
@@ -31,14 +33,17 @@ class Recipe {
         return this._name;
     }
 
-    get components(): Ingredient[] {
-        return this._components;
+    get ingredients(): Ingredient[] {
+        return this._ingredients;
     }
 
     get results(): CraftingResult[] {
         return this._results;
     }
 
+    get essences(): Map<string, number> {
+        return this._essences;
+    }
 
     get entryId(): string {
         return this._entryId;
@@ -52,7 +57,7 @@ class Recipe {
         const nameValid = this.name != null && this.name.length > 0;
         const idValid = this.entryId != null && this.entryId.length > 0;
         let ingredientsValid = true;
-        this.components.forEach((ingredient: Ingredient) => {
+        this.ingredients.forEach((ingredient: Ingredient) => {
             if (!ingredient.isValid()) {
                 ingredientsValid = false;
             }
@@ -70,6 +75,7 @@ class Recipe {
 namespace Recipe {
     export class Builder {
         public ingredients: Ingredient[] = [];
+        public essences: Map<string, number> = new Map();
         public results: CraftingResult[] = [];
         public name!: string;
         public entryId!: string;
@@ -90,6 +96,17 @@ namespace Recipe {
 
         withIngredients(value: Ingredient[]) {
             this.ingredients.push(...value);
+            return this;
+        }
+
+        withEssence(value: string) {
+            const currentQuantity = this.essences.has(value) ? this.essences.get(value) : 0;
+            this.essences.set(value, currentQuantity + 1);
+            return this;
+        }
+
+        withEssences(values: string[]) {
+            values.forEach(this.withEssence);
             return this;
         }
 

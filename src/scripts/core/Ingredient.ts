@@ -1,5 +1,5 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {IngredientFlags} from "./FabricateFlags";
+import {FabricateIngredientFlags} from "./CompendiumData";
 
 class Ingredient {
     private readonly _componentType: CraftingComponent;
@@ -38,7 +38,7 @@ class Ingredient {
             && (this._consumed === other.consumed);
     }
 
-    public static fromFlags(flags: IngredientFlags): Ingredient {
+    public static fromFlags(flags: FabricateIngredientFlags): Ingredient {
         return this.builder()
             .isConsumed(flags.consumed)
             .withQuantity(flags.quantity)
@@ -49,7 +49,7 @@ class Ingredient {
             .build();
     }
 
-    public static manyFromFlags(flags: IngredientFlags[]): Ingredient[] {
+    public static manyFromFlags(flags: FabricateIngredientFlags[]): Ingredient[] {
         return flags.map((flagData) => Ingredient.fromFlags(flagData));
     }
 

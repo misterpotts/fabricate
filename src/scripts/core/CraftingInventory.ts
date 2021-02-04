@@ -50,7 +50,7 @@ abstract class CraftingInventory implements Inventory {
         const ingredientsByType = new Map<string, number>();
         let failedToFind: boolean = false;
         let duplicatedIngredient: boolean = false;
-        recipe.components.forEach((ingredient: Ingredient) => {
+        recipe.ingredients.forEach((ingredient: Ingredient) => {
             const present: boolean = this.contains(ingredient);
             if (!present) {
                 failedToFind = true;
