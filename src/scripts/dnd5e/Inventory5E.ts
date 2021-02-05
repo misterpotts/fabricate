@@ -126,6 +126,23 @@ class Inventory5E extends CraftingInventory {
         }
     }
 
+    public denormalizedContents(): CraftingComponent[] {
+        return Array.from(this._itemDirectory.values()).map((records: InventoryRecord[]) => {
+            const denormalizedComponents: CraftingComponent[] = [];
+            records.forEach((record: InventoryRecord) => {
+                for (let i = 0; i < record.quantity; i++) {
+                    const compendiumEntry = record.componentType.compendiumEntry;
+                    denormalizedComponents.push(CraftingComponent.builder()
+                        .withName(record.componentType.name)
+                        .withEssences(record.componentType.essences)
+                        .withCompendiumEntry(compendiumEntry.compendiumKey, compendiumEntry.entryId)
+                        .build());
+                }
+            });
+            return denormalizedComponents;
+        }).reduce((left, right) => left.concat(right), []);
+    }
+
     update(): void {
         this.index()
     }

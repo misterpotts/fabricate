@@ -75,6 +75,8 @@ abstract class CraftingInventory implements Inventory {
     public abstract remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
 
     public abstract update(): void;
+
+    abstract denormalizedContents(): CraftingComponent[];
 }
 
 export {CraftingInventory}

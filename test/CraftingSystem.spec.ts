@@ -76,7 +76,7 @@ describe('Crafting System |', () => {
                 {
                     _name: 'Recipe: Mud Pie',
                     _entryId: '4iHqWSLTMFjPbpuI',
-                    _essences: new Map(),
+                    _essences: [],
                     _ingredients: [
                         { _componentType: { _name: 'Mud', _essences: [], _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
                         { _componentType: { _name: 'Sticks', _essences: [], _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }

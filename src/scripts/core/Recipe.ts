@@ -4,7 +4,7 @@ import {FabricateCompendiumData, FabricateItemType} from "./CompendiumData";
 
 class Recipe {
     private readonly _ingredients: Ingredient[];
-    private readonly _essences: Map<string, number>;
+    private readonly _essences: string[];
     private readonly _results: CraftingResult[];
     private readonly _name: string;
     private readonly _entryId: string;
@@ -41,7 +41,7 @@ class Recipe {
         return this._results;
     }
 
-    get essences(): Map<string, number> {
+    get essences(): string[] {
         return this._essences;
     }
 
@@ -75,7 +75,7 @@ class Recipe {
 namespace Recipe {
     export class Builder {
         public ingredients: Ingredient[] = [];
-        public essences: Map<string, number> = new Map();
+        public essences: string[] = [];
         public results: CraftingResult[] = [];
         public name!: string;
         public entryId!: string;
@@ -100,13 +100,12 @@ namespace Recipe {
         }
 
         withEssence(value: string) {
-            const currentQuantity = this.essences.has(value) ? this.essences.get(value) : 0;
-            this.essences.set(value, currentQuantity + 1);
+            this.essences.push(value)
             return this;
         }
 
         withEssences(values: string[]) {
-            values.forEach(this.withEssence);
+            this.essences.push(...values);
             return this;
         }
 

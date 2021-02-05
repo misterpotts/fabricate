@@ -11,6 +11,7 @@ interface Inventory {
     size: number;
     supportsGameSystem(gameSystem: GameSystemType): boolean;
     contains(ingredient: Ingredient): boolean;
+    denormalizedContents(): CraftingComponent[];
     hasAllIngredientsFor(recipe: Recipe): boolean;
     add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
     remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
