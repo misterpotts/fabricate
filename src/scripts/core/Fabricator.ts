@@ -104,6 +104,7 @@ class EssenceCombiningFabricator {
     }
 
     private asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
+        // TODO - condense duplicates into one result
         return components.map((component: CraftingComponent) => {
             return CraftingResult.builder()
                 .withItem(component)
