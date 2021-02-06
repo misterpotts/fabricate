@@ -63,31 +63,44 @@ class EssenceCombiningFabricator {
         if (!this._knownRecipesById.has(recipe.entryId)) {
             throw new Error(`Recipe ${recipe.entryId} is not known and cannot be crafted. `);
         }
-        if ((this.listCraftableRecipes().filter((candidate: Recipe) => candidate.entryId === recipe.entryId)).length !== 1) {
+        const craftingComponentCombinations = this.analyzeCombinationsForRecipe(this._inventory.denormalizedContents(), recipe);
+        const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
+        if (!selectedCombination ||selectedCombination.length === 0) {
             throw new Error(`There are insufficient components available to craft Recipe ${recipe.entryId}. `)
         }
-        const usableComponents:  CraftingComponent[] = this._inventory.denormalizedContents()
-            .filter((component: CraftingComponent) => {
-                return component.essences.filter((essence: string) => recipe.essences.includes(essence)).length > 0;
-            });
+        return this.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
+    }
+
+    private analyzeCombinationsForRecipe(components:  CraftingComponent[], recipe: Recipe): CraftingComponentCombination[] {
         const essenceIdentities: Map<string, number> = this.assignEssenceIdentities(recipe.essences);
+        const usableComponents: CraftingComponent[] = components.filter((component: CraftingComponent) => component.essences.filter((essence: string) => recipe.essences.includes(essence)).length > 0);
         const recipeIdentity = this.essenceCombinationIdentity(recipe.essences, essenceIdentities);
-        const combinationHistogram: CraftingComponent[][] = this.combinationHistogram(usableComponents);
-        const match: CraftingComponent[] = combinationHistogram.find((combination: CraftingComponent[]) => {
-            const combinationEssences = combination.map((component: CraftingComponent) => component.essences)
-                .reduce((left: string[], right: string[]) => left.concat(right), []);
-            return this.essenceCombinationIdentity(combinationEssences, essenceIdentities) === recipeIdentity;
+        const componentEssenceIdentity: Map<string, number> = new Map();
+        usableComponents.forEach((component: CraftingComponent) => {
+            if (!componentEssenceIdentity.has(component.compendiumEntry.entryId)) {
+                componentEssenceIdentity.set(component.compendiumEntry.entryId, this.essenceCombinationIdentity(component.essences, essenceIdentities));
+            }
         });
-        if (match && match.length > 0) {
-            return this.asCraftingResults(match, ActionType.REMOVE).concat(recipe.results);
-        }
-        const smallestSuperset: CraftingComponent[] = combinationHistogram.find((combination: CraftingComponent[]) => {
-            const essences = combination.map((component: CraftingComponent) => component.essences)
-                .reduce((left: string[], right: string[]) => left.concat(right), []);
-            return essences.every((essence: string) => recipe.essences.includes(essence)
-                &&  (essences.filter((essence:string) => essence === essence).length <= recipe.essences.filter((essence:string) => essence === essence).length));
+        return this.combinationHistogram(usableComponents).map((combination: CraftingComponent[]) => {
+            const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.compendiumEntry.entryId))
+                .reduce((left: number, right: number) => left * right, 1);
+            const craftableRecipes: Recipe[] = [];
+            if (this.isCraftableFromEssencesIn(recipe, combination)) {
+                craftableRecipes.push(recipe);
+            }
+            const essenceIdentityMatchForRecipes: Recipe[] = [];
+            if (essenceCombinationIdentity === recipeIdentity) {
+                essenceIdentityMatchForRecipes.push(recipe);
+            }
+            return new CraftingComponentCombination(combination, craftableRecipes, essenceCombinationIdentity, essenceIdentityMatchForRecipes);
         });
-        return this.asCraftingResults(smallestSuperset, ActionType.REMOVE).concat(recipe.results);
+    }
+
+    private isCraftableFromEssencesIn(recipe: Recipe, components: CraftingComponent[]): boolean {
+        const essences = components.map((component: CraftingComponent) => component.essences)
+            .reduce((left: string[], right: string[]) => left.concat(right), []);
+        return essences.every((essence: string) => recipe.essences.includes(essence)
+            &&  (essences.filter((essence:string) => essence === essence).length >= recipe.essences.filter((essence:string) => essence === essence).length));
     }
 
     private asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
@@ -115,7 +128,7 @@ class EssenceCombiningFabricator {
     }
 
     private generatePrimes(quantity: number): number[] {
-        const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+        const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
         if (quantity <= primes.length) {
             return primes.slice(0, quantity);
         }
@@ -161,6 +174,66 @@ class EssenceCombiningFabricator {
         });
     }
 
+    private selectBestCombinationFrom(recipe: Recipe, combinations: CraftingComponentCombination[]): CraftingComponent[] {
+        const exactMatches: CraftingComponentCombination[] = [];
+        const supersets: CraftingComponentCombination[] = [];
+        combinations.forEach((combination: CraftingComponentCombination) => {
+            if (combination.essenceIdentityMatches.find((match: Recipe) => match.entryId === recipe.entryId)) {
+                exactMatches.push(combination);
+            }
+            if (combination.craftableRecipes.find((craftable: Recipe) => craftable.entryId === recipe.entryId)) {
+                supersets.push(combination);
+            }
+        });
+        if ( exactMatches.length === 0) {
+            return exactMatches[0].components;
+        } else if ( exactMatches.length > 1) {
+            return exactMatches
+                .sort((left, right) => left.components.length - right.components.length)
+                .find(() => true)
+                .components;
+        } else if (supersets.length === 1) {
+            return supersets[0].components;
+        } else if (supersets.length > 1) {
+            return supersets
+                .sort((left, right) => left.components.length - right.components.length)
+                .find(() => true)
+                .components;
+        } else {
+            return [];
+        }
+    }
+}
+
+class CraftingComponentCombination {
+
+    private readonly _components: CraftingComponent[];
+    private readonly _craftableRecipes: Recipe[];
+    private readonly _essenceIdentityMatches: Recipe[];
+    private readonly _essenceIdentity: number;
+
+    constructor(components: CraftingComponent[], craftableRecipes: Recipe[], essenceIdentity: number, essencceIdentityMatches: Recipe[]) {
+        this._components = components;
+        this._craftableRecipes = craftableRecipes;
+        this._essenceIdentity = essenceIdentity;
+        this._essenceIdentityMatches = essencceIdentityMatches;
+    }
+
+    get components(): CraftingComponent[] {
+        return this._components;
+    }
+
+    get craftableRecipes(): Recipe[] {
+        return this._craftableRecipes;
+    }
+
+    get essenceIdentity(): number {
+        return this._essenceIdentity;
+    }
+
+    get essenceIdentityMatches(): Recipe[] {
+        return this._essenceIdentityMatches;
+    }
 }
 
 export {Fabricator, DefaultFabricator, EssenceCombiningFabricator};
