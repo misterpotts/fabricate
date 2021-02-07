@@ -77,6 +77,7 @@ abstract class CraftingInventory implements Inventory {
     public abstract update(): void;
 
     abstract denormalizedContents(): CraftingComponent[];
+
 }
 
 export {CraftingInventory}

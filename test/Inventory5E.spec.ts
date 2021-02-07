@@ -4,7 +4,6 @@ import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {InventoryRecord} from "../src/scripts/core/InventoryRecord";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 
@@ -85,11 +84,11 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                createOwnedItem: Sinon.stub()
+                createEmbeddedEntity: Sinon.stub()
             };
             Sinon.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
-            mockActor.createOwnedItem.returns({data: {quantity: 1}});
+            mockActor.createEmbeddedEntity.returns({data: {quantity: 1}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
             const oneDung = Ingredient.builder()
                 .withQuantity(JUST_ONE)
@@ -113,11 +112,11 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                createOwnedItem: Sinon.stub()
+                createEmbeddedEntity: Sinon.stub()
             };
             Sinon.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
-            mockActor.createOwnedItem.returns({data: { quantity: 2}});
+            mockActor.createEmbeddedEntity.returns({data: { quantity: 2}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
             const twoDung = Ingredient.builder()
                 .withQuantity(TWO)
@@ -137,9 +136,12 @@ describe('Inventory5E |', () => {
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
                     values: () => {}
-                }
+                },
+                updateEmbeddedEntity: Sinon.stub()
             };
             Sinon.stub(mockActor.items, 'values').returns(testData);
+            // @ts-ignore
+            mockActor.updateEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const twoMudIngredient = Ingredient.builder()
@@ -152,13 +154,6 @@ describe('Inventory5E |', () => {
                 .build();
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(6);
-            initialContents.forEach((record: InventoryRecord) => {
-                if (record.componentType.compendiumEntry.equals(mud.compendiumEntry)) {
-                    record.item.update = Sinon.stub();
-                    // @ts-ignore
-                    record.item.update.returns({});
-                }
-            });
             const doesNotHaveFourBeforehand = underTest.contains(fourMudIngredient);
             expect(doesNotHaveFourBeforehand).to.be.false;
             const hasTwoBeforehand = underTest.contains(twoMudIngredient);
@@ -180,9 +175,12 @@ describe('Inventory5E |', () => {
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
                     values: () => {}
-                }
+                },
+                deleteEmbeddedEntity: Sinon.stub()
             };
             Sinon.stub(mockActor.items, 'values').returns(testData);
+            // @ts-ignore
+            mockActor.deleteEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const oneMudIngredient = Ingredient.builder()
@@ -196,14 +194,6 @@ describe('Inventory5E |', () => {
 
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(6);
-
-            initialContents.forEach((record: InventoryRecord) => {
-                if (record.componentType.compendiumEntry.equals(mud.compendiumEntry)) {
-                    record.item.delete = Sinon.stub();
-                    // @ts-ignore
-                    record.item.delete.returns({});
-                }
-            });
 
             const containsTwoBeforehand = underTest.contains(twoMudIngredient);
             expect(containsTwoBeforehand).to.be.true;
@@ -227,9 +217,12 @@ describe('Inventory5E |', () => {
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
                     values: () => {}
-                }
+                },
+                updateEmbeddedEntity: Sinon.stub()
             };
             Sinon.stub(mockActor.items, 'values').returns(testData);
+            // @ts-ignore
+            mockActor.updateEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const oneStickIngredient = Ingredient.builder()
@@ -246,14 +239,6 @@ describe('Inventory5E |', () => {
 
             const containsTwoBeforehand = underTest.contains(twoSticksIngredient);
             expect(containsTwoBeforehand).to.be.true;
-
-            initialContents.forEach((record: InventoryRecord) => {
-                if (record.componentType.compendiumEntry.equals(sticks.compendiumEntry)) {
-                    record.item.update = Sinon.stub();
-                    // @ts-ignore
-                    record.item.update.returns({});
-                }
-            });
 
             await underTest.remove(sticks);
 
@@ -274,9 +259,15 @@ describe('Inventory5E |', () => {
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
                     values: () => {}
-                }
+                },
+                updateEmbeddedEntity: Sinon.stub(),
+                deleteEmbeddedEntity: Sinon.stub()
             };
             Sinon.stub(mockActor.items, 'values').returns(testData);
+            // @ts-ignore
+            mockActor.updateEmbeddedEntity.returns({});
+            // @ts-ignore
+            mockActor.deleteEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const tenWaxIngredient = Ingredient.builder()
@@ -293,17 +284,6 @@ describe('Inventory5E |', () => {
 
             const containsTenBeforehand = underTest.contains(tenWaxIngredient);
             expect(containsTenBeforehand).to.be.true;
-
-            initialContents.forEach((record: InventoryRecord) => {
-                if (record.componentType.compendiumEntry.equals(wax.compendiumEntry)) {
-                    record.item.update = Sinon.stub();
-                    // @ts-ignore
-                    record.item.update.returns({});
-                    record.item.delete = Sinon.stub();
-                    // @ts-ignore
-                    record.item.delete.returns({});
-                }
-            });
 
             await underTest.remove(wax, 7);
 
