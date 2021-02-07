@@ -104,14 +104,34 @@ class EssenceCombiningFabricator {
     }
 
     private asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
-        // TODO - condense duplicates into one result
-        return components.map((component: CraftingComponent) => {
-            return CraftingResult.builder()
-                .withItem(component)
-                .withQuantity(1)
+        const componentsById: Map<string, CraftingComponent[]> = new Map();
+        components.forEach((component: CraftingComponent) => {
+            const identicalComponents: CraftingComponent[] = componentsById.get(component.compendiumEntry.entryId);
+            if (!identicalComponents) {
+                componentsById.set(component.compendiumEntry.entryId, [component]);
+            } else {
+                identicalComponents.push(component);
+            }
+        });
+        if (Object.keys(componentsById).length === components.length) {
+            return components.map((component: CraftingComponent) => {
+                return CraftingResult.builder()
+                    .withItem(component)
+                    .withQuantity(1)
+                    .withAction(action)
+                    .build();
+            });
+        }
+        const results: CraftingResult[] = [];
+        componentsById.forEach((componentsOfType: CraftingComponent[]) => {
+            const craftingResult = CraftingResult.builder()
+                .withItem(componentsOfType[0])
+                .withQuantity(componentsOfType.length)
                 .withAction(action)
                 .build();
+            results.push(craftingResult);
         });
+        return results;
     };
 
     private essenceCombinationIdentity(essences: string[], essenceIdentities: Map<string, number>): number {
@@ -120,8 +140,7 @@ class EssenceCombiningFabricator {
     }
 
     private assignEssenceIdentities(essences: string[]): Map<string, number> {
-        const uniqueEssences = essences.filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index)
-            .sort((left, right) => left.localeCompare(right));
+        const uniqueEssences = essences.filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
         const primes = this.generatePrimes(uniqueEssences.length);
         const essenceIdentities: Map<string, number> = new Map();
         uniqueEssences.forEach((value, index) => essenceIdentities.set(value, primes[index]));
