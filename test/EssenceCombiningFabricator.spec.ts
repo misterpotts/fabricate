@@ -26,6 +26,23 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['NEGATIVE_ENERGY'])
         .build();
 
+    const luminousCapDust: CraftingComponent = CraftingComponent.builder()
+        .withName('Luminous Cap Dust')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a23xyz')
+        .withEssences(['FIRE', 'AIR'])
+        .build();
+    const wispStalks: CraftingComponent = CraftingComponent.builder()
+        .withName('Wisp Stalks')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a34xyz')
+        .withEssences(['AIR', 'AIR'])
+        .build();
+    const fennelSilk: CraftingComponent = CraftingComponent.builder()
+        .withName('Fennel Silk')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a45xyz')
+        .withEssences(['FIRE'])
+        .build();
+
+
     const instantRope: CraftingComponent = CraftingComponent.builder()
         .withName('Instant Rope')
         .withCompendiumEntry('alchemists-supplies-v11', '234xyz')
@@ -34,8 +51,12 @@ describe('Essence Combining Fabricator |', () => {
         .withName('Acid')
         .withCompendiumEntry('alchemists-supplies-v11', '678xyz')
         .build();
+    const flashbang: CraftingComponent = CraftingComponent.builder()
+        .withName('Flashbang')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a12xyz')
+        .build();
 
-    const instantRopeRecipe:Recipe = Recipe.builder()
+    const instantRopeRecipe: Recipe = Recipe.builder()
         .withName('Recipe: Instant Rope')
         .withEntryId('123xyz')
         .withEssences(['EARTH', 'EARTH', 'WATER', 'WATER', 'NEGATIVE_ENERGY'])
@@ -45,14 +66,24 @@ describe('Essence Combining Fabricator |', () => {
             .withItem(instantRope)
             .build())
         .build();
-    const acidRecipe:Recipe = Recipe.builder()
-        .withName('Recipe:Acid')
+    const acidRecipe: Recipe = Recipe.builder()
+        .withName('Recipe: Acid')
         .withEntryId('456xyz')
         .withEssences(['EARTH', 'FIRE', 'POSITIVE_ENERGY'])
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
             .withQuantity(1)
             .withItem(acid)
+            .build())
+        .build();
+    const flashbangRecipe: Recipe = Recipe.builder()
+        .withName('Recipe: Flashbang')
+        .withEntryId('912xyz')
+        .withEssences(['FIRE', 'AIR', 'AIR'])
+        .withResult(CraftingResult.builder()
+            .withAction(ActionType.ADD)
+            .withQuantity(1)
+            .withItem(flashbang)
             .build())
         .build();
 
@@ -123,7 +154,22 @@ describe('Essence Combining Fabricator |', () => {
         it('Should Fabricate from Components with no Recipe', () => {});
 
         it('Should efficiently consume recipe components to reduce essence wastage', () => {
+            const mockInventory: Inventory = <Inventory><unknown>{
+                denormalizedContents: Sinon.stub()
+            };
+            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([flashbangRecipe], mockInventory);
+            // @ts-ignore
+            mockInventory.denormalizedContents.returns([luminousCapDust, luminousCapDust, wispStalks, fennelSilk]);
 
+            const result: CraftingResult[] = underTest.fabricateFromRecipe(flashbangRecipe);
+
+            expect(result, 'Crafting Result of recipes was null!').to.exist;
+            expect(result.length, 'Expected three Crafting Results').to.equal(3);
+            expect(result).to.deep.include.members([
+                CraftingResult.builder().withItem(wispStalks).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withItem(fennelSilk).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withItem(flashbang).withAction(ActionType.ADD).withQuantity(1).build()
+            ]);
         });
 
     });

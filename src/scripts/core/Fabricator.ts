@@ -205,20 +205,19 @@ class EssenceCombiningFabricator {
                 supersets.push(combination);
             }
         });
-        if ( exactMatches.length === 0) {
-            return exactMatches[0].components;
-        } else if ( exactMatches.length > 1) {
-            return exactMatches
-                .sort((left, right) => left.components.length - right.components.length)
+        const selectFewestComponents = (combinations: CraftingComponentCombination[]) => {
+            return combinations.sort((left, right) => left.components.length - right.components.length)
                 .find(() => true)
                 .components;
+        };
+        if ( exactMatches.length === 1) {
+            return exactMatches[0].components;
+        } else if ( exactMatches.length > 1) {
+            return selectFewestComponents(exactMatches);
         } else if (supersets.length === 1) {
             return supersets[0].components;
         } else if (supersets.length > 1) {
-            return supersets
-                .sort((left, right) => left.components.length - right.components.length)
-                .find(() => true)
-                .components;
+            return selectFewestComponents(supersets);
         } else {
             return [];
         }
