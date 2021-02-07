@@ -5,7 +5,6 @@ import {Inventory} from "./Inventory";
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
-import {InventoryRecord} from "./InventoryRecord";
 import {InventoryRegistry} from "../systems/InventoryRegistry";
 
 class CraftingSystem {
@@ -50,23 +49,20 @@ class CraftingSystem {
 
         const fabricator: Fabricator = this.fabricator;
         const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe);
-        const inventoryActions: Promise<InventoryRecord|boolean>[] = [];
-        craftingResults.forEach((craftingResult: CraftingResult) => {
+
+        for (const craftingResult of craftingResults) {
             switch (craftingResult.action) {
                 case ActionType.ADD:
-                    const add = inventory.add(craftingResult.item, craftingResult.quantity);
-                    inventoryActions.push(add);
+                    await inventory.add(craftingResult.item, craftingResult.quantity);
                     break;
                 case ActionType.REMOVE:
-                    const remove = inventory.remove(craftingResult.item, craftingResult.quantity);
-                    inventoryActions.push(remove);
+                    await inventory.remove(craftingResult.item, craftingResult.quantity);
                     break;
                 default:
                     throw new Error(`The Crafting Action Type ${craftingResult.action} is not supported. Allowable 
                     values are: ADD, REMOVE. `);
             }
-        });
-        await Promise.all(inventoryActions);
+        }
         return craftingResults;
     }
 

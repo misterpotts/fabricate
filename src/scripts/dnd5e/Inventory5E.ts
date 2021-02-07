@@ -50,7 +50,7 @@ class Inventory5E extends CraftingInventory {
             const compendium: Compendium = game.packs.get(component.compendiumEntry.compendiumKey);
             const itemData: any = await compendium.getEntity(component.compendiumEntry.entryId);
             itemData.quantity = amountToAdd;
-            const createdItem = await this._actor.createOwnedItem(itemData);
+            const createdItem = await this._actor.createEmbeddedEntity('OwnedItem', itemData);
             const inventoryRecord = InventoryRecord.builder()
                 .withActor(this._actor)
                 .withItem(createdItem)
@@ -63,7 +63,8 @@ class Inventory5E extends CraftingInventory {
             itemsOfType.sort((left, right) => left.quantity - right.quantity);
             const item: any = itemsOfType[0].item;
             const updatedQuantity = item.data.data.quantity + amountToAdd;
-            await item.update({quantity: updatedQuantity});
+            // @ts-ignore
+            await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item.id, data: {quantity: updatedQuantity}});
             itemsOfType[0].quantity = updatedQuantity;
             return itemsOfType[0];
         }
@@ -91,11 +92,16 @@ class Inventory5E extends CraftingInventory {
             const remaining = amountToRemove - removed;
             if (remaining < thisRecord.quantity) {
                 const updatedQuantity = thisRecord.quantity - remaining;
-                await thisRecord.item.update({data:{quantity: updatedQuantity}});
+                // @ts-ignore
+                await this.actor.updateEmbeddedEntity('OwnedItem', {
+                    _id: thisRecord.item.id,
+                    data: {quantity: updatedQuantity}
+                });
                 thisRecord.quantity = updatedQuantity;
                 removed += amountToRemove;
             } else {
-                await thisRecord.item.delete({});
+                // @ts-ignore
+                await this.actor.deleteEmbeddedEntity('OwnedItem', thisRecord.item.id);
                 removed += thisRecord.quantity;
                 thisRecord.quantity = 0;
             }
