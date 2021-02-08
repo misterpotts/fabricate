@@ -8,28 +8,29 @@ class ItemRecipeTab {
     private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
 
     // @ts-ignore
-    private _sheetData: ItemSheet;
+    private _sheetApplication: any;
     private _sheetHtml: any;
     private readonly _item: any;
     private readonly _recipe: Recipe;
     private _suppressedInNav: boolean = false;
+    private static tabKey: string = 'fabricate-recipe';
 
-    public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement): void {
-        if ((!itemSheet.item.data.flags.fabricate) || (itemSheet.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType)) {
+    public static bind(itemApplication: any, sheetHtml: HTMLElement): void {
+        if ((!itemApplication.item.data.flags.fabricate) || (itemApplication.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType)) {
             return;
         }
-        let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemSheet.id);
+        let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
         if (!tab) {
-            tab = new ItemRecipeTab(itemSheet);
-            ItemRecipeTab.tabs.set(itemSheet.id, tab);
+            tab = new ItemRecipeTab(itemApplication);
+            ItemRecipeTab.tabs.set(itemApplication.id, tab);
         }
         tab.init(sheetHtml);
     }
 
-    constructor(itemSheet: ItemSheet) {
-        this._sheetData = itemSheet;
-        this._item = itemSheet.item;
-        this._recipe = Recipe.fromFlags(itemSheet.item.data.flags.fabricate);
+    constructor(itemApplication: any) {
+        this._sheetApplication = itemApplication;
+        this._item = itemApplication.item;
+        this._recipe = Recipe.fromFlags(itemApplication.item.data.flags.fabricate);
     }
 
     private init(sheetHtml: any) {
@@ -50,7 +51,7 @@ class ItemRecipeTab {
         this.handleItemSheetEvents();
 
         if (this._suppressedInNav && !this.isActiveInNav()) {
-            this._sheetHtml.find('.item[data-tab="fabricate"]').addClass('active');
+            this._sheetApplication._tabs[0].activate(ItemRecipeTab.tabKey);
             this._suppressedInNav = false;
         }
     }
@@ -58,11 +59,11 @@ class ItemRecipeTab {
     private addTabToItemSheet(sheetHtml: any): void {
         const tabs = sheetHtml.find(`.tabs[data-group="primary"]`);
         tabs.append($(
-            '<a class="item" data-tab="fabricate">Recipe</a>'
+            `<a class="item" data-tab="${ItemRecipeTab.tabKey}">Recipe</a>`
         ));
 
         $(sheetHtml.find(`.sheet-body`)).append($(
-            '<div class="tab fabricate-recipe" data-group="primary" data-tab="fabricate"></div>'
+            `<div class="tab fabricate-recipe" data-group="primary" data-tab="${ItemRecipeTab.tabKey}"></div>`
         ));
     }
 
@@ -78,7 +79,7 @@ class ItemRecipeTab {
     }
 
     private isActiveInNav(): boolean {
-        return $(this._sheetHtml).find('a.item[data-tab="magicitems"]').hasClass('active');
+        return $(this._sheetHtml).find(`a.item[data-tab="${ItemRecipeTab.tabKey}"]`).hasClass('active');
     }
 }
 

@@ -7,7 +7,155 @@ import {Inventory} from "./Inventory";
 interface Fabricator {
     fabricateFromRecipe(recipe: Recipe): CraftingResult[];
 
-    fabricateFromComponents(): CraftingResult[];
+    fabricateFromComponents(components: CraftingComponent[]): CraftingResult[];
+}
+
+interface EssenceCombiner {
+    maxComponents: number;
+    maxEssences: number;
+    combine(components: CraftingComponent[]): CraftingResult[];
+}
+
+interface AlchemicalResult {
+    essences: string[];
+    effect:any;
+}
+
+class FabricationHelper {
+
+    private static readonly primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+
+    public static asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
+        const componentsById: Map<string, CraftingComponent[]> = new Map();
+        components.forEach((component: CraftingComponent) => {
+            const identicalComponents: CraftingComponent[] = componentsById.get(component.compendiumEntry.entryId);
+            if (!identicalComponents) {
+                componentsById.set(component.compendiumEntry.entryId, [component]);
+            } else {
+                identicalComponents.push(component);
+            }
+        });
+        if (Object.keys(componentsById).length === components.length) {
+            return components.map((component: CraftingComponent) => {
+                return CraftingResult.builder()
+                    .withItem(component)
+                    .withQuantity(1)
+                    .withAction(action)
+                    .build();
+            });
+        }
+        const results: CraftingResult[] = [];
+        componentsById.forEach((componentsOfType: CraftingComponent[]) => {
+            const craftingResult = CraftingResult.builder()
+                .withItem(componentsOfType[0])
+                .withQuantity(componentsOfType.length)
+                .withAction(action)
+                .build();
+            results.push(craftingResult);
+        });
+        return results;
+    };
+
+    public static essenceCombinationIdentity(essences: string[], essenceIdentities: Map<string, number>): number {
+        return essences.map((essence: string) => essenceIdentities.get(essence))
+            .reduce((left, right) => left * right);
+    }
+
+    public static assignEssenceIdentities(essences: string[]): Map<string, number> {
+        const uniqueEssences = essences.filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
+        const primes = this.generatePrimes(uniqueEssences.length);
+        const essenceIdentities: Map<string, number> = new Map();
+        uniqueEssences.forEach((value, index) => essenceIdentities.set(value, primes[index]));
+        return essenceIdentities;
+    }
+
+    public static generatePrimes(quantity: number): number[] {
+        if (quantity <= FabricationHelper.primes.length) {
+            return FabricationHelper.primes.slice(0, quantity);
+        }
+        let candidate = 98;
+        while (FabricationHelper.primes.length < quantity) {
+            if (FabricationHelper.primes.every((p) => candidate % p)) {
+                FabricationHelper.primes.push(candidate);
+            }
+            candidate++;
+        }
+        return FabricationHelper.primes;
+    }
+
+    public static combinationHistogram(components:  CraftingComponent[]): CraftingComponent[][] {
+        const combinations: CraftingComponent[][] = [];
+        const iterations = Math.pow(2, components.length);
+
+        for (let i = 0; i < iterations; i++) {
+            const combination: CraftingComponent[] = [];
+            for (let j = 0; j < components.length; j++) {
+                if (i & Math.pow(2, j)) {
+                    combination.push(components[j]);
+                }
+            }
+            if (combination.length > 0) {
+                combinations.push(combination);
+            }
+        }
+        return combinations.sort((left, right) => left.length - right.length);
+    }
+
+}
+
+abstract class AbstractEssenceCombiner implements EssenceCombiner {
+    maxComponents: number;
+    maxEssences: number;
+    protected readonly resultsByCombinationIdentity: Map<number, AlchemicalResult> = new Map();
+    protected essenceIdentities: Map<string, number> = new Map();
+
+    protected constructor(maxComponents: number, maxEssences: number) {
+        this.maxComponents = maxComponents;
+        this.maxEssences = maxEssences;
+        const uniqueEssences: string[] = this.availableAlchemicalResults()
+            .map((essenceCombination) => essenceCombination.essences)
+            .reduce((left: string[], right: string[]) => left.concat(right), [])
+            .filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
+        this.essenceIdentities = FabricationHelper.assignEssenceIdentities(uniqueEssences);
+        this.availableAlchemicalResults().forEach((essenceCombination: AlchemicalResult) => {
+            const essenceCombinationIdentity = FabricationHelper.essenceCombinationIdentity(essenceCombination.essences, this.essenceIdentities);
+            if (this.resultsByCombinationIdentity.has(essenceCombinationIdentity)) {
+                throw new Error(`The combination ${essenceCombination.essences} was duplicated. Each essence combination must map to a unique effect.`);
+            }
+            this.resultsByCombinationIdentity.set(essenceCombinationIdentity, essenceCombination);
+        });
+    }
+
+    combine(components: CraftingComponent[]): CraftingResult[] {
+        this.validate(components);
+        const effects: AlchemicalResult[] = this.getAlchemicalResultsForComponents(components);
+        return this.combineAlchemicalResults(effects);
+    }
+
+    protected validate(components: CraftingComponent[]) {
+        if ((this.maxComponents > 0) && (this.maxComponents < components.length)) {
+            throw new Error(`The Essence Combiner for this system supports a maximum of ${this.maxComponents} components. `);
+        }
+        if (this.maxEssences > 0) {
+            const essenceCount = components.map((component: CraftingComponent) => component.essences.length)
+                .reduce((left: number, right: number) => left + right, 0);
+            if (essenceCount > this.maxEssences) {
+                throw new Error(`The Essence Combiner for this system supports a maximum of ${this.maxEssences} essences. `);
+            }
+        }
+    }
+
+    abstract combineAlchemicalResults(effects: AlchemicalResult[]): CraftingResult[];
+
+    getAlchemicalResultsForComponents(components: CraftingComponent[]): AlchemicalResult[] {
+        return components.map((component: CraftingComponent) => this.resultsByCombinationIdentity.get(this.getEssenceCombinationIdentity(component.essences)));
+    }
+
+    abstract availableAlchemicalResults(): AlchemicalResult[];
+
+    private getEssenceCombinationIdentity(essences: string[]) {
+        return FabricationHelper.essenceCombinationIdentity(essences, this.essenceIdentities);
+    }
 }
 
 class DefaultFabricator implements Fabricator {
@@ -43,9 +191,11 @@ class DefaultFabricator implements Fabricator {
 class EssenceCombiningFabricator {
     private readonly _knownRecipesById: Map<string, Recipe>;
     private readonly _inventory: Inventory;
+    private readonly _essenceCombiner: EssenceCombiner;
 
-    constructor(knownRecipes: Recipe[], inventory: Inventory) {
+    constructor(knownRecipes: Recipe[], inventory: Inventory, essenceCombiner?: EssenceCombiner) {
         this._inventory = inventory;
+        this._essenceCombiner = essenceCombiner;
         this._knownRecipesById = new Map();
         knownRecipes.forEach((recipe: Recipe) => {
             if (this._knownRecipesById.has(recipe.entryId)) {
@@ -55,8 +205,11 @@ class EssenceCombiningFabricator {
         });
     }
 
-    public fabricateFromComponents(): CraftingResult[] {
-        return [];
+    public fabricateFromComponents(components: CraftingComponent[]): CraftingResult[] {
+        if (!this._essenceCombiner) {
+            throw new Error(`No Essence Combiner has been provided for this system. You may only craft from Recipes. `);
+        }
+        return this._essenceCombiner.combine(components);
     }
 
     public fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
@@ -68,20 +221,20 @@ class EssenceCombiningFabricator {
         if (!selectedCombination ||selectedCombination.length === 0) {
             throw new Error(`There are insufficient components available to craft Recipe ${recipe.entryId}. `)
         }
-        return this.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
+        return FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
     }
 
     private analyzeCombinationsForRecipe(components:  CraftingComponent[], recipe: Recipe): CraftingComponentCombination[] {
-        const essenceIdentities: Map<string, number> = this.assignEssenceIdentities(recipe.essences);
+        const essenceIdentities: Map<string, number> = FabricationHelper.assignEssenceIdentities(recipe.essences);
         const usableComponents: CraftingComponent[] = components.filter((component: CraftingComponent) => component.essences.filter((essence: string) => recipe.essences.includes(essence)).length > 0);
-        const recipeIdentity = this.essenceCombinationIdentity(recipe.essences, essenceIdentities);
+        const recipeIdentity = FabricationHelper.essenceCombinationIdentity(recipe.essences, essenceIdentities);
         const componentEssenceIdentity: Map<string, number> = new Map();
         usableComponents.forEach((component: CraftingComponent) => {
             if (!componentEssenceIdentity.has(component.compendiumEntry.entryId)) {
-                componentEssenceIdentity.set(component.compendiumEntry.entryId, this.essenceCombinationIdentity(component.essences, essenceIdentities));
+                componentEssenceIdentity.set(component.compendiumEntry.entryId, FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities));
             }
         });
-        return this.combinationHistogram(usableComponents).map((combination: CraftingComponent[]) => {
+        return FabricationHelper.combinationHistogram(usableComponents).map((combination: CraftingComponent[]) => {
             const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.compendiumEntry.entryId))
                 .reduce((left: number, right: number) => left * right, 1);
             const craftableRecipes: Recipe[] = [];
@@ -101,83 +254,6 @@ class EssenceCombiningFabricator {
             .reduce((left: string[], right: string[]) => left.concat(right), []);
         return essences.every((essence: string) => recipe.essences.includes(essence)
             &&  (essences.filter((essence:string) => essence === essence).length >= recipe.essences.filter((essence:string) => essence === essence).length));
-    }
-
-    private asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
-        const componentsById: Map<string, CraftingComponent[]> = new Map();
-        components.forEach((component: CraftingComponent) => {
-            const identicalComponents: CraftingComponent[] = componentsById.get(component.compendiumEntry.entryId);
-            if (!identicalComponents) {
-                componentsById.set(component.compendiumEntry.entryId, [component]);
-            } else {
-                identicalComponents.push(component);
-            }
-        });
-        if (Object.keys(componentsById).length === components.length) {
-            return components.map((component: CraftingComponent) => {
-                return CraftingResult.builder()
-                    .withItem(component)
-                    .withQuantity(1)
-                    .withAction(action)
-                    .build();
-            });
-        }
-        const results: CraftingResult[] = [];
-        componentsById.forEach((componentsOfType: CraftingComponent[]) => {
-            const craftingResult = CraftingResult.builder()
-                .withItem(componentsOfType[0])
-                .withQuantity(componentsOfType.length)
-                .withAction(action)
-                .build();
-            results.push(craftingResult);
-        });
-        return results;
-    };
-
-    private essenceCombinationIdentity(essences: string[], essenceIdentities: Map<string, number>): number {
-        return essences.map((essence: string) => essenceIdentities.get(essence))
-            .reduce((left, right) => left * right);
-    }
-
-    private assignEssenceIdentities(essences: string[]): Map<string, number> {
-        const uniqueEssences = essences.filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
-        const primes = this.generatePrimes(uniqueEssences.length);
-        const essenceIdentities: Map<string, number> = new Map();
-        uniqueEssences.forEach((value, index) => essenceIdentities.set(value, primes[index]));
-        return essenceIdentities;
-    }
-
-    private generatePrimes(quantity: number): number[] {
-        const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
-        if (quantity <= primes.length) {
-            return primes.slice(0, quantity);
-        }
-        let candidate = 98;
-        while (primes.length < quantity) {
-            if (primes.every((p) => candidate % p)) {
-                primes.push(candidate);
-            }
-            candidate++;
-        }
-        return primes;
-    }
-
-    private combinationHistogram(components:  CraftingComponent[]): CraftingComponent[][] {
-        const combinations: CraftingComponent[][] = [];
-        const iterations = Math.pow(2, components.length);
-
-        for (let i = 0; i < iterations; i++) {
-            const combination: CraftingComponent[] = [];
-            for (let j = 0; j < components.length; j++) {
-                if (i & Math.pow(2, j)) {
-                    combination.push(components[j]);
-                }
-            }
-            if (combination.length > 0) {
-                combinations.push(combination);
-            }
-        }
-        return combinations.sort((left, right) => left.length - right.length);
     }
 
     public listCraftableRecipes(craftingComponents?: CraftingComponent[]) {
@@ -255,4 +331,4 @@ class CraftingComponentCombination {
     }
 }
 
-export {Fabricator, DefaultFabricator, EssenceCombiningFabricator};
+export {Fabricator, DefaultFabricator, EssenceCombiningFabricator, AlchemicalResult, EssenceCombiner, AbstractEssenceCombiner};

@@ -5,8 +5,8 @@
         </div>
         <div class="components">
             <ul>
-                {{#each recipe.components}}
-                <li>{{quantity}} {{ingredient.name}} | {{#if consumed}} Consumed{{else}} Not consumed{{/if}}</li>
+                {{#each recipe.ingredients}}
+                <li>{{quantity}} {{componentType.name}} | {{#if consumed}} Consumed{{else}} Not consumed{{/if}}</li>
                 {{/each}}
             </ul>
         </div>

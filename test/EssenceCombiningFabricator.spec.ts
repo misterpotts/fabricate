@@ -5,8 +5,9 @@ import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
+import {EssenceCombiner, EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
 import {Inventory} from "../src/scripts/core/Inventory";
+import {AlchemicalBombEssenceCombiner} from "../src/scripts/systems/AlchemicalBombEssenceCombiner";
 
 describe('Essence Combining Fabricator |', () => {
 
@@ -40,6 +41,17 @@ describe('Essence Combining Fabricator |', () => {
         .withName('Fennel Silk')
         .withCompendiumEntry('alchemists-supplies-v11', 'a45xyz')
         .withEssences(['FIRE'])
+        .build();
+
+    const wrackwortBulbs: CraftingComponent = CraftingComponent.builder()
+        .withName('Wrackwort Bulbs')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a56xyz')
+        .withEssences(['EARTH', 'FIRE'])
+        .build();
+    const radiantSynthSeed: CraftingComponent = CraftingComponent.builder()
+        .withName('Radiant Synthseed')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a67xyz')
+        .withEssences(['POSITIVE_ENERGY'])
         .build();
 
 
@@ -151,7 +163,22 @@ describe('Essence Combining Fabricator |', () => {
 
         });
 
-        it('Should Fabricate from Components with no Recipe', () => {});
+        it('Should Fabricate from Components with no Recipe', () => {
+
+            const mockInventory: Inventory = <Inventory><unknown>{
+                denormalizedContents: Sinon.stub()
+            };
+            const essenceCombiner: EssenceCombiner = new AlchemicalBombEssenceCombiner();
+            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([], mockInventory, essenceCombiner);
+            // @ts-ignore
+            mockInventory.denormalizedContents.returns([]);
+
+            const result: CraftingResult[] = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
+
+            expect(result, 'Expected Crafting Results to be returned by "fabricateFromComponents"').to.exist;
+            expect(result.length, 'Expected 1 Crafting Result from "fabricateFromComponents"').to.equal(1);
+
+        });
 
         it('Should efficiently consume recipe components to reduce essence wastage', () => {
             const mockInventory: Inventory = <Inventory><unknown>{

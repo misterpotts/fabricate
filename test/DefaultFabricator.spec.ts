@@ -20,6 +20,10 @@ describe('Default Fabricator |', () => {
             .withName('Sticks')
             .withCompendiumEntry(compendiumPackKey, 'arWeEYkLkubimBz3')
             .build();
+        const mudPie = CraftingComponent.builder()
+            .withName('Mud Pie')
+            .withCompendiumEntry(compendiumPackKey, 'nWhTa8gD1QL1f9O3')
+            .build();
         const mudPieRecipe: Recipe = Recipe.builder()
             .withName('Recipe: Mud Pie')
             .withEntryId('4iHqWSLTMFjPbpuI')
@@ -36,10 +40,7 @@ describe('Default Fabricator |', () => {
             .withResult(CraftingResult.builder()
                 .withAction(ActionType.ADD)
                 .withQuantity(1)
-                .withItem(CraftingComponent.builder()
-                    .withName('Mud Pie')
-                    .withCompendiumEntry(compendiumPackKey, 'nWhTa8gD1QL1f9O3')
-                    .build())
+                .withItem(mudPie)
                 .build())
             .build();
 
@@ -49,43 +50,23 @@ describe('Default Fabricator |', () => {
             let underTest = new DefaultFabricator();
             let craftingResults: CraftingResult[] = underTest.fabricateFromRecipe(mudPieRecipe);
             expect(craftingResults.length).to.equal(3);
-            expect(craftingResults).to.deep.include({
-                _quantity: 1,
-                _action: 'ADD',
-                _item: {
-                    _name: 'Mud Pie',
-                    _essences: [],
-                    _compendiumEntry: {
-                        _compendiumKey: 'fabricate.fabricate-test',
-                        _entryId: 'nWhTa8gD1QL1f9O3'
-                    }
-                }
-            });
-            expect(craftingResults).to.deep.include({
-                _quantity: 2,
-                _action: 'REMOVE',
-                _item: {
-                    _name: 'Mud',
-                    _essences: [],
-                    _compendiumEntry: {
-                        _compendiumKey: 'fabricate.fabricate-test',
-                        _entryId: 'tCmAnq9zcESt0ULf'
-                    }
-                }
-            });
-            expect(craftingResults).to.deep.include({
-                _quantity: 1,
-                _action: 'REMOVE',
-                _item: {
-                    _name: 'Sticks',
-                    _essences: [],
-                    _compendiumEntry: {
-                        _compendiumKey: 'fabricate.fabricate-test',
-                        _entryId: 'arWeEYkLkubimBz3'
-                    }
-                }
-            });
-
+            expect(craftingResults).to.deep.include.members([
+                CraftingResult.builder()
+                    .withAction(ActionType.ADD)
+                    .withQuantity(1)
+                    .withItem(mudPie)
+                    .build(),
+                CraftingResult.builder()
+                    .withAction(ActionType.REMOVE)
+                    .withQuantity(2)
+                    .withItem(mud)
+                    .build(),
+                CraftingResult.builder()
+                    .withAction(ActionType.REMOVE)
+                    .withQuantity(1)
+                    .withItem(sticks)
+                    .build()
+            ]);
         });
 
         it('Should require a Recipe', () => {

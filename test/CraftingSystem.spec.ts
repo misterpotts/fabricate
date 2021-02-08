@@ -73,18 +73,34 @@ describe('Crafting System |', () => {
             expect(testSystem.supports(GameSystemType.DND5E)).to.be.true;
             expect(testSystem.recipes.length).to.equal(1);
             expect(testSystem.recipes).to.deep.include.members([
-                {
-                    _name: 'Recipe: Mud Pie',
-                    _entryId: '4iHqWSLTMFjPbpuI',
-                    _essences: [],
-                    _ingredients: [
-                        { _componentType: { _name: 'Mud', _essences: [], _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'tCmAnq9zcESt0ULf' } }, _quantity: 2, _consumed: true },
-                        { _componentType: { _name: 'Sticks', _essences: [], _compendiumEntry: { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'arWeEYkLkubimBz3' } }, _quantity: 1, _consumed: true }
-                    ],
-                    _results: [
-                        { _action: 'ADD', _item: { _name: 'Mud Pie', _essences: [], "_compendiumEntry": { _compendiumKey: 'fabricate.fabricate-test', _entryId: 'nWhTa8gD1QL1f9O3' } }, _quantity : 1 }
-                    ],
-                }
+                Recipe.builder()
+                    .withName('Recipe: Mud Pie')
+                    .withEntryId('4iHqWSLTMFjPbpuI')
+                    .withIngredient(Ingredient.builder()
+                        .withComponentType(CraftingComponent.builder()
+                            .withName('Mud')
+                            .withCompendiumEntry('fabricate.fabricate-test', 'tCmAnq9zcESt0ULf')
+                            .build())
+                        .withQuantity(2)
+                        .isConsumed(true)
+                        .build())
+                    .withIngredient(Ingredient.builder()
+                        .withComponentType(CraftingComponent.builder()
+                            .withName('Sticks')
+                            .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
+                            .build())
+                        .withQuantity(1)
+                        .isConsumed(true)
+                        .build())
+                    .withResult(CraftingResult.builder()
+                        .withAction(ActionType.ADD)
+                        .withQuantity(1)
+                        .withItem(CraftingComponent.builder()
+                            .withName('Mud Pie')
+                            .withCompendiumEntry('fabricate.fabricate-test', 'nWhTa8gD1QL1f9O3')
+                            .build())
+                        .build())
+                    .build()
             ]);
         });
 

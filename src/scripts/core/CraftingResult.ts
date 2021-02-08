@@ -6,11 +6,13 @@ class CraftingResult {
     private readonly _item: CraftingComponent;
     private readonly _quantity: number;
     private readonly _action: ActionType;
+    private readonly _customData: any;
 
     constructor(builder: CraftingResult.Builder) {
         this._item = builder.item;
         this._quantity = builder.quantity;
         this._action = builder.action;
+        this._customData = builder.customData;
     }
 
     public static builder(): CraftingResult.Builder {
@@ -27,6 +29,10 @@ class CraftingResult {
 
     get action(): ActionType {
         return this._action;
+    }
+
+    get customData(): any {
+        return this._customData;
     }
 
     public static fromFlags(flags: FabricateResultFlags): CraftingResult {
@@ -57,6 +63,7 @@ namespace CraftingResult {
         public item!: CraftingComponent;
         public quantity!: number;
         public action!: ActionType;
+        customData: any;
 
         public withItem(value: CraftingComponent): Builder {
             this.item = value;
@@ -75,6 +82,11 @@ namespace CraftingResult {
 
         public build(): CraftingResult {
             return new CraftingResult(this);
+        }
+
+        withCustomData(value: any) {
+            this.customData = value;
+            return this;
         }
     }
 }
