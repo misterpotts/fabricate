@@ -31,6 +31,7 @@ interface FabricateCompendiumData {
     recipe?: {
         entryId: string,
         name: string,
+        essences: string[],
         ingredients: FabricateIngredientFlags[],
         results: FabricateResultFlags[]
     };

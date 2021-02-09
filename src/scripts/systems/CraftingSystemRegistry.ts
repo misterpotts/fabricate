@@ -1,7 +1,8 @@
 import {CraftingSystem} from "../core/CraftingSystem";
 import {Recipe} from "../core/Recipe";
 import {GameSystemType} from "../core/GameSystemType";
-import {DefaultFabricator} from "../core/Fabricator";
+import {DefaultFabricator, EssenceCombiningFabricator} from "../core/Fabricator";
+import {AlchemicalBombEssenceCombiner} from "./AlchemicalBombEssenceCombiner";
 
 class CraftingSystemRegistry {
     private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();
@@ -61,5 +62,12 @@ const testSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
     .withSupportedGameSystem(GameSystemType.DND5E)
     .withFabricator(new DefaultFabricator());
 CraftingSystemRegistry.declareSpecification(testSystemSpec);
+
+const alchemistsSuppliesV11Spec: CraftingSystem.Builder = CraftingSystem.builder()
+    .withName('Alchemist\'s Supplies v1.1')
+    .withCompendiumPackKey('fabricate.alchemists-supplies-v11')
+    .withSupportedGameSystem(GameSystemType.DND5E)
+    .withFabricator(new EssenceCombiningFabricator(new AlchemicalBombEssenceCombiner()));
+CraftingSystemRegistry.declareSpecification(alchemistsSuppliesV11Spec);
 
 export {CraftingSystemRegistry}

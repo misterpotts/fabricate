@@ -1,12 +1,10 @@
 import {expect} from 'chai';
-import * as Sinon from 'sinon';
 
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {EssenceCombiner, EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
-import {Inventory} from "../src/scripts/core/Inventory";
 import {AlchemicalBombEssenceCombiner} from "../src/scripts/systems/AlchemicalBombEssenceCombiner";
 
 describe('Essence Combining Fabricator |', () => {
@@ -103,54 +101,20 @@ describe('Essence Combining Fabricator |', () => {
 
         it('Should list craftable Recipes from Components', () => {
 
-            const mockInventory: Inventory = <Inventory><unknown>{};
-
-            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([instantRopeRecipe, acidRecipe], mockInventory);
-            const result: Recipe[] = underTest.listCraftableRecipes([ironwoodHeart, hydrathistle, voidroot]);
+            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator();
+            const result: Recipe[] = underTest.filterCraftableRecipesFor([ironwoodHeart, hydrathistle, voidroot], [instantRopeRecipe, acidRecipe, flashbangRecipe]);
 
             expect(result, 'List of recipes was null!').to.exist;
             expect(result.length, 'Expected one craftable recipe').to.equal(1);
             const resultRecipe: Recipe = result[0];
             expect(resultRecipe.entryId, 'Expected Instant Rope to be the only craftable recipe').to.equal(instantRopeRecipe.entryId);
-
-        });
-
-        it('Should list craftable Recipes from Components from Inventory contents', () => {
-
-            const mockInventory: Inventory = <Inventory><unknown>{
-                denormalizedContents: Sinon.stub()
-            };
-            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([instantRopeRecipe, acidRecipe], mockInventory);
-            // @ts-ignore
-            mockInventory.denormalizedContents.returns([ironwoodHeart, hydrathistle, voidroot]);
-            const result: Recipe[] = underTest.listCraftableRecipes();
-
-            expect(result, 'List of recipes was null!').to.exist;
-            expect(result.length, 'Expected one craftable recipe').to.equal(1);
-            const resultRecipe: Recipe = result[0];
-            expect(resultRecipe.entryId, 'Expected Instant Rope to be the only craftable recipe').to.equal(instantRopeRecipe.entryId);
-
-        });
-
-        it('Should not Fabricate from an unknown Recipe', () => {
-
-            const mockInventory: Inventory = <Inventory><unknown>{};
-
-            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([instantRopeRecipe], mockInventory);
-            expect(() => underTest.fabricateFromRecipe(acidRecipe)).to.throw(`Recipe ${acidRecipe.entryId} is not known and cannot be crafted. `);
 
         });
 
         it('Should Fabricate from a Recipe that requires essences', () => {
 
-            const mockInventory: Inventory = <Inventory><unknown>{
-                denormalizedContents: Sinon.stub()
-            };
-            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([instantRopeRecipe, acidRecipe], mockInventory);
-            // @ts-ignore
-            mockInventory.denormalizedContents.returns([ironwoodHeart, hydrathistle, voidroot]);
-
-            const result: CraftingResult[] = underTest.fabricateFromRecipe(instantRopeRecipe);
+            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator();
+            const result: CraftingResult[] = underTest.fabricateFromRecipe(instantRopeRecipe, [ironwoodHeart, hydrathistle, voidroot]);
 
             expect(result, 'Crafting Result of recipes was null!').to.exist;
             expect(result.length, 'Expected four Crafting Results').to.equal(4);
@@ -165,13 +129,8 @@ describe('Essence Combining Fabricator |', () => {
 
         it('Should Fabricate from Components with no Recipe', () => {
 
-            const mockInventory: Inventory = <Inventory><unknown>{
-                denormalizedContents: Sinon.stub()
-            };
             const essenceCombiner: EssenceCombiner = new AlchemicalBombEssenceCombiner();
-            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([], mockInventory, essenceCombiner);
-            // @ts-ignore
-            mockInventory.denormalizedContents.returns([]);
+            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator(essenceCombiner);
 
             const result: CraftingResult[] = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
@@ -181,14 +140,10 @@ describe('Essence Combining Fabricator |', () => {
         });
 
         it('Should efficiently consume recipe components to reduce essence wastage', () => {
-            const mockInventory: Inventory = <Inventory><unknown>{
-                denormalizedContents: Sinon.stub()
-            };
-            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator([flashbangRecipe], mockInventory);
-            // @ts-ignore
-            mockInventory.denormalizedContents.returns([luminousCapDust, luminousCapDust, wispStalks, fennelSilk]);
 
-            const result: CraftingResult[] = underTest.fabricateFromRecipe(flashbangRecipe);
+            const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator();
+
+            const result: CraftingResult[] = underTest.fabricateFromRecipe(flashbangRecipe, [luminousCapDust, luminousCapDust, wispStalks, fennelSilk]);
 
             expect(result, 'Crafting Result of recipes was null!').to.exist;
             expect(result.length, 'Expected three Crafting Results').to.equal(3);

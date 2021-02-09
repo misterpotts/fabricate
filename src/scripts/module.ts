@@ -18,6 +18,8 @@ async function loadCraftingSystems() {
     let systemSpecifications = CraftingSystemRegistry.systemSpecifications;
     console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
     systemSpecifications.forEach(loadCraftingSystem);
+    const systemNames = systemSpecifications.map((systemSpec: CraftingSystem.Builder) => systemSpec.name);
+    console.log(`${Properties.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `);
 }
 
 /**

@@ -48,7 +48,7 @@ class CraftingSystem {
         }
 
         const fabricator: Fabricator = this.fabricator;
-        const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe);
+        const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe, inventory.denormalizedContents());
 
         for (const craftingResult of craftingResults) {
             switch (craftingResult.action) {

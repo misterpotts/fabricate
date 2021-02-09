@@ -165,7 +165,8 @@ describe('Crafting System |', () => {
             const mockInventory: Inventory = <Inventory5E><unknown>{
                 contains: Sinon.stub(),
                 add: Sinon.stub(),
-                remove: Sinon.stub()
+                remove: Sinon.stub(),
+                denormalizedContents: Sinon.stub()
             }
             // @ts-ignore
             mockInventory.contains.withArgs(twoMud).returns(true);
@@ -179,6 +180,8 @@ describe('Crafting System |', () => {
                 .build());
             // @ts-ignore
             mockInventory.remove.returns(true);
+            // @ts-ignore
+            mockInventory.denormalizedContents.returns([]);
 
             const removeOneStick = CraftingResult.builder()
                 .withItem(oneStick.componentType)

@@ -24,6 +24,7 @@ class Recipe {
         return Recipe.builder()
             .withName(flags.recipe.name)
             .withEntryId(flags.recipe.entryId)
+            .withEssences(flags.recipe.essences)
             .withResults(CraftingResult.manyFromFlags(flags.recipe.results))
             .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients))
             .build();
@@ -68,7 +69,9 @@ class Recipe {
                 resultsValid = false;
             }
         });
-        return nameValid && idValid && ingredientsValid && resultsValid;
+        const essencesValid: boolean = this.essences !== null;
+        const hasInputSpecified: boolean = this.essences.length > 0 || this.ingredients.length > 0;
+        return nameValid && idValid && ingredientsValid && resultsValid && essencesValid && hasInputSpecified;
     }
 }
 

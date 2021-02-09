@@ -2,10 +2,9 @@ import {Recipe} from "./Recipe";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
 import {CraftingComponent} from "./CraftingComponent";
-import {Inventory} from "./Inventory";
 
 interface Fabricator {
-    fabricateFromRecipe(recipe: Recipe): CraftingResult[];
+    fabricateFromRecipe(recipe: Recipe, components?: CraftingComponent[]): CraftingResult[];
 
     fabricateFromComponents(components: CraftingComponent[]): CraftingResult[];
 }
@@ -188,21 +187,11 @@ class DefaultFabricator implements Fabricator {
 
 }
 
-class EssenceCombiningFabricator {
-    private readonly _knownRecipesById: Map<string, Recipe>;
-    private readonly _inventory: Inventory;
+class EssenceCombiningFabricator implements Fabricator {
     private readonly _essenceCombiner: EssenceCombiner;
 
-    constructor(knownRecipes: Recipe[], inventory: Inventory, essenceCombiner?: EssenceCombiner) {
-        this._inventory = inventory;
+    constructor(essenceCombiner?: EssenceCombiner) {
         this._essenceCombiner = essenceCombiner;
-        this._knownRecipesById = new Map();
-        knownRecipes.forEach((recipe: Recipe) => {
-            if (this._knownRecipesById.has(recipe.entryId)) {
-                throw new Error(`Recipe ${recipe.entryId} is not unique! `);
-            }
-            this._knownRecipesById.set(recipe.entryId, recipe);
-        });
     }
 
     public fabricateFromComponents(components: CraftingComponent[]): CraftingResult[] {
@@ -212,11 +201,11 @@ class EssenceCombiningFabricator {
         return this._essenceCombiner.combine(components);
     }
 
-    public fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
-        if (!this._knownRecipesById.has(recipe.entryId)) {
-            throw new Error(`Recipe ${recipe.entryId} is not known and cannot be crafted. `);
+    public fabricateFromRecipe(recipe: Recipe, craftingComponents: CraftingComponent[]): CraftingResult[] {
+        if (!craftingComponents || craftingComponents.length === 0) {
+            throw new Error(`Essence Combining Fabricators require components to Fabricate Recipes. `);
         }
-        const craftingComponentCombinations = this.analyzeCombinationsForRecipe(this._inventory.denormalizedContents(), recipe);
+        const craftingComponentCombinations = this.analyzeCombinationsForRecipe(craftingComponents, recipe);
         const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
         if (!selectedCombination ||selectedCombination.length === 0) {
             throw new Error(`There are insufficient components available to craft Recipe ${recipe.entryId}. `)
@@ -256,11 +245,8 @@ class EssenceCombiningFabricator {
             &&  (essences.filter((essence:string) => essence === essence).length >= recipe.essences.filter((essence:string) => essence === essence).length));
     }
 
-    public listCraftableRecipes(craftingComponents?: CraftingComponent[]) {
-        if(!craftingComponents) {
-            craftingComponents = this._inventory.denormalizedContents();
-        }
-        return Array.from(this._knownRecipesById.values()).filter((recipe: Recipe) => this.isCraftableFromEssencesIn(recipe, craftingComponents));
+    public filterCraftableRecipesFor(craftingComponents: CraftingComponent[], recipes: Recipe[]) {
+        return recipes.filter((recipe: Recipe) => this.isCraftableFromEssencesIn(recipe, craftingComponents));
     }
 
     private selectBestCombinationFrom(recipe: Recipe, combinations: CraftingComponentCombination[]): CraftingComponent[] {

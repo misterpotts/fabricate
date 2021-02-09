@@ -1,15 +1,33 @@
 <div class="recipe-tab-content">
     <div class="ingredients">
-        <div class="description">
-            <p>This recipe requires the following components:</p>
-        </div>
+        {{#if recipe.ingredients}}
         <div class="components">
-            <ul>
-                {{#each recipe.ingredients}}
-                <li>{{quantity}} {{componentType.name}} | {{#if consumed}} Consumed{{else}} Not consumed{{/if}}</li>
-                {{/each}}
-            </ul>
+            <div class="description">
+                <p>This recipe requires the following ingredients:</p>
+            </div>
+            <div class="details">
+                <ul>
+                    {{#each recipe.ingredients}}
+                    <li>{{quantity}} {{componentType.name}} | {{#if consumed}} Consumed{{else}} Not consumed{{/if}}</li>
+                    {{/each}}
+                </ul>
+            </div>
         </div>
+        {{/if}}
+        {{#if recipe.essences}}
+        <div class="essences">
+            <div class="description">
+                <p>This recipe requires the following essences:</p>
+            </div>
+            <div class="details">
+                <ul>
+                    {{#each recipe.essences}}
+                    <li>{{.}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+        {{/if}}
     </div>
     <div class="results">
         <div class="description">

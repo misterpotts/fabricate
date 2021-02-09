@@ -46,13 +46,14 @@ describe('Recipe |', () => {
             ]);
         });
 
-        it('Should create a Recipe from flags', () => {
+        it('Should create a Recipe using Ingredients from flags', () => {
 
             const recipeFlagData: FabricateCompendiumData = <FabricateCompendiumData>{
                 type: "RECIPE",
                 recipe: {
                     entryId: '4iHqWSLTMFjPbpuI',
                     name: 'Recipe: Mud Pie',
+                    essences: [],
                     ingredients: [
                         {
                             componentType: {
