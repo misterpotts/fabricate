@@ -85,24 +85,3 @@ describe('Bundles |', () => {
     });
 
 });
-
-// @ts-ignore
-function validateLine(line: string) {
-    const json = JSON.parse(line);
-    const flags: FabricateCompendiumData = json.flags;
-    expect(flags.type).to.be.oneOf([FabricateItemType.COMPONENT, FabricateItemType.RECIPE]);
-    switch (flags.type) {
-        case FabricateItemType.RECIPE:
-            const recipe: Recipe = Recipe.fromFlags(flags);
-            expect(recipe.isValid()).to.be.true;
-            console.log(`Recipe ${recipe.name} is valid!`);
-            break;
-        case FabricateItemType.COMPONENT:
-            const craftingComponent: CraftingComponent = CraftingComponent.fromFlags(flags);
-            expect(craftingComponent.isValid()).to.be.true;
-            console.log(`Component ${craftingComponent.name} is valid!`);
-            break;
-        default:
-            throw new Error(`Unable to determine type of Compendium Entry {name: ${json.name}, id:${json._id}}`);
-    }
-}

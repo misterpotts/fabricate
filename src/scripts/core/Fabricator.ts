@@ -260,14 +260,7 @@ class EssenceCombiningFabricator {
         if(!craftingComponents) {
             craftingComponents = this._inventory.denormalizedContents();
         }
-        const essencesPresent:string[] = craftingComponents.map((component: CraftingComponent) => component.essences)
-            .reduce((left, right) => left.concat(right), []);
-        return Array.from(this._knownRecipesById.values()).filter((recipe: Recipe) => {
-            return recipe.essences.every((essence: string) => {
-                return essencesPresent.includes(essence)
-                    && (recipe.essences.filter((essence: string) => essence === essence).length <= essencesPresent.filter((essence: string) => essence === essence).length);
-            });
-        });
+        return Array.from(this._knownRecipesById.values()).filter((recipe: Recipe) => this.isCraftableFromEssencesIn(recipe, craftingComponents));
     }
 
     private selectBestCombinationFrom(recipe: Recipe, combinations: CraftingComponentCombination[]): CraftingComponent[] {
