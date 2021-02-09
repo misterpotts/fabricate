@@ -17,14 +17,7 @@
         {{#if recipe.essences}}
         <div class="essences">
             <div class="description">
-                <p>This recipe requires the following essences:</p>
-            </div>
-            <div class="details">
-                <ul>
-                    {{#each recipe.essences}}
-                    <li>{{.}}</li>
-                    {{/each}}
-                </ul>
+                <p>This recipe requires the following essences: {{{essenceIconSeries recipe.essences}}}</p>
             </div>
         </div>
         {{/if}}

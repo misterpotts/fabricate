@@ -2,6 +2,7 @@ import {ItemRecipeTab} from "./ItemRecipeTab";
 import {CraftingTab} from "./CraftingTab";
 import {InventoryRegistry} from "../systems/InventoryRegistry";
 import {Inventory} from "../core/Inventory";
+import {EssenceTypeIconConverter} from "../core/EssenceType";
 
 class Registrar {
 
@@ -17,6 +18,18 @@ class Registrar {
         Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
             // @ts-ignore
             return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+        });
+
+        // @ts-ignore
+        Handlebars.registerHelper('essenceIcon', function(arg1, arg2, options) {
+            // @ts-ignore
+            return EssenceTypeIconConverter.convertToIconMarkup(arg1);
+        });
+
+        // @ts-ignore
+        Handlebars.registerHelper('essenceIconSeries', function(arg1, arg2, options) {
+            // @ts-ignore
+            return EssenceTypeIconConverter.convertSeriesToIconMarkup(arg1);
         });
 
     }
