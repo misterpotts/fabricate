@@ -20,7 +20,7 @@ Fabricate is a module for Foundry VTT in the early stages of development. Once c
 
 Here's a quick preview of one of the early features - crafting from a Recipe.
 
-![](/screens/fabricate-preview-2.gif)
+![](/screens/fabricate-preview-3.gif)
 
 If you'd like to be involved I'd love to have some help! I'm always happy to talk to you about how people can contribute.
 
