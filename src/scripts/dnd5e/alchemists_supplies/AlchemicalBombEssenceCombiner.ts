@@ -1,7 +1,7 @@
-import {AbstractEssenceCombiner, AlchemicalResult} from "../core/Fabricator";
-import {CraftingResult} from "../core/CraftingResult";
-import {CraftingComponent} from "../core/CraftingComponent";
-import {ActionType} from "../core/ActionType";
+import {AbstractEssenceCombiner, AlchemicalResult} from "../../core/Fabricator";
+import {CraftingResult} from "../../core/CraftingResult";
+import {CraftingComponent} from "../../core/CraftingComponent";
+import {ActionType} from "../../core/ActionType";
 
 class AlchemicalBombEssenceCombiner extends AbstractEssenceCombiner {
 

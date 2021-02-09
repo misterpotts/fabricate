@@ -9,7 +9,7 @@ import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
-import {InventoryRegistry} from "../src/scripts/systems/InventoryRegistry";
+import {InventoryRegistry} from "../src/scripts/registries/InventoryRegistry";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {Inventory} from "../src/scripts/core/Inventory";
 import {InventoryRecord} from "../src/scripts/core/InventoryRecord";

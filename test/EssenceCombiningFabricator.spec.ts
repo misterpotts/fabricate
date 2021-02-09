@@ -5,7 +5,7 @@ import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {EssenceCombiner, EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
-import {AlchemicalBombEssenceCombiner} from "../src/scripts/systems/AlchemicalBombEssenceCombiner";
+import {AlchemicalBombEssenceCombiner} from "../src/scripts/dnd5e/alchemists_supplies/AlchemicalBombEssenceCombiner";
 
 describe('Essence Combining Fabricator |', () => {
 

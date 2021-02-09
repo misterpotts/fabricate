@@ -35,11 +35,13 @@ class CraftingComponent {
     private readonly _name: string;
     private readonly _compendiumEntry: CompendiumEntry;
     private readonly _essences: string[];
+    private _imageUrl: string;
 
     constructor(builder: CraftingComponent.Builder) {
         this._name = builder.name;
         this._compendiumEntry = builder.compendiumEntry;
         this._essences = builder.essences;
+        this._imageUrl = builder.imageUrl;
     }
 
     get name(): string {
@@ -54,20 +56,31 @@ class CraftingComponent {
         return this._essences;
     }
 
+    get imageUrl(): string {
+        return this._imageUrl;
+    }
+
+    set imageUrl(imageUrl: string) {
+        this._imageUrl = imageUrl;
+    }
+
     public static builder() {
         return new CraftingComponent.Builder();
     }
 
-    public static fromFlags(fabricateFlags: FabricateCompendiumData): CraftingComponent {
+    public static fromFlags(fabricateFlags: FabricateCompendiumData, imageUrl?: string): CraftingComponent {
         if (fabricateFlags.type !== FabricateItemType.COMPONENT) {
             throw new Error(`Error attempting to instantiate a Fabricate Crafting Component from ${fabricateFlags.type} data. `);
         }
         const compendiumEntryConfig = fabricateFlags.component.compendiumEntry;
-        return CraftingComponent.builder()
+        const builder = CraftingComponent.builder()
             .withName(fabricateFlags.component.name)
             .withCompendiumEntry(compendiumEntryConfig.compendiumKey, compendiumEntryConfig.entryId)
-            .withEssences(fabricateFlags.component.essences)
-            .build();
+            .withEssences(fabricateFlags.component.essences);
+        if (imageUrl && imageUrl.length > 0) {
+            builder.withImageUrl(imageUrl);
+        }
+        return builder.build();
     }
 
     public equals(other: CraftingComponent): boolean {
@@ -89,6 +102,7 @@ namespace CraftingComponent {
         public name!: string;
         public compendiumEntry!: CompendiumEntry;
         public essences: string[] = [];
+        public imageUrl: string;
 
         public withName(value: string): Builder {
             this.name = value;
@@ -110,9 +124,15 @@ namespace CraftingComponent {
             return this;
         }
 
+        withImageUrl(value: string) {
+            this.imageUrl = value;
+            return this;
+        }
+
         public build(): CraftingComponent {
             return new CraftingComponent(this);
         }
+
     }
 }
 

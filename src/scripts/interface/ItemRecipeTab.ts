@@ -1,7 +1,10 @@
 import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
-import {CraftingSystemRegistry} from "../systems/CraftingSystemRegistry";
+import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingSystem} from "../core/CraftingSystem";
+import {Ingredient} from "../core/Ingredient";
+import {CraftingComponent} from "../core/CraftingComponent";
+import {CraftingResult} from "../core/CraftingResult";
 
 class ItemRecipeTab {
     private static readonly recipeType: string = Properties.types.recipe;
@@ -31,6 +34,15 @@ class ItemRecipeTab {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
         this._recipe = Recipe.fromFlags(itemApplication.item.data.flags.fabricate);
+        const craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
+        this._recipe.ingredients.forEach((ingredient: Ingredient) => {
+            const component: CraftingComponent = ingredient.componentType;
+            component.imageUrl = craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
+        });
+        this._recipe.results.forEach((result: CraftingResult) => {
+            const component: CraftingComponent = result.item;
+            component.imageUrl = craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
+        });
     }
 
     private init(sheetHtml: any) {
@@ -40,8 +52,8 @@ class ItemRecipeTab {
     }
 
     private async render(): Promise<void> {
-        let template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item});
-        let element = this._sheetHtml.find('.recipe-tab-content');
+        const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item});
+        const element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);
         } else {
@@ -59,7 +71,7 @@ class ItemRecipeTab {
     private addTabToItemSheet(sheetHtml: any): void {
         const tabs = sheetHtml.find(`.tabs[data-group="primary"]`);
         tabs.append($(
-            `<a class="item" data-tab="${ItemRecipeTab.tabKey}">Recipe</a>`
+            `<a class="item fabricate-recipe" data-tab="${ItemRecipeTab.tabKey}">Recipe</a>`
         ));
 
         $(sheetHtml.find(`.sheet-body`)).append($(
@@ -79,7 +91,7 @@ class ItemRecipeTab {
     }
 
     private isActiveInNav(): boolean {
-        return $(this._sheetHtml).find(`a.item[data-tab="${ItemRecipeTab.tabKey}"]`).hasClass('active');
+        return $(this._sheetHtml).find(`a.fabricate-recipe[data-tab="${ItemRecipeTab.tabKey}"]`).hasClass('active');
     }
 }
 

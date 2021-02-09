@@ -1,10 +1,10 @@
-import {ItemRecipeTab} from "./ItemRecipeTab";
-import {CraftingTab} from "./CraftingTab";
-import {InventoryRegistry} from "../systems/InventoryRegistry";
-import {Inventory} from "../core/Inventory";
-import {EssenceTypeIconConverter} from "../core/EssenceType";
+import {ItemRecipeTab} from "./interface/ItemRecipeTab";
+import {CraftingTab} from "./interface/CraftingTab";
+import {InventoryRegistry} from "./registries/InventoryRegistry";
+import {Inventory} from "./core/Inventory";
+import {EssenceTypeIconConverter} from "./core/EssenceType";
 
-class Registrar {
+class FabricateLifecycle {
 
     public static init() {
         this.registerHandlebarsHelperFunctions();
@@ -78,4 +78,4 @@ class Registrar {
     }
 }
 
-export {Registrar}
+export {FabricateLifecycle}

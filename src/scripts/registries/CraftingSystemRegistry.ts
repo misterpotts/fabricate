@@ -2,7 +2,7 @@ import {CraftingSystem} from "../core/CraftingSystem";
 import {Recipe} from "../core/Recipe";
 import {GameSystemType} from "../core/GameSystemType";
 import {DefaultFabricator, EssenceCombiningFabricator} from "../core/Fabricator";
-import {AlchemicalBombEssenceCombiner} from "./AlchemicalBombEssenceCombiner";
+import {AlchemicalBombEssenceCombiner} from "../dnd5e/alchemists_supplies/AlchemicalBombEssenceCombiner";
 
 class CraftingSystemRegistry {
     private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();

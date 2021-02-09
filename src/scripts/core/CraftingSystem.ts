@@ -5,14 +5,14 @@ import {Inventory} from "./Inventory";
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
-import {InventoryRegistry} from "../systems/InventoryRegistry";
+import {InventoryRegistry} from "../registries/InventoryRegistry";
 
 class CraftingSystem {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
     private readonly _fabricator: Fabricator;
     private readonly _recipes: Recipe[];
-    private readonly _components: CraftingComponent[];
+    private readonly _componentsById: Map<string, CraftingComponent>;
     private readonly _supportedGameSystems: string[];
 
     constructor(builder: CraftingSystem.Builder) {
@@ -20,7 +20,7 @@ class CraftingSystem {
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
         this._recipes = builder.recipes;
-        this._components = builder.components;
+        this._componentsById = new Map(builder.components.map((component: CraftingComponent) => [component.compendiumEntry.entryId, component]));
         this._supportedGameSystems = builder.supportedGameSystems;
     }
 
@@ -83,7 +83,11 @@ class CraftingSystem {
     }
 
     get components(): CraftingComponent[] {
-        return this._components;
+        return Array.from(this._componentsById.values());
+    }
+
+    getComponentByEntryId(entryId: string): CraftingComponent {
+        return this._componentsById.get(entryId);
     }
 
     public supports(gameSystem: string) {

@@ -8,7 +8,7 @@
             <div class="details">
                 <ul>
                     {{#each recipe.ingredients}}
-                    <li>{{quantity}} {{componentType.name}} | {{#if consumed}} Consumed{{else}} Not consumed{{/if}}</li>
+                    <li><p>{{quantity}} {{componentType.name}} {{#if consumed}}(Consumed){{else}}(Not consumed){{/if}}</p><img src="{{{componentType.imageUrl}}}" title="{{componentType.name}}"/></li>
                     {{/each}}
                 </ul>
             </div>
@@ -30,7 +30,7 @@
             <ul>
                 {{#each recipe.results}}
                 {{#ifEquals action "ADD"}}
-                <li>{{quantity}} {{item.name}}</li>
+                <li><p>{{quantity}} {{item.name}}</p><img src="{{{item.imageUrl}}}" title="{{item.name}}"/></li>
                 {{/ifEquals}}
                 {{/each}}
             </ul>
@@ -39,7 +39,7 @@
     {{#if item.isOwned}}
     <div class="controls">
         <a class="craft-button" title="Craft">
-            <p data-recipe-id="{{recipe.entryId}}" data-actor-id="{{item.actor.id}}">Craft</p>
+            <p data-recipe-id="{{recipe.entryId}}" data-actor-id="{{item.actor.id}}"><i class="fas fa-flask"></i> Craft</p>
         </a>
     </div>
     {{else}}

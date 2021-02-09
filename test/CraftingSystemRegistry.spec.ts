@@ -7,7 +7,7 @@ import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {ActionType} from "../src/scripts/core/ActionType";
-import {CraftingSystemRegistry} from "../src/scripts/systems/CraftingSystemRegistry";
+import {CraftingSystemRegistry} from "../src/scripts/registries/CraftingSystemRegistry";
 
 describe('Crafting System Registry |', () => {
 

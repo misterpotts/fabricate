@@ -2,8 +2,8 @@ import Properties from "./Properties";
 import {FabricateCompendiumData, FabricateItemType} from "./core/CompendiumData";
 import {Recipe} from "./core/Recipe";
 import {CraftingComponent} from "./core/CraftingComponent";
-import {CraftingSystemRegistry} from "./systems/CraftingSystemRegistry";
-import {Registrar} from "./interface/Registrar";
+import {CraftingSystemRegistry} from "./registries/CraftingSystemRegistry";
+import {FabricateLifecycle} from "./FabricateLifecycle";
 import {CraftingSystem} from "./core/CraftingSystem";
 
 // Enable as needed for dev. Do not release!
@@ -11,7 +11,7 @@ import {CraftingSystem} from "./core/CraftingSystem";
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
-    Registrar.init();
+    FabricateLifecycle.init();
 });
 
 async function loadCraftingSystems() {
@@ -38,11 +38,11 @@ async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
     }
     let systemPack: Compendium = game.packs.get(systemSpec.compendiumPackKey)
     let content = await loadCompendiumContent(systemPack, 10);
-    content.forEach((item: Entity) => {
+    content.forEach((item: any) => {
         let itemConfig: FabricateCompendiumData = item.data.flags.fabricate;
         switch (itemConfig.type) {
             case FabricateItemType.COMPONENT:
-                systemSpec.withComponent(CraftingComponent.fromFlags(itemConfig));
+                systemSpec.withComponent(CraftingComponent.fromFlags(itemConfig, item.img));
                 break;
             case FabricateItemType.RECIPE:
                 systemSpec.withRecipe(Recipe.fromFlags(itemConfig));
