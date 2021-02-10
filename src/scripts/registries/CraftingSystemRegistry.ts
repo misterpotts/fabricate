@@ -57,7 +57,8 @@ class CraftingSystemRegistry {
 }
 
 const testSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
-    .withName('Test System')
+    .withName('Child\'s Play')
+    .withEnableHint('Enable the test Crafting System for Fabricate?')
     .withCompendiumPackKey('fabricate.fabricate-test')
     .withSupportedGameSystem(GameSystemType.DND5E)
     .withFabricator(new DefaultFabricator());
@@ -66,6 +67,7 @@ CraftingSystemRegistry.declareSpecification(testSystemSpec);
 const alchemistsSuppliesV11Spec: CraftingSystem.Builder = CraftingSystem.builder()
     .withName('Alchemist\'s Supplies v1.1')
     .withCompendiumPackKey('fabricate.alchemists-supplies-v11')
+    .withEnableHint('Enable the Alchemist\'s Supplies v1.1 crafting system by /u/calculusChild?')
     .withSupportedGameSystem(GameSystemType.DND5E)
     .withFabricator(new EssenceCombiningFabricator(new AlchemicalBombEssenceCombiner()));
 CraftingSystemRegistry.declareSpecification(alchemistsSuppliesV11Spec);

@@ -38,9 +38,13 @@
     </div>
     {{#if item.isOwned}}
     <div class="controls">
+        {{#if system.enabled}}
         <a class="craft-button" title="Craft">
             <p data-recipe-id="{{recipe.entryId}}" data-actor-id="{{item.actor.id}}"><i class="fas fa-flask"></i> Craft</p>
         </a>
+        {{else}}
+        <p><i class="fas fa-lock"></i> The crafting system "{{system.name}}" is disabled! </p>
+        {{/if}}
     </div>
     {{else}}
     <div class="no-controls">

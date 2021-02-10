@@ -3,6 +3,8 @@ import {CraftingTab} from "./interface/CraftingTab";
 import {InventoryRegistry} from "./registries/InventoryRegistry";
 import {Inventory} from "./core/Inventory";
 import {EssenceTypeIconConverter} from "./core/EssenceType";
+import {CraftingSystem} from "./core/CraftingSystem";
+import {CraftingSystemRegistry} from "./registries/CraftingSystemRegistry";
 
 class FabricateLifecycle {
 
@@ -75,6 +77,18 @@ class FabricateLifecycle {
             }
         });
 
+    }
+
+    public static registerCraftingSystemSettings(systemSpec: CraftingSystem.Builder) {
+        game.settings.register("fabricate", systemSpec.compendiumPackKey + ".enabled", {
+            name: systemSpec.name,
+            hint: systemSpec.enableHint,
+            scope: "world",
+            type: Boolean,
+            default: true,
+            config: true,
+            onChange: (enabled: boolean) => { CraftingSystemRegistry.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
+        });
     }
 }
 

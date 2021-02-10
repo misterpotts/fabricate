@@ -17,6 +17,7 @@ Hooks.once('ready', () => {
 async function loadCraftingSystems() {
     let systemSpecifications = CraftingSystemRegistry.systemSpecifications;
     console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
+    systemSpecifications.forEach(FabricateLifecycle.registerCraftingSystemSettings);
     systemSpecifications.forEach(loadCraftingSystem);
     const systemNames = systemSpecifications.map((systemSpec: CraftingSystem.Builder) => systemSpec.name);
     console.log(`${Properties.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `);
@@ -51,6 +52,8 @@ async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
                 throw new Error(`${Properties.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `);
         }
     });
+    const enabled = game.settings.get(Properties.module.name, systemSpec.compendiumPackKey + '.enabled');
+    systemSpec.isEnabled(enabled);
     let system: CraftingSystem = systemSpec.build();
     CraftingSystemRegistry.register(system);
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);

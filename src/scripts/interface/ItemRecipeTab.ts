@@ -15,6 +15,7 @@ class ItemRecipeTab {
     private _sheetHtml: any;
     private readonly _item: any;
     private readonly _recipe: Recipe;
+    private readonly _craftingSystem: CraftingSystem;
     private _suppressedInNav: boolean = false;
     private static tabKey: string = 'fabricate-recipe';
 
@@ -34,14 +35,14 @@ class ItemRecipeTab {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
         this._recipe = Recipe.fromFlags(itemApplication.item.data.flags.fabricate);
-        const craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
+        this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
         this._recipe.ingredients.forEach((ingredient: Ingredient) => {
             const component: CraftingComponent = ingredient.componentType;
-            component.imageUrl = craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
+            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
         });
         this._recipe.results.forEach((result: CraftingResult) => {
             const component: CraftingComponent = result.item;
-            component.imageUrl = craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
+            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
         });
     }
 
@@ -52,7 +53,7 @@ class ItemRecipeTab {
     }
 
     private async render(): Promise<void> {
-        const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item});
+        const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item, system: this._craftingSystem});
         const element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);
@@ -81,10 +82,9 @@ class ItemRecipeTab {
 
     private handleItemSheetEvents(): void {
         this._sheetHtml.find('.craft-button').click(async (event: any) => {
-            let recipeId = event.target.getAttribute('data-recipe-id');
-            let actorId = event.target.getAttribute('data-actor-id');
-            let craftingSystem: CraftingSystem = CraftingSystemRegistry.getSystemByRecipeId(recipeId);
-            await craftingSystem.craft(actorId, recipeId);
+            const recipeId = event.target.getAttribute('data-recipe-id');
+            const actorId = event.target.getAttribute('data-actor-id');
+            await this._craftingSystem.craft(actorId, recipeId);
             this._suppressedInNav = true;
             await this.render();
         });

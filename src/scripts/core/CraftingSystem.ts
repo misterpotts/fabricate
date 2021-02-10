@@ -14,6 +14,8 @@ class CraftingSystem {
     private readonly _recipes: Recipe[];
     private readonly _componentsById: Map<string, CraftingComponent>;
     private readonly _supportedGameSystems: string[];
+    private _enabled: boolean;
+    private readonly _enableHint: string;
 
     constructor(builder: CraftingSystem.Builder) {
         this._name = builder.name;
@@ -22,6 +24,8 @@ class CraftingSystem {
         this._recipes = builder.recipes;
         this._componentsById = new Map(builder.components.map((component: CraftingComponent) => [component.compendiumEntry.entryId, component]));
         this._supportedGameSystems = builder.supportedGameSystems;
+        this._enabled = builder.enabled;
+        this._enableHint = builder.enableHint;
     }
 
     public static builder() {
@@ -30,6 +34,18 @@ class CraftingSystem {
 
     get name(): string {
         return this._name;
+    }
+
+    get enabled(): boolean {
+        return this._enabled;
+    }
+
+    set enabled(value: boolean) {
+        this._enabled = value;
+    }
+
+    get enableHint(): string {
+        return this._enableHint;
     }
 
     public async craft(actorId: string, recipeId: string): Promise<CraftingResult[]> {
@@ -60,7 +76,7 @@ class CraftingSystem {
                     break;
                 default:
                     throw new Error(`The Crafting Action Type ${craftingResult.action} is not supported. Allowable 
-                    values are: ADD, REMOVE. `);
+                        values are: ADD, REMOVE. `);
             }
         }
         return craftingResults;
@@ -106,49 +122,61 @@ namespace CraftingSystem {
         public supportedGameSystems: string[] = [];
         public recipes: Recipe[] = [];
         public components: CraftingComponent[] = [];
+        public enabled: boolean;
+        public enableHint: string;
 
-        public withName(value: string) : Builder {
+        public withName(value: string): Builder {
             this.name = value;
             return this;
         }
 
-        public withCompendiumPackKey(value: string) : Builder {
+        public withCompendiumPackKey(value: string): Builder {
             this.compendiumPackKey = value;
             return this;
         }
 
-        public withFabricator(value: Fabricator) : Builder {
+        public withFabricator(value: Fabricator): Builder {
             this.fabricator = value;
             return this;
         }
 
-        public withSupportedGameSystems(value: string[]) : Builder {
+        public withSupportedGameSystems(value: string[]): Builder {
             this.supportedGameSystems = value;
             return this;
         }
 
-        public withSupportedGameSystem(value: string) : Builder {
+        public withSupportedGameSystem(value: string): Builder {
             this.supportedGameSystems.push(value);
             return this;
         }
 
-        public withRecipes(value: Recipe[]) : Builder {
+        public withRecipes(value: Recipe[]): Builder {
             this.recipes = value;
             return this;
         }
 
-        public withRecipe(value: Recipe) : Builder {
+        public withRecipe(value: Recipe): Builder {
             this.recipes.push(value);
             return this;
         }
 
-        public withComponents(value: CraftingComponent[]) : Builder {
+        public withComponents(value: CraftingComponent[]): Builder {
             this.components = value;
             return this;
         }
 
-        public withComponent(value: CraftingComponent) : Builder {
+        public withComponent(value: CraftingComponent): Builder {
             this.components.push(value);
+            return this;
+        }
+
+        public isEnabled(value: boolean): Builder {
+            this.enabled = value;
+            return this;
+        }
+
+        public withEnableHint(value: string): Builder {
+            this.enableHint = value;
             return this;
         }
 
