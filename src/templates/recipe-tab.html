@@ -1,46 +1,51 @@
 <div class="recipe-tab-content">
+    {{#if recipe.ingredients}}
     <div class="ingredients">
-        {{#if recipe.ingredients}}
-        <div class="components">
-            <div class="description">
-                <p>This recipe requires the following ingredients:</p>
-            </div>
-            <div class="details">
-                <ul>
-                    {{#each recipe.ingredients}}
-                    <li>
+        <div class="description">
+            <h3>Recipe Ingredients</h3>
+            <p>This recipe requires the following ingredients:</p>
+        </div>
+        <div class="fabricate-components">
+            <ul>
+                {{#each recipe.ingredients}}
+                <li>
+                    <div class="component">
                         <span class="quantity">{{quantity}}</span>
                         <span class="name">{{componentType.name}}</span>
                         {{#unless consumed}}
                         <span class="consumed"><i class="fas fa-minus-circle" title="Consumed"></i></span>
                         {{/unless}}
                         <img src="{{{componentType.imageUrl}}}" title="{{componentType.name}}"/>
-                    </li>
-                    {{/each}}
-                </ul>
-            </div>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
         </div>
-        {{/if}}
-        {{#if recipe.essences}}
-        <div class="essences">
-            <div class="description">
-                <p>This recipe requires the following essences: {{{essenceIconSeries recipe.essences}}}</p>
-            </div>
-        </div>
-        {{/if}}
     </div>
+    {{/if}}
+    {{#if recipe.essences}}
+    <div class="essences">
+        <div class="description">
+            <h3>Recipe Essences</h3>
+            <p>This recipe requires the following essences: {{{essenceIconSeries recipe.essences}}}</p>
+        </div>
+    </div>
+    {{/if}}
     <div class="results">
         <div class="description">
+            <h3>Recipe Results</h3>
             <p>This recipe produces the following results:</p>
         </div>
-        <div class="components">
+        <div class="fabricate-components">
             <ul>
                 {{#each recipe.results}}
                 {{#ifEquals action "ADD"}}
                 <li>
-                    <span class="quantity">{{quantity}}</span>
-                    <span class="name">{{item.name}}</span>
-                    <img src="{{{item.imageUrl}}}" title="{{item.name}}"/>
+                    <div class="component">
+                        <span class="quantity">{{quantity}}</span>
+                        <span class="name">{{item.name}}</span>
+                        <img src="{{{item.imageUrl}}}" title="{{item.name}}"/>
+                    </div>
                 </li>
                 {{/ifEquals}}
                 {{/each}}
@@ -50,11 +55,11 @@
     {{#if item.isOwned}}
     <div class="controls">
         {{#if system.enabled}}
-        <a class="craft-button" title="Craft">
-            <p data-recipe-id="{{recipe.entryId}}" data-actor-id="{{item.actor.id}}"><i class="fas fa-flask"></i> Craft</p>
+        <a title="Craft">
+            <p class="craft-button" data-recipe-id="{{recipe.entryId}}" data-actor-id="{{item.actor.id}}"><i class="fas fa-flask"></i> Craft</p>
         </a>
         {{else}}
-        <p><i class="fas fa-lock"></i> The crafting system "{{system.name}}" is disabled! </p>
+        <p class="craft-button"><i class="fas fa-lock"></i> The crafting system "{{system.name}}" is disabled! </p>
         {{/if}}
     </div>
     {{else}}
