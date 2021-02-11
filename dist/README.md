@@ -43,5 +43,15 @@ If you'd like to be involved I'd love to have some help! I'm always happy to tal
 This software is distributed with an MIT License.
 
 # Attribution
-Based on a FVTT Typescript Module [Template](https://github.com/League-of-Foundry-Developers/foundry-typescript-template) provided 
+This project is based on a FVTT Typescript Module [Template](https://github.com/League-of-Foundry-Developers/foundry-typescript-template) provided 
 by the League of Extraordinary Foundry Developers and attributed to Spacemandev.
+
+## Crafting systems
+
+- "Alchemist's Supplies" belongs to /u/calculusChild and is bundled with Fabricate with their consent 
+
+## Other Acknowledgements
+
+Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `BadIdeasBureau#7024` and `Calego#0914`. Join their Discord below.
+
+[![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/ymTxJECYeg)
