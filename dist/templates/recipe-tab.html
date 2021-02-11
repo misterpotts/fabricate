@@ -8,7 +8,14 @@
             <div class="details">
                 <ul>
                     {{#each recipe.ingredients}}
-                    <li><p>{{quantity}} {{componentType.name}} {{#if consumed}}(Consumed){{else}}(Not consumed){{/if}}</p><img src="{{{componentType.imageUrl}}}" title="{{componentType.name}}"/></li>
+                    <li>
+                        <span class="quantity">{{quantity}}</span>
+                        <span class="name">{{componentType.name}}</span>
+                        {{#unless consumed}}
+                        <span class="consumed"><i class="fas fa-minus-circle" title="Consumed"></i></span>
+                        {{/unless}}
+                        <img src="{{{componentType.imageUrl}}}" title="{{componentType.name}}"/>
+                    </li>
                     {{/each}}
                 </ul>
             </div>
@@ -30,7 +37,11 @@
             <ul>
                 {{#each recipe.results}}
                 {{#ifEquals action "ADD"}}
-                <li><p>{{quantity}} {{item.name}}</p><img src="{{{item.imageUrl}}}" title="{{item.name}}"/></li>
+                <li>
+                    <span class="quantity">{{quantity}}</span>
+                    <span class="name">{{item.name}}</span>
+                    <img src="{{{item.imageUrl}}}" title="{{item.name}}"/>
+                </li>
                 {{/ifEquals}}
                 {{/each}}
             </ul>

@@ -63,7 +63,7 @@ class CraftingTab {
     }
 
     private isActiveInNav(): boolean {
-        return $(this._sheetHtml).find('a.fabricate-item[data-tab="magicitems"]').hasClass('active');
+        return $(this._sheetHtml).find('a.fabricate-component[data-tab="magicitems"]').hasClass('active');
     }
 }
 

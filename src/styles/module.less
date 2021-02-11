@@ -1,19 +1,57 @@
-.fabricate-item {
+.fabricate-component {
   display: inline-flex;
-  background-color: #d8d5ca;
-  border: 1px solid #576161;
-  border-radius: 3px;
-  p {
+  position: relative;
+  margin-right: 10px;
+  width: 72px;
+  height: 72px;
+  background-color: #382a2b;
+  border: 1px solid #232020;
+  border-radius: 5px;
+  .quantity, .name, .consumed {
+    position: absolute;
+    z-index: 1;
+    font-size: 1em;
+  }
+  .consumed {
+    background: #aba693;
+    color: #4c4439;
+    font-size: 0.9em;
+    width: 16px;
+    border-radius: 8px;
     text-align: center;
-    margin-top: 23px;
-    margin-right: 8px;
-    margin-left: 10px;
+    top: 24%;
+    right: -3%;
+    padding: 1px;
+  }
+  .quantity{
+    padding: 2px;
+    left: 85%;
+    top: -6%;
+    background: #aba693;
+    color: #4c4439;
+    width: 18px;
+    font-size: 0.9em;
+    font-weight: bold;
+    height: 18px;
+    text-align: center;
+    border-radius: 9px;
+  }
+  .name {
+    width: 72px;
+    left: -1px;
+    text-align: center;
+    background: #aba693;
+    color: #4c4439;
+    border-radius: 0px 0px 5px 5px;
+    font-size: 0.85em;
+    border-top: 1px solid #232020;
+    top: 90%;
   }
   img {
-    height: 50px;
-    width: 50px;
+    height: 60px;
+    width: 60px;
     margin: 5px;
-    border-radius: 2px;
+    border-radius: 3px;
   }
 }
 
@@ -22,7 +60,7 @@
     p {
       width: 100%;
       text-align: center;
-      margin: 20px 1px 0px 1px;
+      margin: 8px 1px 0px 1px;
       background: rgba(255, 255, 240, 0.8);
       border: 1px solid #b5b3a4;
       border-radius: 3px;
@@ -32,13 +70,16 @@
   }
   .ingredients {margin-top: 15px;
     li {
-      .fabricate-item();
+      .fabricate-component();
     }
+  }
+  .ingredients, .results {
+    padding-bottom: 10px;
   }
   .components {
     margin-top: 15px;
     li {
-      .fabricate-item();
+      .fabricate-component();
     }
   }
 }
