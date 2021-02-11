@@ -1,55 +1,118 @@
 <!-- If no systems are enabled do not register tab -->
 <div class="crafting-tab-content">
     <!-- IF more than one system is enabled  -->
-    <div class="form-group">
-        <label>Select your crafting system</label>
-        <div class="form-fields" style="flex: 1">
-            <select>
-                <option value="test-system">Test System</option>
-                <option value="simple-alchemy">Simple Alchemy</option>
-            </select>
+    <div class="crafting-system">
+        <h2>Crafting System</h2>
+        <div class="form-group">
+            <label>Select your crafting system</label>
+            <div class="form-fields" style="flex: 3">
+                <select>
+                    <option value="test-system">Test System</option>
+                    <option value="simple-alchemy">Simple Alchemy</option>
+                </select>
+            </div>
         </div>
     </div>
-    <!-- END IF -->
-    <!-- IF Essence-based crafting without a recipe is supported -->
-    <div class="components">
+    <!-- IF Recipes are available in the inventory -->
+    <div class="recipes">
         <div class="description">
-            <p>You have the following components in our inventory. Left click to add one to the mix. </p>
+            <h2>Craftable Recipes</h2>
+            <p>The following recipes can be crafted from items in your inventory. </p>
         </div>
-        <div class="items">
-            <ul>
-                <li>2 This item</li>
-                <li>6 That item</li>
-                <li>9 Other item</li>
-            </ul>
-        </div>
-        <div class="hopper">
-            <div class="description">
-                <p>The following ingredients are prepared for crafting</p>
-            </div>
-            <div class="preview">
-                <div class="component">
-                    <img class="icon" src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud" data-edit="">
-                </div>
-            </div>
-            <div class="controls">
-                <a class="craft-button" title="Craft">
-                    <p data-recipe-id="" data-actor-id="">Craft</p>
+        <div class="form-group controls">
+            <label>Select an available recipe</label>
+            <div class="form-fields" style="flex: 6">
+                <select>
+                    <option value="test-system">Recipe: Recipe 1</option>
+                    <option value="simple-alchemy">Recipe: Recipe 2</option>
+                </select>
+                <a title="Craft">
+                    <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
                 </a>
             </div>
         </div>
     </div>
     <!-- END IF -->
-    <div class="recipes">
+    <!-- IF Essence-based crafting without a recipe is supported -->
+    <div class="inventory">
         <div class="description">
-            <div class="description">
-                <p>The following recipes can be crafted from items in your inventory. </p>
-            </div>
-            <div class="preview">
-                <div class="recipe">
-                    <img class="icon" src="systems/dnd5e/icons/items/inventory/paper.jpg" title="Recipe: Mud Pie" data-edit="">
-                </div>
-            </div>
+            <h2>Crafting Without a Recipe</h2>
+            <p>You have the following components in our inventory. Left click to add one to the mix. </p>
+        </div>
+        <div class="fabricate-components">
+            <ul>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
+    <div class="hopper">
+        <div class="description">
+            <p>The following ingredients are prepared for crafting. Left click to remove one from the mix. </p>
+        </div>
+        <div class="fabricate-components">
+            <ul>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="component">
+                        <span class="quantity">1</span>
+                        <span class="name">Mud</span>
+                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="controls">
+        <a title="Craft">
+            <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
+        </a>
+    </div>
+    <!-- END IF -->
 </div>
