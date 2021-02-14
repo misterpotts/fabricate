@@ -9,12 +9,12 @@ module.exports = {
         publicPath: path.resolve(__dirname, 'module/scripts/'),
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.json'],
+        extensions: ['.ts', '.tsx', '.js', '.json']
     },
     module: {
         rules: [
             {
-                test: /.ts?$/,
+                test: /\.ts?$/,
                 exclude: /node_modules/,
                 use: [{ loader: require.resolve('ts-loader'), options: { transpileOnly: true } }],
             },

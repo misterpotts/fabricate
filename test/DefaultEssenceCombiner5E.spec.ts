@@ -1,0 +1,125 @@
+import {AlchemicalResult} from "../src/scripts/core/EssenceCombiner";
+import {DefaultEssenceCombiner5E} from "../src/scripts/dnd5e/DefaultEssenceCombiner5E";
+import {AlchemicalResultSet} from "../src/scripts/AlchemicalResultSet";
+import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
+import {AlchemicalResult5E} from "../src/scripts/dnd5e/AlchemicalResult5E";
+import {ItemData5e} from "../src/global";
+
+describe('Default Essence Combiner 5E |', () => {
+
+    const luminousCapDust: CraftingComponent = CraftingComponent.builder()
+        .withName('Luminous Cap Dust')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a23xyz')
+        .withEssences(['FIRE', 'AIR'])
+        .build();
+    const wrackwortBulbs: CraftingComponent = CraftingComponent.builder()
+        .withName('Wrackwort Bulbs')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a56xyz')
+        .withEssences(['EARTH', 'FIRE'])
+        .build();
+    const radiantSynthSeed: CraftingComponent = CraftingComponent.builder()
+        .withName('Radiant Synthseed')
+        .withCompendiumEntry('alchemists-supplies-v11', 'a67xyz')
+        .withEssences(['POSITIVE_ENERGY'])
+        .build();
+
+    describe('Alchemical Result Combination |', () => {
+
+        const blinding: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['EARTH', 'EARTH'])
+            .withDescription('Release a burst of stinging dust. Affected ' +
+                'targets are blinded for the next round.')
+            .build();
+
+        const prone: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['WATER', 'WATER'])
+            .withDescription('Release a puddle of slippery oil. Affected ' +
+                'targets immediately fall prone.')
+            .build();
+
+        const lightning: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['AIR', 'AIR'])
+            .withDescription('Deal 1d4 lightning damage on contact. ' +
+                'Double damage to targets touching a metal ' +
+                'surface or using metal weapons or armor.')
+            .withDamage({method: 'ROLLED', die: {faces: 4, amount: 1}, type: 'lightning'})
+            .build();
+
+        const fire: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['FIRE', 'FIRE'])
+            .withDescription('Deal 1d4 fire damage on contact. Double ' +
+                'damage to targets with cloth or leather armor.')
+            .withDamage({method: 'ROLLED', die: {faces: 4, amount: 1}, type: 'fire'})
+            .build();
+
+        const gel: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['EARTH', 'WATER'])
+            .withDescription('Release gel that sticks to targets. Each round,' +
+                'any damage-dealing effects continue to deal 1 ' +
+                'damage each until an action is used to remove ' +
+                'the gel with a DC 10 Dexterity check.')
+            .withDamage({method: 'FIXED', amount: 1, type: 'none'})
+            .withSavingThrow({ability: 'dex', dc: 10, scaling: 'flat'})
+            .withDuration({units: 'special'})
+            .build();
+
+        const slow: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['WATER', 'AIR'])
+            .withDescription('Deal 1d4 cold damage on contact. Reduce ' +
+                'target speed by 10 feet for the next round.')
+            .withDamage({method: 'ROLLED', die: {faces: 4, amount: 1}, type: 'cold'})
+            .build();
+
+        const spray: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['AIR', 'FIRE'])
+            .withDescription('Release concentrated mist in all directions. ' +
+                'Increase the radius of all effects by 5 feet.')
+            .withAoEExtender({mode: 'INCREASE', amount: 5})
+            .build();
+
+        const acid: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['FIRE', 'EARTH'])
+            .withDescription('Deal 1d8 acid damage on contact.')
+            .withDamage({method: 'ROLLED', die: {faces: 8, amount: 1}, type: 'acid'})
+            .build();
+
+        const doubleDamageDie: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['POSITIVE_ENERGY'])
+            .withDescription('Roll double the number of all damage dice.')
+            .withDamageMultiplier({mode: 'MULTIPLY_DICE', amount: 2})
+            .build();
+
+        const increaseDC: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
+            .withEssenceCombination(['NEGATIVE_ENERGY'])
+            .withDescription('Increase the DC to avoid bomb effects by 2.')
+            .withSavingThrowModifier({mode: 'ADD', value: 2})
+            .build();
+
+        const knownAlchemicalResults: AlchemicalResultSet = AlchemicalResultSet.builder()
+            .withResult(blinding)
+            .withResult(prone)
+            .withResult(lightning)
+            .withResult(fire)
+            .withResult(gel)
+            .withResult(slow)
+            .withResult(spray)
+            .withResult(acid)
+            .withResult(doubleDamageDie)
+            .withResult(increaseDC)
+            .build();
+
+        it('Should produce a valid result for a combination', () => {
+
+            const underTest = DefaultEssenceCombiner5E.builder()
+                .withKnownAlchemicalResults(knownAlchemicalResults)
+                .withMaxComponents(6)
+                .withMaxEssences(6)
+                .build();
+
+            const result: AlchemicalResult<ItemData5e> = underTest.combine([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
+
+        });
+
+    });
+
+});

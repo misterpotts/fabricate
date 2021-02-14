@@ -4,8 +4,8 @@ import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {EssenceCombiner, EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
-import {AlchemicalBombEssenceCombiner} from "../src/scripts/dnd5e/alchemists_supplies/AlchemicalBombEssenceCombiner";
+import {EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
+import {EssenceCombiner} from "../src/scripts/core/EssenceCombiner";
 
 describe('Essence Combining Fabricator |', () => {
 
@@ -129,14 +129,19 @@ describe('Essence Combining Fabricator |', () => {
 
         it('Should Fabricate from Components with no Recipe', () => {
 
-            const essenceCombiner: EssenceCombiner = new AlchemicalBombEssenceCombiner();
+            const essenceCombiner: EssenceCombiner = <EssenceCombiner>{};
             const underTest: EssenceCombiningFabricator = new EssenceCombiningFabricator(essenceCombiner);
 
             const result: CraftingResult[] = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
             expect(result, 'Expected Crafting Results to be returned by "fabricateFromComponents"').to.exist;
             expect(result.length, 'Expected 1 Crafting Result from "fabricateFromComponents"').to.equal(1);
-
+            const customItemData = result[0].customData.data;
+            expect(customItemData.description).to.include('<p>Fill a 10-foot cube with mist for 1d4 rounds. Until it dissipates, any damage effects repeat each round for creatures remaining within. </p>');
+            expect(customItemData.description).to.include('<p>Deal 1d6 acid damage on contact. </p>');
+            expect(customItemData.description).to.include('<p>Double number of all damage dice. </p>');
+            expect(customItemData.target).to.equal({ value: 10, units: 'ft', type: 'cube' });
+            expect(customItemData.damage).to.equal({ parts: [['2d6', 'acid']] });
         });
 
         it('Should efficiently consume recipe components to reduce essence wastage', () => {

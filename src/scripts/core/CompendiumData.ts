@@ -5,13 +5,15 @@ enum FabricateItemType {
     COMPONENT = 'COMPONENT'
 }
 
+interface CompendiumEntry {
+    compendiumKey: string,
+    entryId: string
+}
+
 interface FabricateComponentFlags {
     name: string,
     essences: string[];
-    compendiumEntry: {
-        compendiumKey: string,
-        entryId: string
-    }
+    compendiumEntry: CompendiumEntry
 }
 
 interface FabricateIngredientFlags {
@@ -38,4 +40,4 @@ interface FabricateCompendiumData {
     component?: FabricateComponentFlags;
 }
 
-export {FabricateCompendiumData, FabricateItemType, FabricateIngredientFlags, FabricateResultFlags, FabricateComponentFlags}
+export {FabricateCompendiumData, FabricateItemType, FabricateIngredientFlags, FabricateResultFlags, FabricateComponentFlags, CompendiumEntry}
