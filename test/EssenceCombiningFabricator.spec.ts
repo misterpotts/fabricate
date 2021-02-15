@@ -226,11 +226,17 @@ describe('Essence Combining Fabricator |', () => {
                 .withKnownAlchemicalResults(knownAlchemicalResults)
                 .withResultantItem('fabricate.fabricate-test', 'xyz123')
                 .build();
-            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
 
+            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
             const result: CraftingResult = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
+            expect(result.item.compendiumEntry.compendiumKey).to.equal('fabricate.fabricate-test');
+            expect(result.item.compendiumEntry.entryId).to.equal('xyz123');
+            expect(result.quantity).to.equal(1);
+            expect(result.action).to.equal(ActionType.ADD);
+
             const customItemData: ItemData5e = result.customData;
+
             expect(customItemData.description).to.include('<p>Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.</p>');
             expect(customItemData.description).to.include('<p>Deal 1d8 acid damage on contact.</p>');
             expect(customItemData.description).to.include('<p>Roll double the number of all damage dice.</p>');
