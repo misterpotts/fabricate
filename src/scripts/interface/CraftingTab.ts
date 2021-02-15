@@ -2,6 +2,8 @@ import Properties from "../Properties";
 import {Inventory} from "../game/Inventory";
 import {Inventory5E} from "../dnd5e/Inventory5E";
 import {InventoryRegistry} from "../registries/InventoryRegistry";
+import {CraftingTabDTO} from "./CraftingTabDTO";
+import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 
 class CraftingTab {
     private static readonly tabs: Map<string, CraftingTab> = new Map();
@@ -38,7 +40,7 @@ class CraftingTab {
     }
 
     private async render(): Promise<void> {
-        let template: HTMLElement = await renderTemplate(Properties.module.templates.craftingTab, {inventory: this._inventory});
+        let template: HTMLElement = await renderTemplate(Properties.module.templates.craftingTab, new CraftingTabDTO(CraftingSystemRegistry.getAllSystems(), this._inventory));
         let element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);

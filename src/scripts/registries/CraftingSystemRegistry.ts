@@ -45,6 +45,10 @@ class CraftingSystemRegistry {
         throw new Error(`No Crafting system is registered with Fabricate for the Recipe ${id}. `);
     }
 
+    public static getAllSystems(): CraftingSystem[] {
+        return Array.from(CraftingSystemRegistry.craftingSystemsByCompendiumKey.values());
+    }
+
     public static get systemSpecifications(): CraftingSystem.Builder[] {
         return this._systemSpecifications;
     }
