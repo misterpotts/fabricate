@@ -1,17 +1,17 @@
 import {AlchemicalResult} from "./AlchemicalResult";
 import {FabricationHelper} from "./FabricationHelper";
 
-class AlchemicalResultSet {
-    private readonly _resultsByCombinationIdentity: Map<number, AlchemicalResult> = new Map();
+class AlchemicalResultSet<T> {
+    private readonly _resultsByCombinationIdentity: Map<number, AlchemicalResult<T>> = new Map();
     private readonly _essenceIdentities: Map<string, number> = new Map();
 
-    constructor(builder: AlchemicalResultSet.Builder) {
+    constructor(builder: AlchemicalResultSet.Builder<T>) {
         const alchemicalResults = builder.results;
-        const uniqueEssences: string[] = alchemicalResults.map((result: AlchemicalResult) => result.essenceCombination)
+        const uniqueEssences: string[] = alchemicalResults.map((result: AlchemicalResult<T>) => result.essenceCombination)
             .reduce((left: string[], right: string[]) => left.concat(right), [])
             .filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
         this._essenceIdentities = FabricationHelper.assignEssenceIdentities(uniqueEssences);
-        alchemicalResults.forEach((result: AlchemicalResult) => {
+        alchemicalResults.forEach((result: AlchemicalResult<T>) => {
             const essenceCombinationIdentity = FabricationHelper.essenceCombinationIdentity(result.essenceCombination, this._essenceIdentities);
             if (this._resultsByCombinationIdentity.has(essenceCombinationIdentity)) {
                 throw new Error(`The combination ${(result.essenceCombination)} was duplicated. Each essence combination must map to a unique effect.`);
@@ -20,11 +20,11 @@ class AlchemicalResultSet {
         });
     }
 
-    public static builder():AlchemicalResultSet.Builder {
-        return new AlchemicalResultSet.Builder();
+    public static builder<T>():AlchemicalResultSet.Builder<T> {
+        return new AlchemicalResultSet.Builder<T>();
     }
 
-    public getByEssenceCombination(essenceCombination: string[]): AlchemicalResult {
+    public getByEssenceCombination(essenceCombination: string[]): AlchemicalResult<T> {
         const identity = FabricationHelper.essenceCombinationIdentity(essenceCombination, this._essenceIdentities);
         return this._resultsByCombinationIdentity.get(identity);
     }
@@ -32,21 +32,21 @@ class AlchemicalResultSet {
 
 namespace AlchemicalResultSet {
 
-    export class Builder {
+    export class Builder<T> {
 
-        public results: AlchemicalResult[] = [];
+        public results: AlchemicalResult<T>[] = [];
 
-        public withResult(value: AlchemicalResult): Builder {
+        public withResult(value: AlchemicalResult<T>): Builder<T> {
             this.results.push(value);
             return this;
         }
 
-        public withResults(value: AlchemicalResult[]): Builder {
+        public withResults(value: AlchemicalResult<T>[]): Builder<T> {
             this.results.push(...value);
             return this;
         }
 
-        public build(): AlchemicalResultSet {
+        public build(): AlchemicalResultSet<T> {
             return new AlchemicalResultSet(this);
         }
 

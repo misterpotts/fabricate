@@ -1,8 +1,9 @@
 import {AbstractEssenceCombiner, AlchemicalResult} from "../core/EssenceCombiner";
 import {AlchemicalResultSet} from "../AlchemicalResultSet";
 import {CompendiumEntry} from "../core/CompendiumData";
+import {ItemData5e} from "../../global";
 
-class DefaultEssenceCombiner5E extends AbstractEssenceCombiner {
+class DefaultEssenceCombiner5E extends AbstractEssenceCombiner<ItemData5e> {
 
     constructor(builder: DefaultEssenceCombiner5E.Builder) {
         super(builder.maxComponents, builder.maxEssences, builder.knownAlchemicalResults);
@@ -12,11 +13,11 @@ class DefaultEssenceCombiner5E extends AbstractEssenceCombiner {
         return new DefaultEssenceCombiner5E.Builder()
     }
 
-    combineAlchemicalResults(effects: AlchemicalResult[]): AlchemicalResult {
-        return effects[0];
+    combineAlchemicalResults(effects: AlchemicalResult<ItemData5e>[]): AlchemicalResult<ItemData5e> {
+        return effects.reduce((left, right) => left.combineWith(right));
     }
 
-    getCompendiumItemFor(result: AlchemicalResult): CompendiumEntry {
+    getCompendiumItemFor(result: AlchemicalResult<ItemData5e>): CompendiumEntry {
         return result.resultantItem;
     }
 
@@ -27,7 +28,7 @@ namespace DefaultEssenceCombiner5E {
     export class Builder {
         public maxEssences: number;
         public maxComponents: number;
-        public knownAlchemicalResults: AlchemicalResultSet;
+        public knownAlchemicalResults: AlchemicalResultSet<ItemData5e>;
 
         public withMaxEssences(value: number): Builder {
             this.maxEssences = value;
@@ -39,7 +40,7 @@ namespace DefaultEssenceCombiner5E {
             return this;
         }
 
-        public withKnownAlchemicalResults(value: AlchemicalResultSet): Builder {
+        public withKnownAlchemicalResults(value: AlchemicalResultSet<ItemData5e>): Builder {
             this.knownAlchemicalResults = value;
             return this;
         }

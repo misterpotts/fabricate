@@ -11,9 +11,9 @@ interface EssenceCombiner<T> {
 abstract class AbstractEssenceCombiner<T> implements EssenceCombiner<T> {
     private readonly _maxComponents: number;
     private readonly _maxEssences: number;
-    private readonly _availableResults: AlchemicalResultSet;
+    private readonly _availableResults: AlchemicalResultSet<T>;
 
-    protected constructor(maxComponents: number, maxEssences: number, availableResults: AlchemicalResultSet) {
+    protected constructor(maxComponents: number, maxEssences: number, availableResults: AlchemicalResultSet<T>) {
         this._maxComponents = maxComponents;
         this._maxEssences = maxEssences;
         this._availableResults = availableResults;
