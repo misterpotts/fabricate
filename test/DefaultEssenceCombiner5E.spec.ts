@@ -45,6 +45,7 @@ describe('Default Essence Combiner 5E |', () => {
                 'Double damage to targets touching a metal ' +
                 'surface or using metal weapons or armor.')
             .withRolledDamage({faces: 4, amount: 1}, 'lightning')
+            .withTarget('none', 1, 'creature')
             .build();
 
         const fire: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
@@ -52,6 +53,7 @@ describe('Default Essence Combiner 5E |', () => {
             .withDescription('Deal 1d4 fire damage on contact. Double ' +
                 'damage to targets with cloth or leather armor.')
             .withRolledDamage({faces: 4, amount: 1}, 'fire')
+            .withTarget('none', 1, 'creature')
             .build();
 
         const gel: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
@@ -70,19 +72,21 @@ describe('Default Essence Combiner 5E |', () => {
             .withDescription('Deal 1d4 cold damage on contact. Reduce ' +
                 'target speed by 10 feet for the next round.')
             .withRolledDamage({faces: 4, amount: 1}, 'cold')
+            .withTarget('none', 1, 'creature')
             .build();
 
         const spray: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
             .withEssenceCombination(['AIR', 'FIRE'])
             .withDescription('Release concentrated mist in all directions. ' +
                 'Increase the radius of all effects by 5 feet.')
-            .withAoEExtender('ADD', 5)
+            .withAoEExtender('ADD', 5, 'radius')
             .build();
 
         const acid: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
             .withEssenceCombination(['FIRE', 'EARTH'])
             .withDescription('Deal 1d8 acid damage on contact.')
             .withRolledDamage({faces: 8, amount: 1}, 'acid')
+            .withTarget('none', 1, 'creature')
             .build();
 
         const doubleDamageDie: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
@@ -120,7 +124,27 @@ describe('Default Essence Combiner 5E |', () => {
 
             const result: AlchemicalResult<ItemData5e> = underTest.combine([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
             expect(result).to.exist;
-
+            expect(result.description).to.contain('Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.');
+            expect(result.description).to.contain('Deal 1d8 acid damage on contact.');
+            expect(result.description).to.contain('Roll double the number of all damage dice.');
+            expect(result.effects.length).to.equal(2);
+            expect(result.effects).to.deep.include({method: 'ROLLED', type: 'acid', die: { faces: 8, amount: 1}, 'amount': undefined, 'bonus': undefined});
+            expect(result.effects).to.deep.include({units: 'none', value: 1, type: 'creature'});
+            expect(result.effectModifiers.length).to.equal(2);
+            expect(result.effectModifiers).to.deep.include({mode: 'ADD', amount: 5, areaType: 'radius'});
+            expect(result.effectModifiers).to.deep.include({mode: 'MULTIPLY', amount: 2});
+            const itemData5e = result.asItemData();
+            expect(itemData5e).to.exist;
+            expect(itemData5e.description).to.contain('Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.');
+            expect(itemData5e.description).to.contain('Deal 1d8 acid damage on contact.');
+            expect(itemData5e.description).to.contain('Roll double the number of all damage dice.');
+            expect(itemData5e.target.value).to.equal(5);
+            expect(itemData5e.target.units).to.equal('ft');
+            expect(itemData5e.target.type).to.equal('radius');
+            expect(itemData5e.damage.versatile).to.equal('');
+            expect(itemData5e.damage.parts.length).to.equal(1);
+            expect(itemData5e.damage.parts[0][0]).to.equal('2d8');
+            expect(itemData5e.damage.parts[0][1]).to.equal('acid');
         });
 
     });

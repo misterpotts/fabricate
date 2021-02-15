@@ -6,7 +6,7 @@ import {ItemData5e} from "../../global";
 class DefaultEssenceCombiner5E extends AbstractEssenceCombiner<ItemData5e> {
 
     constructor(builder: DefaultEssenceCombiner5E.Builder) {
-        super(builder.maxComponents, builder.maxEssences, builder.knownAlchemicalResults);
+        super(builder.maxComponents, builder.maxEssences, builder.knownAlchemicalResults, builder.resultantItem);
     }
 
     public static builder(): DefaultEssenceCombiner5E.Builder {
@@ -29,6 +29,7 @@ namespace DefaultEssenceCombiner5E {
         public maxEssences: number;
         public maxComponents: number;
         public knownAlchemicalResults: AlchemicalResultSet<ItemData5e>;
+        public resultantItem: CompendiumEntry;
 
         public withMaxEssences(value: number): Builder {
             this.maxEssences = value;
@@ -42,6 +43,11 @@ namespace DefaultEssenceCombiner5E {
 
         public withKnownAlchemicalResults(value: AlchemicalResultSet<ItemData5e>): Builder {
             this.knownAlchemicalResults = value;
+            return this;
+        }
+
+        public withResultantItem(compendiumKey: string, entryId: string): Builder {
+            this.resultantItem = {compendiumKey: compendiumKey, entryId: entryId};
             return this;
         }
 

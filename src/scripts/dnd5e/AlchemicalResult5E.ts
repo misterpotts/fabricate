@@ -1,8 +1,9 @@
 import {CompendiumEntry} from "../core/CompendiumData";
 import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../AlchemicalResult";
-import {AbilityType5E, DamageType5E, DurationType5e, ItemData5e} from "../../global";
+import {AbilityType5E, DamageType5E, DurationType5e, ItemData5e, TargetType5e, TargetUnitType5e} from "../../global";
 
 type DamageMethod = 'ROLLED' | 'FIXED';
+const AoETypeValues: string[] = ['cone', 'cube' , 'cylinder', 'line', 'radius', 'sphere', 'square'];
 type AoEType = 'cone' | 'cube'  | 'cylinder' | 'line' | 'radius' | 'sphere' | 'square';
 type Dice = {
     faces: 4 | 6 | 8 | 10 | 12 | 20 | 100;
@@ -90,47 +91,61 @@ class SavingThrowEffect5E implements ItemEffect<ItemData5e> {
     }
 }
 
-class AreaOfEffect5E implements ItemEffect<ItemData5e> {
-    units: 'ft' = 'ft';
+class EffectTarget5E implements ItemEffect<ItemData5e> {
+    units: TargetUnitType5e;
     value: number;
-    type: AoEType;
+    type: TargetType5e;
+
+    constructor(units: TargetUnitType5e, value: number, type: TargetType5e) {
+        this.units = units;
+        this.value = value;
+        this.type = type;
+    }
 
     applyTo(itemData: ItemData5e): void {
         itemData.target = {
             value: this.value,
             units: this.units,
-            type:this.type
+            type: this.type
         };
     }
 }
 
 class AoEExtender5E implements ItemEffectModifier<ItemData5e> {
     mode: ModificationMethod;
+    areaType: AoEType;
     amount: number;
 
-    constructor(mode: ModificationMethod, amount: number) {
+    constructor(mode: ModificationMethod, amount: number, areaType: AoEType) {
         this.mode = mode;
         this.amount = amount;
+        this.areaType = areaType;
     }
 
     transform(itemEffect: ItemEffect<ItemData5e>): ItemEffect<ItemData5e> {
         if (!this.matches(itemEffect)) {
-            throw new Error('An AoEExtender5E can only be applied to an AreaOfEffect5E');
+            throw new Error('An AoEExtender5E can only be applied to an EffectTarget5E');
         }
-        const aoe: AreaOfEffect5E = <AreaOfEffect5E>itemEffect;
+        const target: EffectTarget5E = <EffectTarget5E>itemEffect;
         switch (this.mode) {
             case 'ADD':
-                aoe.value = aoe.value + this.amount;
+                if (AoETypeValues.indexOf(target.type) < 0) {
+                    target.value = this.amount;
+                } else {
+                    target.value = target.value + this.amount;
+                }
                 break;
             case 'MULTIPLY':
-                aoe.value = aoe.value * this.amount;
+                target.value = target.value * this.amount;
                 break;
         }
+        target.type = this.areaType;
+        target.units = 'ft';
         return itemEffect;
     }
 
     matches(itemEffect: ItemEffect<ItemData5e>): boolean {
-        return itemEffect instanceof AreaOfEffect5E;
+        return itemEffect instanceof EffectTarget5E;
     }
 
 }
@@ -197,7 +212,7 @@ class SavingThrowModifier5E implements ItemEffectModifier<ItemData5e> {
 
 class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
 
-    private readonly _description: string;
+    private readonly _descriptionParts: string[];
     private readonly _essenceCombination: string[];
     private readonly _resultantItem: CompendiumEntry;
 
@@ -205,7 +220,7 @@ class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
     private readonly _effectModifiers: ItemEffectModifier<ItemData5e>[] = [];
 
     constructor(builder: AlchemicalResult5E.Builder) {
-        this._description = builder.description;
+        this._descriptionParts = builder.description;
         this._essenceCombination = builder.essenceCombination;
         this._resultantItem = builder.resultantItem;
         this._effects = builder.effects;
@@ -213,7 +228,7 @@ class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
     }
 
     get description(): string {
-        return this._description;
+        return this._descriptionParts.join(' ');
     }
 
     get essenceCombination(): string[] {
@@ -234,6 +249,10 @@ class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
 
     asItemData(): ItemData5e {
         const result: ItemData5e = {};
+        result.description = this._descriptionParts.map((descriptionPart: string) => `<p>${descriptionPart}</p>`).join('\n');
+        this._effects.filter((effect: ItemEffect<ItemData5e>) => {
+            effect instanceof EffectTarget5E
+        });
         this._effectModifiers.forEach((modifier: ItemEffectModifier<ItemData5e>) => {
             this._effects.forEach((effect: ItemEffect<ItemData5e>) => {
                 if (modifier.matches(effect)) {
@@ -246,6 +265,8 @@ class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
     }
 
     combineWith(other: AlchemicalResult<ItemData5e>): AlchemicalResult<ItemData5e> {
+        this.essenceCombination.push(...other.essenceCombination)
+        this._descriptionParts.push(other.description);
         this._effects.push(...other.effects);
         this._effectModifiers.push(...other.effectModifiers);
         return this;
@@ -260,14 +281,14 @@ namespace AlchemicalResult5E {
 
     export class Builder {
 
-        public description: string;
-        public essenceCombination: string[];
+        public description: string[] = [];
+        public essenceCombination: string[] = [];
         public resultantItem: CompendiumEntry;
         public effects: ItemEffect<ItemData5e>[] = [];
         public modifiers: ItemEffectModifier<ItemData5e>[] = [];
 
         public withDescription(value: string): Builder {
-            this.description = value;
+            this.description.push(value);
             return this;
         }
 
@@ -301,8 +322,8 @@ namespace AlchemicalResult5E {
             return this;
         }
 
-        withAoEExtender(mode: ModificationMethod, value: number): Builder {
-            this.modifiers.push(new AoEExtender5E(mode, value));
+        withAoEExtender(mode: ModificationMethod, value: number, areaType:AoEType): Builder {
+            this.modifiers.push(new AoEExtender5E(mode, value, areaType));
             return this;
         }
 
@@ -316,8 +337,8 @@ namespace AlchemicalResult5E {
             return this;
         }
 
-        withAreaOfEffect(value: AreaOfEffect5E): Builder {
-            this.effects.push(value);
+        withTarget(units: TargetUnitType5e, value: number, type: TargetType5e): Builder {
+            this.effects.push(new EffectTarget5E(units, value, type));
             return this;
         }
 

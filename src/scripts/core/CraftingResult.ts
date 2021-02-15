@@ -63,7 +63,7 @@ namespace CraftingResult {
         public item!: CraftingComponent;
         public quantity!: number;
         public action!: ActionType;
-        customData: any;
+        public customData: any;
 
         public withItem(value: CraftingComponent): Builder {
             this.item = value;
