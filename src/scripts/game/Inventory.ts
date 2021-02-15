@@ -1,8 +1,8 @@
-import {GameSystemType} from "./GameSystemType";
+import {GameSystemType} from "../GameSystemType";
 import {InventoryRecord} from "./InventoryRecord";
-import {Ingredient} from "./Ingredient";
-import {CraftingComponent} from "./CraftingComponent";
-import {Recipe} from "./Recipe";
+import {Ingredient} from "../Ingredient";
+import {CraftingComponent} from "../CraftingComponent";
+import {Recipe} from "../Recipe";
 
 interface Inventory {
     actor: Actor;

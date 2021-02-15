@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 
-import {AlchemicalResult} from "../src/scripts/AlchemicalResult";
+import {AlchemicalResult} from "../src/scripts/core/AlchemicalResult";
 import {DefaultEssenceCombiner5E} from "../src/scripts/dnd5e/DefaultEssenceCombiner5E";
-import {AlchemicalResultSet} from "../src/scripts/AlchemicalResultSet";
+import {AlchemicalResultSet} from "../src/scripts/core/AlchemicalResultSet";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {AlchemicalResult5E} from "../src/scripts/dnd5e/AlchemicalResult5E";
 import {ItemData5e} from "../src/global";

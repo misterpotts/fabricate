@@ -1,5 +1,5 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {FabricateIngredientFlags} from "./CompendiumData";
+import {FabricateIngredientFlags} from "../game/CompendiumData";
 
 class Ingredient {
     private readonly _componentType: CraftingComponent;

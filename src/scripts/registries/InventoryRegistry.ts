@@ -1,4 +1,4 @@
-import {Inventory} from "../core/Inventory";
+import {Inventory} from "../game/Inventory";
 
 class InventoryRegistry {
 

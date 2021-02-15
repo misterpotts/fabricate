@@ -2,7 +2,7 @@ import {Recipe} from "./Recipe";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
 import {CraftingComponent} from "./CraftingComponent";
-import {FabricationHelper} from "../FabricationHelper";
+import {FabricationHelper} from "./FabricationHelper";
 import {EssenceCombiner} from "./EssenceCombiner";
 
 interface Fabricator {

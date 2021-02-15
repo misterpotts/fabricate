@@ -1,9 +1,9 @@
-import {Inventory} from "./Inventory";
-import {InventoryRecord} from "./InventoryRecord";
-import {GameSystemType} from "./GameSystemType";
-import {Ingredient} from "./Ingredient";
-import {CraftingComponent} from "./CraftingComponent";
-import {Recipe} from "./Recipe";
+import {Inventory} from "../game/Inventory";
+import {InventoryRecord} from "../game/InventoryRecord";
+import {GameSystemType} from "../core/GameSystemType";
+import {Ingredient} from "../core/Ingredient";
+import {CraftingComponent} from "../core/CraftingComponent";
+import {Recipe} from "../core/Recipe";
 
 abstract class CraftingInventory implements Inventory {
 

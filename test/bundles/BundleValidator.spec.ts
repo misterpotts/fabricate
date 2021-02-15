@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {expect} from 'chai';
 import * as lineReader from 'line-reader';
-import {FabricateCompendiumData, FabricateItemType} from "../../src/scripts/core/CompendiumData";
+import {FabricateCompendiumData, FabricateItemType} from "../../src/scripts/game/CompendiumData";
 import {Recipe} from "../../src/scripts/core/Recipe";
 import {CraftingComponent} from "../../src/scripts/core/CraftingComponent";
 import {Done} from "mocha";

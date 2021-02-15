@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {FabricateCompendiumData} from "../src/scripts/core/CompendiumData";
+import {FabricateCompendiumData} from "../src/scripts/game/CompendiumData";
 
 describe('Crafting Component |', () => {
 

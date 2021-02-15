@@ -1,5 +1,5 @@
-import {CompendiumEntry} from "../core/CompendiumData";
-import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../AlchemicalResult";
+import {CompendiumEntry} from "../game/CompendiumData";
+import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../core/AlchemicalResult";
 import {AbilityType5E, DamageType5E, DurationType5e, ItemData5e, TargetType5e, TargetUnitType5e} from "../../global";
 
 type DamageMethod = 'ROLLED' | 'FIXED';

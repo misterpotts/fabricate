@@ -11,8 +11,8 @@ import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {InventoryRegistry} from "../src/scripts/registries/InventoryRegistry";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
-import {Inventory} from "../src/scripts/core/Inventory";
-import {InventoryRecord} from "../src/scripts/core/InventoryRecord";
+import {Inventory} from "../src/scripts/game/Inventory";
+import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 
 describe('Crafting System |', () => {
 

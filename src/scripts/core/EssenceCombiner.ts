@@ -1,7 +1,7 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {AlchemicalResult} from "../AlchemicalResult";
-import {AlchemicalResultSet} from "../AlchemicalResultSet";
-import {CompendiumEntry} from "./CompendiumData";
+import {AlchemicalResult} from "./AlchemicalResult";
+import {AlchemicalResultSet} from "./AlchemicalResultSet";
+import {CompendiumEntry} from "../game/CompendiumData";
 
 interface EssenceCombiner<T> {
     maxComponents: number;

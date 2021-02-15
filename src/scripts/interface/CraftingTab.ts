@@ -1,5 +1,5 @@
 import Properties from "../Properties";
-import {Inventory} from "../core/Inventory";
+import {Inventory} from "../game/Inventory";
 import {Inventory5E} from "../dnd5e/Inventory5E";
 import {InventoryRegistry} from "../registries/InventoryRegistry";
 

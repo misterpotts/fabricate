@@ -9,7 +9,7 @@ import {AlchemicalResult, EssenceCombiner} from "../src/scripts/core/EssenceComb
 import {ItemData5e} from "../src/global";
 import {DefaultEssenceCombiner5E} from "../src/scripts/dnd5e/DefaultEssenceCombiner5E";
 import {AlchemicalResult5E} from "../src/scripts/dnd5e/AlchemicalResult5E";
-import {AlchemicalResultSet} from "../src/scripts/AlchemicalResultSet";
+import {AlchemicalResultSet} from "../src/scripts/core/AlchemicalResultSet";
 
 describe('Essence Combining Fabricator |', () => {
 

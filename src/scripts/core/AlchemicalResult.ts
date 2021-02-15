@@ -1,5 +1,4 @@
-import {CompendiumEntry} from "./core/CompendiumData";
-
+import {CompendiumEntry} from "../game/CompendiumData";
 
 interface ItemEffect<T> {
     applyTo(itemData: T): void;

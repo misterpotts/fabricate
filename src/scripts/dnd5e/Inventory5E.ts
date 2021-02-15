@@ -1,7 +1,7 @@
-import {CraftingInventory} from "../core/CraftingInventory";
-import {InventoryRecord} from "../core/InventoryRecord";
+import {CraftingInventory} from "../game/CraftingInventory";
+import {InventoryRecord} from "../game/InventoryRecord";
 import Properties from "../Properties";
-import {FabricateCompendiumData, FabricateItemType} from "../core/CompendiumData";
+import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";

@@ -1,6 +1,6 @@
-import {CraftingComponent} from "./core/CraftingComponent";
-import {ActionType} from "./core/ActionType";
-import {CraftingResult} from "./core/CraftingResult";
+import {CraftingComponent} from "./CraftingComponent";
+import {ActionType} from "./ActionType";
+import {CraftingResult} from "./CraftingResult";
 
 class FabricationHelper {
 

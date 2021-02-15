@@ -1,6 +1,6 @@
 import {AbstractEssenceCombiner, AlchemicalResult} from "../core/EssenceCombiner";
-import {AlchemicalResultSet} from "../AlchemicalResultSet";
-import {CompendiumEntry} from "../core/CompendiumData";
+import {AlchemicalResultSet} from "../core/AlchemicalResultSet";
+import {CompendiumEntry} from "../game/CompendiumData";
 import {ItemData5e} from "../../global";
 
 class DefaultEssenceCombiner5E extends AbstractEssenceCombiner<ItemData5e> {
