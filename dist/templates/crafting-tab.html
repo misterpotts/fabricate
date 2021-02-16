@@ -46,13 +46,15 @@
         <div class="fabricate-components">
             <ul>
                 {{#each inventoryContents}}
-                <li>
-                    <div class="component" data-component-id="{{entryId}}">
-                        <span class="quantity">{{quantity}}</span>
-                        <span class="name">{{name}}</span>
-                        <img src="{{imageUrl}}" title="{{name}}"/>
-                    </div>
-                </li>
+                <a class="add-crafting-component" title="Add to the mix" data-component-id="{{entryId}}" data-system-id="{{../selectedSystemId}}">
+                    <li>
+                        <div class="component">
+                            <span class="quantity">{{quantity}}</span>
+                            <span class="name">{{name}}</span>
+                            <img src="{{imageUrl}}" title="{{name}}"/>
+                        </div>
+                    </li>
+                </a>
                 {{/each}}
             </ul>
         </div>

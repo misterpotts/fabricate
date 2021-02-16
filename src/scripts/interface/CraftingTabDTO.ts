@@ -3,6 +3,7 @@ import {Inventory} from "../game/Inventory";
 import {Recipe} from "../core/Recipe";
 import {InventoryRecord} from "../game/InventoryRecord";
 import Properties from "../Properties";
+import {InventoryRecordData} from "./CraftingTab";
 
 interface CraftingSystemData {
     disabled: boolean;
@@ -14,13 +15,6 @@ interface CraftingSystemData {
 interface RecipeData {
     name: string;
     entryId: string;
-}
-
-interface InventoryRecordData {
-    name: string;
-    entryId: string;
-    quantity: number;
-    imageUrl: string;
 }
 
 class CraftingTabDTO {
@@ -79,6 +73,10 @@ class CraftingTabDTO {
         return this._hasEnabledSystems;
     }
 
+    get actor(): Actor {
+        return this._actor;
+    }
+
     async init(): Promise<void> {
         let enabledSystems: number = 0;
         this._craftingSystems.forEach((system: CraftingSystem) => {
@@ -112,6 +110,11 @@ class CraftingTabDTO {
             const savedHopperContents: InventoryRecordData[] = this._actor.getFlag(Properties.module.name, `crafting.${this._selectedSystemId}.hopper`);
             if (savedHopperContents) {
                 this._hopperContents = savedHopperContents;
+                savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
+                    const inventoryItem = this._inventoryContents.find((inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId);
+                    inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
+                });
+                this._inventoryContents = this._inventoryContents.filter((inventoryItem: InventoryRecordData) => inventoryItem.quantity > 0);
             }
         }
     }
