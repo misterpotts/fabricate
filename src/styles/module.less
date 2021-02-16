@@ -89,6 +89,22 @@
   margin-top: 10px;
   .crafting-tab-content {
     padding-bottom: 15px;
+    .controls {
+      position: relative;
+      .craft-button {
+        margin: 8px 0;
+        width: 49%;
+        display: inline-block;
+        &.clear-components {
+          right: 0;
+          position: absolute;
+        }
+        &.craft-from-components {
+          left: 0;
+          position: absolute;
+        }
+      }
+    }
   }
   .fabricate-components {
     margin-top: 15px;
@@ -108,7 +124,6 @@
     .form-group.controls  {
       select {
         height: 28px;
-        margin-top: 7px;
       }
     }
   }

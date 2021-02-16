@@ -224,14 +224,19 @@ describe('Essence Combining Fabricator |', () => {
                 .withMaxComponents(6)
                 .withMaxEssences(6)
                 .withKnownAlchemicalResults(knownAlchemicalResults)
-                .withResultantItem('fabricate.fabricate-test', 'xyz123')
+                .withResultantItem(CraftingComponent.builder()
+                    .withName('Alchemical Bomb')
+                    .withImageUrl('systems/dnd5e/icons/items/inventory/bomb.jpg')
+                    .withCompendiumEntry('fabricate.alchemists-supplies-v11', '90z9nOwmGnP4aUUk')
+                    .withEssences([])
+                    .build())
                 .build();
 
             const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
             const result: CraftingResult = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
-            expect(result.item.compendiumEntry.compendiumKey).to.equal('fabricate.fabricate-test');
-            expect(result.item.compendiumEntry.entryId).to.equal('xyz123');
+            expect(result.item.compendiumEntry.compendiumKey).to.equal('fabricate.alchemists-supplies-v11');
+            expect(result.item.compendiumEntry.entryId).to.equal('90z9nOwmGnP4aUUk');
             expect(result.quantity).to.equal(1);
             expect(result.action).to.equal(ActionType.ADD);
 

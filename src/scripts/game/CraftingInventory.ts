@@ -46,6 +46,25 @@ abstract class CraftingInventory implements Inventory {
         return ingredient.quantity <= quantity;
     }
 
+    hasAll(components: CraftingComponent[]): boolean {
+        const componentCountById: Map<string, number> = new Map<string, number>();
+        components.forEach((component: CraftingComponent) => {
+            if (componentCountById.has(component.compendiumEntry.entryId)) {
+                const currentCount = componentCountById.get(component.compendiumEntry.entryId);
+                componentCountById.set(component.compendiumEntry.entryId, currentCount + 1);
+            } else {
+                componentCountById.set(component.compendiumEntry.entryId, 1);
+            }
+        });
+        componentCountById.forEach((amountRequired: number, entryId: string) => {
+            const inventoryRecordForType = this.contents.find((record: InventoryRecord) => record.componentType.compendiumEntry.entryId === entryId);
+            if (!inventoryRecordForType || inventoryRecordForType.totalQuantity < amountRequired) {
+                return false;
+            }
+        });
+        return true;
+    }
+
     hasAllIngredientsFor(recipe: Recipe): boolean {
         return this.hasAllNamedIngredients(recipe) && this.hasAllEssences(recipe);
     }

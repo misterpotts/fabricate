@@ -40,13 +40,13 @@
     <!-- IF Essence-based crafting without a recipe is supported -->
     <div class="inventory">
         <div class="description">
-            <h2>Crafting Without a Recipe</h2>
+            <h2>Craft from Components</h2>
             <p>You have the following components in your inventory. Left click to add one to the mix. </p>
         </div>
         <div class="fabricate-components">
             <ul>
                 {{#each inventoryContents}}
-                <a class="add-crafting-component" title="Add to the mix" data-component-id="{{entryId}}" data-system-id="{{../selectedSystemId}}">
+                <a class="add-crafting-component" title="Add to the mix" data-component-id="{{entryId}}">
                     <li>
                         <div class="component">
                             <span class="quantity">{{quantity}}</span>
@@ -66,6 +66,7 @@
         <div class="fabricate-components">
             <ul>
                 {{#each hopperContents}}
+                <a class="remove-crafting-component" title="Remove from the mix" data-component-id="{{entryId}}">
                 <li>
                     <div class="component" data-component-id="{{entryId}}">
                         <span class="quantity">{{quantity}}</span>
@@ -73,13 +74,17 @@
                         <img src="{{imageUrl}}" title="{{name}}"/>
                     </div>
                 </li>
+                </a>
                 {{/each}}
             </ul>
         </div>
     </div>
     <div class="controls">
         <a title="Craft">
-            <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
+            <p class="craft-from-components craft-button"><i class="fas fa-flask"></i> Craft</p>
+        </a>
+        <a title="Clear">
+            <p class="clear-components craft-button"><i class="fas fa-times-circle"></i> Clear all</p>
         </a>
     </div>
     {{else}}

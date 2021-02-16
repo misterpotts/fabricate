@@ -58,9 +58,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
             .withAction(ActionType.ADD)
             .withQuantity(1)
             .withCustomData(alchemicalResult.asItemData())
-            .withItem(CraftingComponent.builder()
-                .withCompendiumEntry(resultantItem.compendiumKey, resultantItem.entryId)
-                .build())
+            .withItem(resultantItem)
             .build();
     }
 

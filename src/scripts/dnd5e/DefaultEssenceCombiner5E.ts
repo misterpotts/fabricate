@@ -2,6 +2,7 @@ import {AbstractEssenceCombiner, AlchemicalResult} from "../core/EssenceCombiner
 import {AlchemicalResultSet} from "../core/AlchemicalResultSet";
 import {CompendiumEntry} from "../game/CompendiumData";
 import {ItemData5e} from "../../global";
+import {CraftingComponent} from "../core/CraftingComponent";
 
 class DefaultEssenceCombiner5E extends AbstractEssenceCombiner<ItemData5e> {
 
@@ -29,7 +30,7 @@ namespace DefaultEssenceCombiner5E {
         public maxEssences: number;
         public maxComponents: number;
         public knownAlchemicalResults: AlchemicalResultSet<ItemData5e>;
-        public resultantItem: CompendiumEntry;
+        public resultantItem: CraftingComponent;
 
         public withMaxEssences(value: number): Builder {
             this.maxEssences = value;
@@ -46,8 +47,8 @@ namespace DefaultEssenceCombiner5E {
             return this;
         }
 
-        public withResultantItem(compendiumKey: string, entryId: string): Builder {
-            this.resultantItem = {compendiumKey: compendiumKey, entryId: entryId};
+        public withResultantItem(resultantItem: CraftingComponent): Builder {
+            this.resultantItem = resultantItem;
             return this;
         }
 

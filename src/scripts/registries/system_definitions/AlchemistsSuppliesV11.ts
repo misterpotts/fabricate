@@ -7,6 +7,7 @@ import {DefaultEssenceCombiner5E} from "../../dnd5e/DefaultEssenceCombiner5E";
 import {EssenceCombiningFabricator} from "../../core/Fabricator";
 import {CraftingSystem} from "../../core/CraftingSystem";
 import {GameSystemType} from "../../core/GameSystemType";
+import {CraftingComponent} from "../../core/CraftingComponent";
 
 const blinding: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
     .withEssenceCombination(['EARTH', 'EARTH'])
@@ -99,7 +100,12 @@ const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.bu
     .withMaxComponents(6)
     .withMaxEssences(6)
     .withKnownAlchemicalResults(knownAlchemicalResults)
-    .withResultantItem('fabricate.fabricate-test', 'xyz123')
+    .withResultantItem(CraftingComponent.builder()
+        .withName('Alchemical Bomb')
+        .withImageUrl('systems/dnd5e/icons/items/inventory/bomb.jpg')
+        .withCompendiumEntry('fabricate.alchemists-supplies-v11', '90z9nOwmGnP4aUUk')
+        .withEssences([])
+        .build())
     .build();
 
 const fabricator: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);

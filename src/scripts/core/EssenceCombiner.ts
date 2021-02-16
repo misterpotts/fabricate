@@ -1,12 +1,11 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {AlchemicalResult} from "./AlchemicalResult";
 import {AlchemicalResultSet} from "./AlchemicalResultSet";
-import {CompendiumEntry} from "../game/CompendiumData";
 
 interface EssenceCombiner<T> {
     maxComponents: number;
     maxEssences: number;
-    resultantItem: CompendiumEntry;
+    resultantItem: CraftingComponent;
     combine(components: CraftingComponent[]): AlchemicalResult<T>;
 }
 
@@ -14,9 +13,9 @@ abstract class AbstractEssenceCombiner<T> implements EssenceCombiner<T> {
     private readonly _maxComponents: number;
     private readonly _maxEssences: number;
     private readonly _availableResults: AlchemicalResultSet<T>;
-    private readonly _resultantItem: CompendiumEntry;
+    private readonly _resultantItem: CraftingComponent;
 
-    protected constructor(maxComponents: number, maxEssences: number, availableResults: AlchemicalResultSet<T>, resultantItem: CompendiumEntry) {
+    protected constructor(maxComponents: number, maxEssences: number, availableResults: AlchemicalResultSet<T>, resultantItem: CraftingComponent) {
         this._maxComponents = maxComponents;
         this._maxEssences = maxEssences;
         this._availableResults = availableResults;
@@ -31,7 +30,7 @@ abstract class AbstractEssenceCombiner<T> implements EssenceCombiner<T> {
         return this._maxEssences;
     }
 
-    get resultantItem(): CompendiumEntry {
+    get resultantItem(): CraftingComponent {
         return this._resultantItem;
     }
 

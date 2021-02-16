@@ -44,11 +44,14 @@ class Inventory5E extends CraftingInventory {
             && item.data.flags.fabricate.type === FabricateItemType.COMPONENT;
     }
 
-    async add(component: CraftingComponent, amountToAdd: number = 1): Promise<InventoryRecord> {
+    async add(component: CraftingComponent, amountToAdd: number = 1, customData?: any): Promise<InventoryRecord> {
         const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.entryId);
         if (!recordForType) {
             const compendium: Compendium = game.packs.get(component.compendiumEntry.compendiumKey);
-            const itemData: any = await compendium.getEntity(component.compendiumEntry.entryId);
+            let itemData: any = await compendium.getEntity(component.compendiumEntry.entryId);
+            if (customData) {
+                itemData = {...itemData, ...customData};
+            }
             component.imageUrl = itemData.img;
             itemData.quantity = amountToAdd;
             const createdItem = await this._actor.createEmbeddedEntity('OwnedItem', itemData);

@@ -13,9 +13,10 @@ interface Inventory {
     contains(ingredient: Ingredient): boolean;
     denormalizedContents(): CraftingComponent[];
     hasAllIngredientsFor(recipe: Recipe): boolean;
-    add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
+    add(component: CraftingComponent, quantity?: number, customData?: any): Promise<InventoryRecord>;
     remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
     update(): void;
+    hasAll(components: CraftingComponent[]): boolean;
 }
 
 export {Inventory}
