@@ -11,9 +11,10 @@ class CraftingTab {
     private _sheetHtml: any;
     private _inventory: Inventory;
     private _suppressedInNav: boolean = false;
+    private _actor: Actor;
 
     public static bind(itemSheet: ItemSheet, sheetHtml: HTMLElement, eventData: any): void {
-        const actor: any = game.actors.get(eventData.actor._id);
+        const actor: Actor = game.actors.get(eventData.actor._id);
         if (!game.user.isGM || !actor.owner ) {
             return;
         }
@@ -25,7 +26,7 @@ class CraftingTab {
         tab.init(sheetHtml, actor);
     }
 
-    private init(sheetHtml: any, actor: any) {
+    private init(sheetHtml: any, actor: Actor) {
         let inventory = InventoryRegistry.getFor(actor.id);
         if (inventory) {
             this._inventory = inventory;
@@ -34,13 +35,16 @@ class CraftingTab {
             InventoryRegistry.addFor(actor.id, inventory);
             this._inventory = inventory;
         }
+        this._actor = actor;
         this._sheetHtml = sheetHtml;
         this.addTabToCharacterSheet(sheetHtml);
         this.render();
     }
 
     private async render(): Promise<void> {
-        let template: HTMLElement = await renderTemplate(Properties.module.templates.craftingTab, new CraftingTabDTO(CraftingSystemRegistry.getAllSystems(), this._inventory));
+        const craftingTabDTO = new CraftingTabDTO(CraftingSystemRegistry.getAllSystems(), this._inventory, this._actor);
+        await craftingTabDTO.init();
+        let template: HTMLElement = await renderTemplate(Properties.module.templates.craftingTab, craftingTabDTO);
         let element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);

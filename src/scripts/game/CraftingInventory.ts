@@ -47,6 +47,43 @@ abstract class CraftingInventory implements Inventory {
     }
 
     hasAllIngredientsFor(recipe: Recipe): boolean {
+        return this.hasAllNamedIngredients(recipe) && this.hasAllEssences(recipe);
+    }
+
+    private hasAllEssences(recipe: Recipe): boolean {
+        const outstandingEssencesByType: Map<string, number> = new Map<string, number>();
+        if (!recipe.essences || recipe.essences.length === 0) {
+            return true;
+        }
+        recipe.essences.forEach((essence: string) => {
+            if (outstandingEssencesByType.has(essence)) {
+                outstandingEssencesByType.set(essence, outstandingEssencesByType.get(essence) + 1);
+            } else {
+                outstandingEssencesByType.set(essence, 1);
+            }
+        });
+        for (let i = 0; i < this.contents.length; i++) {
+            const thisRecord: InventoryRecord = this.contents[i];
+            if (thisRecord.componentType.essences) {
+                thisRecord.componentType.essences.forEach((essence: string) => {
+                    if (outstandingEssencesByType.has(essence)) {
+                        const remaining: number = outstandingEssencesByType.get(essence);
+                        if (remaining === 1) {
+                            outstandingEssencesByType.delete(essence);
+                        } else {
+                            outstandingEssencesByType.set(essence, remaining - 1);
+                        }
+                    }
+                });
+                if (outstandingEssencesByType.size === 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private hasAllNamedIngredients(recipe: Recipe): boolean {
         const ingredientsByType = new Map<string, number>();
         let failedToFind: boolean = false;
         let duplicatedIngredient: boolean = false;
@@ -56,7 +93,7 @@ abstract class CraftingInventory implements Inventory {
                 failedToFind = true;
                 return;
             }
-            const occurrences = ingredientsByType.get(ingredient.componentType.compendiumEntry.entryId) +1;
+            const occurrences = ingredientsByType.get(ingredient.componentType.compendiumEntry.entryId) + 1;
             ingredientsByType.set(ingredient.componentType.compendiumEntry.entryId, occurrences);
             if (occurrences > 1) {
                 duplicatedIngredient = true;

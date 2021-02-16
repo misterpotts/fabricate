@@ -31,7 +31,7 @@ class Inventory5E extends CraftingInventory {
                     .withActor(this._actor)
                     .withItem(item)
                     .withQuantity(item.data.data.quantity)
-                    .withCraftingComponent(CraftingComponent.fromFlags(itemConfig))
+                    .withCraftingComponent(CraftingComponent.fromFlags(itemConfig, item.img))
                     .build();
             })
             .forEach((inventoryRecord: InventoryRecord) => {
