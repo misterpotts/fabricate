@@ -1,8 +1,8 @@
-import {GameSystemType} from "../GameSystemType";
+import {GameSystemType} from "../core/GameSystemType";
 import {InventoryRecord} from "./InventoryRecord";
-import {Ingredient} from "../Ingredient";
-import {CraftingComponent} from "../CraftingComponent";
-import {Recipe} from "../Recipe";
+import {Ingredient} from "../core/Ingredient";
+import {CraftingComponent} from "../core/CraftingComponent";
+import {Recipe} from "../core/Recipe";
 
 interface Inventory {
     actor: Actor;
@@ -16,7 +16,6 @@ interface Inventory {
     add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
     remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
     update(): void;
-    updateQuantityFor(item: any): Promise<InventoryRecord>;
 }
 
 export {Inventory}

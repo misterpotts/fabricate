@@ -105,7 +105,7 @@ class CraftingTabDTO {
                     this._inventoryContents.push({
                         name: inventoryRecord.componentType.name,
                         entryId: inventoryRecord.componentType.compendiumEntry.entryId,
-                        quantity: inventoryRecord.quantity,
+                        quantity: inventoryRecord.totalQuantity,
                         imageUrl: inventoryRecord.componentType.imageUrl
                     });
                 });

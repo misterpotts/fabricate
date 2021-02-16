@@ -177,7 +177,7 @@ describe('Crafting System |', () => {
             // @ts-ignore
             mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
                 .withCraftingComponent(mudPie.item)
-                .withQuantity(mudPie.quantity)
+                .withTotalQuantity(mudPie.quantity)
                 .withActor(mockActor)
                 .build());
             // @ts-ignore

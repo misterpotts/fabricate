@@ -2,14 +2,14 @@ import {CraftingComponent} from "../core/CraftingComponent";
 
 class InventoryRecord {
     private readonly _actor: Actor;
-    private readonly _item: Item;
+    private _itemsOfType: Item[];
     private readonly _componentType: CraftingComponent;
-    private _quantity: number;
+    private _totalQuantity: number;
 
     constructor(builder: InventoryRecord.Builder) {
         this._actor = builder.actor;
-        this._item = builder.item;
-        this._quantity = builder.quantity;
+        this._itemsOfType = builder.itemsOfType;
+        this._totalQuantity = builder.totalQuantity;
         this._componentType = builder.craftingComponent;
     }
 
@@ -17,20 +17,40 @@ class InventoryRecord {
         return new InventoryRecord.Builder();
     }
 
+    public combineWith(other: InventoryRecord): InventoryRecord {
+        if (!this.componentType.equals(other.componentType)) {
+            throw new Error(`Unable to combine inventory records for different Fabricate Item Types: ${this.componentType.compendiumEntry.entryId} | ${other.componentType.compendiumEntry.entryId}`);
+        }
+        if (this.actor.id !== other.actor.id) {
+            throw new Error(`Unable to combine inventory records from different Actors: ${this.actor.id} | ${other.actor.id}`);
+        }
+        return InventoryRecord.builder()
+            .withCraftingComponent(this.componentType)
+            .withActor(this.actor)
+            .withItems(this.itemsOfType)
+            .withItems(other.itemsOfType)
+            .withTotalQuantity(this.totalQuantity + other.totalQuantity)
+            .build();
+    }
+
     get actor(): Actor {
         return this._actor;
     }
 
-    get item(): Item {
-        return this._item;
+    get itemsOfType(): Item[] {
+        return this._itemsOfType;
     }
 
-    get quantity(): number {
-        return this._quantity;
+    set itemsOfType(value: Item[]) {
+        this._itemsOfType = value;
     }
 
-    set quantity(value: number) {
-        this._quantity = value;
+    get totalQuantity(): number {
+        return this._totalQuantity;
+    }
+
+    set totalQuantity(value: number) {
+        this._totalQuantity = value;
     }
 
     get componentType(): CraftingComponent {
@@ -41,16 +61,22 @@ class InventoryRecord {
 namespace InventoryRecord {
     export class Builder {
         public actor!: Actor;
-        public item!: Item;
+        public itemsOfType: Item[] = [];
         public craftingComponent!: CraftingComponent;
-        public quantity!: number;
+        public totalQuantity!: number;
 
         public withActor(value: Actor): Builder {
             this.actor = value;
             return this;
         }
+
         public withItem(value: Item): Builder {
-            this.item = value;
+            this.itemsOfType.push(value);
+            return this;
+        }
+
+        public withItems(value: Item[]): Builder {
+            this.itemsOfType.push(...value);
             return this;
         }
 
@@ -59,8 +85,8 @@ namespace InventoryRecord {
             return this;
         }
 
-        public withQuantity(value: number): Builder {
-            this.quantity = value;
+        public withTotalQuantity(value: number): Builder {
+            this.totalQuantity = value;
             return this;
         }
 

@@ -41,7 +41,7 @@ abstract class CraftingInventory implements Inventory {
 
     contains(ingredient: Ingredient): boolean {
         const quantity = this.contents.filter((candidate: InventoryRecord) => candidate.componentType.equals(ingredient.componentType))
-            .map((candidate: InventoryRecord) => candidate.quantity)
+            .map((candidate: InventoryRecord) => candidate.totalQuantity)
             .reduce((left, right) => left + right, 0);
         return ingredient.quantity <= quantity;
     }
@@ -68,10 +68,11 @@ abstract class CraftingInventory implements Inventory {
                 thisRecord.componentType.essences.forEach((essence: string) => {
                     if (outstandingEssencesByType.has(essence)) {
                         const remaining: number = outstandingEssencesByType.get(essence);
-                        if (remaining === 1) {
+                        const contribution = thisRecord.totalQuantity;
+                        if (remaining <= contribution) {
                             outstandingEssencesByType.delete(essence);
                         } else {
-                            outstandingEssencesByType.set(essence, remaining - 1);
+                            outstandingEssencesByType.set(essence, remaining - contribution);
                         }
                     }
                 });
@@ -106,8 +107,6 @@ abstract class CraftingInventory implements Inventory {
         }
         return !failedToFind;
     }
-
-    abstract updateQuantityFor(item: any): Promise<InventoryRecord>;
 
     public abstract remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
 

@@ -83,6 +83,9 @@
 .fabricate-crafting {
   margin-top: 10px;
 }
+.fabricate-crafting .crafting-tab-content {
+  padding-bottom: 15px;
+}
 .fabricate-crafting .fabricate-components {
   margin-top: 15px;
   border-radius: 5px;

@@ -68,12 +68,10 @@ class FabricateLifecycle {
             }
         });
 
-        Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
+        Hooks.on('updateOwnedItem', async (actor: any) => {
             const inventory: Inventory = InventoryRegistry.getFor(actor.id);
             if (inventory) {
-                if (typeof update.data !== 'undefined') {
-                    await inventory.updateQuantityFor(item);
-                }
+                inventory.update();
             }
         });
 
