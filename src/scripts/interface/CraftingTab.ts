@@ -141,10 +141,16 @@ class CraftingTab {
             const craftingSystemId: string = craftingTabDTO.selectedSystemId;
             const hopperContents: InventoryRecordData[] = craftingTabDTO.hopperContents;
 
+            if (!hopperContents || hopperContents.length === 0) {
+                return;
+            }
+
             console.log(`Craft for system ${craftingSystemId} with ${hopperContents.length} components`);
 
             const craftingSystem: CraftingSystem = CraftingSystemRegistry.getSystemByCompendiumPackKey(craftingSystemId);
             const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByEntryId(hopperItem.entryId));
+
+            await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
             await craftingSystem.craftWithComponents(this._actor.id, craftingComponents);
 
             this._suppressedInNav = true;

@@ -20,7 +20,11 @@ interface ItemData5e {
         versatile: string | '';
     };
     formula?: string | '';
-    description?: string;
+    description?: {
+        value: string | '';
+        chat: string | '';
+        unidentified: string | '';
+    };
     duration?: {
         units?: DurationType5e;
         value?: number;

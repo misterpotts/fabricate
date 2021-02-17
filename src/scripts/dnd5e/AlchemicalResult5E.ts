@@ -126,22 +126,24 @@ class AoEExtender5E implements ItemEffectModifier<ItemData5e> {
         if (!this.matches(itemEffect)) {
             throw new Error('An AoEExtender5E can only be applied to an EffectTarget5E');
         }
-        const target: EffectTarget5E = <EffectTarget5E>itemEffect;
+        const source: EffectTarget5E = <EffectTarget5E>itemEffect;
+        let value: number = source.value;
         switch (this.mode) {
             case 'ADD':
-                if (AoETypeValues.indexOf(target.type) < 0) {
-                    target.value = this.amount;
+                if (AoETypeValues.indexOf(source.type) < 0) {
+                   value = this.amount;
                 } else {
-                    target.value = target.value + this.amount;
+                    value = source.value + this.amount;
                 }
                 break;
             case 'MULTIPLY':
-                target.value = target.value * this.amount;
+                value = source.value * this.amount;
                 break;
         }
-        target.type = this.areaType;
-        target.units = 'ft';
-        return itemEffect;
+        const units: TargetUnitType5e = 'ft';
+        const type: TargetType5e = this.areaType;
+        const target: EffectTarget5E = new EffectTarget5E(units, value, type);
+        return target;
     }
 
     matches(itemEffect: ItemEffect<ItemData5e>): boolean {
@@ -163,16 +165,28 @@ class DamageModifier5E implements ItemEffectModifier<ItemData5e> {
         if (!this.matches(itemEffect)) {
             throw new Error('A DamageModifier5E can only be applied to a DamageEffect5E');
         }
-        const damage: DamageEffect5E = <DamageEffect5E>itemEffect;
+        const source: DamageEffect5E = <DamageEffect5E>itemEffect;
+        const die: Dice = {
+            faces: source.die.faces,
+            amount: source.die.amount
+        };
+        // todo - implement properly for fixed damage
         switch (this.mode) {
             case 'ADD':
-                damage.die.amount = damage.die.amount + this.amount;
+                die.amount = source.die.amount + this.amount;
                 break;
             case 'MULTIPLY':
-                damage.die.amount = damage.die.amount * this.amount;
+                die.amount = source.die.amount * this.amount;
                 break;
         }
-        return itemEffect;
+        switch (source.method) {
+            case "FIXED":
+                return DamageEffect5E.fixedDamage(source.type, source.amount, source.bonus);
+                break;
+            case "ROLLED":
+                return DamageEffect5E.rolledDamage(source.type, die, source.bonus)
+                break;
+        }
     }
 
     matches(itemEffect: ItemEffect<ItemData5e>): boolean {
@@ -193,16 +207,17 @@ class SavingThrowModifier5E implements ItemEffectModifier<ItemData5e> {
         if (!this.matches(itemEffect)) {
             throw new Error('A SavingThrowModifier5E can only be applied to a SavingThrowEffect5E');
         }
-        const savingThrow: SavingThrowEffect5E = <SavingThrowEffect5E>itemEffect;
+        const source: SavingThrowEffect5E = <SavingThrowEffect5E>itemEffect;
+        let dc: number;
         switch (this.mode) {
             case 'ADD':
-                savingThrow.dc = savingThrow.dc + this.value;
+                dc = source.dc + this.value;
                 break;
             case 'MULTIPLY':
-                savingThrow.dc = savingThrow.dc * this.value;
+                dc = source.dc * this.value;
                 break;
         }
-        return itemEffect;
+        return new SavingThrowEffect5E(source.ability, dc, source.scaling);
     }
 
     matches(itemEffect: ItemEffect<ItemData5e>): boolean {
@@ -212,19 +227,28 @@ class SavingThrowModifier5E implements ItemEffectModifier<ItemData5e> {
 
 class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
 
-    private readonly _descriptionParts: string[];
-    private readonly _essenceCombination: string[];
-    private readonly _resultantItem: CompendiumEntry;
+    private readonly _descriptionParts: string[] = [];
+    private readonly _essenceCombination: string[] = [];
 
     private readonly _effects: ItemEffect<ItemData5e>[] = [];
     private readonly _effectModifiers: ItemEffectModifier<ItemData5e>[] = [];
 
-    constructor(builder: AlchemicalResult5E.Builder) {
-        this._descriptionParts = builder.description;
-        this._essenceCombination = builder.essenceCombination;
-        this._resultantItem = builder.resultantItem;
-        this._effects = builder.effects;
-        this._effectModifiers = builder.modifiers;
+    constructor(builder?: AlchemicalResult5E.Builder) {
+        if (builder) {
+            this._descriptionParts = builder.description;
+            this._essenceCombination = builder.essenceCombination;
+            this._effects = builder.effects;
+            this._effectModifiers = builder.effectModifiers;
+        }
+    }
+
+    public duplicate(): AlchemicalResult<ItemData5e> {
+        const other = new AlchemicalResult5E();
+        this._descriptionParts.forEach((value: string) => other.descriptionParts.push(value));
+        this._essenceCombination.forEach((value: string) => other.essenceCombination.push(value));
+        this._effects.forEach((value: ItemEffect<ItemData5e>) => other.effects.push(value));
+        this._effectModifiers.forEach((value: ItemEffectModifier<ItemData5e>) => other.effectModifiers.push(value));
+        return other;
     }
 
     get description(): string {
@@ -235,10 +259,6 @@ class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
         return this._essenceCombination;
     }
 
-    get resultantItem(): CompendiumEntry {
-        return this._resultantItem;
-    }
-
     get effects(): ItemEffect<ItemData5e>[] {
         return this._effects;
     }
@@ -247,29 +267,39 @@ class AlchemicalResult5E implements AlchemicalResult<ItemData5e> {
         return this._effectModifiers;
     }
 
+    get descriptionParts(): string[] {
+        return this._descriptionParts;
+    }
+
     asItemData(): ItemData5e {
         const result: ItemData5e = {};
-        result.description = this._descriptionParts.map((descriptionPart: string) => `<p>${descriptionPart}</p>`).join('\n');
-        this._effects.filter((effect: ItemEffect<ItemData5e>) => {
-            effect instanceof EffectTarget5E
-        });
-        this._effectModifiers.forEach((modifier: ItemEffectModifier<ItemData5e>) => {
-            this._effects.forEach((effect: ItemEffect<ItemData5e>) => {
+        result.description = {
+            value: this._descriptionParts.map((descriptionPart: string) => `<p>${descriptionPart}</p>`).join('\n'),
+            chat: '',
+            unidentified: ''
+        };
+        let modifiedEffects: ItemEffect<ItemData5e>[] = [];
+        this._effects.forEach((effect: ItemEffect<ItemData5e>) => {
+            let result = effect;
+            this._effectModifiers.forEach((modifier: ItemEffectModifier<ItemData5e>) => {
                 if (modifier.matches(effect)) {
-                    modifier.transform(effect);
+                    result = modifier.transform(effect);
                 }
             });
+            modifiedEffects.push(result);
         });
-        this._effects.forEach((effect: ItemEffect<ItemData5e>) => effect.applyTo(result));
+        modifiedEffects.forEach((effect: ItemEffect<ItemData5e>) => effect.applyTo(result));
         return result;
     }
 
-    combineWith(other: AlchemicalResult<ItemData5e>): AlchemicalResult<ItemData5e> {
-        this.essenceCombination.push(...other.essenceCombination)
-        this._descriptionParts.push(other.description);
-        this._effects.push(...other.effects);
-        this._effectModifiers.push(...other.effectModifiers);
-        return this;
+    combineWith(source: AlchemicalResult<ItemData5e>): AlchemicalResult<ItemData5e> {
+        const self: AlchemicalResult<ItemData5e> = this.duplicate();
+        const other: AlchemicalResult<ItemData5e> = source.duplicate();
+        self.essenceCombination.push(...other.essenceCombination)
+        self.descriptionParts.push(other.description);
+        self.effects.push(...other.effects);
+        self.effectModifiers.push(...other.effectModifiers);
+        return self;
     }
 
     public static builder(): AlchemicalResult5E.Builder {
@@ -285,7 +315,7 @@ namespace AlchemicalResult5E {
         public essenceCombination: string[] = [];
         public resultantItem: CompendiumEntry;
         public effects: ItemEffect<ItemData5e>[] = [];
-        public modifiers: ItemEffectModifier<ItemData5e>[] = [];
+        public effectModifiers: ItemEffectModifier<ItemData5e>[] = [];
 
         public withDescription(value: string): Builder {
             this.description.push(value);
@@ -323,17 +353,17 @@ namespace AlchemicalResult5E {
         }
 
         withAoEExtender(mode: ModificationMethod, value: number, areaType:AoEType): Builder {
-            this.modifiers.push(new AoEExtender5E(mode, value, areaType));
+            this.effectModifiers.push(new AoEExtender5E(mode, value, areaType));
             return this;
         }
 
         withDamageModifier(mode: ModificationMethod, value: number): Builder {
-            this.modifiers.push(new DamageModifier5E(mode, value));
+            this.effectModifiers.push(new DamageModifier5E(mode, value));
             return this;
         }
 
         withSavingThrowModifier(mode: ModificationMethod, value: number): Builder {
-            this.modifiers.push(new SavingThrowModifier5E(mode, value));
+            this.effectModifiers.push(new SavingThrowModifier5E(mode, value));
             return this;
         }
 

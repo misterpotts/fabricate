@@ -1,7 +1,7 @@
 import {CraftingInventory} from "../game/CraftingInventory";
 import {InventoryRecord} from "../game/InventoryRecord";
 import Properties from "../Properties";
-import {FabricateItemType} from "../game/CompendiumData";
+import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
@@ -45,16 +45,15 @@ class Inventory5E extends CraftingInventory {
     }
 
     async add(component: CraftingComponent, amountToAdd: number = 1, customData?: any): Promise<InventoryRecord> {
+        if (customData) {
+            return this.addCustomItem(component, amountToAdd, customData);
+        }
         const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.entryId);
         if (!recordForType) {
             const compendium: Compendium = game.packs.get(component.compendiumEntry.compendiumKey);
-            let itemData: any = await compendium.getEntity(component.compendiumEntry.entryId);
-            if (customData) {
-                itemData = {...itemData, ...customData};
-            }
-            component.imageUrl = itemData.img;
-            itemData.quantity = amountToAdd;
-            const createdItem = await this._actor.createEmbeddedEntity('OwnedItem', itemData);
+            const item: any = await compendium.getEntity(component.compendiumEntry.entryId);
+            item.quantity = amountToAdd;
+            const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', item);
             const inventoryRecord: InventoryRecord = InventoryRecord.builder()
                 .withActor(this._actor)
                 .withItem(createdItem)
@@ -71,6 +70,29 @@ class Inventory5E extends CraftingInventory {
             await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item.id, data: {quantity: updatedQuantityForItem}});
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
             return recordForType;
+        }
+    }
+
+    private async addCustomItem(component: CraftingComponent, amountToAdd: number, customData: any): Promise<InventoryRecord> {
+        const compendium: Compendium = game.packs.get(component.compendiumEntry.compendiumKey);
+        const item: any = await compendium.getEntity(component.compendiumEntry.entryId);
+        item.quantity = amountToAdd;
+        const data = duplicate(item.data);
+        mergeObject(data.data, customData);
+        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.entryId);
+        const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', data);
+        if (recordForType) {
+            recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
+            return recordForType;
+        } else {
+            const inventoryRecord: InventoryRecord = InventoryRecord.builder()
+                .withActor(this._actor)
+                .withItem(createdItem)
+                .withTotalQuantity(createdItem.data.quantity)
+                .withCraftingComponent(component)
+                .build();
+            this._itemDirectory.set(component.compendiumEntry.entryId, inventoryRecord);
+            return inventoryRecord;
         }
     }
 
@@ -115,6 +137,32 @@ class Inventory5E extends CraftingInventory {
             this._itemDirectory.delete(component.compendiumEntry.entryId);
         }
         return true;
+    }
+
+    public async updateQuantityFor(item: any): Promise<InventoryRecord | void> {
+        if (!item) {
+            throw new Error('Unable to update inventory quantity for null item. ');
+        }
+        const fabricateFlags: FabricateCompendiumData = item.flags.fabricate;
+        if (!fabricateFlags || fabricateFlags.type !== FabricateItemType.COMPONENT) {
+            return;
+        }
+        const entryId: string = fabricateFlags.component.compendiumEntry.entryId;
+        if (!entryId) {
+            throw new Error(`Unable to update inventory quantity for item ${item._id} with no Fabricate Compendium Entry ID set in flag data. `);
+        }
+        const inventoryRecordForType = this._itemDirectory.get(entryId);
+        if (!inventoryRecordForType) {
+            return this.update();
+        }
+        if (inventoryRecordForType.itemsOfType.length <= 1) {
+            inventoryRecordForType.totalQuantity = item.data.quantity;
+            return inventoryRecordForType;
+        }
+        const totalExcludingChanged = inventoryRecordForType.itemsOfType.filter((managedItem: any) => managedItem.id !== item._id)
+            .map((managedItem: any) => managedItem.data.data.quantity)
+            .reduce((left, right) => left + right, 0);
+        inventoryRecordForType.totalQuantity = totalExcludingChanged + item.data.quantity;
     }
 
     public denormalizedContents(): CraftingComponent[] {

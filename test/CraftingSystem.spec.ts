@@ -21,9 +21,9 @@ describe('Crafting System |', () => {
         it('Should create a Crafting System', () => {
 
             let mockFabricator = <Fabricator>{
-                fabricateFromComponents(): CraftingResult {
+                fabricateFromComponents(): CraftingResult[] {
                     // @ts-ignore
-                    return {};
+                    return [];
                 },
                 // @ts-ignore
                 fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
@@ -108,9 +108,9 @@ describe('Crafting System |', () => {
         it('Should craft a recipe using the System\'s Fabricator', async () => {
 
             let mockFabricator = <Fabricator>{
-                fabricateFromComponents(): CraftingResult {
+                fabricateFromComponents(): CraftingResult[] {
                     // @ts-ignore
-                    return {};
+                    return []
                 },
                 // @ts-ignore
                 fabricateFromRecipe(recipe: Recipe): CraftingResult[] {

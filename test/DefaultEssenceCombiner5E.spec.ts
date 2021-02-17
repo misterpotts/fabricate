@@ -135,9 +135,9 @@ describe('Default Essence Combiner 5E |', () => {
             expect(result.effectModifiers).to.deep.include({mode: 'MULTIPLY', amount: 2});
             const itemData5e = result.asItemData();
             expect(itemData5e).to.exist;
-            expect(itemData5e.description).to.contain('Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.');
-            expect(itemData5e.description).to.contain('Deal 1d8 acid damage on contact.');
-            expect(itemData5e.description).to.contain('Roll double the number of all damage dice.');
+            expect(itemData5e.description.value).to.contain('Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.');
+            expect(itemData5e.description.value).to.contain('Deal 1d8 acid damage on contact.');
+            expect(itemData5e.description.value).to.contain('Roll double the number of all damage dice.');
             expect(itemData5e.target.value).to.equal(5);
             expect(itemData5e.target.units).to.equal('ft');
             expect(itemData5e.target.type).to.equal('radius');

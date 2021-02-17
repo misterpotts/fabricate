@@ -131,6 +131,8 @@ abstract class CraftingInventory implements Inventory {
 
     public abstract update(): void;
 
+    public abstract updateQuantityFor(item: any): Promise<InventoryRecord | void>;
+
     abstract denormalizedContents(): CraftingComponent[];
 
 }

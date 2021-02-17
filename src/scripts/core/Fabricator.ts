@@ -8,7 +8,7 @@ import {EssenceCombiner} from "./EssenceCombiner";
 interface Fabricator {
     fabricateFromRecipe(recipe: Recipe, components?: CraftingComponent[]): CraftingResult[];
 
-    fabricateFromComponents(components: CraftingComponent[]): CraftingResult;
+    fabricateFromComponents(components: CraftingComponent[]): CraftingResult[];
 }
 
 class DefaultFabricator implements Fabricator {
@@ -35,7 +35,7 @@ class DefaultFabricator implements Fabricator {
 
     }
 
-    public fabricateFromComponents(): CraftingResult {
+    public fabricateFromComponents(): CraftingResult[] {
         throw new Error(`The Default Fabricator requires a Recipe and one was not provided. `);
     }
 
@@ -48,18 +48,21 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         this._essenceCombiner = essenceCombiner;
     }
 
-    public fabricateFromComponents(components: CraftingComponent[]): CraftingResult {
+    public fabricateFromComponents(components: CraftingComponent[]): CraftingResult[] {
         if (!this._essenceCombiner) {
             throw new Error(`No Essence Combiner has been provided for this system. You may only craft from Recipes. `);
         }
         const alchemicalResult = this._essenceCombiner.combine(components);
         const resultantItem = this._essenceCombiner.resultantItem;
-        return CraftingResult.builder()
+        const addedComponent: CraftingResult = CraftingResult.builder()
             .withAction(ActionType.ADD)
             .withQuantity(1)
             .withCustomData(alchemicalResult.asItemData())
             .withItem(resultantItem)
             .build();
+        const craftingResults: CraftingResult[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
+        craftingResults.push(addedComponent);
+        return craftingResults;
     }
 
     public fabricateFromRecipe(recipe: Recipe, craftingComponents: CraftingComponent[]): CraftingResult[] {

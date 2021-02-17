@@ -112,7 +112,9 @@ class CraftingTabDTO {
                 this._hopperContents = savedHopperContents;
                 savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
                     const inventoryItem = this._inventoryContents.find((inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId);
-                    inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
+                    if (inventoryItem) {
+                        inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
+                    }
                 });
                 this._inventoryContents = this._inventoryContents.filter((inventoryItem: InventoryRecordData) => inventoryItem.quantity > 0);
             }

@@ -17,9 +17,9 @@ describe('Crafting System Registry |', () => {
             fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
                 return recipe.results;
             },
-            fabricateFromComponents(): CraftingResult {
+            fabricateFromComponents(): CraftingResult[] {
                 // @ts-ignore
-                return {};
+                return [];
             }
         };
         Sinon.stub(mockFabricator, "fabricateFromRecipe").returns([]);

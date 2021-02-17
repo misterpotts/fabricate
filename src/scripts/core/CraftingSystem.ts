@@ -70,16 +70,16 @@ class CraftingSystem {
         return craftingResults;
     }
 
-    public async craftWithComponents(actorId: string, components: CraftingComponent[]): Promise<CraftingResult> {
+    public async craftWithComponents(actorId: string, components: CraftingComponent[]): Promise<CraftingResult[]> {
         const inventory: Inventory = InventoryRegistry.getFor(actorId);
 
         if (!inventory.hasAll(components)) {
             throw new Error(`There are insufficient crafting components of the specified type in the inventory of Actor ID ${actorId}`);
         }
 
-        const craftingResult: CraftingResult = this.fabricator.fabricateFromComponents(components);
-        await this.applyResults([craftingResult], inventory);
-        return craftingResult;
+        const craftingResults: CraftingResult[] = this.fabricator.fabricateFromComponents(components);
+        await this.applyResults(craftingResults, inventory);
+        return craftingResults;
     }
 
     private async applyResults(craftingResults: CraftingResult[], inventory: Inventory) {

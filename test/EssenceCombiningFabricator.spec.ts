@@ -233,18 +233,21 @@ describe('Essence Combining Fabricator |', () => {
                 .build();
 
             const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
-            const result: CraftingResult = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
+            const results: CraftingResult[] = underTest.fabricateFromComponents([luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
-            expect(result.item.compendiumEntry.compendiumKey).to.equal('fabricate.alchemists-supplies-v11');
-            expect(result.item.compendiumEntry.entryId).to.equal('90z9nOwmGnP4aUUk');
-            expect(result.quantity).to.equal(1);
-            expect(result.action).to.equal(ActionType.ADD);
+            const addResults = results.filter((craftingResult: CraftingResult) => craftingResult.action === ActionType.ADD);
+            expect(addResults.length).to.equal(1);
+            const addResult: CraftingResult = addResults[0];
+            expect(addResult.item.compendiumEntry.compendiumKey).to.equal('fabricate.alchemists-supplies-v11');
+            expect(addResult.item.compendiumEntry.entryId).to.equal('90z9nOwmGnP4aUUk');
+            expect(addResult.quantity).to.equal(1);
+            expect(addResult.action).to.equal(ActionType.ADD);
 
-            const customItemData: ItemData5e = result.customData;
+            const customItemData: ItemData5e = addResult.customData;
 
-            expect(customItemData.description).to.include('<p>Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.</p>');
-            expect(customItemData.description).to.include('<p>Deal 1d8 acid damage on contact.</p>');
-            expect(customItemData.description).to.include('<p>Roll double the number of all damage dice.</p>');
+            expect(customItemData.description.value).to.include('<p>Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.</p>');
+            expect(customItemData.description.value).to.include('<p>Deal 1d8 acid damage on contact.</p>');
+            expect(customItemData.description.value).to.include('<p>Roll double the number of all damage dice.</p>');
             expect(customItemData.target.value).to.equal(5);
             expect(customItemData.target.units).to.equal('ft');
             expect(customItemData.target.type).to.equal('radius');
