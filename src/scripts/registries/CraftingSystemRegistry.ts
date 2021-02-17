@@ -1,8 +1,7 @@
 import {CraftingSystem} from "../core/CraftingSystem";
 import {Recipe} from "../core/Recipe";
 import {GameSystemType} from "../core/GameSystemType";
-import {DefaultFabricator, EssenceCombiningFabricator} from "../core/Fabricator";
-import {AlchemicalBombEssenceCombiner} from "../dnd5e/alchemists_supplies/AlchemicalBombEssenceCombiner";
+import {DefaultFabricator} from "../core/Fabricator";
 
 class CraftingSystemRegistry {
     private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();
@@ -46,6 +45,10 @@ class CraftingSystemRegistry {
         throw new Error(`No Crafting system is registered with Fabricate for the Recipe ${id}. `);
     }
 
+    public static getAllSystems(): CraftingSystem[] {
+        return Array.from(CraftingSystemRegistry.craftingSystemsByCompendiumKey.values());
+    }
+
     public static get systemSpecifications(): CraftingSystem.Builder[] {
         return this._systemSpecifications;
     }
@@ -64,12 +67,7 @@ const testSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
     .withFabricator(new DefaultFabricator());
 CraftingSystemRegistry.declareSpecification(testSystemSpec);
 
-const alchemistsSuppliesV11Spec: CraftingSystem.Builder = CraftingSystem.builder()
-    .withName('Alchemist\'s Supplies v1.1')
-    .withCompendiumPackKey('fabricate.alchemists-supplies-v11')
-    .withEnableHint('Enable the Alchemist\'s Supplies v1.1 crafting system by /u/calculusChild?')
-    .withSupportedGameSystem(GameSystemType.DND5E)
-    .withFabricator(new EssenceCombiningFabricator(new AlchemicalBombEssenceCombiner()));
-CraftingSystemRegistry.declareSpecification(alchemistsSuppliesV11Spec);
+import {AlchemistsSuppliesSystemSpec} from './system_definitions/AlchemistsSuppliesV11'
+CraftingSystemRegistry.declareSpecification(AlchemistsSuppliesSystemSpec);
 
 export {CraftingSystemRegistry}

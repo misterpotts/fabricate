@@ -1,7 +1,7 @@
 import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
 import {CraftingComponent} from "./CraftingComponent";
-import {Inventory} from "./Inventory";
+import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
@@ -66,10 +66,31 @@ class CraftingSystem {
         const fabricator: Fabricator = this.fabricator;
         const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe, inventory.denormalizedContents());
 
+        await this.applyResults(craftingResults, inventory);
+        return craftingResults;
+    }
+
+    public async craftWithComponents(actorId: string, components: CraftingComponent[]): Promise<CraftingResult[]> {
+        const inventory: Inventory = InventoryRegistry.getFor(actorId);
+
+        if (!inventory.hasAll(components)) {
+            throw new Error(`There are insufficient crafting components of the specified type in the inventory of Actor ID ${actorId}`);
+        }
+
+        const craftingResults: CraftingResult[] = this.fabricator.fabricateFromComponents(components);
+        await this.applyResults(craftingResults, inventory);
+        return craftingResults;
+    }
+
+    private async applyResults(craftingResults: CraftingResult[], inventory: Inventory) {
         for (const craftingResult of craftingResults) {
             switch (craftingResult.action) {
                 case ActionType.ADD:
-                    await inventory.add(craftingResult.item, craftingResult.quantity);
+                    if (craftingResult.customData) {
+                        await inventory.add(craftingResult.item, craftingResult.quantity, craftingResult.customData);
+                    } else {
+                        await inventory.add(craftingResult.item, craftingResult.quantity);
+                    }
                     break;
                 case ActionType.REMOVE:
                     await inventory.remove(craftingResult.item, craftingResult.quantity);
@@ -79,7 +100,6 @@ class CraftingSystem {
                         values are: ADD, REMOVE. `);
             }
         }
-        return craftingResults;
     }
 
     get compendiumPackKey(): string {

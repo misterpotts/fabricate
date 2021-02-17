@@ -3,7 +3,7 @@ import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
-import {FabricateCompendiumData} from "../src/scripts/core/CompendiumData";
+import {FabricateCompendiumData} from "../src/scripts/game/CompendiumData";
 import {ActionType} from "../src/scripts/core/ActionType";
 
 describe('Recipe |', () => {

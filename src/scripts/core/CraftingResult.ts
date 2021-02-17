@@ -1,6 +1,6 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {ActionType} from "./ActionType";
-import {FabricateResultFlags} from "./CompendiumData";
+import {FabricateResultFlags} from "../game/CompendiumData";
 
 class CraftingResult {
     private readonly _item: CraftingComponent;
@@ -63,7 +63,7 @@ namespace CraftingResult {
         public item!: CraftingComponent;
         public quantity!: number;
         public action!: ActionType;
-        customData: any;
+        public customData: any;
 
         public withItem(value: CraftingComponent): Builder {
             this.item = value;

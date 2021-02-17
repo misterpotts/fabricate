@@ -11,8 +11,8 @@ import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {InventoryRegistry} from "../src/scripts/registries/InventoryRegistry";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
-import {Inventory} from "../src/scripts/core/Inventory";
-import {InventoryRecord} from "../src/scripts/core/InventoryRecord";
+import {Inventory} from "../src/scripts/game/Inventory";
+import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 
 describe('Crafting System |', () => {
 
@@ -22,6 +22,7 @@ describe('Crafting System |', () => {
 
             let mockFabricator = <Fabricator>{
                 fabricateFromComponents(): CraftingResult[] {
+                    // @ts-ignore
                     return [];
                 },
                 // @ts-ignore
@@ -108,7 +109,8 @@ describe('Crafting System |', () => {
 
             let mockFabricator = <Fabricator>{
                 fabricateFromComponents(): CraftingResult[] {
-                    return [];
+                    // @ts-ignore
+                    return []
                 },
                 // @ts-ignore
                 fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
@@ -175,7 +177,7 @@ describe('Crafting System |', () => {
             // @ts-ignore
             mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
                 .withCraftingComponent(mudPie.item)
-                .withQuantity(mudPie.quantity)
+                .withTotalQuantity(mudPie.quantity)
                 .withActor(mockActor)
                 .build());
             // @ts-ignore

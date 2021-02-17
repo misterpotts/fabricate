@@ -1,10 +1,10 @@
-import {ItemRecipeTab} from "./interface/ItemRecipeTab";
-import {CraftingTab} from "./interface/CraftingTab";
-import {InventoryRegistry} from "./registries/InventoryRegistry";
-import {Inventory} from "./core/Inventory";
-import {EssenceTypeIconConverter} from "./core/EssenceType";
-import {CraftingSystem} from "./core/CraftingSystem";
-import {CraftingSystemRegistry} from "./registries/CraftingSystemRegistry";
+import {ItemRecipeTab} from "../interface/ItemRecipeTab";
+import {CraftingTab} from "../interface/CraftingTab";
+import {InventoryRegistry} from "../registries/InventoryRegistry";
+import {Inventory} from "../game/Inventory";
+import {EssenceTypeIconConverter} from "../core/EssenceType";
+import {CraftingSystem} from "../core/CraftingSystem";
+import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 
 class FabricateLifecycle {
 

@@ -4184,7 +4184,7 @@
         "fabricate":{
           "type":"COMPONENT",
           "component":{
-            "name":"Mud",
+            "name":"Wax",
             "compendiumEntry":{
               "compendiumKey":"fabricate.fabricate-test",
               "entryId":"DPYl8D5QtcRVH5YX"
@@ -4274,7 +4274,7 @@
         "fabricate":{
           "type":"COMPONENT",
           "component":{
-            "name":"Mud",
+            "name":"Wax",
             "compendiumEntry":{
               "compendiumKey":"fabricate.fabricate-test",
               "entryId":"DPYl8D5QtcRVH5YX"

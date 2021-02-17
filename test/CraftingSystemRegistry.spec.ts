@@ -18,6 +18,7 @@ describe('Crafting System Registry |', () => {
                 return recipe.results;
             },
             fabricateFromComponents(): CraftingResult[] {
+                // @ts-ignore
                 return [];
             }
         };

@@ -1,5 +1,5 @@
-<!-- If no systems are enabled do not register tab -->
 <div class="crafting-tab-content">
+    {{#if hasEnabledSystems}}
     <!-- IF more than one system is enabled  -->
     <div class="crafting-system">
         <h2>Crafting System</h2>
@@ -7,8 +7,9 @@
             <label>Select your crafting system</label>
             <div class="form-fields" style="flex: 3">
                 <select>
-                    <option value="test-system">Test System</option>
-                    <option value="simple-alchemy">Simple Alchemy</option>
+                    {{#each craftingSystems}}
+                    <option value="{{compendiumPackKey}}" selected="{{selected}}" disabled="{{disabled}}">{{name}}</option>
+                    {{/each}}
                 </select>
             </div>
         </div>
@@ -23,8 +24,11 @@
             <label>Select an available recipe</label>
             <div class="form-fields" style="flex: 6">
                 <select>
-                    <option value="test-system">Recipe: Recipe 1</option>
-                    <option value="simple-alchemy">Recipe: Recipe 2</option>
+                    {{#each craftableRecipes}}
+                    <option value="{{entryId}}">{{name}}</option>
+                    {{else}}
+                    <option disabled="true">No Recipes can be crafted</option>
+                    {{/each}}
                 </select>
                 <a title="Craft">
                     <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
@@ -36,46 +40,22 @@
     <!-- IF Essence-based crafting without a recipe is supported -->
     <div class="inventory">
         <div class="description">
-            <h2>Crafting Without a Recipe</h2>
+            <h2>Craft from Components</h2>
             <p>You have the following components in your inventory. Left click to add one to the mix. </p>
         </div>
         <div class="fabricate-components">
             <ul>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
+                {{#each inventoryContents}}
+                <a class="add-crafting-component" title="Add to the mix" data-component-id="{{entryId}}">
+                    <li>
+                        <div class="component">
+                            <span class="quantity">{{quantity}}</span>
+                            <span class="name">{{name}}</span>
+                            <img src="{{imageUrl}}" title="{{name}}"/>
+                        </div>
+                    </li>
+                </a>
+                {{/each}}
             </ul>
         </div>
     </div>
@@ -85,34 +65,31 @@
         </div>
         <div class="fabricate-components">
             <ul>
+                {{#each hopperContents}}
+                <a class="remove-crafting-component" title="Remove from the mix" data-component-id="{{entryId}}">
                 <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
+                    <div class="component" data-component-id="{{entryId}}">
+                        <span class="quantity">{{quantity}}</span>
+                        <span class="name">{{name}}</span>
+                        <img src="{{imageUrl}}" title="{{name}}"/>
                     </div>
                 </li>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
-                <li>
-                    <div class="component">
-                        <span class="quantity">1</span>
-                        <span class="name">Mud</span>
-                        <img src="systems/dnd5e/icons/items/inventory/herb-bag.jpg" title="Mud"/>
-                    </div>
-                </li>
+                </a>
+                {{/each}}
             </ul>
         </div>
     </div>
     <div class="controls">
         <a title="Craft">
-            <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
+            <p class="craft-from-components craft-button"><i class="fas fa-flask"></i> Craft</p>
+        </a>
+        <a title="Clear">
+            <p class="clear-components craft-button"><i class="fas fa-times-circle"></i> Clear all</p>
         </a>
     </div>
-    <!-- END IF -->
+    {{else}}
+    <div class="crafting-disabled">
+        <p>No Crafting systems are enabled. Ask your administrator or GM to enable one or more crafting systems to use the Crafting tab.</p>
+    </div>
+    {{/if}}
 </div>

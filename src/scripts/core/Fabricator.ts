@@ -2,159 +2,13 @@ import {Recipe} from "./Recipe";
 import {CraftingResult} from "./CraftingResult";
 import {ActionType} from "./ActionType";
 import {CraftingComponent} from "./CraftingComponent";
+import {FabricationHelper} from "./FabricationHelper";
+import {EssenceCombiner} from "./EssenceCombiner";
 
 interface Fabricator {
     fabricateFromRecipe(recipe: Recipe, components?: CraftingComponent[]): CraftingResult[];
 
     fabricateFromComponents(components: CraftingComponent[]): CraftingResult[];
-}
-
-interface EssenceCombiner {
-    maxComponents: number;
-    maxEssences: number;
-    combine(components: CraftingComponent[]): CraftingResult[];
-}
-
-interface AlchemicalResult {
-    essences: string[];
-    effect:any;
-}
-
-class FabricationHelper {
-
-    private static readonly primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
-
-    public static asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
-        const componentsById: Map<string, CraftingComponent[]> = new Map();
-        components.forEach((component: CraftingComponent) => {
-            const identicalComponents: CraftingComponent[] = componentsById.get(component.compendiumEntry.entryId);
-            if (!identicalComponents) {
-                componentsById.set(component.compendiumEntry.entryId, [component]);
-            } else {
-                identicalComponents.push(component);
-            }
-        });
-        if (Object.keys(componentsById).length === components.length) {
-            return components.map((component: CraftingComponent) => {
-                return CraftingResult.builder()
-                    .withItem(component)
-                    .withQuantity(1)
-                    .withAction(action)
-                    .build();
-            });
-        }
-        const results: CraftingResult[] = [];
-        componentsById.forEach((componentsOfType: CraftingComponent[]) => {
-            const craftingResult = CraftingResult.builder()
-                .withItem(componentsOfType[0])
-                .withQuantity(componentsOfType.length)
-                .withAction(action)
-                .build();
-            results.push(craftingResult);
-        });
-        return results;
-    };
-
-    public static essenceCombinationIdentity(essences: string[], essenceIdentities: Map<string, number>): number {
-        return essences.map((essence: string) => essenceIdentities.get(essence))
-            .reduce((left, right) => left * right);
-    }
-
-    public static assignEssenceIdentities(essences: string[]): Map<string, number> {
-        const uniqueEssences = essences.filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
-        const primes = this.generatePrimes(uniqueEssences.length);
-        const essenceIdentities: Map<string, number> = new Map();
-        uniqueEssences.forEach((value, index) => essenceIdentities.set(value, primes[index]));
-        return essenceIdentities;
-    }
-
-    public static generatePrimes(quantity: number): number[] {
-        if (quantity <= FabricationHelper.primes.length) {
-            return FabricationHelper.primes.slice(0, quantity);
-        }
-        let candidate = 98;
-        while (FabricationHelper.primes.length < quantity) {
-            if (FabricationHelper.primes.every((p) => candidate % p)) {
-                FabricationHelper.primes.push(candidate);
-            }
-            candidate++;
-        }
-        return FabricationHelper.primes;
-    }
-
-    public static combinationHistogram(components:  CraftingComponent[]): CraftingComponent[][] {
-        const combinations: CraftingComponent[][] = [];
-        const iterations = Math.pow(2, components.length);
-
-        for (let i = 0; i < iterations; i++) {
-            const combination: CraftingComponent[] = [];
-            for (let j = 0; j < components.length; j++) {
-                if (i & Math.pow(2, j)) {
-                    combination.push(components[j]);
-                }
-            }
-            if (combination.length > 0) {
-                combinations.push(combination);
-            }
-        }
-        return combinations.sort((left, right) => left.length - right.length);
-    }
-
-}
-
-abstract class AbstractEssenceCombiner implements EssenceCombiner {
-    maxComponents: number;
-    maxEssences: number;
-    protected readonly resultsByCombinationIdentity: Map<number, AlchemicalResult> = new Map();
-    protected essenceIdentities: Map<string, number> = new Map();
-
-    protected constructor(maxComponents: number, maxEssences: number) {
-        this.maxComponents = maxComponents;
-        this.maxEssences = maxEssences;
-        const uniqueEssences: string[] = this.availableAlchemicalResults()
-            .map((essenceCombination) => essenceCombination.essences)
-            .reduce((left: string[], right: string[]) => left.concat(right), [])
-            .filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
-        this.essenceIdentities = FabricationHelper.assignEssenceIdentities(uniqueEssences);
-        this.availableAlchemicalResults().forEach((essenceCombination: AlchemicalResult) => {
-            const essenceCombinationIdentity = FabricationHelper.essenceCombinationIdentity(essenceCombination.essences, this.essenceIdentities);
-            if (this.resultsByCombinationIdentity.has(essenceCombinationIdentity)) {
-                throw new Error(`The combination ${essenceCombination.essences} was duplicated. Each essence combination must map to a unique effect.`);
-            }
-            this.resultsByCombinationIdentity.set(essenceCombinationIdentity, essenceCombination);
-        });
-    }
-
-    combine(components: CraftingComponent[]): CraftingResult[] {
-        this.validate(components);
-        const effects: AlchemicalResult[] = this.getAlchemicalResultsForComponents(components);
-        return this.combineAlchemicalResults(effects);
-    }
-
-    protected validate(components: CraftingComponent[]) {
-        if ((this.maxComponents > 0) && (this.maxComponents < components.length)) {
-            throw new Error(`The Essence Combiner for this system supports a maximum of ${this.maxComponents} components. `);
-        }
-        if (this.maxEssences > 0) {
-            const essenceCount = components.map((component: CraftingComponent) => component.essences.length)
-                .reduce((left: number, right: number) => left + right, 0);
-            if (essenceCount > this.maxEssences) {
-                throw new Error(`The Essence Combiner for this system supports a maximum of ${this.maxEssences} essences. `);
-            }
-        }
-    }
-
-    abstract combineAlchemicalResults(effects: AlchemicalResult[]): CraftingResult[];
-
-    getAlchemicalResultsForComponents(components: CraftingComponent[]): AlchemicalResult[] {
-        return components.map((component: CraftingComponent) => this.resultsByCombinationIdentity.get(this.getEssenceCombinationIdentity(component.essences)));
-    }
-
-    abstract availableAlchemicalResults(): AlchemicalResult[];
-
-    private getEssenceCombinationIdentity(essences: string[]) {
-        return FabricationHelper.essenceCombinationIdentity(essences, this.essenceIdentities);
-    }
 }
 
 class DefaultFabricator implements Fabricator {
@@ -187,10 +41,10 @@ class DefaultFabricator implements Fabricator {
 
 }
 
-class EssenceCombiningFabricator implements Fabricator {
-    private readonly _essenceCombiner: EssenceCombiner;
+class EssenceCombiningFabricator<T> implements Fabricator {
+    private readonly _essenceCombiner: EssenceCombiner<T>;
 
-    constructor(essenceCombiner?: EssenceCombiner) {
+    constructor(essenceCombiner?: EssenceCombiner<T>) {
         this._essenceCombiner = essenceCombiner;
     }
 
@@ -198,7 +52,17 @@ class EssenceCombiningFabricator implements Fabricator {
         if (!this._essenceCombiner) {
             throw new Error(`No Essence Combiner has been provided for this system. You may only craft from Recipes. `);
         }
-        return this._essenceCombiner.combine(components);
+        const alchemicalResult = this._essenceCombiner.combine(components);
+        const resultantItem = this._essenceCombiner.resultantItem;
+        const addedComponent: CraftingResult = CraftingResult.builder()
+            .withAction(ActionType.ADD)
+            .withQuantity(1)
+            .withCustomData(alchemicalResult.asItemData())
+            .withItem(resultantItem)
+            .build();
+        const craftingResults: CraftingResult[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
+        craftingResults.push(addedComponent);
+        return craftingResults;
     }
 
     public fabricateFromRecipe(recipe: Recipe, craftingComponents: CraftingComponent[]): CraftingResult[] {
@@ -310,4 +174,4 @@ class CraftingComponentCombination {
     }
 }
 
-export {Fabricator, DefaultFabricator, EssenceCombiningFabricator, AlchemicalResult, EssenceCombiner, AbstractEssenceCombiner};
+export {Fabricator, DefaultFabricator, EssenceCombiningFabricator};

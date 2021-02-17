@@ -1,4 +1,4 @@
-import {FabricateCompendiumData, FabricateItemType} from "./CompendiumData";
+import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 
 class CompendiumEntry {
     private readonly _compendiumKey;

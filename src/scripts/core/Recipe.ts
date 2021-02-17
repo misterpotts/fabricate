@@ -1,6 +1,6 @@
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
-import {FabricateCompendiumData, FabricateItemType} from "./CompendiumData";
+import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 
 class Recipe {
     private readonly _ingredients: Ingredient[];

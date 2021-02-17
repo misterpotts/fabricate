@@ -83,10 +83,30 @@
 .fabricate-crafting {
   margin-top: 10px;
 }
+.fabricate-crafting .crafting-tab-content {
+  padding-bottom: 15px;
+}
+.fabricate-crafting .crafting-tab-content .controls {
+  position: relative;
+}
+.fabricate-crafting .crafting-tab-content .controls .craft-button {
+  margin: 8px 0;
+  width: 49%;
+  display: inline-block;
+}
+.fabricate-crafting .crafting-tab-content .controls .craft-button.clear-components {
+  right: 0;
+  position: absolute;
+}
+.fabricate-crafting .crafting-tab-content .controls .craft-button.craft-from-components {
+  left: 0;
+  position: absolute;
+}
 .fabricate-crafting .fabricate-components {
   margin-top: 15px;
   border-radius: 5px;
   border: 1px solid #2f2a23;
+  min-height: 116px;
   background-color: #928d83;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23c1b496' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 }
@@ -103,7 +123,6 @@
 }
 .fabricate-crafting .recipes .form-group.controls select {
   height: 28px;
-  margin-top: 7px;
 }
 .fabricate-crafting .inventory:after,
 .fabricate-crafting .hopper:after,

@@ -1,9 +1,9 @@
 import Properties from "./Properties";
-import {FabricateCompendiumData, FabricateItemType} from "./core/CompendiumData";
+import {FabricateCompendiumData, FabricateItemType} from "./game/CompendiumData";
 import {Recipe} from "./core/Recipe";
 import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./registries/CraftingSystemRegistry";
-import {FabricateLifecycle} from "./FabricateLifecycle";
+import {FabricateLifecycle} from "./application/FabricateLifecycle";
 import {CraftingSystem} from "./core/CraftingSystem";
 
 // Enable as needed for dev. Do not release!
