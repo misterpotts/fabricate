@@ -18,9 +18,21 @@ Here's a quick preview of one of the early features - crafting from a Recipe tha
 
 ![](/screens/fabricate-preview-3.gif)
 
+Crafting from components containing essences without a recipe.
+
+![](/screens/fabricate-preview-5.gif)
+
 # Changelog
 
 The most recent changes to Fabricate are documented here.
+
+## Version 0.4.0
+- The D&D 5E Actor Sheet now displays a crafting tab for systems that support 5E
+- The Actor5E Crafting Tab lists:
+- - the total number of crafting components across any number and combination of inventory items for the same
+- - the craftable recipes from the selected crafting system
+- - the crafting systems thatcan be selected to craft from
+- The Actor5E Crafting Tab supports crafting without a recipe for Alchemist's Supplies (v1.6 Alchemical Bombs only)
 
 ## Version 0.3.0
 - Crafting from component essences is now possible for all alchemical recipes in "Alchemist's Supplies V1.1" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/)
@@ -32,10 +44,6 @@ The most recent changes to Fabricate are documented here.
 
 ## Version 0.2.0
 - Crafting now considers and decrements quantities from owned items in an actor's inventory when crafting and consuming components
-
-## Version 0.1.0
-- Support for the D&D 5E Game System in foundry
-- Crafting can now be performed from a recipe in an actor's inventory - just open the item sheet, go to the Recipe tab and click 'Craft'
 
 If you'd like to be involved I'd love to have some help! I'm always happy to talk to you about how people can contribute.
 
