@@ -9,6 +9,8 @@
                     {{#each craftingSystems}}
                     {{#if selected}}
                     <option value="{{compendiumPackKey}}" selected>{{name}}</option>
+                    {{else if disabled}}
+                    <option value="{{compendiumPackKey}}" disabled>{{name}}</option>
                     {{else}}
                     <option value="{{compendiumPackKey}}">{{name}}</option>
                     {{/if}}
