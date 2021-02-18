@@ -133,6 +133,7 @@ class CraftingTab {
         this._sheetHtml.find('.clear-components.craft-button').click(async () => {
             const craftingSystemId: string = craftingTabDTO.selectedSystemId;
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
+
             this._suppressedInNav = true;
             await this.render();
         });
@@ -152,6 +153,14 @@ class CraftingTab {
 
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
             await craftingSystem.craftWithComponents(this._actor.id, craftingComponents);
+
+            this._suppressedInNav = true;
+            await this.render();
+        });
+
+        this._sheetHtml.find('select[name="fabricate.crafting.selectedSystem"]').change(async (event: any) => {
+            const systemIdToActivate: string = event.target.value;
+            await this._actor.setFlag(Properties.module.name, 'crafting.selectedSystemId', systemIdToActivate);
 
             this._suppressedInNav = true;
             await this.render();

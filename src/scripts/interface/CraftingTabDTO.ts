@@ -36,19 +36,6 @@ class CraftingTabDTO {
         this._actor = actor;
     }
 
-    private determineSelectedSystemId(enabledSystems: number, craftingSystems: CraftingSystemData[], actor: Actor): string {
-        const storedSystemId: string = actor.getFlag(Properties.module.name, 'crafting.selectedSystemId');
-        if (storedSystemId && storedSystemId.length > 0) {
-            return storedSystemId;
-        } else if (!storedSystemId && enabledSystems >= 1) {
-            const firstEnabledSystem: CraftingSystemData = craftingSystems.find((system: CraftingSystemData) => !system.disabled);
-            firstEnabledSystem.selected = true;
-            actor.setFlag(Properties.module.name, 'crafting.selectedSystemId', firstEnabledSystem.compendiumPackKey);
-            return firstEnabledSystem.compendiumPackKey;
-        }
-        return null;
-    }
-
     get craftingSystems(): CraftingSystemData[] {
         return this._craftingSystemData;
     }
@@ -79,6 +66,7 @@ class CraftingTabDTO {
 
     async init(): Promise<void> {
         let enabledSystems: number = 0;
+        this._selectedSystemId = this._actor.getFlag(Properties.module.name, 'crafting.selectedSystemId');
         this._craftingSystems.forEach((system: CraftingSystem) => {
             if (system.enabled) {
                 enabledSystems++;
@@ -87,37 +75,40 @@ class CraftingTabDTO {
                 disabled: !system.enabled,
                 compendiumPackKey: system.compendiumPackKey,
                 name: system.name,
-                selected: false
+                selected: system.compendiumPackKey === this._selectedSystemId
             })
         });
         this._hasEnabledSystems = enabledSystems > 0;
-        this._selectedSystemId = this.determineSelectedSystemId(enabledSystems, this._craftingSystemData, this._actor);
-        if (this._selectedSystemId && this._selectedSystemId.length > 0) {
-            const selectedSystem = this._craftingSystems.find((system: CraftingSystem) => system.compendiumPackKey === this._selectedSystemId);
-            selectedSystem.recipes.filter((recipe: Recipe) => this._inventory.hasAllIngredientsFor(recipe))
-                .forEach((recipe: Recipe) => {
-                    this._craftableRecipes.push({name: recipe.name, entryId: recipe.entryId});
+        if (!this._hasEnabledSystems) {
+            return;
+        }
+        if (this.hasEnabledSystems && !this._selectedSystemId) {
+            this._selectedSystemId = this._craftingSystemData[0].compendiumPackKey;
+        }
+        const selectedSystem = this._craftingSystems.find((system: CraftingSystem) => system.compendiumPackKey === this._selectedSystemId);
+        selectedSystem.recipes.filter((recipe: Recipe) => this._inventory.hasAllIngredientsFor(recipe))
+            .forEach((recipe: Recipe) => {
+                this._craftableRecipes.push({name: recipe.name, entryId: recipe.entryId});
+            });
+        this._inventory.contents.filter((inventoryRecord: InventoryRecord) => inventoryRecord.componentType.compendiumEntry.compendiumKey === this._selectedSystemId)
+            .forEach((inventoryRecord: InventoryRecord) => {
+                this._inventoryContents.push({
+                    name: inventoryRecord.componentType.name,
+                    entryId: inventoryRecord.componentType.compendiumEntry.entryId,
+                    quantity: inventoryRecord.totalQuantity,
+                    imageUrl: inventoryRecord.componentType.imageUrl
                 });
-            this._inventory.contents.filter((inventoryRecord: InventoryRecord) => inventoryRecord.componentType.compendiumEntry.compendiumKey === this._selectedSystemId)
-                .forEach((inventoryRecord: InventoryRecord) => {
-                    this._inventoryContents.push({
-                        name: inventoryRecord.componentType.name,
-                        entryId: inventoryRecord.componentType.compendiumEntry.entryId,
-                        quantity: inventoryRecord.totalQuantity,
-                        imageUrl: inventoryRecord.componentType.imageUrl
-                    });
-                });
-            const savedHopperContents: InventoryRecordData[] = this._actor.getFlag(Properties.module.name, `crafting.${this._selectedSystemId}.hopper`);
-            if (savedHopperContents) {
-                this._hopperContents = savedHopperContents;
-                savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
-                    const inventoryItem = this._inventoryContents.find((inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId);
-                    if (inventoryItem) {
-                        inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
-                    }
-                });
-                this._inventoryContents = this._inventoryContents.filter((inventoryItem: InventoryRecordData) => inventoryItem.quantity > 0);
-            }
+            });
+        const savedHopperContents: InventoryRecordData[] = this._actor.getFlag(Properties.module.name, `crafting.${this._selectedSystemId}.hopper`);
+        if (savedHopperContents) {
+            this._hopperContents = savedHopperContents;
+            savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
+                const inventoryItem = this._inventoryContents.find((inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId);
+                if (inventoryItem) {
+                    inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
+                }
+            });
+            this._inventoryContents = this._inventoryContents.filter((inventoryItem: InventoryRecordData) => inventoryItem.quantity > 0);
         }
     }
 }
