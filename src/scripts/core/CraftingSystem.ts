@@ -22,7 +22,7 @@ class CraftingSystem {
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
         this._recipes = builder.recipes;
-        this._componentsById = new Map(builder.components.map((component: CraftingComponent) => [component.compendiumEntry.entryId, component]));
+        this._componentsById = new Map(builder.components.map((component: CraftingComponent) => [component.compendiumEntry.partId, component]));
         this._supportedGameSystems = builder.supportedGameSystems;
         this._enabled = builder.enabled;
         this._enableHint = builder.enableHint;
@@ -59,7 +59,7 @@ class CraftingSystem {
             }
         });
         if (missingIngredients.length > 0) {
-            const message = missingIngredients.map((ingredient: Ingredient) => ingredient.quantity + ':' + ingredient.componentType.name).join(',');
+            const message = missingIngredients.map((ingredient: Ingredient) => ingredient.quantity + ':' + ingredient.component.name).join(',');
             throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${message}`);
         }
 

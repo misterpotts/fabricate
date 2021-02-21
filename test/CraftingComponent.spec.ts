@@ -22,8 +22,8 @@ describe('Crafting Component |', () => {
             };
             const result = CraftingComponent.fromFlags(flags);
             expect(result.name).to.equal(name);
-            expect(result.compendiumEntry.compendiumKey).to.equal(key);
-            expect(result.compendiumEntry.entryId).to.equal(id);
+            expect(result.compendiumEntry.systemId).to.equal(key);
+            expect(result.compendiumEntry.partId).to.equal(id);
         });
 
     });

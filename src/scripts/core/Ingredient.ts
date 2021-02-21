@@ -1,13 +1,14 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {FabricateIngredientFlags} from "../game/CompendiumData";
 
-class Ingredient {
-    private readonly _componentType: CraftingComponent;
+class Ingredient extends FabricateItem {
+    private readonly _component: CraftingComponent;
     private readonly _quantity: number;
     private readonly _consumed: boolean;
 
     constructor(builder: Ingredient.Builder) {
-        this._componentType = builder.componentType;
+        super(builder.component.systemId, builder.component.partId);
+        this._component = builder.component;
         this._quantity = builder.quantity;
         this._consumed = builder.consumed;
     }
@@ -16,8 +17,8 @@ class Ingredient {
         return new Ingredient.Builder();
     }
 
-    get componentType(): CraftingComponent {
-        return this._componentType;
+    get component(): CraftingComponent {
+        return this._component;
     }
 
     get quantity(): number {
@@ -28,45 +29,44 @@ class Ingredient {
         return this._consumed;
     }
 
-    public matchesType(other: Ingredient): boolean {
-        return other.componentType.equals(this._componentType);
+    public equals(other: Ingredient): boolean {
+        if (!other) {
+            return false;
+        }
+        return this.sharesType(other)
+            && (this.quantity === other.quantity)
+            && (this.consumed === other.consumed);
     }
 
-    public is(other: Ingredient): boolean {
-        return this._componentType.equals(other.componentType)
-            && (this._quantity === other.quantity)
-            && (this._consumed === other.consumed);
-    }
-
-    public static fromFlags(flags: FabricateIngredientFlags): Ingredient {
+    public static fromFlags(flags: FabricateIngredientFlags, systemId: string): Ingredient {
         return this.builder()
             .isConsumed(flags.consumed)
             .withQuantity(flags.quantity)
-            .withComponentType(CraftingComponent.builder()
-                .withName(flags.componentType.name)
-                .withCompendiumEntry(flags.componentType.compendiumEntry.compendiumKey, flags.componentType.compendiumEntry.entryId)
+            .withComponent(CraftingComponent.builder()
+                .withSystemId(systemId)
+                .withPartId(flags.partId)
                 .build())
             .build();
     }
 
-    public static manyFromFlags(flags: FabricateIngredientFlags[]): Ingredient[] {
-        return flags.map((flagData) => Ingredient.fromFlags(flagData));
+    public static manyFromFlags(flags: FabricateIngredientFlags[], systemId: string): Ingredient[] {
+        return flags.map((flagData) => Ingredient.fromFlags(flagData, systemId));
     }
 
     isValid(): boolean {
         return (this.quantity!= null && this.quantity > 0)
-        && this.componentType.isValid();
+        && this.component.isValid();
     }
 }
 
 namespace Ingredient {
     export class Builder {
-        public componentType!: CraftingComponent;
+        public component!: CraftingComponent;
         public quantity!: number;
         public consumed!: boolean;
 
-        public withComponentType(value: CraftingComponent) {
-            this.componentType = value;
+        public withComponent(value: CraftingComponent) {
+            this.component = value;
             return this;
         }
 

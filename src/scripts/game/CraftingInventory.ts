@@ -27,7 +27,11 @@ abstract class CraftingInventory implements Inventory {
         return this._supportedGameSystems;
     }
 
-    abstract get contents(): InventoryRecord[];
+    abstract get contents(): InventoryRecord<FabricateItem>[];
+
+    abstract get components(): InventoryRecord<CraftingComponent>[];
+
+    abstract get recipes(): InventoryRecord<Recipe>[];
 
     get size(): number {
         return this.contents.length;
@@ -37,11 +41,11 @@ abstract class CraftingInventory implements Inventory {
         return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
     }
 
-    public abstract add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord>;
+    public abstract add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord<FabricateItem>>;
 
     contains(ingredient: Ingredient): boolean {
-        const quantity = this.contents.filter((candidate: InventoryRecord) => candidate.componentType.equals(ingredient.componentType))
-            .map((candidate: InventoryRecord) => candidate.totalQuantity)
+        const quantity = this.components.filter((candidate: InventoryRecord<CraftingComponent>) => candidate.fabricateItem.sharesType(ingredient))
+            .map((candidate: InventoryRecord<FabricateItem>) => candidate.totalQuantity)
             .reduce((left, right) => left + right, 0);
         return ingredient.quantity <= quantity;
     }
@@ -49,15 +53,15 @@ abstract class CraftingInventory implements Inventory {
     hasAll(components: CraftingComponent[]): boolean {
         const componentCountById: Map<string, number> = new Map<string, number>();
         components.forEach((component: CraftingComponent) => {
-            if (componentCountById.has(component.compendiumEntry.entryId)) {
-                const currentCount = componentCountById.get(component.compendiumEntry.entryId);
-                componentCountById.set(component.compendiumEntry.entryId, currentCount + 1);
+            if (componentCountById.has(component.partId)) {
+                const currentCount = componentCountById.get(component.partId);
+                componentCountById.set(component.partId, currentCount + 1);
             } else {
-                componentCountById.set(component.compendiumEntry.entryId, 1);
+                componentCountById.set(component.partId, 1);
             }
         });
-        componentCountById.forEach((amountRequired: number, entryId: string) => {
-            const inventoryRecordForType = this.contents.find((record: InventoryRecord) => record.componentType.compendiumEntry.entryId === entryId);
+        componentCountById.forEach((amountRequired: number, partId: string) => {
+            const inventoryRecordForType = this.components.find((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.partId === partId);
             if (!inventoryRecordForType || inventoryRecordForType.totalQuantity < amountRequired) {
                 return false;
             }
@@ -81,10 +85,10 @@ abstract class CraftingInventory implements Inventory {
                 outstandingEssencesByType.set(essence, 1);
             }
         });
-        for (let i = 0; i < this.contents.length; i++) {
-            const thisRecord: InventoryRecord = this.contents[i];
-            if (thisRecord.componentType.essences) {
-                thisRecord.componentType.essences.forEach((essence: string) => {
+        for (let i = 0; i < this.components.length; i++) {
+            const thisRecord: InventoryRecord<CraftingComponent> = this.components[i];
+            if (thisRecord.fabricateItem.essences) {
+                thisRecord.fabricateItem.essences.forEach((essence: string) => {
                     if (outstandingEssencesByType.has(essence)) {
                         const remaining: number = outstandingEssencesByType.get(essence);
                         const contribution = thisRecord.totalQuantity;
@@ -113,15 +117,15 @@ abstract class CraftingInventory implements Inventory {
                 failedToFind = true;
                 return;
             }
-            const occurrences = ingredientsByType.get(ingredient.componentType.compendiumEntry.entryId) + 1;
-            ingredientsByType.set(ingredient.componentType.compendiumEntry.entryId, occurrences);
+            const occurrences = ingredientsByType.get(ingredient.component.partId) + 1;
+            ingredientsByType.set(ingredient.component.partId, occurrences);
             if (occurrences > 1) {
                 duplicatedIngredient = true;
             }
         });
         if (duplicatedIngredient) {
             throw new Error(`One or more ingredients were duplicated in a call to CraftingInventory.containsMany(ingredients: Ingredient[]). 
-            Recipe[name='${recipe.name}',id='${recipe.entryId}'] seems to be misconfigured! Recipes should be specified as 
+            Recipe[name='${recipe.name}',id='${recipe.partId}'] seems to be mis-configured! Recipes should be specified as 
             Ingredient[Mud, 2], not [Ingredient[Mud, 1], Ingredient[Mud 1]]. `);
         }
         return !failedToFind;
@@ -131,7 +135,7 @@ abstract class CraftingInventory implements Inventory {
 
     public abstract update(): void;
 
-    public abstract updateQuantityFor(item: any): Promise<InventoryRecord | void>;
+    public abstract updateQuantityFor(item: any): Promise<InventoryRecord<FabricateItem> | void>;
 
     abstract denormalizedContents(): CraftingComponent[];
 

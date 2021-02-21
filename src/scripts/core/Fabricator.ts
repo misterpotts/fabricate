@@ -17,7 +17,7 @@ class DefaultFabricator implements Fabricator {
 
         let input: CraftingResult[] = recipe.ingredients.map((component) => {
             return CraftingResult.builder()
-                .withItem(component.componentType)
+                .withItem(component.component)
                 .withQuantity(component.quantity)
                 .withAction(component.consumed ? ActionType.REMOVE : ActionType.ADD)
                 .build();
@@ -83,12 +83,12 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         const recipeIdentity = FabricationHelper.essenceCombinationIdentity(recipe.essences, essenceIdentities);
         const componentEssenceIdentity: Map<string, number> = new Map();
         usableComponents.forEach((component: CraftingComponent) => {
-            if (!componentEssenceIdentity.has(component.compendiumEntry.entryId)) {
-                componentEssenceIdentity.set(component.compendiumEntry.entryId, FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities));
+            if (!componentEssenceIdentity.has(component.compendiumEntry.partId)) {
+                componentEssenceIdentity.set(component.compendiumEntry.partId, FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities));
             }
         });
         return FabricationHelper.combinationHistogram(usableComponents).map((combination: CraftingComponent[]) => {
-            const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.compendiumEntry.entryId))
+            const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.compendiumEntry.partId))
                 .reduce((left: number, right: number) => left * right, 1);
             const craftableRecipes: Recipe[] = [];
             if (this.isCraftableFromEssencesIn(recipe, combination)) {

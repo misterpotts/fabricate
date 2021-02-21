@@ -6,6 +6,12 @@ import Properties from "../Properties";
 import {InventoryRecordData} from "./CraftingTab";
 
 interface CraftingSystemData {
+    selectedSystemId: string;
+    hasEnabledSystems: boolean;
+    systems: CraftingSystemInfo[];
+}
+
+interface CraftingSystemInfo {
     disabled: boolean;
     compendiumPackKey: string;
     name: string;
@@ -15,6 +21,13 @@ interface CraftingSystemData {
 interface RecipeData {
     name: string;
     entryId: string;
+    known: boolean;
+    craftable: boolean;
+}
+
+interface InventoryContents {
+    ownedComponents: InventoryRecordData[];
+    preparedComponents: InventoryRecordData[];
 }
 
 class CraftingTabDTO {
@@ -23,12 +36,9 @@ class CraftingTabDTO {
     private readonly _inventory: Inventory;
     private readonly _actor: Actor;
 
-    private _selectedSystemId: string;
-    private _hasEnabledSystems: boolean;
-    private _craftingSystemData: CraftingSystemData[] = [];
-    private _craftableRecipes: RecipeData[] = [];
-    private _inventoryContents: InventoryRecordData[] = [];
-    private _hopperContents: InventoryRecordData[] = [];
+    private _craftingSystemData: CraftingSystemData;
+    private _recipeData: RecipeData[] = [];
+    private _inventoryContents: InventoryContents;
 
     constructor(craftingSystems: CraftingSystem[], inventory: Inventory, actor: Actor) {
         this._craftingSystems = craftingSystems;
@@ -36,28 +46,16 @@ class CraftingTabDTO {
         this._actor = actor;
     }
 
-    get craftingSystems(): CraftingSystemData[] {
+    get crafting(): CraftingSystemData {
         return this._craftingSystemData;
     }
 
-    get craftableRecipes(): RecipeData[] {
-        return this._craftableRecipes;
+    get recipes(): RecipeData[] {
+        return this._recipeData;
     }
 
-    get inventoryContents(): InventoryRecordData[] {
+    get inventory(): InventoryContents {
         return this._inventoryContents;
-    }
-
-    get hopperContents(): InventoryRecordData[] {
-        return this._hopperContents;
-    }
-
-    get selectedSystemId(): string {
-        return this._selectedSystemId;
-    }
-
-    get hasEnabledSystems(): boolean {
-        return this._hasEnabledSystems;
     }
 
     get actor(): Actor {
@@ -65,51 +63,92 @@ class CraftingTabDTO {
     }
 
     async init(): Promise<void> {
+        this._craftingSystemData = await this.prepareCraftingSystemData(this._craftingSystems, this._actor);
+
+        if (this._craftingSystemData.hasEnabledSystems) {
+            const selectedCraftingSystem = this._craftingSystems.find((system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId);
+
+            this._recipeData = this.prepareRecipeDataForSystem(selectedCraftingSystem, this._actor, this._inventory);
+
+            this._inventoryContents = this.prepareInventoryDataForSystem(selectedCraftingSystem,this._actor, this._inventory);
+        }
+    }
+
+    async prepareCraftingSystemData(craftingSystems: CraftingSystem[], actor: Actor): Promise<CraftingSystemData> {
         let enabledSystems: number = 0;
-        this._selectedSystemId = this._actor.getFlag(Properties.module.name, 'crafting.selectedSystemId');
-        this._craftingSystems.forEach((system: CraftingSystem) => {
+        const craftingSystemsInfo: CraftingSystemInfo[] = [];
+        const storedSystemId = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedCraftingSystem);
+        craftingSystems.forEach((system: CraftingSystem) => {
             if (system.enabled) {
                 enabledSystems++;
             }
-            this._craftingSystemData.push({
+            craftingSystemsInfo.push({
                 disabled: !system.enabled,
                 compendiumPackKey: system.compendiumPackKey,
                 name: system.name,
-                selected: system.compendiumPackKey === this._selectedSystemId
+                selected: system.compendiumPackKey === storedSystemId
             })
         });
-        this._hasEnabledSystems = enabledSystems > 0;
-        if (!this._hasEnabledSystems) {
-            return;
+        const hasEnabledSystems: boolean = enabledSystems > 0;
+        if (storedSystemId) {
+            return {
+                systems: craftingSystemsInfo,
+                hasEnabledSystems: hasEnabledSystems,
+                selectedSystemId: storedSystemId
+            }
+        } else if (hasEnabledSystems) {
+            const firstEnabledSystem = craftingSystemsInfo.find((systemInfo: CraftingSystemInfo) => !systemInfo.disabled);
+            firstEnabledSystem.selected = true;
+            await actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedCraftingSystem, firstEnabledSystem.compendiumPackKey);
+            return {
+                systems: craftingSystemsInfo,
+                hasEnabledSystems: hasEnabledSystems,
+                selectedSystemId: firstEnabledSystem.compendiumPackKey
+            }
         }
-        if (this.hasEnabledSystems && !this._selectedSystemId) {
-            this._selectedSystemId = this._craftingSystemData[0].compendiumPackKey;
+    }
+
+    prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory): RecipeData[] {
+        const storedKnownRecipes: string[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.compendiumPackKey));
+        const knownRecipes: string[] = storedKnownRecipes ? storedKnownRecipes : [];
+        const recipeData: RecipeData[] = [];
+        craftingSystem.recipes.forEach((recipe: Recipe) =>
+            recipeData.push({
+                name: recipe.name,
+                entryId: recipe.entryId,
+                known: knownRecipes.includes(recipe.entryId),
+                craftable: inventory.hasAllIngredientsFor(recipe)
+            })
+        );
+        return recipeData;
+    }
+
+    prepareInventoryDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory): InventoryContents {
+        const inventoryContents: InventoryContents = {
+            ownedComponents: [],
+            preparedComponents: []
         }
-        const selectedSystem = this._craftingSystems.find((system: CraftingSystem) => system.compendiumPackKey === this._selectedSystemId);
-        selectedSystem.recipes.filter((recipe: Recipe) => this._inventory.hasAllIngredientsFor(recipe))
-            .forEach((recipe: Recipe) => {
-                this._craftableRecipes.push({name: recipe.name, entryId: recipe.entryId});
-            });
-        this._inventory.contents.filter((inventoryRecord: InventoryRecord) => inventoryRecord.componentType.compendiumEntry.compendiumKey === this._selectedSystemId)
+        inventory.contents.filter((inventoryRecord: InventoryRecord) => inventoryRecord.componentType.compendiumEntry.compendiumKey === craftingSystem.compendiumPackKey)
             .forEach((inventoryRecord: InventoryRecord) => {
-                this._inventoryContents.push({
+                inventoryContents.ownedComponents.push({
                     name: inventoryRecord.componentType.name,
                     entryId: inventoryRecord.componentType.compendiumEntry.entryId,
                     quantity: inventoryRecord.totalQuantity,
                     imageUrl: inventoryRecord.componentType.imageUrl
                 });
             });
-        const savedHopperContents: InventoryRecordData[] = this._actor.getFlag(Properties.module.name, `crafting.${this._selectedSystemId}.hopper`);
+        const savedHopperContents: InventoryRecordData[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.hopperForSystem(craftingSystem.compendiumPackKey));
         if (savedHopperContents) {
-            this._hopperContents = savedHopperContents;
+            inventoryContents.preparedComponents = savedHopperContents;
             savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
-                const inventoryItem = this._inventoryContents.find((inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId);
+                const inventoryItem = inventoryContents.ownedComponents.find((inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId);
                 if (inventoryItem) {
                     inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
                 }
             });
-            this._inventoryContents = this._inventoryContents.filter((inventoryItem: InventoryRecordData) => inventoryItem.quantity > 0);
+            inventoryContents.ownedComponents = inventoryContents.ownedComponents.filter((inventoryItem: InventoryRecordData) => inventoryItem.quantity > 0);
         }
+        return inventoryContents;
     }
 }
 

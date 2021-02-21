@@ -109,7 +109,7 @@ describe('Inventory5E |', () => {
             const underTest: Inventory5E = new Inventory5E(mockActor);
             const oneDung = Ingredient.builder()
                 .withQuantity(JUST_ONE)
-                .withComponentType(dung)
+                .withComponent(dung)
                 .build();
 
             const initialContents = underTest.contents;
@@ -150,7 +150,7 @@ describe('Inventory5E |', () => {
 
             const twoDung = Ingredient.builder()
                 .withQuantity(TWO)
-                .withComponentType(dung)
+                .withComponent(dung)
                 .build();
 
             const initialContents = underTest.contents;
@@ -186,11 +186,11 @@ describe('Inventory5E |', () => {
 
             const twoMudIngredient = Ingredient.builder()
                 .withQuantity(TWO)
-                .withComponentType(mud)
+                .withComponent(mud)
                 .build();
             const fourMudIngredient = Ingredient.builder()
                 .withQuantity(FOUR)
-                .withComponentType(mud)
+                .withComponent(mud)
                 .build();
 
             const initialContents = underTest.contents;
@@ -237,11 +237,11 @@ describe('Inventory5E |', () => {
 
             const oneMudIngredient = Ingredient.builder()
                 .withQuantity(JUST_ONE)
-                .withComponentType(mud)
+                .withComponent(mud)
                 .build();
             const twoMudIngredient = Ingredient.builder()
                 .withQuantity(TWO)
-                .withComponentType(mud)
+                .withComponent(mud)
                 .build();
 
             const initialContents = underTest.contents;
@@ -285,11 +285,11 @@ describe('Inventory5E |', () => {
 
             const oneStickIngredient = Ingredient.builder()
                 .withQuantity(JUST_ONE)
-                .withComponentType(sticks)
+                .withComponent(sticks)
                 .build();
             const twoSticksIngredient = Ingredient.builder()
                 .withQuantity(TWO)
-                .withComponentType(sticks)
+                .withComponent(sticks)
                 .build();
 
             const initialContents = underTest.contents;
@@ -336,11 +336,11 @@ describe('Inventory5E |', () => {
 
             const tenWaxIngredient = Ingredient.builder()
                 .withQuantity(TEN)
-                .withComponentType(wax)
+                .withComponent(wax)
                 .build();
             const threeWaxIngredient = Ingredient.builder()
                 .withQuantity(THREE)
-                .withComponentType(wax)
+                .withComponent(wax)
                 .build();
 
             const initialContents = underTest.contents;
@@ -374,7 +374,7 @@ describe('Inventory5E |', () => {
                 .withName('Simple mud pie recipe')
                 .withEntryId('4')
                 .withIngredient(Ingredient.builder()
-                    .withComponentType(CraftingComponent.builder()
+                    .withComponent(CraftingComponent.builder()
                         .withName('Mud')
                         .withCompendiumEntry('compendium', '1')
                         .build())
@@ -382,7 +382,7 @@ describe('Inventory5E |', () => {
                     .isConsumed(true)
                     .build())
                 .withIngredient(Ingredient.builder()
-                    .withComponentType(CraftingComponent.builder()
+                    .withComponent(CraftingComponent.builder()
                         .withName('Sticks')
                         .withCompendiumEntry('compendium', '2')
                         .build())
@@ -418,12 +418,12 @@ describe('Inventory5E |', () => {
                 .withName('Simple mud pie recipe')
                 .withEntryId('4')
                 .withIngredient(Ingredient.builder()
-                    .withComponentType(mud)
+                    .withComponent(mud)
                     .withQuantity(2)
                     .isConsumed(true)
                     .build())
                 .withIngredient(Ingredient.builder()
-                    .withComponentType(sticks)
+                    .withComponent(sticks)
                     .withQuantity(1)
                     .isConsumed(true)
                     .build())

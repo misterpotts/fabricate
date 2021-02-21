@@ -6,33 +6,30 @@ enum FabricateItemType {
 }
 
 interface CompendiumEntry {
-    compendiumKey: string,
-    entryId: string
+    systemId: string;
+    partId: string;
 }
 
 interface FabricateComponentFlags {
-    name: string,
     essences: string[];
-    compendiumEntry: CompendiumEntry
 }
 
 interface FabricateIngredientFlags {
     quantity: number,
     consumed: boolean,
-    componentType: FabricateComponentFlags
+    partId: string;
 }
 
 interface FabricateResultFlags {
     action: ActionType,
-    item: FabricateComponentFlags,
+    partId: string,
     quantity: number
 }
 
 interface FabricateCompendiumData {
     type: FabricateItemType;
+    identity: CompendiumEntry;
     recipe?: {
-        entryId: string,
-        name: string,
         essences: string[],
         ingredients: FabricateIngredientFlags[],
         results: FabricateResultFlags[]

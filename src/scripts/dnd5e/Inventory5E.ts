@@ -5,9 +5,12 @@ import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData
 import {CraftingComponent} from "../core/CraftingComponent";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
+import {Recipe} from "../core/Recipe";
+import {ItemData5e} from "../../global";
 
 class Inventory5E extends CraftingInventory {
-    private readonly _itemDirectory: Map<string, InventoryRecord> = new Map();
+    private readonly _componentDirectory: Map<string, InventoryRecord<CraftingComponent>> = new Map();
+    private readonly _recipeDirectory: Map<string, InventoryRecord<Recipe>> = new Map();
 
     constructor(actor: any) {
         super(actor);
@@ -20,38 +23,56 @@ class Inventory5E extends CraftingInventory {
             throw new Error(`No Actor was set for this Inventory to index`);
         }
         const items: any = Array.from(this._actor.items.values());
-        this._itemDirectory.clear();
-        const candidateItems: Item[] = items.filter(this.isCraftingComponent(Properties.types.allowableItems));
-        const uniqueComponentTypes: string[] = candidateItems.map((item: Item) => item.getFlag(Properties.module.name, 'component.compendiumEntry.entryId'))
-            .filter((entryId: string, index: number, entryIds: string[]) => entryIds.indexOf(entryId) === index);
+        this._componentDirectory.clear();
+        this._recipeDirectory.clear();
 
-        uniqueComponentTypes.forEach((entryId: string) => {
-            const inventoryRecord: InventoryRecord = candidateItems.filter((candidateItem: Item) => candidateItem.getFlag(Properties.module.name, 'component.compendiumEntry.entryId') === entryId)
-                .map((item: any) => InventoryRecord.builder()
+        const candidateItems: Item[] = items.filter(this.shouldIndex(Properties.types.allowableItems));
+        const uniqueComponentTypes: string[] = candidateItems.map((item: Item) => item.getFlag(Properties.module.name, Properties.flagKeys.item.partId))
+            .filter((partId: string, index: number, partIds: string[]) => partIds.indexOf(partId) === index);
+        const uniqueSystemIds: string[] = candidateItems.map((item: Item) => item.getFlag(Properties.module.name, Properties.flagKeys.item.systemId))
+            .filter((systemId: string, index: number, systemIds: string[]) => systemIds.indexOf(systemId) === index);
+
+        uniqueComponentTypes.forEach((partId: string) => {
+            const inventoryRecord: InventoryRecord<FabricateItem> = candidateItems.filter((candidateItem: Item) => candidateItem.getFlag(Properties.module.name, Properties.flagKeys.item.partId) === partId)
+                .map((item: Item<ItemData5e>) => InventoryRecord.builder()
                     .withItem(item)
                     .withActor(this.actor)
                     .withTotalQuantity(item.data.data.quantity)
-                    .withCraftingComponent(CraftingComponent.fromFlags(item.data.flags.fabricate, item.img))
+                    .withFabricateItemType(item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType))
+                    .withFabricateItem(this.identify(item))
                     .build())
                 .reduce((left: InventoryRecord, right: InventoryRecord) => left.combineWith(right));
-            this._itemDirectory.set(entryId, inventoryRecord);
+            this._itemDirectory.set(partId, inventoryRecord);
         });
     }
 
-    private isCraftingComponent(allowableItems: string[]) {
-        return (item: any) => (allowableItems.indexOf(item.type) >= 0)
-            && item.data.flags.fabricate
-            && item.data.flags.fabricate.type === FabricateItemType.COMPONENT;
+    private identify(item: Item): FabricateItem {
+        // todo - determine if recipe or component and look up from crafting system index
+        // todo - on import to crafting system index set images
+        // todo - add images to recipes and index on import to crafting system
+    }
+
+    private shouldIndex(allowableItems: string[]) {
+        return (item: Item) => {
+            if (allowableItems.indexOf(item.type) < 0) {
+                return false;
+            }
+            const type = item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
+            if (!type) {
+                return false;
+            }
+            return type === FabricateItemType.COMPONENT || type === FabricateItemType.RECIPE;
+        };
     }
 
     async add(component: CraftingComponent, amountToAdd: number = 1, customData?: any): Promise<InventoryRecord> {
         if (customData) {
             return this.addCustomItem(component, amountToAdd, customData);
         }
-        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.entryId);
+        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.partId);
         if (!recordForType) {
-            const compendium: Compendium = game.packs.get(component.compendiumEntry.compendiumKey);
-            const item: any = await compendium.getEntity(component.compendiumEntry.entryId);
+            const compendium: Compendium = game.packs.get(component.compendiumEntry.systemId);
+            const item: any = await compendium.getEntity(component.compendiumEntry.partId);
             item.quantity = amountToAdd;
             const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', item);
             const inventoryRecord: InventoryRecord = InventoryRecord.builder()
@@ -60,7 +81,7 @@ class Inventory5E extends CraftingInventory {
                 .withTotalQuantity(createdItem.data.quantity)
                 .withCraftingComponent(component)
                 .build();
-            this._itemDirectory.set(component.compendiumEntry.entryId, inventoryRecord);
+            this._itemDirectory.set(component.compendiumEntry.partId, inventoryRecord);
             return inventoryRecord;
         } else {
             recordForType.itemsOfType.sort((left: any, right: any) => left.data.data.quantity - right.data.data.quantity);
@@ -74,12 +95,12 @@ class Inventory5E extends CraftingInventory {
     }
 
     private async addCustomItem(component: CraftingComponent, amountToAdd: number, customData: any): Promise<InventoryRecord> {
-        const compendium: Compendium = game.packs.get(component.compendiumEntry.compendiumKey);
-        const item: any = await compendium.getEntity(component.compendiumEntry.entryId);
+        const compendium: Compendium = game.packs.get(component.compendiumEntry.systemId);
+        const item: any = await compendium.getEntity(component.compendiumEntry.partId);
         item.quantity = amountToAdd;
         const data = duplicate(item.data);
         mergeObject(data.data, customData);
-        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.entryId);
+        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.partId);
         const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', data);
         if (recordForType) {
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
@@ -91,7 +112,7 @@ class Inventory5E extends CraftingInventory {
                 .withTotalQuantity(createdItem.data.quantity)
                 .withCraftingComponent(component)
                 .build();
-            this._itemDirectory.set(component.compendiumEntry.entryId, inventoryRecord);
+            this._itemDirectory.set(component.compendiumEntry.partId, inventoryRecord);
             return inventoryRecord;
         }
     }
@@ -101,11 +122,11 @@ class Inventory5E extends CraftingInventory {
     }
 
     async remove(component: CraftingComponent, amountToRemove: number = 1): Promise<boolean> {
-        if (!this.contains(Ingredient.builder().withQuantity(amountToRemove).withComponentType(component).build())) {
+        if (!this.contains(Ingredient.builder().withQuantity(amountToRemove).withComponent(component).build())) {
             throw new Error(`Cannot remove ${amountToRemove} ${component.name} from Inventory for Actor ${this.actorId} - 
             there is not enough of the component in their inventory! `);
         }
-        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.entryId);
+        const recordForType: InventoryRecord = this._itemDirectory.get(component.compendiumEntry.partId);
         // @ts-ignore
         recordForType.itemsOfType = recordForType.itemsOfType.sort((left: any, right: any) => left.data.data.quantity - right.data.data.quantity);
         let removed: number = 0;
@@ -134,7 +155,7 @@ class Inventory5E extends CraftingInventory {
         const remainingItems: Item[] = recordForType.itemsOfType.filter((item: any) => item.data.data.quantity > 0);
         recordForType.itemsOfType = remainingItems;
         if (remainingItems.length === 0) {
-            this._itemDirectory.delete(component.compendiumEntry.entryId);
+            this._itemDirectory.delete(component.compendiumEntry.partId);
         }
         return true;
     }

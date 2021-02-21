@@ -328,7 +328,7 @@ namespace AlchemicalResult5E {
         }
 
         public withResultantItem(compendiumKey: string, entryId: string): Builder {
-            this.resultantItem = {compendiumKey: compendiumKey, entryId: entryId};
+            this.resultantItem = {systemId: compendiumKey, partId: entryId};
             return this;
         }
 

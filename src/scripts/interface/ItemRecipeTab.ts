@@ -37,12 +37,12 @@ class ItemRecipeTab {
         this._recipe = Recipe.fromFlags(itemApplication.item.data.flags.fabricate);
         this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
         this._recipe.ingredients.forEach((ingredient: Ingredient) => {
-            const component: CraftingComponent = ingredient.componentType;
-            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
+            const component: CraftingComponent = ingredient.component;
+            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.partId).imageUrl;
         });
         this._recipe.results.forEach((result: CraftingResult) => {
             const component: CraftingComponent = result.item;
-            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
+            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.partId).imageUrl;
         });
     }
 

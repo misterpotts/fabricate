@@ -2,13 +2,14 @@ import {CraftingComponent} from "./CraftingComponent";
 import {ActionType} from "./ActionType";
 import {FabricateResultFlags} from "../game/CompendiumData";
 
-class CraftingResult {
+class CraftingResult extends FabricateItem {
     private readonly _item: CraftingComponent;
     private readonly _quantity: number;
     private readonly _action: ActionType;
     private readonly _customData: any;
 
     constructor(builder: CraftingResult.Builder) {
+        super(builder.item.systemId, builder.item.partId);
         this._item = builder.item;
         this._quantity = builder.quantity;
         this._action = builder.action;
@@ -35,26 +36,27 @@ class CraftingResult {
         return this._customData;
     }
 
-    public static fromFlags(flags: FabricateResultFlags): CraftingResult {
+    public static fromFlags(flags: FabricateResultFlags, systemId: string): CraftingResult {
         return this.builder()
             .withAction(flags.action)
             .withQuantity(flags.quantity)
             .withItem(CraftingComponent.builder()
-                .withName(flags.item.name)
-                .withCompendiumEntry(flags.item.compendiumEntry.compendiumKey, flags.item.compendiumEntry.entryId)
+                .withSystemId(systemId)
+                .withPartId(flags.partId)
                 .build())
             .build();
     }
 
-    public static manyFromFlags(flags: FabricateResultFlags[]): CraftingResult[] {
-        return flags.map((flagData) => CraftingResult.fromFlags(flagData));
+    public static manyFromFlags(flags: FabricateResultFlags[], systemId: string): CraftingResult[] {
+        return flags.map((flagData) => CraftingResult.fromFlags(flagData, systemId));
     }
 
     isValid(): boolean {
         return (this.quantity != null && this.quantity > 0)
             && (this.action != null)
             && (this.action == ActionType.ADD || this.action == ActionType.REMOVE)
-            && this.item.isValid();
+            && this.item.isValid()
+            && super.isValid();
     }
 }
 

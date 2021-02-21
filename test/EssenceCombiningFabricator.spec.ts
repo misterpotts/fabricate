@@ -238,8 +238,8 @@ describe('Essence Combining Fabricator |', () => {
             const addResults = results.filter((craftingResult: CraftingResult) => craftingResult.action === ActionType.ADD);
             expect(addResults.length).to.equal(1);
             const addResult: CraftingResult = addResults[0];
-            expect(addResult.item.compendiumEntry.compendiumKey).to.equal('fabricate.alchemists-supplies-v11');
-            expect(addResult.item.compendiumEntry.entryId).to.equal('90z9nOwmGnP4aUUk');
+            expect(addResult.item.compendiumEntry.systemId).to.equal('fabricate.alchemists-supplies-v11');
+            expect(addResult.item.compendiumEntry.partId).to.equal('90z9nOwmGnP4aUUk');
             expect(addResult.quantity).to.equal(1);
             expect(addResult.action).to.equal(ActionType.ADD);
 

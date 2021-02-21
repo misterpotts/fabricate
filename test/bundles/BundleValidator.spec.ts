@@ -61,18 +61,18 @@ describe('Bundles |', () => {
                         expect(craftingComponent.isValid(), `Component on line ${lineNumber} has invalid data`).to.be.true;
                         expect(json._id).to.equal(flags.component.compendiumEntry.entryId, `Component entry ID on line ${lineNumber} does not match Item ID in Compendium`);
                         expect(json.name).to.equal(flags.component.name, `Component name on line ${lineNumber} does not match Item name in Compendium`);
-                        componentsById.set(craftingComponent.compendiumEntry.entryId, craftingComponent);
+                        componentsById.set(craftingComponent.compendiumEntry.partId, craftingComponent);
                     }
                 });
                 recipesByLineNumber.forEach((recipe: Recipe, lineNumber: number) => {
                     recipe.results.forEach((craftingResult: CraftingResult) => {
-                        const entryId = craftingResult.item.compendiumEntry.entryId;
+                        const entryId = craftingResult.item.compendiumEntry.partId;
                         const craftingComponent = componentsById.get(entryId);
                         expect(craftingComponent, `Crafting Result ${craftingResult.item.name} in Recipe ${recipe.name} on line ${lineNumber} refers to a Crafting Element with ID ${entryId} that does not exist. `).to.exist;
                         expect(craftingComponent.name, `Crafting Result ${craftingResult.item.name} in Recipe ${recipe.name} on line ${lineNumber} does not match that of ${craftingComponent.name}`).to.equal(craftingResult.item.name);
                     });
                     recipe.ingredients.forEach((ingredient: Ingredient) => {
-                        const entryId = ingredient.componentType.compendiumEntry.entryId;
+                        const entryId = ingredient.component.compendiumEntry.partId;
                         const craftingComponent = componentsById.get(entryId);
                         expect(craftingComponent, `Crafting Component ${craftingComponent.name} in Recipe ${recipe.name} on line ${lineNumber} refers to a Crafting Element with ID ${entryId} that does not exist. `).to.exist;
                         expect(craftingComponent.name, `Crafting Component ${craftingComponent.name} in Recipe ${recipe.name} on line ${lineNumber} does not match that of ${craftingComponent.name}`).to.equal(craftingComponent.name);
