@@ -38,11 +38,11 @@ class ItemRecipeTab {
         this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
         this._recipe.ingredients.forEach((ingredient: Ingredient) => {
             const component: CraftingComponent = ingredient.component;
-            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.partId).imageUrl;
+            component.imageUrl = this._craftingSystem.getComponentByPartId(component.compendiumEntry.partId).imageUrl;
         });
         this._recipe.results.forEach((result: CraftingResult) => {
             const component: CraftingComponent = result.item;
-            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.partId).imageUrl;
+            component.imageUrl = this._craftingSystem.getComponentByPartId(component.compendiumEntry.partId).imageUrl;
         });
     }
 

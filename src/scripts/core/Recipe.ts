@@ -1,6 +1,7 @@
 import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
+import {FabricateItem} from "./FabricateItem";
 
 class Recipe extends FabricateItem {
     private readonly _ingredients: Ingredient[];
@@ -16,17 +17,17 @@ class Recipe extends FabricateItem {
         this._name = builder.name;
     }
 
-    public static fromFlags(flags: FabricateCompendiumData, name: string, systemId: string,  partId: string): Recipe {
+    public static fromFlags(flags: FabricateCompendiumData, name: string): Recipe {
         if (flags.type !== FabricateItemType.RECIPE) {
             throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${flags.type} data. `);
         }
         return Recipe.builder()
             .withName(name)
-            .withSystemId(systemId)
-            .withPartId(partId)
+            .withSystemId(flags.identity.systemId)
+            .withPartId(flags.identity.partId)
             .withEssences(flags.recipe.essences)
-            .withResults(CraftingResult.manyFromFlags(flags.recipe.results, systemId))
-            .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients, systemId))
+            .withResults(CraftingResult.manyFromFlags(flags.recipe.results, flags.identity.systemId))
+            .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients, flags.identity.systemId))
             .build();
     }
 

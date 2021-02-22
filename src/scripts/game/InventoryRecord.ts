@@ -1,4 +1,5 @@
 import {FabricateItemType} from "./CompendiumData";
+import {FabricateItem} from "../core/FabricateItem";
 
 class InventoryRecord<T extends FabricateItem> {
     private readonly _actor: Actor;

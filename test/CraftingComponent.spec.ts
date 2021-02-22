@@ -8,22 +8,23 @@ describe('Crafting Component |', () => {
 
         it('Should create from Fabricate Flags', () => {
             const name = 'Glass';
-            const key = 'test.key';
-            const id = '1234';
+            const systemId = 'compendium.key';
+            const partId = '1234';
+            const imageUrl = '/resources/images/img.png';
             const flags: FabricateCompendiumData = <FabricateCompendiumData>{
                 type: 'COMPONENT',
+                identity: {
+                    partId: partId,
+                    systemId: systemId
+                },
                 component: {
-                    name: name,
-                    compendiumEntry: {
-                        compendiumKey: key,
-                        entryId: id
-                    }
+                    essences:[]
                 }
             };
-            const result = CraftingComponent.fromFlags(flags);
+            const result = CraftingComponent.fromFlags(flags, name, imageUrl);
             expect(result.name).to.equal(name);
-            expect(result.compendiumEntry.systemId).to.equal(key);
-            expect(result.compendiumEntry.partId).to.equal(id);
+            expect(result.systemId).to.equal(systemId);
+            expect(result.partId).to.equal(partId);
         });
 
     });
@@ -31,26 +32,45 @@ describe('Crafting Component |', () => {
     describe('Equality |', () => {
 
         it('Should consider two identical components to be equal', () => {
+            const name = 'Glass';
+            const systemId = 'compendium.key';
+            const partId = '1234';
+            const imageUrl = '/resources/images/img.png';
+            const essences: string[] = [];
             const left = CraftingComponent.builder()
-                .withName('Rocks')
-                .withCompendiumEntry('test.key', '1234')
+                .withName(name)
+                .withSystemId(systemId)
+                .withPartId(partId)
+                .withImageUrl(imageUrl)
+                .withEssences(essences)
                 .build();
             const right = CraftingComponent.builder()
-                .withName('Rocks')
-                .withCompendiumEntry('test.key', '1234')
+                .withName(name)
+                .withSystemId(systemId)
+                .withPartId(partId)
+                .withImageUrl(imageUrl)
+                .withEssences(essences)
                 .build();
             const result = left.equals(right);
             expect(result).to.be.true;
         });
 
         it('Should consider two different components not equal', () => {
+            const imageUrl = '/resources/images/img.png';
+            const essences: string[] = [];
             const left = CraftingComponent.builder()
                 .withName('Sand')
-                .withCompendiumEntry('test.key', '4321')
+                .withSystemId('test.key')
+                .withPartId('4321')
+                .withImageUrl(imageUrl)
+                .withEssences(essences)
                 .build();
             const right = CraftingComponent.builder()
                 .withName('Rocks')
-                .withCompendiumEntry('test.key', '1234')
+                .withSystemId('test.key')
+                .withPartId('1234')
+                .withImageUrl(imageUrl)
+                .withEssences(essences)
                 .build();
             const result = left.equals(right);
             expect(result).to.be.false;

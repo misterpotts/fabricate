@@ -21,7 +21,8 @@ gulp.task('test', () => {
   return gulp.src('test/**/*.ts')
       .pipe(gulp_mocha({
         reporter: 'list',
-        require: ['ts-node/register']
+        require: ['ts-node/register'],
+        ui: 'bdd'
       }));
 });
 

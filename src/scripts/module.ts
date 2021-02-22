@@ -1,89 +1,45 @@
 import Properties from "./Properties";
-import {FabricateCompendiumData, FabricateItemType} from "./game/CompendiumData";
-import {Recipe} from "./core/Recipe";
-import {CraftingComponent} from "./core/CraftingComponent";
 import {CraftingSystemRegistry} from "./registries/CraftingSystemRegistry";
 import {FabricateLifecycle} from "./application/FabricateLifecycle";
-import {CraftingSystem} from "./core/CraftingSystem";
-
-// Enable as needed for dev. Do not release!
-// CONFIG.debug.hooks = true;
+import {CraftingSystemSpecification} from "./core/CraftingSystemSpecification";
+import {CompendiumImportingCraftingSystemFactory, CraftingSystemFactory} from "./core/CraftingSystemFactory";
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
     FabricateLifecycle.init();
 });
 
-async function loadCraftingSystems() {
-    let systemSpecifications = CraftingSystemRegistry.systemSpecifications;
+/**
+ * Loads all Crafting Systems with a System Specification declared with the Crafting System Registry.
+ * */
+async function loadCraftingSystems(): Promise<void> {
+    const systemSpecifications = CraftingSystemRegistry.systemSpecifications;
     console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
     systemSpecifications.forEach(FabricateLifecycle.registerCraftingSystemSettings);
     systemSpecifications.forEach(loadCraftingSystem);
-    const systemNames = systemSpecifications.map((systemSpec: CraftingSystem.Builder) => systemSpec.name);
+    const systemNames = systemSpecifications.map((systemSpec: CraftingSystemSpecification) => systemSpec.name);
     console.log(`${Properties.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `);
 }
 
 /**
  * Loads a single Crafting System from a System Specification, which must include a Compendium Pack Key. Item data from
  * the Compendium Pack is used to load the Recipes and Crafting Components into the system from the compendium. The
- * Fabricator, supported systems and name provided in the spec are all preserved
+ * Fabricator, supported systems and name provided in the spec are all preserved.
  *
- * @param systemSpec A partially populated `CraftingSystem.Builder` to which the Recipes and Components will be added
- * once imported from the Compendium. Must specify a Compendium Pack Key.
+ * @param systemSpec `CraftingSystemSpecification` that determines how a system behaves and which compendium pack content
+ * for the system should be loaded from.
  * */
-async function loadCraftingSystem(systemSpec: CraftingSystem.Builder) {
+async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
     console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `);
     if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
         console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
         return;
     }
-    let systemPack: Compendium = game.packs.get(systemSpec.compendiumPackKey)
-    let content = await loadCompendiumContent(systemPack, 10);
-    content.forEach((item: any) => {
-        let itemConfig: FabricateCompendiumData = item.data.flags.fabricate;
-        switch (itemConfig.type) {
-            case FabricateItemType.COMPONENT:
-                systemSpec.withComponent(CraftingComponent.fromFlags(itemConfig, item.img));
-                break;
-            case FabricateItemType.RECIPE:
-                systemSpec.withRecipe(Recipe.fromFlags(itemConfig));
-                break;
-            default:
-                throw new Error(`${Properties.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `);
-        }
-    });
-    const enabled = game.settings.get(Properties.module.name, systemSpec.compendiumPackKey + '.enabled');
-    systemSpec.isEnabled(enabled);
-    let system: CraftingSystem = systemSpec.build();
-    CraftingSystemRegistry.register(system);
+    const craftingSystemFactory: CraftingSystemFactory = new CompendiumImportingCraftingSystemFactory(systemSpec);
+    const craftingSystem = await craftingSystemFactory.make();
+    const enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
+    craftingSystem.enabled = enabled;
+    CraftingSystemRegistry.register(craftingSystem);
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
-}
-
-/**
- * Fallback awaiter for loading compendium content, as this was observed to be unreliable during development after the
- * game 'ready' Hook was fired
- *
- * @param compendium The Compendium from which to reliably load the Content
- * @param maxAttempts The maximum number of times to attempt loading Compendium Content
- * */
-async function loadCompendiumContent(compendium: Compendium, maxAttempts: number): Promise<Entity<{}>[]> {
-    let content: Entity[] = await compendium.getContent();
-    let attempts: number = 0;
-    while ((!content || (content.length === 0)) && (attempts <= maxAttempts)) {
-        console.log(`${Properties.module.label} | Waiting for content in Compendium Pack ${compendium.id} (Attempt ${attempts} of ${maxAttempts}. `);
-        await wait(1000);
-        attempts++;
-        content = await compendium.getContent();
-    }
-    return content;
-}
-
-/**
- * Simple async awaiter delay function
- * @param delay The number of millis to wait before resolving
- * @return a promise that resolves once the delay period has elapsed
- * */
-async function wait(delay: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, delay));
 }
 

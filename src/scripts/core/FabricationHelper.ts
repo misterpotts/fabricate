@@ -9,9 +9,9 @@ class FabricationHelper {
     public static asCraftingResults(components: CraftingComponent[], action: ActionType): CraftingResult[] {
         const componentsById: Map<string, CraftingComponent[]> = new Map();
         components.forEach((component: CraftingComponent) => {
-            const identicalComponents: CraftingComponent[] = componentsById.get(component.compendiumEntry.partId);
+            const identicalComponents: CraftingComponent[] = componentsById.get(component.partId);
             if (!identicalComponents) {
-                componentsById.set(component.compendiumEntry.partId, [component]);
+                componentsById.set(component.partId, [component]);
             } else {
                 identicalComponents.push(component);
             }

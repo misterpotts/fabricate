@@ -24,19 +24,23 @@ const testData = rawTestData.map((item: any) => {
 const compendiumPackKey: string = 'fabricate.fabricate-test';
 const wax: CraftingComponent = CraftingComponent.builder()
     .withName('Wax')
-    .withCompendiumEntry('fabricate.fabricate-test', 'DPYl8D5QtcRVH5YX')
+    .withSystemId('fabricate.fabricate-test')
+    .withPartId('DPYl8D5QtcRVH5YX')
     .build();
 const mud: CraftingComponent = CraftingComponent.builder()
     .withName('Mud')
-    .withCompendiumEntry('fabricate.fabricate-test', 'tCmAnq9zcESt0ULf')
+    .withSystemId('fabricate.fabricate-test')
+    .withPartId('tCmAnq9zcESt0ULf')
     .build();
 const sticks: CraftingComponent = CraftingComponent.builder()
     .withName('Sticks')
-    .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
+    .withSystemId('fabricate.fabricate-test')
+    .withPartId('arWeEYkLkubimBz3')
     .build();
 const dung: CraftingComponent = CraftingComponent.builder()
     .withName('Dung')
-    .withCompendiumEntry('fabricate.fabricate-test', 'Ra2Z1ujre76weR0i')
+    .withSystemId('fabricate.fabricate-test')
+    .withPartId('Ra2Z1ujre76weR0i')
     .build();
 
 
@@ -86,7 +90,7 @@ describe('Inventory5E |', () => {
             expect(underTest.actorId).to.equal(actorId);
             expect(underTest.size).to.equal(4);
 
-            const craftingComponents: CraftingComponent[] = underTest.denormalizedContents();
+            const craftingComponents: CraftingComponent[] = underTest.denormalizedContainedComponents();
             expect(craftingComponents.length).to.equal(15);
 
         });
@@ -115,7 +119,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContents().length;
+            const initialComponentCount = underTest.denormalizedContainedComponents().length;
             expect(initialComponentCount).to.equal(15);
 
             const initialContains = underTest.contains(oneDung);
@@ -126,7 +130,7 @@ describe('Inventory5E |', () => {
             const postAddOneContents = underTest.contents;
             expect(postAddOneContents.length).to.equal(5);
 
-            const postAddOneComponentCount = underTest.denormalizedContents().length;
+            const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
             expect(postAddOneComponentCount).to.equal(16);
 
             const postAddOneContains = underTest.contains(oneDung);
@@ -156,7 +160,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContents().length;
+            const initialComponentCount = underTest.denormalizedContainedComponents().length;
             expect(initialComponentCount).to.equal(15);
 
             await underTest.add(dung, TWO);
@@ -164,7 +168,7 @@ describe('Inventory5E |', () => {
             const postAddOneContents = underTest.contents;
             expect(postAddOneContents.length).to.equal(5);
 
-            const postAddOneComponentCount = underTest.denormalizedContents().length;
+            const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
             expect(postAddOneComponentCount).to.equal(17);
 
             expect(underTest.contains(twoDung)).to.be.true;
@@ -196,7 +200,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContents().length;
+            const initialComponentCount = underTest.denormalizedContainedComponents().length;
             expect(initialComponentCount).to.equal(15);
 
             const doesNotHaveFourBeforehand = underTest.contains(fourMudIngredient);
@@ -210,7 +214,7 @@ describe('Inventory5E |', () => {
             const postAddOneContents = underTest.contents;
             expect(postAddOneContents.length).to.equal(4);
 
-            const postAddOneComponentCount = underTest.denormalizedContents().length;
+            const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
             expect(postAddOneComponentCount).to.equal(17);
 
             const hasFourAfterwards = underTest.contains(fourMudIngredient);
@@ -247,7 +251,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContents().length;
+            const initialComponentCount = underTest.denormalizedContainedComponents().length;
             expect(initialComponentCount).to.equal(15);
 
             const containsTwoBeforehand = underTest.contains(twoMudIngredient);
@@ -258,7 +262,7 @@ describe('Inventory5E |', () => {
             const postRemoveOneContents = underTest.contents;
             expect(postRemoveOneContents.length).to.equal(4);
 
-            const postRemoveOneComponentCount = underTest.denormalizedContents().length;
+            const postRemoveOneComponentCount = underTest.denormalizedContainedComponents().length;
             expect(postRemoveOneComponentCount).to.equal(14);
 
             const containsTwoAfterwards = underTest.contains(twoMudIngredient);
@@ -295,7 +299,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContents().length;
+            const initialComponentCount = underTest.denormalizedContainedComponents().length;
             expect(initialComponentCount).to.equal(15);
 
             const containsTwoBeforehand = underTest.contains(twoSticksIngredient);
@@ -306,7 +310,7 @@ describe('Inventory5E |', () => {
             const postRemoveOneContents = underTest.contents;
             expect(postRemoveOneContents.length).to.equal(4);
 
-            const postRemoveOneComponentCount = underTest.denormalizedContents().length;
+            const postRemoveOneComponentCount = underTest.denormalizedContainedComponents().length;
             expect(postRemoveOneComponentCount).to.equal(14);
 
             const containsTwoAfterwards = underTest.contains(twoSticksIngredient);
@@ -346,7 +350,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.contents;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContents().length;
+            const initialComponentCount = underTest.denormalizedContainedComponents().length;
             expect(initialComponentCount).to.equal(15);
 
             const containsTenBeforehand = underTest.contains(tenWaxIngredient);
@@ -357,7 +361,7 @@ describe('Inventory5E |', () => {
             const postRemoveSevenContents = underTest.contents;
             expect(postRemoveSevenContents.length).to.equal(4);
 
-            const postRemoveSevenComponentCount = underTest.denormalizedContents().length;
+            const postRemoveSevenComponentCount = underTest.denormalizedContainedComponents().length;
             expect(postRemoveSevenComponentCount).to.equal(8);
 
             const containsThreeAfterwards = underTest.contains(threeWaxIngredient);
@@ -372,11 +376,12 @@ describe('Inventory5E |', () => {
         it('Should determine that an Inventory contains insufficient Ingredients for a Recipe', () => {
             const mudPieRecipe = Recipe.builder()
                 .withName('Simple mud pie recipe')
-                .withEntryId('4')
+                .withPartId('4')
                 .withIngredient(Ingredient.builder()
                     .withComponent(CraftingComponent.builder()
                         .withName('Mud')
-                        .withCompendiumEntry('compendium', '1')
+                        .withPartId('1')
+                        .withSystemId('compendium')
                         .build())
                     .withQuantity(2)
                     .isConsumed(true)
@@ -384,7 +389,8 @@ describe('Inventory5E |', () => {
                 .withIngredient(Ingredient.builder()
                     .withComponent(CraftingComponent.builder()
                         .withName('Sticks')
-                        .withCompendiumEntry('compendium', '2')
+                        .withPartId('2')
+                        .withSystemId('compendium')
                         .build())
                     .withQuantity(1)
                     .isConsumed(true)
@@ -393,7 +399,8 @@ describe('Inventory5E |', () => {
                     .withQuantity(1)
                     .withItem(CraftingComponent.builder()
                         .withName('Mud Pie')
-                        .withCompendiumEntry('compendium', '3')
+                        .withPartId('3')
+                        .withSystemId('compendium')
                         .build())
                     .build())
                 .build();
@@ -416,7 +423,7 @@ describe('Inventory5E |', () => {
         it('Should determine that an Inventory contains all Ingredients for a Recipe', () => {
             const mudPieRecipe = Recipe.builder()
                 .withName('Simple mud pie recipe')
-                .withEntryId('4')
+                .withPartId('4')
                 .withIngredient(Ingredient.builder()
                     .withComponent(mud)
                     .withQuantity(2)
@@ -431,7 +438,8 @@ describe('Inventory5E |', () => {
                     .withQuantity(1)
                     .withItem(CraftingComponent.builder()
                         .withName('Mud Pie')
-                        .withCompendiumEntry('compendium', '3')
+                        .withPartId('3')
+                        .withSystemId('compendium')
                         .build())
                     .build())
                 .build();

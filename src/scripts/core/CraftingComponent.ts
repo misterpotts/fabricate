@@ -1,4 +1,5 @@
 import {CompendiumEntry, FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
+import {FabricateItem} from "./FabricateItem";
 
 class CraftingComponent extends FabricateItem {
     private readonly _name: string;
@@ -28,20 +29,31 @@ class CraftingComponent extends FabricateItem {
         return new CraftingComponent.Builder();
     }
 
-    public static fromFlags(fabricateFlags: FabricateCompendiumData, systemId: string, partId: string, name: string, imageUrl: string): CraftingComponent {
+    public static fromFlags(fabricateFlags: FabricateCompendiumData, name: string, imageUrl: string): CraftingComponent {
         if (fabricateFlags.type !== FabricateItemType.COMPONENT) {
             throw new Error(`Error attempting to instantiate a Fabricate Crafting Component from ${fabricateFlags.type} data. `);
         }
         return CraftingComponent.builder()
             .withName(name)
-            .withSystemId(systemId)
-            .withPartId(partId)
+            .withSystemId(fabricateFlags.identity.systemId)
+            .withPartId(fabricateFlags.identity.partId)
             .withEssences(fabricateFlags.component.essences)
             .withImageUrl(imageUrl)
             .build();
     }
 
-    isValid(): boolean {
+    public equals(other: CraftingComponent) {
+        if (!other) {
+            return false;
+        }
+        return this.sharesType(other)
+            && other.name === this.name
+            && other.imageUrl === this.imageUrl
+            && other.essences.length === this.essences.length
+            && other.essences.every((essence: string) => this.essences.includes(essence));
+    }
+
+    public isValid(): boolean {
         return (this.name != null && this.name.length > 0)
             && (this.imageUrl != null && this.imageUrl.length > 0)
             && (this.essences != null)

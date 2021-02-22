@@ -4,6 +4,7 @@ import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {Recipe} from "../core/Recipe";
+import {FabricateItem} from "../core/FabricateItem";
 
 abstract class CraftingInventory implements Inventory {
 
@@ -137,7 +138,7 @@ abstract class CraftingInventory implements Inventory {
 
     public abstract updateQuantityFor(item: any): Promise<InventoryRecord<FabricateItem> | void>;
 
-    abstract denormalizedContents(): CraftingComponent[];
+    abstract denormalizedContainedComponents(): CraftingComponent[];
 
 }
 

@@ -72,7 +72,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         const craftingComponentCombinations = this.analyzeCombinationsForRecipe(craftingComponents, recipe);
         const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
         if (!selectedCombination ||selectedCombination.length === 0) {
-            throw new Error(`There are insufficient components available to craft Recipe ${recipe.entryId}. `)
+            throw new Error(`There are insufficient components available to craft Recipe ${recipe.partId}. `)
         }
         return FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
     }
@@ -83,12 +83,12 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         const recipeIdentity = FabricationHelper.essenceCombinationIdentity(recipe.essences, essenceIdentities);
         const componentEssenceIdentity: Map<string, number> = new Map();
         usableComponents.forEach((component: CraftingComponent) => {
-            if (!componentEssenceIdentity.has(component.compendiumEntry.partId)) {
-                componentEssenceIdentity.set(component.compendiumEntry.partId, FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities));
+            if (!componentEssenceIdentity.has(component.partId)) {
+                componentEssenceIdentity.set(component.partId, FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities));
             }
         });
         return FabricationHelper.combinationHistogram(usableComponents).map((combination: CraftingComponent[]) => {
-            const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.compendiumEntry.partId))
+            const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.partId))
                 .reduce((left: number, right: number) => left * right, 1);
             const craftableRecipes: Recipe[] = [];
             if (this.isCraftableFromEssencesIn(recipe, combination)) {
@@ -117,10 +117,10 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         const exactMatches: CraftingComponentCombination[] = [];
         const supersets: CraftingComponentCombination[] = [];
         combinations.forEach((combination: CraftingComponentCombination) => {
-            if (combination.essenceIdentityMatches.find((match: Recipe) => match.entryId === recipe.entryId)) {
+            if (combination.essenceIdentityMatches.find((match: Recipe) => match.partId === recipe.partId)) {
                 exactMatches.push(combination);
             }
-            if (combination.craftableRecipes.find((craftable: Recipe) => craftable.entryId === recipe.entryId)) {
+            if (combination.craftableRecipes.find((craftable: Recipe) => craftable.partId === recipe.partId)) {
                 supersets.push(combination);
             }
         });

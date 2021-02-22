@@ -6,13 +6,7 @@ import {CraftingTabDTO} from "./CraftingTabDTO";
 import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {CraftingSystem} from "../core/CraftingSystem";
-
-interface InventoryRecordData {
-    name: string;
-    entryId: string;
-    quantity: number;
-    imageUrl: string;
-}
+import {InventoryRecordData} from "./InterfaceDataTypes";
 
 class CraftingTab {
     private static readonly tabs: Map<string, CraftingTab> = new Map();
@@ -100,8 +94,8 @@ class CraftingTab {
             }
             const component = hopperContentsForSystem.find((item: InventoryRecordData) => item.entryId === componentId);
             if (!component) {
-                const component: CraftingComponent = CraftingSystemRegistry.getSystemByCompendiumPackKey(craftingSystemId).getComponentByEntryId(componentId);
-                hopperContentsForSystem.push({name: component.name, quantity: 1, imageUrl: component.imageUrl, entryId: component.compendiumEntry.partId})
+                const component: CraftingComponent = CraftingSystemRegistry.getSystemByCompendiumPackKey(craftingSystemId).getComponentByPartId(componentId);
+                hopperContentsForSystem.push({name: component.name, quantity: 1, imageUrl: component.imageUrl, entryId: component.partId})
             } else {
                 component.quantity = component.quantity + 1;
             }
@@ -149,7 +143,7 @@ class CraftingTab {
             console.log(`Craft for system ${craftingSystemId} with ${hopperContents.length} components`);
 
             const craftingSystem: CraftingSystem = CraftingSystemRegistry.getSystemByCompendiumPackKey(craftingSystemId);
-            const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByEntryId(hopperItem.entryId));
+            const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByPartId(hopperItem.entryId));
 
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
             await craftingSystem.craftWithComponents(this._actor.id, craftingComponents);
@@ -173,4 +167,4 @@ class CraftingTab {
     }
 }
 
-export {CraftingTab, InventoryRecordData}
+export {CraftingTab}

@@ -7,15 +7,19 @@ import {FabricateCompendiumData} from "../src/scripts/game/CompendiumData";
 import {ActionType} from "../src/scripts/core/ActionType";
 
 describe('Recipe |', () => {
+
     describe('Create |', () => {
+
         it('Should create a Recipe', () => {
+
             const testRecipe = Recipe.builder()
                 .withName('Simple mud pie recipe')
-                .withEntryId('4')
+                .withPartId('4')
                 .withIngredient(Ingredient.builder()
                     .withComponent(CraftingComponent.builder()
                         .withName('Mud')
-                        .withCompendiumEntry('compendium', '1')
+                        .withPartId('1')
+                        .withSystemId('compendium')
                         .build())
                     .withQuantity(2)
                     .isConsumed(true)
@@ -23,7 +27,8 @@ describe('Recipe |', () => {
                 .withIngredient(Ingredient.builder()
                     .withComponent(CraftingComponent.builder()
                         .withName('Sticks')
-                        .withCompendiumEntry('compendium', '2')
+                        .withPartId('2')
+                        .withSystemId('compendium')
                         .build())
                     .withQuantity(1)
                     .isConsumed(true)
@@ -32,21 +37,23 @@ describe('Recipe |', () => {
                     .withQuantity(1)
                     .withItem(CraftingComponent.builder()
                         .withName('Mud Pie')
-                        .withCompendiumEntry('compendium', '3')
+                        .withPartId('3')
+                        .withSystemId('compendium')
                         .build())
                     .build())
                 .build();
 
             expect(testRecipe.name).to.equal('Simple mud pie recipe');
             expect(testRecipe.ingredients.length).to.equal(2);
-            expect(testRecipe.entryId).to.equal('4');
+            expect(testRecipe.partId).to.equal('4');
             expect(testRecipe.ingredients).to.deep.include.members([
                 Ingredient.builder()
                     .withQuantity(2)
                     .isConsumed(true)
                     .withComponent(CraftingComponent.builder()
                         .withName('Mud')
-                        .withCompendiumEntry('compendium', '1')
+                        .withPartId('1')
+                        .withSystemId('compendium')
                         .build())
                     .build(),
                 Ingredient.builder()
@@ -54,7 +61,8 @@ describe('Recipe |', () => {
                     .isConsumed(true)
                     .withComponent(CraftingComponent.builder()
                         .withName('Sticks')
-                        .withCompendiumEntry('compendium', '2')
+                        .withPartId('2')
+                        .withSystemId('compendium')
                         .build())
                     .build()
             ]);
@@ -64,30 +72,20 @@ describe('Recipe |', () => {
 
             const recipeFlagData: FabricateCompendiumData = <FabricateCompendiumData>{
                 type: "RECIPE",
+                identity: {
+                    partId: '4iHqWSLTMFjPbpuI',
+                    systemId: 'fabricate.fabricate-test'
+                },
                 recipe: {
-                    entryId: '4iHqWSLTMFjPbpuI',
-                    name: 'Recipe: Mud Pie',
                     essences: [],
                     ingredients: [
                         {
-                            componentType: {
-                                name: 'Mud',
-                                compendiumEntry: {
-                                    compendiumKey: 'fabricate.fabricate-test',
-                                    entryId: 'tCmAnq9zcESt0ULf'
-                                }
-                            },
+                            partId: 'tCmAnq9zcESt0ULf',
                             quantity: 2,
                             consumed: true
                         },
                         {
-                            componentType: {
-                                name: 'Sticks',
-                                compendiumEntry: {
-                                    compendiumKey: 'fabricate.fabricate-test',
-                                    entryId: 'arWeEYkLkubimBz3'
-                                }
-                            },
+                            partId: 'arWeEYkLkubimBz3',
                             quantity: 1,
                             consumed: true
                         }
@@ -95,48 +93,48 @@ describe('Recipe |', () => {
                     results: [
                         {
                             action: "ADD",
-                            item: {
-                                name: 'Mud Pie',
-                                compendiumEntry: {
-                                    compendiumKey: 'fabricate.fabricate-test',
-                                    entryId: 'nWhTa8gD1QL1f9O3'
-                                }
-                            },
+                            partId: 'nWhTa8gD1QL1f9O3',
                             quantity: 1
                         }
                     ]
                 }
             };
-            const underTest = Recipe.fromFlags(recipeFlagData);
+            const underTest = Recipe.fromFlags(recipeFlagData, 'Recipe: Mud Pie');
             expect(underTest.name).to.equal('Recipe: Mud Pie');
-            expect(underTest.entryId).to.equal('4iHqWSLTMFjPbpuI');
+            expect(underTest.partId).to.equal('4iHqWSLTMFjPbpuI');
             expect(underTest.ingredients.length).to.equal(2);
             const twoMudConsumed = Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(2)
                 .withComponent(CraftingComponent.builder()
                     .withName('Mud')
-                    .withCompendiumEntry('fabricate.fabricate-test', 'tCmAnq9zcESt0ULf')
+                    .withPartId('tCmAnq9zcESt0ULf')
+                    .withSystemId('fabricate.fabricate-test')
                     .build())
                 .build();
-            expect(twoMudConsumed.is(underTest.ingredients[0])).to.be.true;
+            expect(twoMudConsumed.equals(underTest.ingredients[0])).to.be.true;
             const oneSticksConsumed = Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(1)
                 .withComponent(CraftingComponent.builder()
                     .withName('Sticks')
-                    .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
+                    .withPartId('arWeEYkLkubimBz3')
+                    .withSystemId('fabricate.fabricate-test')
                     .build())
                 .build();
-            expect(oneSticksConsumed.is(underTest.ingredients[1])).to.be.true;
+            expect(oneSticksConsumed.equals(underTest.ingredients[1])).to.be.true;
             expect(underTest.results.length).to.equal(1);
             expect(underTest.results[0].quantity).to.equal(1);
             expect(underTest.results[0].action).to.equal(ActionType.ADD);
             const mudPie = CraftingComponent.builder()
                 .withName('Mud Pie')
-                .withCompendiumEntry('fabricate.fabricate-test', 'nWhTa8gD1QL1f9O3')
+                .withPartId('nWhTa8gD1QL1f9O3')
+                .withSystemId('fabricate.fabricate-test')
                 .build();
-            expect(underTest.results[0].item.equals(mudPie)).to.be.true;
+            expect(underTest.results[0].item.sharesType(mudPie)).to.be.true;
+
         });
+
     });
+
 });

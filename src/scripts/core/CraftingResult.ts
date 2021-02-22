@@ -1,6 +1,7 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {ActionType} from "./ActionType";
 import {FabricateResultFlags} from "../game/CompendiumData";
+import {FabricateItem} from "./FabricateItem";
 
 class CraftingResult extends FabricateItem {
     private readonly _item: CraftingComponent;

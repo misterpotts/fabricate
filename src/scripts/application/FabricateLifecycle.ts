@@ -3,8 +3,9 @@ import {CraftingTab} from "../interface/CraftingTab";
 import {InventoryRegistry} from "../registries/InventoryRegistry";
 import {Inventory} from "../game/Inventory";
 import {EssenceTypeIconConverter} from "../core/EssenceType";
-import {CraftingSystem} from "../core/CraftingSystem";
 import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
+import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
+import Properties from "../Properties";
 
 class FabricateLifecycle {
 
@@ -79,8 +80,8 @@ class FabricateLifecycle {
 
     }
 
-    public static registerCraftingSystemSettings(systemSpec: CraftingSystem.Builder) {
-        game.settings.register("fabricate", systemSpec.compendiumPackKey + ".enabled", {
+    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification) {
+        game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey), {
             name: systemSpec.name,
             hint: systemSpec.enableHint,
             scope: "world",

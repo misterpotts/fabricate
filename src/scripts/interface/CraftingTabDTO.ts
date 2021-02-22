@@ -3,27 +3,10 @@ import {Inventory} from "../game/Inventory";
 import {Recipe} from "../core/Recipe";
 import {InventoryRecord} from "../game/InventoryRecord";
 import Properties from "../Properties";
-import {InventoryRecordData} from "./CraftingTab";
+import {CraftingComponent} from "../core/CraftingComponent";
+import {CraftingSystemData, CraftingSystemInfo, InventoryRecordData, RecipeData} from "./InterfaceDataTypes";
 
-interface CraftingSystemData {
-    selectedSystemId: string;
-    hasEnabledSystems: boolean;
-    systems: CraftingSystemInfo[];
-}
 
-interface CraftingSystemInfo {
-    disabled: boolean;
-    compendiumPackKey: string;
-    name: string;
-    selected: boolean;
-}
-
-interface RecipeData {
-    name: string;
-    entryId: string;
-    known: boolean;
-    craftable: boolean;
-}
 
 interface InventoryContents {
     ownedComponents: InventoryRecordData[];
@@ -115,8 +98,8 @@ class CraftingTabDTO {
         craftingSystem.recipes.forEach((recipe: Recipe) =>
             recipeData.push({
                 name: recipe.name,
-                entryId: recipe.entryId,
-                known: knownRecipes.includes(recipe.entryId),
+                entryId: recipe.partId,
+                known: knownRecipes.includes(recipe.partId),
                 craftable: inventory.hasAllIngredientsFor(recipe)
             })
         );
@@ -128,13 +111,13 @@ class CraftingTabDTO {
             ownedComponents: [],
             preparedComponents: []
         }
-        inventory.contents.filter((inventoryRecord: InventoryRecord) => inventoryRecord.componentType.compendiumEntry.compendiumKey === craftingSystem.compendiumPackKey)
-            .forEach((inventoryRecord: InventoryRecord) => {
+        inventory.components.filter((inventoryRecord: InventoryRecord<CraftingComponent>) => inventoryRecord.fabricateItem.systemId === craftingSystem.compendiumPackKey)
+            .forEach((inventoryRecord: InventoryRecord<CraftingComponent>) => {
                 inventoryContents.ownedComponents.push({
-                    name: inventoryRecord.componentType.name,
-                    entryId: inventoryRecord.componentType.compendiumEntry.entryId,
+                    name: inventoryRecord.fabricateItem.name,
+                    entryId: inventoryRecord.fabricateItem.partId,
                     quantity: inventoryRecord.totalQuantity,
-                    imageUrl: inventoryRecord.componentType.imageUrl
+                    imageUrl: inventoryRecord.fabricateItem.imageUrl
                 });
             });
         const savedHopperContents: InventoryRecordData[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.hopperForSystem(craftingSystem.compendiumPackKey));

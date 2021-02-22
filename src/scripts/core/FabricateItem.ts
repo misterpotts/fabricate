@@ -31,3 +31,5 @@ abstract class FabricateItem {
         return this.partId && this.partId.length > 0 && this.systemId && this.systemId.length > 0;
     }
 }
+
+export {FabricateItem}

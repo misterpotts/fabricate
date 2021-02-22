@@ -26,6 +26,11 @@ const Properties = {
             systemId: 'identity.systemId',
             fabricateItemType: 'type',
         }
+    },
+    settingsKeys: {
+        craftingSystem: {
+            enabled: (systemId: string) => `${systemId}.enabled`
+        }
     }
 };
 

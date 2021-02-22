@@ -5,9 +5,9 @@ import {AlchemicalResultSet} from "../../core/AlchemicalResultSet";
 import {EssenceCombiner} from "../../core/EssenceCombiner";
 import {DefaultEssenceCombiner5E} from "../../dnd5e/DefaultEssenceCombiner5E";
 import {EssenceCombiningFabricator} from "../../core/Fabricator";
-import {CraftingSystem} from "../../core/CraftingSystem";
 import {GameSystemType} from "../../core/GameSystemType";
 import {CraftingComponent} from "../../core/CraftingComponent";
+import {CraftingSystemSpecification} from "../../core/CraftingSystemSpecification";
 
 const blinding: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
     .withEssenceCombination(['EARTH', 'EARTH'])
@@ -103,18 +103,23 @@ const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.bu
     .withResultantItem(CraftingComponent.builder()
         .withName('Alchemical Bomb')
         .withImageUrl('systems/dnd5e/icons/items/inventory/bomb.jpg')
-        .withCompendiumEntry('fabricate.alchemists-supplies-v11', '90z9nOwmGnP4aUUk')
+        .withPartId('90z9nOwmGnP4aUUk')
+        .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences([])
         .build())
     .build();
 
 const fabricator: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
 
-const AlchemistsSuppliesSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
+const AlchemistsSuppliesSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
     .withName('Alchemist\'s Supplies v1.1')
     .withCompendiumPackKey('fabricate.alchemists-supplies-v11')
     .withEnableHint('Enable the Alchemist\'s Supplies v1.1 crafting system by /u/calculusChild?')
+    .withDescription('Alchemy is the skill of exploiting unique properties of certain plants, minerals, and ' +
+        'creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic ' +
+        'minor magical effects, although the creations themselves are nonmagical.')
     .withSupportedGameSystem(GameSystemType.DND5E)
-    .withFabricator(fabricator);
+    .withFabricator(fabricator)
+    .build();
 
 export {AlchemistsSuppliesSystemSpec};

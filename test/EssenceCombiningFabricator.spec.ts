@@ -15,64 +15,75 @@ describe('Essence Combining Fabricator |', () => {
 
     const ironwoodHeart: CraftingComponent = CraftingComponent.builder()
         .withName('Ironwood Heart')
-        .withCompendiumEntry('alchemists-supplies-v11', '345xyz')
+        .withPartId('345xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['EARTH', 'EARTH'])
         .build();
     const hydrathistle: CraftingComponent = CraftingComponent.builder()
         .withName('Hydrathistle')
-        .withCompendiumEntry('alchemists-supplies-v11', '789xyz')
+        .withPartId('789xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['WATER', 'WATER'])
         .build();
     const voidroot: CraftingComponent = CraftingComponent.builder()
         .withName('Voidroot')
-        .withCompendiumEntry('alchemists-supplies-v11', '891xyz')
+        .withPartId('891xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['NEGATIVE_ENERGY'])
         .build();
 
     const luminousCapDust: CraftingComponent = CraftingComponent.builder()
         .withName('Luminous Cap Dust')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a23xyz')
+        .withPartId('a23xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['FIRE', 'AIR'])
         .build();
     const wispStalks: CraftingComponent = CraftingComponent.builder()
         .withName('Wisp Stalks')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a34xyz')
+        .withPartId('a34xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['AIR', 'AIR'])
         .build();
     const fennelSilk: CraftingComponent = CraftingComponent.builder()
         .withName('Fennel Silk')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a45xyz')
+        .withPartId('a45xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['FIRE'])
         .build();
 
     const wrackwortBulbs: CraftingComponent = CraftingComponent.builder()
         .withName('Wrackwort Bulbs')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a56xyz')
+        .withPartId('a56xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['EARTH', 'FIRE'])
         .build();
     const radiantSynthSeed: CraftingComponent = CraftingComponent.builder()
         .withName('Radiant Synthseed')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a67xyz')
+        .withPartId('a67xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['POSITIVE_ENERGY'])
         .build();
 
 
     const instantRope: CraftingComponent = CraftingComponent.builder()
         .withName('Instant Rope')
-        .withCompendiumEntry('alchemists-supplies-v11', '234xyz')
+        .withPartId('234xyz')
+        .withSystemId('alchemists-supplies-v11')
         .build();
     const acid: CraftingComponent = CraftingComponent.builder()
         .withName('Acid')
-        .withCompendiumEntry('alchemists-supplies-v11', '678xyz')
+        .withPartId('678xyz')
+        .withSystemId('alchemists-supplies-v11')
         .build();
     const flashbang: CraftingComponent = CraftingComponent.builder()
         .withName('Flashbang')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a12xyz')
+        .withPartId('a12xyz')
+        .withSystemId('alchemists-supplies-v11')
         .build();
 
     const instantRopeRecipe: Recipe = Recipe.builder()
         .withName('Recipe: Instant Rope')
-        .withEntryId('123xyz')
+        .withPartId('123xyz')
         .withEssences(['EARTH', 'EARTH', 'WATER', 'WATER', 'NEGATIVE_ENERGY'])
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
@@ -82,7 +93,7 @@ describe('Essence Combining Fabricator |', () => {
         .build();
     const acidRecipe: Recipe = Recipe.builder()
         .withName('Recipe: Acid')
-        .withEntryId('456xyz')
+        .withPartId('456xyz')
         .withEssences(['EARTH', 'FIRE', 'POSITIVE_ENERGY'])
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
@@ -92,7 +103,7 @@ describe('Essence Combining Fabricator |', () => {
         .build();
     const flashbangRecipe: Recipe = Recipe.builder()
         .withName('Recipe: Flashbang')
-        .withEntryId('912xyz')
+        .withPartId('912xyz')
         .withEssences(['FIRE', 'AIR', 'AIR'])
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
@@ -111,7 +122,7 @@ describe('Essence Combining Fabricator |', () => {
             expect(result, 'List of recipes was null!').to.exist;
             expect(result.length, 'Expected one craftable recipe').to.equal(1);
             const resultRecipe: Recipe = result[0];
-            expect(resultRecipe.entryId, 'Expected Instant Rope to be the only craftable recipe').to.equal(instantRopeRecipe.entryId);
+            expect(resultRecipe.partId, 'Expected Instant Rope to be the only craftable recipe').to.equal(instantRopeRecipe.partId);
 
         });
 
@@ -227,7 +238,8 @@ describe('Essence Combining Fabricator |', () => {
                 .withResultantItem(CraftingComponent.builder()
                     .withName('Alchemical Bomb')
                     .withImageUrl('systems/dnd5e/icons/items/inventory/bomb.jpg')
-                    .withCompendiumEntry('fabricate.alchemists-supplies-v11', '90z9nOwmGnP4aUUk')
+                    .withPartId('90z9nOwmGnP4aUUk')
+                    .withSystemId('fabricate.alchemists-supplies-v11')
                     .withEssences([])
                     .build())
                 .build();
@@ -238,8 +250,8 @@ describe('Essence Combining Fabricator |', () => {
             const addResults = results.filter((craftingResult: CraftingResult) => craftingResult.action === ActionType.ADD);
             expect(addResults.length).to.equal(1);
             const addResult: CraftingResult = addResults[0];
-            expect(addResult.item.compendiumEntry.systemId).to.equal('fabricate.alchemists-supplies-v11');
-            expect(addResult.item.compendiumEntry.partId).to.equal('90z9nOwmGnP4aUUk');
+            expect(addResult.item.systemId).to.equal('fabricate.alchemists-supplies-v11');
+            expect(addResult.item.partId).to.equal('90z9nOwmGnP4aUUk');
             expect(addResult.quantity).to.equal(1);
             expect(addResult.action).to.equal(ActionType.ADD);
 
