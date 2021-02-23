@@ -2,9 +2,6 @@ import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
 import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingSystem} from "../core/CraftingSystem";
-import {Ingredient} from "../core/Ingredient";
-import {CraftingComponent} from "../core/CraftingComponent";
-import {CraftingResult} from "../core/CraftingResult";
 
 class ItemRecipeTab {
     private static readonly recipeType: string = Properties.types.recipe;
@@ -34,16 +31,9 @@ class ItemRecipeTab {
     constructor(itemApplication: any) {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
-        this._recipe = Recipe.fromFlags(itemApplication.item.data.flags.fabricate);
-        this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
-        this._recipe.ingredients.forEach((ingredient: Ingredient) => {
-            const component: CraftingComponent = ingredient.component;
-            component.imageUrl = this._craftingSystem.getComponentByPartId(component.compendiumEntry.partId).imageUrl;
-        });
-        this._recipe.results.forEach((result: CraftingResult) => {
-            const component: CraftingComponent = result.component;
-            component.imageUrl = this._craftingSystem.getComponentByPartId(component.compendiumEntry.partId).imageUrl;
-        });
+        const partId: string = itemApplication.item.data.flags.fabricate.identity.partId;
+        this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(partId);
+        this._recipe = this._craftingSystem.getRecipeByPartId(partId);
     }
 
     private init(sheetHtml: any) {
