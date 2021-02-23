@@ -3702,12 +3702,9 @@
       "flags":{
         "fabricate":{
           "type":"COMPONENT",
-          "component":{
-            "name":"Mud",
-            "compendiumEntry":{
-              "compendiumKey":"fabricate.fabricate-test",
-              "entryId":"tCmAnq9zcESt0ULf"
-            }
+          "identity": {
+            "systemId":"fabricate.fabricate-test",
+            "partId":"tCmAnq9zcESt0ULf"
           }
         },
         "core":{
@@ -3792,12 +3789,9 @@
       "flags":{
         "fabricate":{
           "type":"COMPONENT",
-          "component":{
-            "name":"Mud",
-            "compendiumEntry":{
-              "compendiumKey":"fabricate.fabricate-test",
-              "entryId":"tCmAnq9zcESt0ULf"
-            }
+          "identity": {
+            "systemId":"fabricate.fabricate-test",
+            "partId":"tCmAnq9zcESt0ULf"
           }
         },
         "core":{
@@ -3882,12 +3876,9 @@
       "flags":{
         "fabricate":{
           "type":"COMPONENT",
-          "component":{
-            "name":"Sticks",
-            "compendiumEntry":{
-              "compendiumKey":"fabricate.fabricate-test",
-              "entryId":"arWeEYkLkubimBz3"
-            }
+          "identity": {
+            "systemId":"fabricate.fabricate-test",
+            "partId":"arWeEYkLkubimBz3"
           }
         },
         "core":{
@@ -3972,44 +3963,29 @@
       "flags":{
         "fabricate":{
           "type":"RECIPE",
+          "identity": {
+            "partId":"z9y2U9ZfCEBN0rW6",
+            "systemId":"fabricate.fabricate-test"
+          },
           "recipe":{
-            "entryId":"4iHqWSLTMFjPbpuI",
-            "name":"Recipe: Mud Pie",
             "ingredients":[
               {
-                "componentType":{
-                  "name":"Mud",
-                  "compendiumEntry":{
-                    "compendiumKey":"fabricate.fabricate-test",
-                    "entryId":"tCmAnq9zcESt0ULf"
-                  }
-                },
-                "data": {"quantity":2},
+                "partId":"tCmAnq9zcESt0ULf",
+                "quantity":2,
                 "consumed":true
               },
               {
-                "componentType":{
-                  "name":"Sticks",
-                  "compendiumEntry":{
-                    "compendiumKey":"fabricate.fabricate-test",
-                    "entryId":"arWeEYkLkubimBz3"
-                  }
-                },
-                "data": {"quantity":1},
+                "partId": "arWeEYkLkubimBz3",
+                "quantity":1,
                 "consumed":true
               }
             ],
+            "essences": [],
             "results":[
               {
                 "action":"ADD",
-                "item":{
-                  "name":"Mud Pie",
-                  "compendiumEntry":{
-                    "compendiumKey":"fabricate.fabricate-test",
-                    "entryId":"nWhTa8gD1QL1f9O3"
-                  }
-                },
-                "data": {"quantity":1}
+                "partId":"nWhTa8gD1QL1f9O3",
+                "quantity":1
               }
             ]
           }
@@ -4096,12 +4072,9 @@
       "flags":{
         "fabricate":{
           "type":"COMPONENT",
-          "component":{
-            "name":"Mud Pie",
-            "compendiumEntry":{
-              "compendiumKey":"fabricate.fabricate-test",
-              "entryId":"4iHqWSLTMFjPbpuI"
-            }
+          "identity": {
+            "systemId":"fabricate.fabricate-test",
+            "partId":"4iHqWSLTMFjPbpuI"
           }
         }
       },
@@ -4183,12 +4156,9 @@
       "flags":{
         "fabricate":{
           "type":"COMPONENT",
-          "component":{
-            "name":"Wax",
-            "compendiumEntry":{
-              "compendiumKey":"fabricate.fabricate-test",
-              "entryId":"DPYl8D5QtcRVH5YX"
-            }
+          "identity": {
+            "systemId":"fabricate.fabricate-test",
+            "partId":"DPYl8D5QtcRVH5YX"
           }
         },
         "core":{
@@ -4273,12 +4243,9 @@
       "flags":{
         "fabricate":{
           "type":"COMPONENT",
-          "component":{
-            "name":"Wax",
-            "compendiumEntry":{
-              "compendiumKey":"fabricate.fabricate-test",
-              "entryId":"DPYl8D5QtcRVH5YX"
-            }
+          "identity": {
+            "systemId":"fabricate.fabricate-test",
+            "partId":"DPYl8D5QtcRVH5YX"
           }
         },
         "core":{

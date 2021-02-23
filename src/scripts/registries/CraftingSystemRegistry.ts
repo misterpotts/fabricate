@@ -10,13 +10,12 @@ class CraftingSystemRegistry {
 
     private static _craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private static _craftingSystemsByRecipeId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
-    private static _systemSpecifications: CraftingSystemSpecification[] = [];
+    private static _systemSpecifications: CraftingSystemSpecification[] = CraftingSystemRegistry.staticSystemSpecifications();
 
     constructor() {
         if (CraftingSystemRegistry._instance) {
             throw new Error('CraftingSystemRegistry is a singleton. Use `CraftingSystemRegistry.getInstance()` instead. ');
         }
-        CraftingSystemRegistry._systemSpecifications = CraftingSystemRegistry.staticSystemSpecifications();
     }
 
     public static getInstance(): CraftingSystemRegistry {

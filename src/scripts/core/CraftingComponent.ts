@@ -2,27 +2,15 @@ import {CompendiumEntry, FabricateCompendiumData, FabricateItemType} from "../ga
 import {FabricateItem} from "./FabricateItem";
 
 class CraftingComponent extends FabricateItem {
-    private readonly _name: string;
     private readonly _essences: string[];
-    private readonly _imageUrl: string;
 
     constructor(builder: CraftingComponent.Builder) {
-        super(builder.systemId, builder.partId);
-        this._name = builder.name;
+        super(builder.systemId, builder.partId, builder.imageUrl, builder.name);
         this._essences = builder.essences;
-        this._imageUrl = builder.imageUrl;
-    }
-
-    get name(): string {
-        return this._name;
     }
 
     get essences(): string[] {
         return this._essences;
-    }
-
-    get imageUrl(): string {
-        return this._imageUrl;
     }
 
     public static builder() {
@@ -55,7 +43,6 @@ class CraftingComponent extends FabricateItem {
 
     public isValid(): boolean {
         return (this.name != null && this.name.length > 0)
-            && (this.imageUrl != null && this.imageUrl.length > 0)
             && (this.essences != null)
             && super.isValid();
     }

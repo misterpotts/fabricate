@@ -4,14 +4,14 @@ import {FabricateResultFlags} from "../game/CompendiumData";
 import {FabricateItem} from "./FabricateItem";
 
 class CraftingResult extends FabricateItem {
-    private readonly _item: CraftingComponent;
+    private readonly _component: CraftingComponent;
     private readonly _quantity: number;
     private readonly _action: ActionType;
     private readonly _customData: any;
 
     constructor(builder: CraftingResult.Builder) {
-        super(builder.item.systemId, builder.item.partId);
-        this._item = builder.item;
+        super(builder.component.systemId, builder.component.partId, builder.component.imageUrl, builder.component.name);
+        this._component = builder.component;
         this._quantity = builder.quantity;
         this._action = builder.action;
         this._customData = builder.customData;
@@ -21,8 +21,8 @@ class CraftingResult extends FabricateItem {
         return new CraftingResult.Builder();
     }
 
-    get item(): CraftingComponent {
-        return this._item;
+    get component(): CraftingComponent {
+        return this._component;
     }
 
     get quantity(): number {
@@ -41,7 +41,7 @@ class CraftingResult extends FabricateItem {
         return this.builder()
             .withAction(flags.action)
             .withQuantity(flags.quantity)
-            .withItem(CraftingComponent.builder()
+            .withComponent(CraftingComponent.builder()
                 .withSystemId(systemId)
                 .withPartId(flags.partId)
                 .build())
@@ -56,20 +56,20 @@ class CraftingResult extends FabricateItem {
         return (this.quantity != null && this.quantity > 0)
             && (this.action != null)
             && (this.action == ActionType.ADD || this.action == ActionType.REMOVE)
-            && this.item.isValid()
+            && this.component.isValid()
             && super.isValid();
     }
 }
 
 namespace CraftingResult {
     export class Builder {
-        public item!: CraftingComponent;
+        public component!: CraftingComponent;
         public quantity!: number;
         public action!: ActionType;
         public customData: any;
 
-        public withItem(value: CraftingComponent): Builder {
-            this.item = value;
+        public withComponent(value: CraftingComponent): Builder {
+            this.component = value;
             return this;
         }
 

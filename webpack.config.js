@@ -21,5 +21,8 @@ module.exports = {
         ]
     },
     plugins: [],
-    devtool: 'eval-source-map'
+    devtool: 'eval-source-map',
+    node: {
+        fs: "empty"
+    }
 };

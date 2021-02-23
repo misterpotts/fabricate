@@ -6,17 +6,28 @@ import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingResult} from "../src/scripts/core/CraftingResult";
-import {FabricateItemType} from "../src/scripts/game/CompendiumData";
+import {FabricateCompendiumData} from "../src/scripts/game/CompendiumData";
+import Properties from "../src/scripts/Properties";
+import {CraftingSystemRegistry} from "../src/scripts/registries/CraftingSystemRegistry";
+import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
+import {SinonSandbox} from "sinon";
+
+const Sandbox: SinonSandbox = Sinon.createSandbox();
 
 const rawTestData = require('./resources/inventory-5e-actor-items-values.json');
 const testData = rawTestData.map((item: any) => {
-    item.getFlag = Sinon.stub();
+    item.getFlag = Sandbox.stub();
     if (item.data.flags.fabricate) {
-        if (item.data.flags.fabricate.type === FabricateItemType.COMPONENT) {
-            item.getFlag.withArgs('fabricate', 'component.compendiumEntry.entryId').returns(item.data.flags.fabricate.component.compendiumEntry.entryId);
-        }
+        const flags: FabricateCompendiumData = item.data.flags.fabricate;
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(flags.identity);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.partId).returns(flags.identity.partId);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.systemId).returns(flags.identity.systemId);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(flags.type);
     } else {
-        item.getFlag.withArgs('fabricate', 'component.compendiumEntry.entryId').returns(undefined);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(undefined);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.partId).returns(undefined);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.systemId).returns(undefined);
+        item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(undefined);
     }
     return item;
 });
@@ -42,22 +53,55 @@ const dung: CraftingComponent = CraftingComponent.builder()
     .withSystemId('fabricate.fabricate-test')
     .withPartId('Ra2Z1ujre76weR0i')
     .build();
+const mudPie: CraftingComponent = CraftingComponent.builder()
+    .withName('Mud Pie')
+    .withSystemId('fabricate.fabricate-test')
+    .withPartId('4iHqWSLTMFjPbpuI')
+    .build();
+const mudPieRecipe: Recipe = Recipe.builder()
+    .withName('Recipe: Mud Pie')
+    .withSystemId('fabricate.fabricate-test')
+    .withPartId('z9y2U9ZfCEBN0rW6')
+    .build();
 
+before(() => {
+    const dummyCraftingSystem: CraftingSystem = <CraftingSystem><unknown>{
+        getComponentByPartId: Sandbox.stub(),
+        getRecipeByPartId: Sandbox.stub(),
+    };
+    // @ts-ignore
+    dummyCraftingSystem.getComponentByPartId.withArgs('tCmAnq9zcESt0ULf').returns(mud);
+    // @ts-ignore
+    dummyCraftingSystem.getComponentByPartId.withArgs('arWeEYkLkubimBz3').returns(sticks);
+    // @ts-ignore
+    dummyCraftingSystem.getComponentByPartId.withArgs('4iHqWSLTMFjPbpuI').returns(mudPie);
+    // @ts-ignore
+    dummyCraftingSystem.getComponentByPartId.withArgs('DPYl8D5QtcRVH5YX').returns(wax);
+    // @ts-ignore
+    dummyCraftingSystem.getRecipeByPartId.withArgs('z9y2U9ZfCEBN0rW6').returns(mudPieRecipe);
+
+    Sandbox.stub(CraftingSystemRegistry, 'getSystemByCompendiumPackKey').withArgs('fabricate.fabricate-test').returns(dummyCraftingSystem);
+});
+
+after(() => {
+    Sandbox.restore();
+    Sandbox.stub(CraftingSystemRegistry, 'getSystemByCompendiumPackKey').callThrough();
+});
 
 beforeEach(() => {
     // @ts-ignore
     global.game = {
         packs: {
-            get: Sinon.stub()
+            get: Sandbox.stub()
         }
     };
     const compendium = {
-        getEntity: Sinon.stub()
+        getEntity: Sandbox.stub()
     };
     // @ts-ignore
     game.packs.get.withArgs(compendiumPackKey).returns(compendium);
-    compendium.getEntity.withArgs('DPYl8D5QtcRVH5YX').returns({});
-    compendium.getEntity.withArgs('Ra2Z1ujre76weR0i').returns({});
+    compendium.getEntity.withArgs('DPYl8D5QtcRVH5YX').returns({data:{data:{}}});
+    compendium.getEntity.withArgs('Ra2Z1ujre76weR0i').returns({data:{data:{}}});
 });
 
 describe('Inventory5E |', () => {
@@ -79,8 +123,8 @@ describe('Inventory5E |', () => {
                 }
             };
             const actorId = 'lxQTQkhiymhGyjzx';
-            Sinon.stub(mockActor.items, 'values').returns(testData);
-            Sinon.stub(mockActor, 'id').value(actorId);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor, 'id').value(actorId);
 
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
@@ -88,7 +132,9 @@ describe('Inventory5E |', () => {
             expect(underTest.supportedGameSystems).to.include.members([GameSystemType.DND5E]);
             expect(underTest.supportsGameSystem(GameSystemType.DND5E)).to.be.true;
             expect(underTest.actorId).to.equal(actorId);
-            expect(underTest.size).to.equal(4);
+            expect(underTest.size).to.equal(5);
+            expect(underTest.components.length).to.equal(4);
+            expect(underTest.recipes.length).to.equal(1);
 
             const craftingComponents: CraftingComponent[] = underTest.denormalizedContainedComponents();
             expect(craftingComponents.length).to.equal(15);
@@ -105,9 +151,9 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                createEmbeddedEntity: Sinon.stub()
+                createEmbeddedEntity: Sandbox.stub()
             };
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.createEmbeddedEntity.returns({data: {quantity: 1}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
@@ -116,7 +162,7 @@ describe('Inventory5E |', () => {
                 .withComponent(dung)
                 .build();
 
-            const initialContents = underTest.contents;
+            const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
             const initialComponentCount = underTest.denormalizedContainedComponents().length;
@@ -127,7 +173,7 @@ describe('Inventory5E |', () => {
 
             await underTest.add(dung);
 
-            const postAddOneContents = underTest.contents;
+            const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(5);
 
             const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
@@ -145,9 +191,9 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                createEmbeddedEntity: Sinon.stub()
+                createEmbeddedEntity: Sandbox.stub()
             };
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.createEmbeddedEntity.returns({data: { quantity: 2}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
@@ -157,7 +203,7 @@ describe('Inventory5E |', () => {
                 .withComponent(dung)
                 .build();
 
-            const initialContents = underTest.contents;
+            const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
             const initialComponentCount = underTest.denormalizedContainedComponents().length;
@@ -165,7 +211,7 @@ describe('Inventory5E |', () => {
 
             await underTest.add(dung, TWO);
 
-            const postAddOneContents = underTest.contents;
+            const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(5);
 
             const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
@@ -181,9 +227,9 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                updateEmbeddedEntity: Sinon.stub()
+                updateEmbeddedEntity: Sandbox.stub()
             };
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.updateEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
@@ -197,7 +243,7 @@ describe('Inventory5E |', () => {
                 .withComponent(mud)
                 .build();
 
-            const initialContents = underTest.contents;
+            const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
             const initialComponentCount = underTest.denormalizedContainedComponents().length;
@@ -211,7 +257,7 @@ describe('Inventory5E |', () => {
 
             await underTest.add(mud, TWO);
 
-            const postAddOneContents = underTest.contents;
+            const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(4);
 
             const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
@@ -232,9 +278,9 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                deleteEmbeddedEntity: Sinon.stub()
+                deleteEmbeddedEntity: Sandbox.stub()
             };
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.deleteEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
@@ -248,7 +294,7 @@ describe('Inventory5E |', () => {
                 .withComponent(mud)
                 .build();
 
-            const initialContents = underTest.contents;
+            const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
             const initialComponentCount = underTest.denormalizedContainedComponents().length;
@@ -259,7 +305,7 @@ describe('Inventory5E |', () => {
 
             await underTest.remove(mud);
 
-            const postRemoveOneContents = underTest.contents;
+            const postRemoveOneContents = underTest.components;
             expect(postRemoveOneContents.length).to.equal(4);
 
             const postRemoveOneComponentCount = underTest.denormalizedContainedComponents().length;
@@ -280,9 +326,9 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                updateEmbeddedEntity: Sinon.stub()
+                updateEmbeddedEntity: Sandbox.stub()
             };
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.updateEmbeddedEntity.returns({});
             const underTest: Inventory5E = new Inventory5E(mockActor);
@@ -296,7 +342,7 @@ describe('Inventory5E |', () => {
                 .withComponent(sticks)
                 .build();
 
-            const initialContents = underTest.contents;
+            const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
             const initialComponentCount = underTest.denormalizedContainedComponents().length;
@@ -307,7 +353,7 @@ describe('Inventory5E |', () => {
 
             await underTest.remove(sticks);
 
-            const postRemoveOneContents = underTest.contents;
+            const postRemoveOneContents = underTest.components;
             expect(postRemoveOneContents.length).to.equal(4);
 
             const postRemoveOneComponentCount = underTest.denormalizedContainedComponents().length;
@@ -328,10 +374,10 @@ describe('Inventory5E |', () => {
                 items: {
                     values: () => {}
                 },
-                updateEmbeddedEntity: Sinon.stub(),
-                deleteEmbeddedEntity: Sinon.stub()
+                updateEmbeddedEntity: Sandbox.stub(),
+                deleteEmbeddedEntity: Sandbox.stub()
             };
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
             mockActor.updateEmbeddedEntity.returns({});
             // @ts-ignore
@@ -347,7 +393,7 @@ describe('Inventory5E |', () => {
                 .withComponent(wax)
                 .build();
 
-            const initialContents = underTest.contents;
+            const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
             const initialComponentCount = underTest.denormalizedContainedComponents().length;
@@ -358,7 +404,7 @@ describe('Inventory5E |', () => {
 
             await underTest.remove(wax, 7);
 
-            const postRemoveSevenContents = underTest.contents;
+            const postRemoveSevenContents = underTest.components;
             expect(postRemoveSevenContents.length).to.equal(4);
 
             const postRemoveSevenComponentCount = underTest.denormalizedContainedComponents().length;
@@ -397,7 +443,7 @@ describe('Inventory5E |', () => {
                     .build())
                 .withResult(CraftingResult.builder()
                     .withQuantity(1)
-                    .withItem(CraftingComponent.builder()
+                    .withComponent(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withPartId('3')
                         .withSystemId('compendium')
@@ -413,7 +459,7 @@ describe('Inventory5E |', () => {
             };
 
             // @ts-ignore
-            Sinon.stub(mockActor.items, 'values').returns([]);
+            Sandbox.stub(mockActor.items, 'values').returns([]);
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const resultFromEmpty = underTest.hasAllIngredientsFor(mudPieRecipe);
@@ -436,7 +482,7 @@ describe('Inventory5E |', () => {
                     .build())
                 .withResult(CraftingResult.builder()
                     .withQuantity(1)
-                    .withItem(CraftingComponent.builder()
+                    .withComponent(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withPartId('3')
                         .withSystemId('compendium')
@@ -451,7 +497,7 @@ describe('Inventory5E |', () => {
                 }
             };
 
-            Sinon.stub(mockActor.items, 'values').returns(testData);
+            Sandbox.stub(mockActor.items, 'values').returns(testData);
             const underTest: Inventory5E = new Inventory5E(mockActor);
             const resultWhenFull = underTest.hasAllIngredientsFor(mudPieRecipe);
             expect(resultWhenFull).to.be.true;

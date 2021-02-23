@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import * as fs from 'fs'
 
 import {CraftingSystem} from "./CraftingSystem";
 import {CraftingSystemSpecification} from "./CraftingSystemSpecification";
@@ -8,6 +8,7 @@ import {Ingredient} from "./Ingredient";
 import {CraftingResult} from "./CraftingResult";
 import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 import Properties from "../Properties";
+import {FabricateItem} from "./FabricateItem";
 
 interface CraftingSystemFactory {
     systemSpecification: CraftingSystemSpecification;
@@ -47,7 +48,7 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
             const populatedIngredients: Ingredient[] = recipe.ingredients.map((ingredient: Ingredient) => {
                 const craftingComponent = componentDictionary.get(ingredient.partId);
                 if (!craftingComponent) {
-                    recipeErrors.push(`Recipe ${recipe.name} with ID ${recipe.partId} specified an Ingredient that was not found in the Crafting System: ${ingredient.compendiumEntry}.`);
+                    throw new Error(`Recipe ${recipe.name} with ID ${recipe.partId} specified an Ingredient that was not found in the Crafting System: ${ingredient.compendiumEntry}.`);
                 }
                 return Ingredient.builder()
                     .withComponent(craftingComponent)
@@ -57,11 +58,11 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
             const populatedCraftingResults = recipe.results.map((result: CraftingResult) => {
                 const craftingComponent = componentDictionary.get(result.partId);
                 if (!craftingComponent) {
-                    recipeErrors.push(`Recipe ${recipe.name} with ID ${recipe.partId} specified a Result that was not found in the Crafting System: ${result.compendiumEntry}.`);
+                    throw new Error(`Recipe ${recipe.name} with ID ${recipe.partId} specified a Result that was not found in the Crafting System: ${result.compendiumEntry}.`);
                 }
                 return CraftingResult.builder()
                     .withAction(result.action)
-                    .withItem(craftingComponent)
+                    .withComponent(craftingComponent)
                     .withQuantity(result.quantity)
                     .withCustomData(result.customData)
                     .build();
@@ -115,7 +116,7 @@ class CompendiumImportingCraftingSystemFactory extends AbstractCraftingSystemFac
                     systemData.components.push(CraftingComponent.fromFlags(itemConfig, item.name, item.img));
                     break;
                 case FabricateItemType.RECIPE:
-                    systemData.recipes.push(Recipe.fromFlags(itemConfig, item.name));
+                    systemData.recipes.push(Recipe.fromFlags(itemConfig, item.name, item.img));
                     break;
                 default:
                     throw new Error(`${Properties.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `);
@@ -179,7 +180,7 @@ class FileReadingCraftingSystemFactory extends AbstractCraftingSystemFactory {
     }
 
     private async readFile(path: string): Promise<string[]> {
-        const contents = await readFile(path, 'utf-8');
+        const contents = await fs.promises.readFile(path, 'utf-8');
         return contents.split('\n');
     }
 
@@ -213,19 +214,47 @@ class FileReadingCraftingSystemFactory extends AbstractCraftingSystemFactory {
                 this.recordError(lineNumber, `Flag data was present, but no Fabricate flags were set. `);
                 return;
             }
+            if (!fabricateFlags.identity) {
+                this.recordError(lineNumber, `Flag data was present, but no Fabricate Item identity was set. `);
+                return;
+            }
+            if (!fabricateFlags.identity.partId || !fabricateFlags.identity.systemId) {
+                this.recordError(lineNumber, `An invalid Fabricate Item identity was set with Part ID '${fabricateFlags.identity.partId}' and System ID '${fabricateFlags.identity.systemId}' `);
+                return;
+            }
+            let fabricateItem: FabricateItem;
             switch (fabricateFlags.type) {
                 case FabricateItemType.COMPONENT:
+                    if (!fabricateFlags.component) {
+                        this.recordError(lineNumber, `No Component definition was provided. `);
+                        return;
+                    }
                     const craftingComponent: CraftingComponent = CraftingComponent.fromFlags(fabricateFlags, json.name, json.img);
+                    fabricateItem = craftingComponent;
                     systemData.components.push(craftingComponent);
                     break;
                 case FabricateItemType.RECIPE:
-                    const recipe: Recipe = Recipe.fromFlags(fabricateFlags, json.name);
+                    if (!fabricateFlags.recipe) {
+                        this.recordError(lineNumber, `No Recipe definition was provided. `);
+                        return;
+                    }
+                    const recipe: Recipe = Recipe.fromFlags(fabricateFlags, json.name, json.img);
+                    fabricateItem = recipe;
                     systemData.recipes.push(recipe);
                     break;
                 default:
                     this.recordError(lineNumber, `The Fabricate Item type ${fabricateFlags.type} was not 
                         recognized. Allowable values are COMPONENT or RECIPE`);
                     return;
+            }
+            if (fabricateItem.partId !== json._id) {
+                this.recordError(lineNumber, `${fabricateFlags.type} part ID '${fabricateItem.partId}' did not match Compendium Entity ID '${json._id}. '`);
+            }
+            if (fabricateItem.name !== json.name) {
+                this.recordError(lineNumber, `${fabricateFlags.type} name '${fabricateItem.name}' did not match Compendium Entity name '${json.name}. '`);
+            }
+            if (fabricateItem.imageUrl !== json.img) {
+                this.recordError(lineNumber, `${fabricateFlags.type} image URL '${fabricateItem.imageUrl}' did not match Compendium Entity image URL '${json.img}. '`);
             }
         });
         if (this.fileErrorsByLineNumber.size === 0) {

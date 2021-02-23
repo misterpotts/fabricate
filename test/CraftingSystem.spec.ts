@@ -62,7 +62,7 @@ describe('Crafting System |', () => {
                     .withResult(CraftingResult.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
-                        .withItem(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')
                             .withPartId('nWhTa8gD1QL1f9O3')
                             .withSystemId(compendiumKey)
@@ -101,7 +101,7 @@ describe('Crafting System |', () => {
                     .withResult(CraftingResult.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
-                        .withItem(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')
                             .withPartId('nWhTa8gD1QL1f9O3')
                             .withSystemId('fabricate.fabricate-test')
@@ -150,7 +150,7 @@ describe('Crafting System |', () => {
             const mudPie = CraftingResult.builder()
                 .withAction(ActionType.ADD)
                 .withQuantity(1)
-                .withItem(CraftingComponent.builder()
+                .withComponent(CraftingComponent.builder()
                     .withName('Mud Pie')
                     .withPartId('nWhTa8gD1QL1f9O3')
                     .withSystemId(compendiumKey)
@@ -185,7 +185,7 @@ describe('Crafting System |', () => {
             mockInventory.contains.withArgs(oneStick).returns(true);
             // @ts-ignore
             mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
-                .withFabricateItem(mudPie.item)
+                .withFabricateItem(mudPie.component)
                 .withTotalQuantity(mudPie.quantity)
                 .withActor(mockActor)
                 .build());
@@ -195,12 +195,12 @@ describe('Crafting System |', () => {
             mockInventory.denormalizedContainedComponents.returns([]);
 
             const removeOneStick = CraftingResult.builder()
-                .withItem(oneStick.component)
+                .withComponent(oneStick.component)
                 .withQuantity(oneStick.quantity)
                 .withAction(ActionType.REMOVE)
                 .build();
             const removeTwoMud = CraftingResult.builder()
-                .withItem(twoMud.component)
+                .withComponent(twoMud.component)
                 .withQuantity(twoMud.quantity)
                 .withAction(ActionType.REMOVE)
                 .build();

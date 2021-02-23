@@ -17,7 +17,7 @@ class DefaultFabricator implements Fabricator {
 
         let input: CraftingResult[] = recipe.ingredients.map((component) => {
             return CraftingResult.builder()
-                .withItem(component.component)
+                .withComponent(component.component)
                 .withQuantity(component.quantity)
                 .withAction(component.consumed ? ActionType.REMOVE : ActionType.ADD)
                 .build();
@@ -25,7 +25,7 @@ class DefaultFabricator implements Fabricator {
 
         let output: CraftingResult[] = recipe.results.map((result) => {
             return CraftingResult.builder()
-                .withItem(result.item)
+                .withComponent(result.component)
                 .withAction(ActionType.ADD)
                 .withQuantity(result.quantity)
                 .build();
@@ -58,7 +58,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
             .withAction(ActionType.ADD)
             .withQuantity(1)
             .withCustomData(alchemicalResult.asItemData())
-            .withItem(resultantItem)
+            .withComponent(resultantItem)
             .build();
         const craftingResults: CraftingResult[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
         craftingResults.push(addedComponent);

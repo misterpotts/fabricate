@@ -19,7 +19,7 @@ class FabricationHelper {
         if (Object.keys(componentsById).length === components.length) {
             return components.map((component: CraftingComponent) => {
                 return CraftingResult.builder()
-                    .withItem(component)
+                    .withComponent(component)
                     .withQuantity(1)
                     .withAction(action)
                     .build();
@@ -28,7 +28,7 @@ class FabricationHelper {
         const results: CraftingResult[] = [];
         componentsById.forEach((componentsOfType: CraftingComponent[]) => {
             const craftingResult = CraftingResult.builder()
-                .withItem(componentsOfType[0])
+                .withComponent(componentsOfType[0])
                 .withQuantity(componentsOfType.length)
                 .withAction(action)
                 .build();

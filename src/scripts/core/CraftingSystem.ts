@@ -93,13 +93,13 @@ class CraftingSystem {
             switch (craftingResult.action) {
                 case ActionType.ADD:
                     if (craftingResult.customData) {
-                        await inventory.add(craftingResult.item, craftingResult.quantity, craftingResult.customData);
+                        await inventory.add(craftingResult.component, craftingResult.quantity, craftingResult.customData);
                     } else {
-                        await inventory.add(craftingResult.item, craftingResult.quantity);
+                        await inventory.add(craftingResult.component, craftingResult.quantity);
                     }
                     break;
                 case ActionType.REMOVE:
-                    await inventory.remove(craftingResult.item, craftingResult.quantity);
+                    await inventory.remove(craftingResult.component, craftingResult.quantity);
                     break;
                 default:
                     throw new Error(`The Crafting Action Type ${craftingResult.action} is not supported. Allowable 

@@ -112,9 +112,9 @@ const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.bu
 const fabricator: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
 
 const AlchemistsSuppliesSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
-    .withName('Alchemist\'s Supplies v1.1')
-    .withCompendiumPackKey('fabricate.alchemists-supplies-v11')
-    .withEnableHint('Enable the Alchemist\'s Supplies v1.1 crafting system by /u/calculusChild?')
+    .withName('Alchemist\'s Supplies v1.6')
+    .withCompendiumPackKey('fabricate.alchemists-supplies-v16')
+    .withEnableHint('Enable the Alchemist\'s Supplies v1.6 crafting system by /u/calculusChild?')
     .withDescription('Alchemy is the skill of exploiting unique properties of certain plants, minerals, and ' +
         'creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic ' +
         'minor magical effects, although the creations themselves are nonmagical.')

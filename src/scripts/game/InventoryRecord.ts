@@ -29,6 +29,7 @@ class InventoryRecord<T extends FabricateItem> {
         }
         return InventoryRecord.builder<T>()
             .withFabricateItem(this.fabricateItem)
+            .withFabricateItemType(this.fabricateItemType)
             .withActor(this.actor)
             .withItems(this.itemsOfType)
             .withItems(other.itemsOfType)

@@ -41,7 +41,7 @@ class ItemRecipeTab {
             component.imageUrl = this._craftingSystem.getComponentByPartId(component.compendiumEntry.partId).imageUrl;
         });
         this._recipe.results.forEach((result: CraftingResult) => {
-            const component: CraftingComponent = result.item;
+            const component: CraftingComponent = result.component;
             component.imageUrl = this._craftingSystem.getComponentByPartId(component.compendiumEntry.partId).imageUrl;
         });
     }

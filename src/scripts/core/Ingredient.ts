@@ -8,7 +8,7 @@ class Ingredient extends FabricateItem {
     private readonly _consumed: boolean;
 
     constructor(builder: Ingredient.Builder) {
-        super(builder.component.systemId, builder.component.partId);
+        super(builder.component.systemId, builder.component.partId, builder.component.imageUrl, builder.component.name);
         this._component = builder.component;
         this._quantity = builder.quantity;
         this._consumed = builder.consumed;

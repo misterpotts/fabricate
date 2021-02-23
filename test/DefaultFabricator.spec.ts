@@ -43,7 +43,7 @@ describe('Default Fabricator |', () => {
             .withResult(CraftingResult.builder()
                 .withAction(ActionType.ADD)
                 .withQuantity(1)
-                .withItem(mudPie)
+                .withComponent(mudPie)
                 .build())
             .build();
 
@@ -57,17 +57,17 @@ describe('Default Fabricator |', () => {
                 CraftingResult.builder()
                     .withAction(ActionType.ADD)
                     .withQuantity(1)
-                    .withItem(mudPie)
+                    .withComponent(mudPie)
                     .build(),
                 CraftingResult.builder()
                     .withAction(ActionType.REMOVE)
                     .withQuantity(2)
-                    .withItem(mud)
+                    .withComponent(mud)
                     .build(),
                 CraftingResult.builder()
                     .withAction(ActionType.REMOVE)
                     .withQuantity(1)
-                    .withItem(sticks)
+                    .withComponent(sticks)
                     .build()
             ]);
         });

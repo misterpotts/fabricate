@@ -35,7 +35,7 @@ describe('Recipe |', () => {
                     .build())
                 .withResult(CraftingResult.builder()
                     .withQuantity(1)
-                    .withItem(CraftingComponent.builder()
+                    .withComponent(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withPartId('3')
                         .withSystemId('compendium')
@@ -99,7 +99,7 @@ describe('Recipe |', () => {
                     ]
                 }
             };
-            const underTest = Recipe.fromFlags(recipeFlagData, 'Recipe: Mud Pie');
+            const underTest = Recipe.fromFlags(recipeFlagData, 'Recipe: Mud Pie', '/img/img.jpg');
             expect(underTest.name).to.equal('Recipe: Mud Pie');
             expect(underTest.partId).to.equal('4iHqWSLTMFjPbpuI');
             expect(underTest.ingredients.length).to.equal(2);
@@ -131,7 +131,7 @@ describe('Recipe |', () => {
                 .withPartId('nWhTa8gD1QL1f9O3')
                 .withSystemId('fabricate.fabricate-test')
                 .build();
-            expect(underTest.results[0].item.sharesType(mudPie)).to.be.true;
+            expect(underTest.results[0].component.sharesType(mudPie)).to.be.true;
 
         });
 

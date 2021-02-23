@@ -7,32 +7,27 @@ class Recipe extends FabricateItem {
     private readonly _ingredients: Ingredient[];
     private readonly _essences: string[];
     private readonly _results: CraftingResult[];
-    private readonly _name: string;
 
     constructor(builder: Recipe.Builder) {
-        super(builder.systemId, builder.partId);
+        super(builder.systemId, builder.partId, builder.imageUrl, builder.name);
         this._ingredients = builder.ingredients;
         this._essences = builder.essences;
         this._results = builder.results;
-        this._name = builder.name;
     }
 
-    public static fromFlags(flags: FabricateCompendiumData, name: string): Recipe {
+    public static fromFlags(flags: FabricateCompendiumData, name: string, imageUrl: string): Recipe {
         if (flags.type !== FabricateItemType.RECIPE) {
             throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${flags.type} data. `);
         }
         return Recipe.builder()
             .withName(name)
-            .withSystemId(flags.identity.systemId)
+            .withImageUrl(imageUrl)
             .withPartId(flags.identity.partId)
             .withEssences(flags.recipe.essences)
+            .withSystemId(flags.identity.systemId)
             .withResults(CraftingResult.manyFromFlags(flags.recipe.results, flags.identity.systemId))
             .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients, flags.identity.systemId))
             .build();
-    }
-
-    get name(): string {
-        return this._name;
     }
 
     get ingredients(): Ingredient[] {
@@ -83,6 +78,7 @@ namespace Recipe {
         public name!: string;
         public systemId!: string;
         public partId!: string;
+        public imageUrl: string;
 
         public build() {
             return new Recipe(this);
@@ -130,6 +126,11 @@ namespace Recipe {
 
         withPartId(value: string) {
             this.partId = value
+            return this;
+        }
+
+        withImageUrl(value: string) {
+            this.imageUrl = value
             return this;
         }
 

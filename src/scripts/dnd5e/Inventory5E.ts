@@ -37,13 +37,16 @@ class Inventory5E extends CraftingInventory {
 
         uniqueComponentTypes.forEach((partId: string) => {
             const inventoryRecord: InventoryRecord<FabricateItem> = candidateItems.filter((candidateItem: Item) => candidateItem.getFlag(Properties.module.name, Properties.flagKeys.item.partId) === partId)
-                .map((item: Item<ItemData5e>) => InventoryRecord.builder()
-                    .withItem(item)
-                    .withActor(this.actor)
-                    .withTotalQuantity(item.data.data.quantity)
-                    .withFabricateItemType(item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType))
-                    .withFabricateItem(this.lookUp(item))
-                    .build())
+                .map((item: Item<ItemData5e>) => {
+                    const fabricateItemType = item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
+                    return InventoryRecord.builder()
+                        .withItem(item)
+                        .withActor(this.actor)
+                        .withTotalQuantity(item.data.data.quantity)
+                        .withFabricateItemType(fabricateItemType)
+                        .withFabricateItem(this.lookUp(item))
+                        .build();
+                })
                 .reduce((left: InventoryRecord<FabricateItem>, right: InventoryRecord<FabricateItem>) => left.combineWith(right));
             this.applyItemTypeTreatment(inventoryRecord,
                 (record: InventoryRecord<CraftingComponent>) => this._componentDirectory.set(partId, record),

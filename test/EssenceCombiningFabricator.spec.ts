@@ -88,7 +88,7 @@ describe('Essence Combining Fabricator |', () => {
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
             .withQuantity(1)
-            .withItem(instantRope)
+            .withComponent(instantRope)
             .build())
         .build();
     const acidRecipe: Recipe = Recipe.builder()
@@ -98,7 +98,7 @@ describe('Essence Combining Fabricator |', () => {
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
             .withQuantity(1)
-            .withItem(acid)
+            .withComponent(acid)
             .build())
         .build();
     const flashbangRecipe: Recipe = Recipe.builder()
@@ -108,7 +108,7 @@ describe('Essence Combining Fabricator |', () => {
         .withResult(CraftingResult.builder()
             .withAction(ActionType.ADD)
             .withQuantity(1)
-            .withItem(flashbang)
+            .withComponent(flashbang)
             .build())
         .build();
 
@@ -134,10 +134,10 @@ describe('Essence Combining Fabricator |', () => {
             expect(result, 'Crafting Result of recipes was null!').to.exist;
             expect(result.length, 'Expected four Crafting Results').to.equal(4);
             expect(result).to.deep.include.members([
-                CraftingResult.builder().withItem(voidroot).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                CraftingResult.builder().withItem(hydrathistle).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                CraftingResult.builder().withItem(ironwoodHeart).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                CraftingResult.builder().withItem(instantRope).withAction(ActionType.ADD).withQuantity(1).build()
+                CraftingResult.builder().withComponent(voidroot).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withComponent(hydrathistle).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withComponent(ironwoodHeart).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withComponent(instantRope).withAction(ActionType.ADD).withQuantity(1).build()
             ]);
 
         });
@@ -250,8 +250,8 @@ describe('Essence Combining Fabricator |', () => {
             const addResults = results.filter((craftingResult: CraftingResult) => craftingResult.action === ActionType.ADD);
             expect(addResults.length).to.equal(1);
             const addResult: CraftingResult = addResults[0];
-            expect(addResult.item.systemId).to.equal('fabricate.alchemists-supplies-v11');
-            expect(addResult.item.partId).to.equal('90z9nOwmGnP4aUUk');
+            expect(addResult.component.systemId).to.equal('fabricate.alchemists-supplies-v11');
+            expect(addResult.component.partId).to.equal('90z9nOwmGnP4aUUk');
             expect(addResult.quantity).to.equal(1);
             expect(addResult.action).to.equal(ActionType.ADD);
 
@@ -278,9 +278,9 @@ describe('Essence Combining Fabricator |', () => {
             expect(result, 'Crafting Result of recipes was null!').to.exist;
             expect(result.length, 'Expected three Crafting Results').to.equal(3);
             expect(result).to.deep.include.members([
-                CraftingResult.builder().withItem(wispStalks).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                CraftingResult.builder().withItem(fennelSilk).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                CraftingResult.builder().withItem(flashbang).withAction(ActionType.ADD).withQuantity(1).build()
+                CraftingResult.builder().withComponent(wispStalks).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withComponent(fennelSilk).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                CraftingResult.builder().withComponent(flashbang).withAction(ActionType.ADD).withQuantity(1).build()
             ]);
         });
 
