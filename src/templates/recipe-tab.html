@@ -11,11 +11,11 @@
                 <li>
                     <div class="component">
                         <span class="quantity">{{quantity}}</span>
-                        <span class="name">{{componentType.name}}</span>
+                        <span class="name">{{name}}</span>
                         {{#unless consumed}}
-                        <span class="consumed"><i class="fas fa-minus-circle" title="Consumed"></i></span>
+                        <span class="not-consumed"><i class="fas fa-minus-circle" title="Not consumed"></i></span>
                         {{/unless}}
-                        <img src="{{{componentType.imageUrl}}}" title="{{componentType.name}}"/>
+                        <img src="{{{imageUrl}}}" title="{{name}}"/>
                     </div>
                 </li>
                 {{/each}}

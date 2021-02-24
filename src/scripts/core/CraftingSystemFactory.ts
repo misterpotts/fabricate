@@ -53,6 +53,7 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
                 return Ingredient.builder()
                     .withComponent(craftingComponent)
                     .withQuantity(ingredient.quantity)
+                    .isConsumed(ingredient.consumed)
                     .build();
             });
             const populatedCraftingResults = recipe.results.map((result: CraftingResult) => {

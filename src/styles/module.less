@@ -22,16 +22,16 @@
       font-size: 1em;
     }
 
-    .consumed {
+    .not-consumed {
       background: #aba693;
       color: #4c4439;
-      font-size: 0.9em;
+      font-size: 1em;
       width: 16px;
       border-radius: 8px;
       text-align: center;
-      top: 24%;
-      right: -3%;
-      padding: 1px;
+      top: 15%;
+      right: -9%;
+      padding: 2px 1px 0px 0px;
     }
 
     .quantity {
@@ -128,7 +128,11 @@
     }
   }
   .inventory, .hopper, .recipes {
-    .clear();
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
   }
   .crafting-disabled {
     position: relative;
@@ -149,10 +153,4 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23c1b496' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 }
 
-.clear {
-  &:after {
-    content: "";
-    display: table;
-    clear: both;
-  }
-}
+
