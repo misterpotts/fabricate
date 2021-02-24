@@ -9,14 +9,16 @@
             <ul>
                 {{#each recipe.ingredients}}
                 <li>
-                    <div class="component">
-                        <span class="quantity">{{quantity}}</span>
-                        <span class="name">{{name}}</span>
-                        {{#unless consumed}}
-                        <span class="not-consumed"><i class="fas fa-minus-circle" title="Not consumed"></i></span>
-                        {{/unless}}
-                        <img src="{{{imageUrl}}}" title="{{name}}"/>
-                    </div>
+                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{partId}}" data-system-id="{{systemId}}">
+                        <div class="component">
+                            <span class="quantity">{{quantity}}</span>
+                            <span class="name">{{name}}</span>
+                            {{#unless consumed}}
+                            <span class="not-consumed"><i class="fas fa-minus-circle" title="Not consumed"></i></span>
+                            {{/unless}}
+                                <img src="{{{imageUrl}}}" class="compendium-reference" title="{{name}}"/>
+                        </div>
+                    </a>
                 </li>
                 {{/each}}
             </ul>
@@ -41,11 +43,13 @@
                 {{#each recipe.results}}
                 {{#ifEquals action "ADD"}}
                 <li>
-                    <div class="component">
-                        <span class="quantity">{{quantity}}</span>
-                        <span class="name">{{name}}</span>
-                        <img src="{{{imageUrl}}}" title="{{name}}"/>
-                    </div>
+                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{partId}}" data-system-id="{{systemId}}">
+                        <div class="component">
+                            <span class="quantity">{{quantity}}</span>
+                            <span class="name">{{name}}</span>
+                                <img src="{{{imageUrl}}}" class="compendium-reference" title="{{name}}"/>
+                        </div>
+                    </a>
                 </li>
                 {{/ifEquals}}
                 {{/each}}

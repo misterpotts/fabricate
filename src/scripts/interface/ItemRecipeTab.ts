@@ -71,6 +71,7 @@ class ItemRecipeTab {
     }
 
     private handleItemSheetEvents(): void {
+
         this._sheetHtml.find('.craft-button').click(async (event: any) => {
             const recipeId = event.target.getAttribute('data-recipe-id');
             const actorId = event.target.getAttribute('data-actor-id');
@@ -78,6 +79,20 @@ class ItemRecipeTab {
             this._suppressedInNav = true;
             await this.render();
         });
+
+        this._sheetHtml.find('.open-compendium-item').click(async (event: any) => {
+            const partId = event.currentTarget.getAttribute('data-part-id');
+            const systemId = event.currentTarget.getAttribute('data-system-id');
+            const compendium: Compendium = game.packs.get(systemId);
+            const entity: Entity = await compendium.getEntity(partId);
+            if (!game.user.isGM && entity.permission === 0) {
+                console.warn('You are attempting to view the details of a Crafting Component that you have no ' +
+                    'access to. Ask your GM oran administrator to grant you access to the items in the compendium for ' +
+                    'the Crafting System "' + this._craftingSystem.name + '"');
+            }
+            entity.sheet.render(true);
+        });
+
     }
 
     private isActiveInNav(): boolean {
