@@ -1,5 +1,5 @@
-import {Inventory} from "../game/Inventory";
-import {InventoryRecord} from "../game/InventoryRecord";
+import {Inventory, InventoryModification} from "./Inventory";
+import {InventoryRecord} from "./InventoryRecord";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
 import {CraftingComponent} from "../core/CraftingComponent";
@@ -42,16 +42,16 @@ abstract class CraftingInventory implements Inventory {
         return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
     }
 
-    public abstract add(component: CraftingComponent, quantity?: number): Promise<InventoryRecord<FabricateItem>>;
+    public abstract addComponent(component: CraftingComponent, quantity?: number): Promise<InventoryModification<CraftingComponent>>;
 
-    contains(ingredient: Ingredient): boolean {
+    containsIngredient(ingredient: Ingredient): boolean {
         const quantity = this.components.filter((candidate: InventoryRecord<CraftingComponent>) => candidate.fabricateItem.sharesType(ingredient))
             .map((candidate: InventoryRecord<FabricateItem>) => candidate.totalQuantity)
             .reduce((left, right) => left + right, 0);
         return ingredient.quantity <= quantity;
     }
 
-    hasAll(components: CraftingComponent[]): boolean {
+    hasAllComponents(components: CraftingComponent[]): boolean {
         const componentCountById: Map<string, number> = new Map<string, number>();
         components.forEach((component: CraftingComponent) => {
             if (componentCountById.has(component.partId)) {
@@ -113,7 +113,7 @@ abstract class CraftingInventory implements Inventory {
         let failedToFind: boolean = false;
         let duplicatedIngredient: boolean = false;
         recipe.ingredients.forEach((ingredient: Ingredient) => {
-            const present: boolean = this.contains(ingredient);
+            const present: boolean = this.containsIngredient(ingredient);
             if (!present) {
                 failedToFind = true;
                 return;
@@ -132,11 +132,11 @@ abstract class CraftingInventory implements Inventory {
         return !failedToFind;
     }
 
-    public abstract remove(component: CraftingComponent, quantity?: number): Promise<boolean>;
+    public abstract removeComponent(component: CraftingComponent, quantity?: number): Promise<InventoryModification<CraftingComponent>>;
 
     public abstract update(): void;
 
-    public abstract updateQuantityFor(item: any): Promise<InventoryRecord<FabricateItem> | void>;
+    public abstract updateQuantityFor(item: any): Promise<boolean>;
 
     abstract denormalizedContainedComponents(): CraftingComponent[];
 

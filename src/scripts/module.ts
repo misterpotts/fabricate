@@ -1,8 +1,9 @@
 import Properties from "./Properties";
-import {CraftingSystemRegistry} from "./registries/CraftingSystemRegistry";
 import {FabricateLifecycle} from "./application/FabricateLifecycle";
 import {CraftingSystemSpecification} from "./core/CraftingSystemSpecification";
 import {CompendiumImportingCraftingSystemFactory, CraftingSystemFactory} from "./core/CraftingSystemFactory";
+import FabricateApplication from "./application/FabricateApplication";
+
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -13,7 +14,7 @@ Hooks.once('ready', () => {
  * Loads all Crafting Systems with a System Specification declared with the Crafting System Registry.
  * */
 async function loadCraftingSystems(): Promise<void> {
-    const systemSpecifications = CraftingSystemRegistry.systemSpecifications;
+    const systemSpecifications = FabricateApplication.systems.systemSpecifications;
     console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
     systemSpecifications.forEach(FabricateLifecycle.registerCraftingSystemSettings);
     systemSpecifications.forEach(loadCraftingSystem);
@@ -39,7 +40,7 @@ async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Prom
     const craftingSystem = await craftingSystemFactory.make();
     const enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
     craftingSystem.enabled = enabled;
-    CraftingSystemRegistry.register(craftingSystem);
+    FabricateApplication.systems.register(craftingSystem);
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
 }
 

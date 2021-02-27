@@ -1,5 +1,4 @@
 import {AlchemicalResult} from "../../core/AlchemicalResult";
-import {ItemData5e} from "../../../global";
 import {AlchemicalResult5E} from "../../dnd5e/AlchemicalResult5E";
 import {AlchemicalResultSet} from "../../core/AlchemicalResultSet";
 import {EssenceCombiner} from "../../core/EssenceCombiner";

@@ -1,12 +1,11 @@
 import Properties from "../Properties";
 import {Inventory} from "../game/Inventory";
 import {Inventory5E} from "../dnd5e/Inventory5E";
-import {InventoryRegistry} from "../registries/InventoryRegistry";
 import {CraftingTabDTO} from "./CraftingTabDTO";
-import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {CraftingSystem} from "../core/CraftingSystem";
 import {InventoryRecordData} from "./InterfaceDataTypes";
+import FabricateApplication from "../application/FabricateApplication";
 
 class CraftingTab {
     private static readonly tabs: Map<string, CraftingTab> = new Map();
@@ -34,12 +33,12 @@ class CraftingTab {
     constructor(actorApplication: any, actor: Actor) {
         this._sheetApplication = actorApplication;
         this._actor = actor;
-        let inventory = InventoryRegistry.getFor(actor.id);
+        let inventory = FabricateApplication.inventories.getFor(actor.id);
         if (inventory) {
             this._inventory = inventory;
         } else {
             inventory = new Inventory5E(actor);
-            InventoryRegistry.addFor(actor.id, inventory);
+            FabricateApplication.inventories.addFor(actor.id, inventory);
             this._inventory = inventory;
         }
     }
@@ -51,7 +50,7 @@ class CraftingTab {
     }
 
     private async render(): Promise<void> {
-        const craftingTabDTO = new CraftingTabDTO(CraftingSystemRegistry.getAllSystems(), this._inventory, this._actor);
+        const craftingTabDTO = new CraftingTabDTO(FabricateApplication.systems.getAllSystems(), this._inventory, this._actor);
         await craftingTabDTO.init();
         let template: HTMLElement = await renderTemplate(Properties.module.templates.craftingTab, craftingTabDTO);
         let element = this._sheetHtml.find('.crafting-tab-content');
@@ -94,7 +93,7 @@ class CraftingTab {
             }
             const component = hopperContentsForSystem.find((item: InventoryRecordData) => item.entryId === componentId);
             if (!component) {
-                const component: CraftingComponent = CraftingSystemRegistry.getSystemByCompendiumPackKey(craftingSystemId).getComponentByPartId(componentId);
+                const component: CraftingComponent = FabricateApplication.systems.getSystemByCompendiumPackKey(craftingSystemId).getComponentByPartId(componentId);
                 hopperContentsForSystem.push({name: component.name, quantity: 1, imageUrl: component.imageUrl, entryId: component.partId})
             } else {
                 component.quantity = component.quantity + 1;
@@ -142,7 +141,7 @@ class CraftingTab {
 
             console.log(`Craft for system ${craftingSystemId} with ${hopperContents.length} components`);
 
-            const craftingSystem: CraftingSystem = CraftingSystemRegistry.getSystemByCompendiumPackKey(craftingSystemId);
+            const craftingSystem: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(craftingSystemId);
             const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByPartId(hopperItem.entryId));
 
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);

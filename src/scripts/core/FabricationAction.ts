@@ -3,22 +3,27 @@ import {ActionType} from "./ActionType";
 import {FabricateResultFlags} from "../game/CompendiumData";
 import {FabricateItem} from "./FabricateItem";
 
-class CraftingResult extends FabricateItem {
+class FabricationAction extends FabricateItem {
     private readonly _component: CraftingComponent;
     private readonly _quantity: number;
-    private readonly _action: ActionType;
+    private readonly _type: ActionType;
     private readonly _customData: any;
 
-    constructor(builder: CraftingResult.Builder) {
+    constructor(builder: FabricationAction.Builder) {
         super(builder.component.systemId, builder.component.partId, builder.component.imageUrl, builder.component.name);
         this._component = builder.component;
         this._quantity = builder.quantity;
-        this._action = builder.action;
+        this._type = builder.action;
         this._customData = builder.customData;
     }
 
-    public static builder(): CraftingResult.Builder {
-        return new CraftingResult.Builder();
+    public static builder(): FabricationAction.Builder {
+        return new FabricationAction.Builder();
+    }
+
+    public describe(): string {
+        const actionDescription = this._type === ActionType.ADD ? 'Added' : 'Removed';
+        return `${actionDescription} ${this._quantity} ${this._component.name}`;
     }
 
     get component(): CraftingComponent {
@@ -29,15 +34,15 @@ class CraftingResult extends FabricateItem {
         return this._quantity;
     }
 
-    get action(): ActionType {
-        return this._action;
+    get type(): ActionType {
+        return this._type;
     }
 
     get customData(): any {
         return this._customData;
     }
 
-    public static fromFlags(flags: FabricateResultFlags, systemId: string): CraftingResult {
+    public static fromFlags(flags: FabricateResultFlags, systemId: string): FabricationAction {
         return this.builder()
             .withAction(flags.action)
             .withQuantity(flags.quantity)
@@ -48,20 +53,20 @@ class CraftingResult extends FabricateItem {
             .build();
     }
 
-    public static manyFromFlags(flags: FabricateResultFlags[], systemId: string): CraftingResult[] {
-        return flags.map((flagData) => CraftingResult.fromFlags(flagData, systemId));
+    public static manyFromFlags(flags: FabricateResultFlags[], systemId: string): FabricationAction[] {
+        return flags.map((flagData) => FabricationAction.fromFlags(flagData, systemId));
     }
 
     isValid(): boolean {
         return (this.quantity != null && this.quantity > 0)
-            && (this.action != null)
-            && (this.action == ActionType.ADD || this.action == ActionType.REMOVE)
+            && (this.type != null)
+            && (this.type == ActionType.ADD || this.type == ActionType.REMOVE)
             && this.component.isValid()
             && super.isValid();
     }
 }
 
-namespace CraftingResult {
+namespace FabricationAction {
     export class Builder {
         public component!: CraftingComponent;
         public quantity!: number;
@@ -83,8 +88,8 @@ namespace CraftingResult {
             return this;
         }
 
-        public build(): CraftingResult {
-            return new CraftingResult(this);
+        public build(): FabricationAction {
+            return new FabricationAction(this);
         }
 
         withCustomData(value: any) {
@@ -94,4 +99,4 @@ namespace CraftingResult {
     }
 }
 
-export {CraftingResult}
+export {FabricationAction}

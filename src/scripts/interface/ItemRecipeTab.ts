@@ -1,7 +1,7 @@
 import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
-import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingSystem} from "../core/CraftingSystem";
+import FabricateApplication from "../application/FabricateApplication";
 
 class ItemRecipeTab {
     private static readonly recipeType: string = Properties.types.recipe;
@@ -32,7 +32,7 @@ class ItemRecipeTab {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
         const partId: string = itemApplication.item.data.flags.fabricate.identity.partId;
-        this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(partId);
+        this._craftingSystem = FabricateApplication.systems.getSystemByPartId(partId);
         this._recipe = this._craftingSystem.getRecipeByPartId(partId);
     }
 

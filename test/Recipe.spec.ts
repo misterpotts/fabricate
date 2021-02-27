@@ -1,8 +1,8 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {Ingredient} from "../src/scripts/core/Ingredient";
-import {CraftingResult} from "../src/scripts/core/CraftingResult";
+import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {FabricateCompendiumData} from "../src/scripts/game/CompendiumData";
 import {ActionType} from "../src/scripts/core/ActionType";
 
@@ -33,7 +33,7 @@ describe('Recipe |', () => {
                     .withQuantity(1)
                     .isConsumed(true)
                     .build())
-                .withResult(CraftingResult.builder()
+                .withResult(FabricationAction.builder()
                     .withQuantity(1)
                     .withComponent(CraftingComponent.builder()
                         .withName('Mud Pie')
@@ -125,7 +125,7 @@ describe('Recipe |', () => {
             expect(oneSticksConsumed.equals(underTest.ingredients[1])).to.be.true;
             expect(underTest.results.length).to.equal(1);
             expect(underTest.results[0].quantity).to.equal(1);
-            expect(underTest.results[0].action).to.equal(ActionType.ADD);
+            expect(underTest.results[0].type).to.equal(ActionType.ADD);
             const mudPie = CraftingComponent.builder()
                 .withName('Mud Pie')
                 .withPartId('nWhTa8gD1QL1f9O3')

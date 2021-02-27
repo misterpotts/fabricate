@@ -5,7 +5,7 @@ import {CraftingSystemSpecification} from "./CraftingSystemSpecification";
 import {CraftingComponent} from "./CraftingComponent";
 import {Recipe} from "./Recipe";
 import {Ingredient} from "./Ingredient";
-import {CraftingResult} from "./CraftingResult";
+import {FabricationAction} from "./FabricationAction";
 import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 import Properties from "../Properties";
 import {FabricateItem} from "./FabricateItem";
@@ -56,13 +56,13 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
                     .isConsumed(ingredient.consumed)
                     .build();
             });
-            const populatedCraftingResults = recipe.results.map((result: CraftingResult) => {
+            const populatedCraftingResults = recipe.results.map((result: FabricationAction) => {
                 const craftingComponent = componentDictionary.get(result.partId);
                 if (!craftingComponent) {
                     throw new Error(`Recipe ${recipe.name} with ID ${recipe.partId} specified a Result that was not found in the Crafting System: ${result.compendiumEntry}.`);
                 }
-                return CraftingResult.builder()
-                    .withAction(result.action)
+                return FabricationAction.builder()
+                    .withAction(result.type)
                     .withComponent(craftingComponent)
                     .withQuantity(result.quantity)
                     .withCustomData(result.customData)

@@ -6,9 +6,10 @@ import {CraftingComponent} from "../core/CraftingComponent";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
 import {Recipe} from "../core/Recipe";
-import {ItemData5e} from "../../global";
-import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {FabricateItem} from "../core/FabricateItem";
+import {InventoryModification} from "../game/Inventory";
+import {ActionType} from "../core/ActionType";
+import FabricateApplication from "../application/FabricateApplication";
 
 type RecipeConsumer = (fabricateItem: InventoryRecord<Recipe>) => void;
 type CraftingComponentConsumer = (fabricateItem: InventoryRecord<CraftingComponent>) => void;
@@ -56,7 +57,7 @@ class Inventory5E extends CraftingInventory {
 
     private lookUp(item: Item): FabricateItem {
         const systemId = item.getFlag(Properties.module.name, Properties.flagKeys.item.systemId);
-        const craftingSystem = CraftingSystemRegistry.getSystemByCompendiumPackKey(systemId);
+        const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
         if (!craftingSystem) {
             throw new Error(`Unable to look up crafting System '${systemId}' when indexing Item '${item._id}'. `);
         }
@@ -113,7 +114,7 @@ class Inventory5E extends CraftingInventory {
         };
     }
 
-    async add(component: CraftingComponent, amountToAdd: number = 1, customData?: any): Promise<InventoryRecord<CraftingComponent>> {
+    async addComponent(component: CraftingComponent, amountToAdd: number = 1, customData?: any): Promise<InventoryModification<CraftingComponent>> {
         if (customData) {
             return this.addCustomItem(component, amountToAdd, customData);
         }
@@ -122,46 +123,46 @@ class Inventory5E extends CraftingInventory {
             const compendium: Compendium = game.packs.get(component.systemId);
             const item: Entity<ItemData5e> = await compendium.getEntity(component.partId);
             item.data.data.quantity = amountToAdd;
-            const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', item);
+            const createdItem: Item<ItemData5e> = await this._actor.createEmbeddedEntity('OwnedItem', item);
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
                 .withItem(createdItem)
-                .withTotalQuantity(createdItem.data.quantity)
+                .withTotalQuantity(createdItem.data.data.quantity)
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
-            return inventoryRecord;
+            return new InventoryModification([createdItem], ActionType.ADD, inventoryRecord);
         } else {
             recordForType.itemsOfType.sort((left: Item<ItemData5e>, right: Item<ItemData5e>) => left.data.data.quantity - right.data.data.quantity);
             const item: any = recordForType.itemsOfType[0];
             const updatedQuantityForItem = item.data.data.quantity + amountToAdd;
             // @ts-ignore
-            await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item.id, data: {quantity: updatedQuantityForItem}});
+            const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item.id, data: {quantity: updatedQuantityForItem}});
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
-            return recordForType;
+            return new InventoryModification([updatedItem], ActionType.ADD, recordForType);
         }
     }
 
-    private async addCustomItem(component: CraftingComponent, amountToAdd: number, customData: ItemData5e): Promise<InventoryRecord<CraftingComponent>> {
+    private async addCustomItem(component: CraftingComponent, amountToAdd: number, customData: ItemData5e): Promise<InventoryModification<CraftingComponent>> {
         const compendium: Compendium = game.packs.get(component.systemId);
         const item: Entity<ItemData5e> = await compendium.getEntity(component.partId);
         item.data.data.quantity = amountToAdd;
         const data: Entity.Data<ItemData5e> = duplicate(item.data);
         mergeObject(data.data, customData);
         const recordForType: InventoryRecord<CraftingComponent> = this._componentDirectory.get(component.partId);
-        const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', data);
+        const createdItem: Item<ItemData5e> = await this._actor.createEmbeddedEntity('OwnedItem', data);
         if (recordForType) {
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
-            return recordForType;
+            return new InventoryModification([createdItem], ActionType.ADD, recordForType);
         } else {
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
                 .withItem(createdItem)
-                .withTotalQuantity(createdItem.data.quantity)
+                .withTotalQuantity(createdItem.data.data.quantity)
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
-            return inventoryRecord;
+            return new InventoryModification([createdItem], ActionType.ADD, inventoryRecord);
         }
     }
 
@@ -171,8 +172,8 @@ class Inventory5E extends CraftingInventory {
         return recipes.concat(components);
     }
 
-    async remove(component: CraftingComponent, amountToRemove: number = 1): Promise<boolean> {
-        if (!this.contains(Ingredient.builder().withQuantity(amountToRemove).withComponent(component).build())) {
+    async removeComponent(component: CraftingComponent, amountToRemove: number = 1): Promise<InventoryModification<CraftingComponent>> {
+        if (!this.containsIngredient(Ingredient.builder().withQuantity(amountToRemove).withComponent(component).build())) {
             throw new Error(`Cannot remove ${amountToRemove} ${component.name} from Inventory for Actor ${this.actorId} - 
                 there is not enough of the component in their inventory! `);
         }
@@ -180,8 +181,10 @@ class Inventory5E extends CraftingInventory {
         recordForType.itemsOfType = recordForType.itemsOfType.sort((left: Item<ItemData5e>, right: Item<ItemData5e>) => left.data.data.quantity - right.data.data.quantity);
         let removed: number = 0;
         let currentItemIndex = 0;
+        const modifiedItems: Item<ItemData5e>[] = [];
         while (removed < amountToRemove) {
             const thisItem: any = recordForType.itemsOfType[currentItemIndex];
+            modifiedItems.push(thisItem);
             const remaining = amountToRemove - removed;
             if (remaining < thisItem.data.data.quantity) {
                 const updatedQuantity = thisItem.data.data.quantity - remaining;
@@ -206,16 +209,16 @@ class Inventory5E extends CraftingInventory {
         if (remainingItems.length === 0) {
             this._componentDirectory.delete(component.partId);
         }
-        return true;
+        return new InventoryModification<CraftingComponent>(modifiedItems, ActionType.REMOVE, recordForType);
     }
 
-    public async updateQuantityFor(item: Item.Data<ItemData5e>): Promise<InventoryRecord<FabricateItem> | void> {
+    public async updateQuantityFor(item: Item.Data<ItemData5e>): Promise<boolean> {
         if (!item) {
             throw new Error('Unable to update Inventory quantity for null Item. ');
         }
         const fabricateFlags: FabricateCompendiumData = item.flags.fabricate;
         if (!fabricateFlags) {
-            return; // Not a Fabricate Item
+            return false; // Not a Fabricate Item
         }
         const partId: string = fabricateFlags.identity.partId;
         if (!partId) {
@@ -228,16 +231,18 @@ class Inventory5E extends CraftingInventory {
             inventoryRecordForType = this._recipeDirectory.get(partId);
         }
         if (!inventoryRecordForType) {
-            return this.update();
+            await this.update();
+            return true;
         }
-        if (inventoryRecordForType.itemsOfType.length <= 1) {
+        if (inventoryRecordForType.itemsOfType.length === 1) {
             inventoryRecordForType.totalQuantity = item.data.quantity;
-            return inventoryRecordForType;
+            return true;
         }
         const totalExcludingChanged = inventoryRecordForType.itemsOfType.filter((managedItem: Item<ItemData5e>) => managedItem.id !== item._id)
             .map((managedItem: any) => managedItem.data.data.quantity)
             .reduce((left, right) => left + right, 0);
         inventoryRecordForType.totalQuantity = totalExcludingChanged + item.data.quantity;
+        return true;
     }
 
     public denormalizedContainedComponents(): CraftingComponent[] {

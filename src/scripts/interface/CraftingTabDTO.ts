@@ -6,8 +6,6 @@ import Properties from "../Properties";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {CraftingSystemData, CraftingSystemInfo, InventoryRecordData, RecipeData} from "./InterfaceDataTypes";
 
-
-
 interface InventoryContents {
     ownedComponents: InventoryRecordData[];
     preparedComponents: InventoryRecordData[];

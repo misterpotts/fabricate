@@ -19,7 +19,7 @@ before((done: Done) => {
         }
         const compendiumPackFilePaths: Map<string, string> = new Map(fileNames.map((fileName: string) => ['fabricate.' + fileName.substring(0, fileName.length - 3), bundleDirectory + fileName]));
         compendiumPackFilePaths.forEach( (filePath: string, compendiumKey: string) => {
-            const systemSpecifications = CraftingSystemRegistry.staticSystemSpecifications();
+            const systemSpecifications = CraftingSystemRegistry.systemSpecifications();
             const systemSpec: CraftingSystemSpecification = systemSpecifications.find((systemSpec: CraftingSystemSpecification) => systemSpec.compendiumPackKey === compendiumKey);
             const craftingSystemFactory: CraftingSystemFactory = new FileReadingCraftingSystemFactory(systemSpec, filePath);
             factoriesByCompendiumPackKey.set(compendiumKey, craftingSystemFactory);

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import * as Sinon from 'sinon';
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {Recipe} from "../src/scripts/core/Recipe";
-import {CraftingResult} from "../src/scripts/core/CraftingResult";
+import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
@@ -16,16 +16,12 @@ describe('Crafting System Registry |', () => {
 
     describe('Register and Retrieve |', () => {
 
-        const mockFabricator = <Fabricator>{
-            fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
-                return recipe.results;
-            },
-            fabricateFromComponents(): CraftingResult[] {
-                // @ts-ignore
-                return [];
-            }
+        const mockFabricator = <Fabricator><unknown>{
+            fabricateFromComponents: Sandbox.stub(),
+            fabricateFromRecipe: Sandbox.stub()
         };
-        Sandbox.stub(mockFabricator, "fabricateFromRecipe").returns([]);
+        // @ts-ignore
+        mockFabricator.fabricateFromRecipe.returns({});
 
         const testSystemCompendiumKey = 'fabricate.fabricate-test';
         const mudPieRecipeId = '4iHqWSLTMFjPbpuI';
@@ -56,7 +52,7 @@ describe('Crafting System Registry |', () => {
                             .withSystemId(testSystemCompendiumKey)
                             .build())
                         .build())
-                    .withResult(CraftingResult.builder()
+                    .withResult(FabricationAction.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
                         .withComponent(CraftingComponent.builder()
@@ -70,21 +66,23 @@ describe('Crafting System Registry |', () => {
 
         it('Should register a Crafting System and retrieve by Recipe ID', () => {
 
-            CraftingSystemRegistry.register(testSystem);
-            const testSystemRef = CraftingSystemRegistry.getSystemByRecipeId(mudPieRecipeId);
+            const craftingSystemRegistry = new CraftingSystemRegistry();
+            craftingSystemRegistry.register(testSystem);
+            const testSystemRef = craftingSystemRegistry.getSystemByPartId(mudPieRecipeId);
             expect(testSystemRef.compendiumPackKey).to.equal(testSystemCompendiumKey);
             expect(testSystem.recipes.length).to.equal(1);
 
         });
 
-        // TODO: Find out why Sinon is not removing stubbing behaviour from the static methods in the registry
-        it.skip('Should register a Crafting System and retrieve by Compendium Key', () => {
+
+        it('Should register a Crafting System and retrieve by Compendium Key', () => {
 
             Sandbox.reset();
             Sandbox.restore();
 
-            CraftingSystemRegistry.register(testSystem);
-            const testSystemRef = CraftingSystemRegistry.getSystemByCompendiumPackKey(testSystemCompendiumKey);
+            const craftingSystemRegistry = new CraftingSystemRegistry();
+            craftingSystemRegistry.register(testSystem);
+            const testSystemRef = craftingSystemRegistry.getSystemByCompendiumPackKey(testSystemCompendiumKey);
             expect(testSystemRef.name).to.equal(testSystemName);
             expect(testSystem.recipes.length).to.equal(1);
 

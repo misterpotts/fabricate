@@ -1,12 +1,12 @@
 import {Ingredient} from "./Ingredient";
-import {CraftingResult} from "./CraftingResult";
+import {FabricationAction} from "./FabricationAction";
 import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 import {FabricateItem} from "./FabricateItem";
 
 class Recipe extends FabricateItem {
     private readonly _ingredients: Ingredient[];
     private readonly _essences: string[];
-    private readonly _results: CraftingResult[];
+    private readonly _results: FabricationAction[];
 
     constructor(builder: Recipe.Builder) {
         super(builder.systemId, builder.partId, builder.imageUrl, builder.name);
@@ -25,7 +25,7 @@ class Recipe extends FabricateItem {
             .withPartId(flags.identity.partId)
             .withEssences(flags.recipe.essences)
             .withSystemId(flags.identity.systemId)
-            .withResults(CraftingResult.manyFromFlags(flags.recipe.results, flags.identity.systemId))
+            .withResults(FabricationAction.manyFromFlags(flags.recipe.results, flags.identity.systemId))
             .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients, flags.identity.systemId))
             .build();
     }
@@ -34,7 +34,7 @@ class Recipe extends FabricateItem {
         return this._ingredients;
     }
 
-    get results(): CraftingResult[] {
+    get results(): FabricationAction[] {
         return this._results;
     }
 
@@ -56,7 +56,7 @@ class Recipe extends FabricateItem {
             }
         });
         let resultsValid = true;
-        this.results.forEach((result: CraftingResult) => {
+        this.results.forEach((result: FabricationAction) => {
             if (!result.isValid()) {
                 resultsValid = false;
             }
@@ -74,7 +74,7 @@ namespace Recipe {
 
         public ingredients: Ingredient[] = [];
         public essences: string[] = [];
-        public results: CraftingResult[] = [];
+        public results: FabricationAction[] = [];
         public name!: string;
         public systemId!: string;
         public partId!: string;
@@ -109,12 +109,12 @@ namespace Recipe {
             return this;
         }
 
-        withResult(value: CraftingResult) {
+        withResult(value: FabricationAction) {
             this.results.push(value);
             return this;
         }
 
-        withResults(value: CraftingResult[]) {
+        withResults(value: FabricationAction[]) {
             this.results = value;
             return this;
         }

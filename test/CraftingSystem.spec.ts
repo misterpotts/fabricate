@@ -5,14 +5,50 @@ import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {CraftingResult} from "../src/scripts/core/CraftingResult";
+import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
-import {InventoryRegistry} from "../src/scripts/registries/InventoryRegistry";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {Inventory} from "../src/scripts/game/Inventory";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
+import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
+
+const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
+
+const mockActorId = 'lxQTQkhiymhGyjzx';
+const mockActor = <Actor><unknown>{
+    id: mockActorId
+};
+const mockInventory: Inventory = <Inventory5E><unknown>{
+    containsIngredient: Sandbox.stub(),
+    addComponent: Sandbox.stub(),
+    removeComponent: Sandbox.stub(),
+    denormalizedContainedComponents: Sandbox.stub()
+}
+
+before(() => {
+    Sandbox.restore();
+    // @ts-ignore
+    global.fabricate = <FabricateModule>{
+        inventories: Sandbox.stub(),
+        systems: Sandbox.stub()
+    };
+    // @ts-ignore
+    fabricate.inventories.withArgs(mockActorId).returns(mockInventory);
+});
+
+beforeEach(() => {
+    // @ts-ignore
+    global.game = {
+        actors: {
+            get: Sandbox.stub()
+        }
+    };
+    // @ts-ignore
+    game.actors.get.withArgs(mockActorId).returns(mockActor);
+
+});
 
 describe('Crafting System |', () => {
 
@@ -20,17 +56,12 @@ describe('Crafting System |', () => {
 
         it('Should create a Crafting System', () => {
 
-            let mockFabricator = <Fabricator>{
-                fabricateFromComponents(): CraftingResult[] {
-                    // @ts-ignore
-                    return [];
-                },
-                // @ts-ignore
-                fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
-                    return [];
-                }
+            const mockFabricator = <Fabricator><unknown>{
+                fabricateFromComponents: Sandbox.stub(),
+                fabricateFromRecipe: Sandbox.stub()
             };
-            Sinon.stub(mockFabricator, "fabricateFromRecipe").returns([]);
+            // @ts-ignore
+            mockFabricator.fabricateFromRecipe.returns({});
 
             let compendiumKey = 'fabricate.fabricate-test';
             let testSystem = CraftingSystem.builder()
@@ -59,7 +90,7 @@ describe('Crafting System |', () => {
                             .withSystemId(compendiumKey)
                             .build())
                         .build())
-                    .withResult(CraftingResult.builder()
+                    .withResult(FabricationAction.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
                         .withComponent(CraftingComponent.builder()
@@ -98,7 +129,7 @@ describe('Crafting System |', () => {
                         .withQuantity(1)
                         .isConsumed(true)
                         .build())
-                    .withResult(CraftingResult.builder()
+                    .withResult(FabricationAction.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
                         .withComponent(CraftingComponent.builder()
@@ -114,18 +145,8 @@ describe('Crafting System |', () => {
         it('Should craft a recipe using the System\'s Fabricator', async () => {
 
             let mockFabricator = <Fabricator>{
-                fabricateFromComponents(): CraftingResult[] {
-                    // @ts-ignore
-                    return []
-                },
-                // @ts-ignore
-                fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
-                    return [];
-                }
-            };
-
-            const mockActor = <Actor><unknown>{
-                id: 'lxQTQkhiymhGyjzx'
+                fabricateFromComponents: Sandbox.stub(),
+                fabricateFromRecipe: Sandbox.stub()
             };
 
             let compendiumKey = 'fabricate.fabricate-test';
@@ -147,7 +168,7 @@ describe('Crafting System |', () => {
                     .withSystemId(compendiumKey)
                     .build())
                 .build();
-            const mudPie = CraftingResult.builder()
+            const mudPie = FabricationAction.builder()
                 .withAction(ActionType.ADD)
                 .withQuantity(1)
                 .withComponent(CraftingComponent.builder()
@@ -174,43 +195,43 @@ describe('Crafting System |', () => {
                 .build();
 
             const mockInventory: Inventory = <Inventory5E><unknown>{
-                contains: Sinon.stub(),
-                add: Sinon.stub(),
-                remove: Sinon.stub(),
-                denormalizedContainedComponents: Sinon.stub()
+                containsIngredient: Sandbox.stub(),
+                addComponent: Sandbox.stub(),
+                removeComponent: Sandbox.stub(),
+                denormalizedContainedComponents: Sandbox.stub()
             }
             // @ts-ignore
-            mockInventory.contains.withArgs(twoMud).returns(true);
+            mockInventory.containsIngredient.withArgs(twoMud).returns(true);
             // @ts-ignore
-            mockInventory.contains.withArgs(oneStick).returns(true);
+            mockInventory.containsIngredient.withArgs(oneStick).returns(true);
             // @ts-ignore
-            mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
+            mockInventory.addComponent.withArgs(mudPie).returns(InventoryRecord.builder()
                 .withFabricateItem(mudPie.component)
                 .withTotalQuantity(mudPie.quantity)
                 .withActor(mockActor)
                 .build());
             // @ts-ignore
-            mockInventory.remove.returns(true);
+            mockInventory.removeComponent.returns(true);
             // @ts-ignore
             mockInventory.denormalizedContainedComponents.returns([]);
 
-            const removeOneStick = CraftingResult.builder()
+            const removeOneStick = FabricationAction.builder()
                 .withComponent(oneStick.component)
                 .withQuantity(oneStick.quantity)
                 .withAction(ActionType.REMOVE)
                 .build();
-            const removeTwoMud = CraftingResult.builder()
+            const removeTwoMud = FabricationAction.builder()
                 .withComponent(twoMud.component)
                 .withQuantity(twoMud.quantity)
                 .withAction(ActionType.REMOVE)
                 .build();
-            Sinon.stub(mockFabricator, 'fabricateFromRecipe').returns([removeOneStick, removeTwoMud, mudPie]);
 
-            InventoryRegistry.addFor(mockActor.id, mockInventory);
+            // @ts-ignore
+            mockFabricator.fabricateFromRecipe.returns(new FabricationOutcome(OutcomeType.SUCCESS, 'Test user message', [removeOneStick, removeTwoMud, mudPie]));
 
-            const craftingResults = await testSystem.craft(mockActor.id, mudPieRecipe.partId);
-            expect(craftingResults.length).to.equal(3);
-            expect(craftingResults).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
+            const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockActor.id, mudPieRecipe.partId);
+            expect(fabricationOutcome.actions.length).to.equal(3);
+            expect(fabricationOutcome.actions).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
 
         })
 

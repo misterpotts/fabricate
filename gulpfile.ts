@@ -42,6 +42,8 @@ gulp.task('copy', async () => {
 
 gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy', 'test'));
 
+gulp.task('build-unsafe', gulp.parallel('compile-ts', 'compile-less', 'copy'));
+
 // Copy the dist folder into the modules directory for testing
 // TODO - parameterize this property before asking anyone to contribute
 const MODULEPATH = "../../dev-data/Data/modules/fabricate/";
@@ -50,4 +52,4 @@ gulp.task('foundry', () => {
   return gulp.src('dist/**').pipe(gulp.dest(MODULEPATH));
 });
 
-gulp.task("update", gulp.series('build', 'foundry'));
+gulp.task("update", gulp.series('build-unsafe', 'foundry'));

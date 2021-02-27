@@ -3,9 +3,8 @@ import {Recipe} from "./Recipe";
 import {CraftingComponent} from "./CraftingComponent";
 import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
-import {CraftingResult} from "./CraftingResult";
-import {ActionType} from "./ActionType";
-import {InventoryRegistry} from "../registries/InventoryRegistry";
+import {FabricationOutcome} from "./FabricationOutcome";
+import FabricateApplication from "../application/FabricateApplication";
 
 class CraftingSystem {
     private readonly _name: string;
@@ -54,13 +53,13 @@ class CraftingSystem {
         return this._description;
     }
 
-    public async craft(actorId: string, recipeId: string): Promise<CraftingResult[]> {
-        const inventory: Inventory = InventoryRegistry.getFor(actorId);
-        const recipe: Recipe = this._recipesById.get(recipeId);
+    public async craft(actorId: string, recipeId: string): Promise<FabricationOutcome> {
+        const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
+        const recipe: Recipe = this.getRecipeByPartId(recipeId);
 
         const missingIngredients: Ingredient[] = [];
         recipe.ingredients.forEach((ingredient: Ingredient) => {
-            if (!inventory.contains(ingredient)) {
+            if (!inventory.containsIngredient(ingredient)) {
                 missingIngredients.push(ingredient);
             }
         });
@@ -69,43 +68,21 @@ class CraftingSystem {
             throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${message}`);
         }
 
-        const fabricator: Fabricator = this.fabricator;
-        const craftingResults: CraftingResult[] = fabricator.fabricateFromRecipe(recipe, inventory.denormalizedContainedComponents());
+        const actor: Actor = game.actors.get(actorId);
+        const fabricationOutcome = await this.fabricator.fabricateFromRecipe(actor, recipe);
 
-        await this.applyResults(craftingResults, inventory);
-        return craftingResults;
+        return fabricationOutcome;
     }
 
-    public async craftWithComponents(actorId: string, components: CraftingComponent[]): Promise<CraftingResult[]> {
-        const inventory: Inventory = InventoryRegistry.getFor(actorId);
+    public async craftWithComponents(actorId: string, components: CraftingComponent[]): Promise<FabricationOutcome> {
+        const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
 
-        if (!inventory.hasAll(components)) {
+        if (!inventory.hasAllComponents(components)) {
             throw new Error(`There are insufficient crafting components of the specified type in the inventory of Actor ID ${actorId}`);
         }
-
-        const craftingResults: CraftingResult[] = this.fabricator.fabricateFromComponents(components);
-        await this.applyResults(craftingResults, inventory);
-        return craftingResults;
-    }
-
-    private async applyResults(craftingResults: CraftingResult[], inventory: Inventory) {
-        for (const craftingResult of craftingResults) {
-            switch (craftingResult.action) {
-                case ActionType.ADD:
-                    if (craftingResult.customData) {
-                        await inventory.add(craftingResult.component, craftingResult.quantity, craftingResult.customData);
-                    } else {
-                        await inventory.add(craftingResult.component, craftingResult.quantity);
-                    }
-                    break;
-                case ActionType.REMOVE:
-                    await inventory.remove(craftingResult.component, craftingResult.quantity);
-                    break;
-                default:
-                    throw new Error(`The Crafting Action Type ${craftingResult.action} is not supported. Allowable 
-                        values are: ADD, REMOVE. `);
-            }
-        }
+        const actor: Actor = game.actors.get(actorId);
+        const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(actor, components);
+        return fabricationOutcome;
     }
 
     get compendiumPackKey(): string {
@@ -128,7 +105,7 @@ class CraftingSystem {
         return Array.from(this._componentsById.values());
     }
 
-    getComponentByPartId(entryId: string): CraftingComponent {
+    public getComponentByPartId(entryId: string): CraftingComponent {
         return this._componentsById.get(entryId);
     }
 

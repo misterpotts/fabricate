@@ -1,11 +1,12 @@
 import {ItemRecipeTab} from "../interface/ItemRecipeTab";
 import {CraftingTab} from "../interface/CraftingTab";
-import {InventoryRegistry} from "../registries/InventoryRegistry";
 import {Inventory} from "../game/Inventory";
 import {EssenceTypeIconConverter} from "../core/EssenceType";
-import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
 import Properties from "../Properties";
+import {FabricateApplication} from "./FabricateApplication";
+
+declare let fabricate: FabricateApplication;
 
 class FabricateLifecycle {
 
@@ -56,21 +57,21 @@ class FabricateLifecycle {
     private static registerApplicationListeners() {
 
         Hooks.on('createOwnedItem', (actor: any) => {
-            const inventory = InventoryRegistry.getFor(actor.id);
+            const inventory = fabricate.inventories.getFor(actor.id);
             if (inventory) {
                 inventory.update();
             }
         });
 
         Hooks.on('deleteOwnedItem', (actor: any) => {
-            const inventory = InventoryRegistry.getFor(actor.id);
+            const inventory = fabricate.inventories.getFor(actor.id);
             if (inventory) {
                 inventory.update();
             }
         });
 
         Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
-            const inventory: Inventory = InventoryRegistry.getFor(actor.id);
+            const inventory: Inventory = fabricate.inventories.getFor(actor.id);
             if (inventory) {
                 if (typeof update.data !== 'undefined') {
                     await inventory.updateQuantityFor(item);
@@ -88,7 +89,7 @@ class FabricateLifecycle {
             type: Boolean,
             default: true,
             config: true,
-            onChange: (enabled: boolean) => { CraftingSystemRegistry.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
+            onChange: (enabled: boolean) => {fabricate.systems.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
         });
     }
 }
