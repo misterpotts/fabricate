@@ -38,8 +38,7 @@ async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Prom
     }
     const craftingSystemFactory: CraftingSystemFactory = new CompendiumImportingCraftingSystemFactory(systemSpec);
     const craftingSystem = await craftingSystemFactory.make();
-    const enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
-    craftingSystem.enabled = enabled;
+    craftingSystem.enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
     FabricateApplication.systems.register(craftingSystem);
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
 }

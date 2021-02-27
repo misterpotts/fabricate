@@ -52,4 +52,4 @@ gulp.task('foundry', () => {
   return gulp.src('dist/**').pipe(gulp.dest(MODULEPATH));
 });
 
-gulp.task("update", gulp.series('build-unsafe', 'foundry'));
+gulp.task("update", gulp.series('build', 'foundry'));

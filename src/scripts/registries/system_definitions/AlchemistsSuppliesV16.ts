@@ -1,6 +1,5 @@
-import {AlchemicalResult} from "../../core/AlchemicalResult";
 import {AlchemicalResult5E} from "../../dnd5e/AlchemicalResult5E";
-import {AlchemicalResultSet} from "../../core/AlchemicalResultSet";
+import {AlchemicalResult, AlchemicalResultSet} from "../../core/AlchemicalResultSet";
 import {EssenceCombiner} from "../../core/EssenceCombiner";
 import {DefaultEssenceCombiner5E} from "../../dnd5e/DefaultEssenceCombiner5E";
 import {EssenceCombiningFabricator} from "../../core/Fabricator";

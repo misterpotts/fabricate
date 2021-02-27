@@ -4,9 +4,7 @@ import {Inventory} from "../game/Inventory";
 import {EssenceTypeIconConverter} from "../core/EssenceType";
 import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
 import Properties from "../Properties";
-import {FabricateApplication} from "./FabricateApplication";
-
-declare let fabricate: FabricateApplication;
+import FabricateApplication from "./FabricateApplication";
 
 class FabricateLifecycle {
 
@@ -25,13 +23,13 @@ class FabricateLifecycle {
         });
 
         // @ts-ignore
-        Handlebars.registerHelper('essenceIcon', function(arg1, arg2, options) {
+        Handlebars.registerHelper('essenceIcon', function(arg1) {
             // @ts-ignore
             return EssenceTypeIconConverter.convertToIconMarkup(arg1);
         });
 
         // @ts-ignore
-        Handlebars.registerHelper('essenceIconSeries', function(arg1, arg2, options) {
+        Handlebars.registerHelper('essenceIconSeries', function(arg1) {
             // @ts-ignore
             return EssenceTypeIconConverter.convertSeriesToIconMarkup(arg1);
         });
@@ -57,21 +55,21 @@ class FabricateLifecycle {
     private static registerApplicationListeners() {
 
         Hooks.on('createOwnedItem', (actor: any) => {
-            const inventory = fabricate.inventories.getFor(actor.id);
+            const inventory = FabricateApplication.inventories.getFor(actor.id);
             if (inventory) {
                 inventory.update();
             }
         });
 
         Hooks.on('deleteOwnedItem', (actor: any) => {
-            const inventory = fabricate.inventories.getFor(actor.id);
+            const inventory = FabricateApplication.inventories.getFor(actor.id);
             if (inventory) {
                 inventory.update();
             }
         });
 
         Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
-            const inventory: Inventory = fabricate.inventories.getFor(actor.id);
+            const inventory: Inventory = FabricateApplication.inventories.getFor(actor.id);
             if (inventory) {
                 if (typeof update.data !== 'undefined') {
                     await inventory.updateQuantityFor(item);
@@ -89,7 +87,7 @@ class FabricateLifecycle {
             type: Boolean,
             default: true,
             config: true,
-            onChange: (enabled: boolean) => {fabricate.systems.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
+            onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
         });
     }
 }

@@ -1,5 +1,5 @@
 import {CompendiumEntry} from "../game/CompendiumData";
-import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../core/AlchemicalResult";
+import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../core/AlchemicalResultSet";
 
 type DamageMethod = 'ROLLED' | 'FIXED';
 const AoETypeValues: string[] = ['cone', 'cube' , 'cylinder', 'line', 'radius', 'sphere', 'square'];
