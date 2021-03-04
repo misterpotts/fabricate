@@ -11,7 +11,7 @@ interface InventoryContents {
     preparedComponents: InventoryRecordData[];
 }
 
-class CraftingTabDTO {
+class CraftingTabData {
 
     private readonly _craftingSystems: CraftingSystem[];
     private readonly _inventory: Inventory;
@@ -96,8 +96,9 @@ class CraftingTabDTO {
         craftingSystem.recipes.forEach((recipe: Recipe) =>
             recipeData.push({
                 name: recipe.name,
-                entryId: recipe.partId,
+                partId: recipe.partId,
                 known: knownRecipes.includes(recipe.partId),
+                owned: inventory.containsRecipe(recipe.partId),
                 craftable: inventory.hasAllIngredientsFor(recipe)
             })
         );
@@ -133,4 +134,4 @@ class CraftingTabDTO {
     }
 }
 
-export {CraftingTabDTO}
+export {CraftingTabData}

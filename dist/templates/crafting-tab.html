@@ -31,7 +31,11 @@
             <div class="form-fields" style="flex: 6">
                 <select>
                     {{#each recipes}}
-                    <option value="{{entryId}}">{{name}}</option>
+                        {{#if known}}
+                        <option value="{{partId}}">{{name}}</option>
+                        {{else if owned}}
+                        <option value="{{partId}}">{{name}}</option>
+                        {{/if}}
                     {{else}}
                     <option disabled="true">No Recipes can be crafted</option>
                     {{/each}}

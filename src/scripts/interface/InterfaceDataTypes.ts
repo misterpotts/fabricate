@@ -20,8 +20,9 @@ interface CraftingSystemInfo {
 
 interface RecipeData {
     name: string;
-    entryId: string;
+    partId: string;
     known: boolean;
+    owned: boolean;
     craftable: boolean;
 }
 

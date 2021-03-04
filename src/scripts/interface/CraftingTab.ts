@@ -1,7 +1,7 @@
 import Properties from "../Properties";
 import {Inventory} from "../game/Inventory";
 import {Inventory5E} from "../dnd5e/Inventory5E";
-import {CraftingTabDTO} from "./CraftingTabDTO";
+import {CraftingTabData} from "./CraftingTabData";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {CraftingSystem} from "../core/CraftingSystem";
 import {InventoryRecordData} from "./InterfaceDataTypes";
@@ -50,7 +50,7 @@ class CraftingTab {
     }
 
     private async render(): Promise<void> {
-        const craftingTabDTO = new CraftingTabDTO(FabricateApplication.systems.getAllSystems(), this._inventory, this._actor);
+        const craftingTabDTO = new CraftingTabData(FabricateApplication.systems.getAllSystems(), this._inventory, this._actor);
         await craftingTabDTO.init();
         let template: HTMLElement = await renderTemplate(Properties.module.templates.craftingTab, craftingTabDTO);
         let element = this._sheetHtml.find('.crafting-tab-content');
@@ -80,7 +80,7 @@ class CraftingTab {
         ));
     }
 
-    private handleActorSheetEvents(craftingTabDTO: CraftingTabDTO): void {
+    private handleActorSheetEvents(craftingTabDTO: CraftingTabData): void {
 
         this._sheetHtml.find('.add-crafting-component').click(async (event: any) => {
 
