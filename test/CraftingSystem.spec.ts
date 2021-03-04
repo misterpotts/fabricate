@@ -16,38 +16,8 @@ import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOu
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-const mockActorId = 'lxQTQkhiymhGyjzx';
-const mockActor = <Actor><unknown>{
-    id: mockActorId
-};
-const mockInventory: Inventory = <Inventory5E><unknown>{
-    containsIngredient: Sandbox.stub(),
-    addComponent: Sandbox.stub(),
-    removeComponent: Sandbox.stub(),
-    denormalizedContainedComponents: Sandbox.stub()
-}
-
-before(() => {
-    Sandbox.restore();
-    // @ts-ignore
-    global.fabricate = <FabricateModule>{
-        inventories: Sandbox.stub(),
-        systems: Sandbox.stub()
-    };
-    // @ts-ignore
-    fabricate.inventories.withArgs(mockActorId).returns(mockInventory);
-});
-
 beforeEach(() => {
-    // @ts-ignore
-    global.game = {
-        actors: {
-            get: Sandbox.stub()
-        }
-    };
-    // @ts-ignore
-    game.actors.get.withArgs(mockActorId).returns(mockActor);
-
+    Sandbox.restore();
 });
 
 describe('Crafting System |', () => {
@@ -200,10 +170,12 @@ describe('Crafting System |', () => {
                 removeComponent: Sandbox.stub(),
                 denormalizedContainedComponents: Sandbox.stub()
             }
+
             // @ts-ignore
             mockInventory.containsIngredient.withArgs(twoMud).returns(true);
             // @ts-ignore
             mockInventory.containsIngredient.withArgs(oneStick).returns(true);
+            const mockActor: Actor = <Actor><unknown>{};
             // @ts-ignore
             mockInventory.addComponent.withArgs(mudPie).returns(InventoryRecord.builder()
                 .withFabricateItem(mudPie.component)
@@ -229,7 +201,7 @@ describe('Crafting System |', () => {
             // @ts-ignore
             mockFabricator.fabricateFromRecipe.returns(new FabricationOutcome(OutcomeType.SUCCESS, 'Test user message', [removeOneStick, removeTwoMud, mudPie]));
 
-            const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockActor.id, mudPieRecipe.partId);
+            const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockInventory, mudPieRecipe);
             expect(fabricationOutcome.actions.length).to.equal(3);
             expect(fabricationOutcome.actions).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
 

@@ -6,18 +6,17 @@ import {FabricationHelper} from "./FabricationHelper";
 import {AlchemicalResult, EssenceCombiner} from "./EssenceCombiner";
 import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
 import {Inventory} from "../game/Inventory";
-import FabricateApplication from "../application/FabricateApplication";
 
 interface Fabricator {
 
-    fabricateFromRecipe(actor: Actor, recipe: Recipe): Promise<FabricationOutcome>;
-    fabricateFromComponents(actor: Actor, components: CraftingComponent[]): Promise<FabricationOutcome>;
+    fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome>;
+    fabricateFromComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome>;
 
 }
 
 class DefaultFabricator implements Fabricator {
 
-    public async fabricateFromRecipe(actor: Actor, recipe: Recipe): Promise<FabricationOutcome> {
+    public async fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
 
         let input: FabricationAction[] = recipe.ingredients.map((component) => {
             return FabricationAction.builder()
@@ -36,7 +35,6 @@ class DefaultFabricator implements Fabricator {
         });
 
         const fabricationActions: FabricationAction[] = input.concat(output);
-        const inventory: Inventory = FabricateApplication.inventories.getFor(actor.id);
         return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
     }
 
@@ -53,7 +51,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         this._essenceCombiner = essenceCombiner;
     }
 
-    public async fabricateFromComponents(actor: Actor, components: CraftingComponent[]): Promise<FabricationOutcome> {
+    public async fabricateFromComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
         if (!this._essenceCombiner) {
             throw new Error(`No Essence Combiner has been provided for this system. You may only craft from Recipes. `);
         }
@@ -67,12 +65,10 @@ class EssenceCombiningFabricator<T> implements Fabricator {
             .build();
         const fabricationActions: FabricationAction[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
         fabricationActions.push(addedComponent);
-        const inventory: Inventory = FabricateApplication.inventories.getFor(actor.id);
         return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
     }
 
-    public fabricateFromRecipe(actor: Actor, recipe: Recipe): Promise<FabricationOutcome> {
-        const inventory: Inventory = FabricateApplication.inventories.getFor(actor.id);
+    public fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
         const craftingComponents = inventory.denormalizedContainedComponents().filter((component: CraftingComponent) => component.systemId === recipe.systemId);
         if (!craftingComponents || craftingComponents.length === 0) {
             throw new Error(`Essence Combining Fabricators require components to Fabricate Recipes. `);

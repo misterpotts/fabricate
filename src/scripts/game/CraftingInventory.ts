@@ -5,6 +5,10 @@ import {Ingredient} from "../core/Ingredient";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {Recipe} from "../core/Recipe";
 import {FabricateItem} from "../core/FabricateItem";
+import Properties from "../Properties";
+import FabricateApplication from "../application/FabricateApplication";
+import {FabricateItemType} from "./CompendiumData";
+import {CraftingSystem} from "../core/CraftingSystem";
 
 abstract class CraftingInventory implements Inventory {
 
@@ -130,6 +134,40 @@ abstract class CraftingInventory implements Inventory {
             Ingredient[Mud, 2], not [Ingredient[Mud, 1], Ingredient[Mud 1]]. `);
         }
         return !failedToFind;
+    }
+
+    protected getOwningCraftingSystemForItem(item: Item): CraftingSystem {
+        const systemId = item.getFlag(Properties.module.name, Properties.flagKeys.item.systemId);
+        const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
+        if (!craftingSystem) {
+            throw new Error(`Unable to look up crafting System '${systemId}' when indexing Item '${item._id}'. `);
+        }
+        return craftingSystem;
+    }
+
+    protected lookUp(item: Item): FabricateItem {
+        const craftingSystem: CraftingSystem = this.getOwningCraftingSystemForItem(item);
+        const itemType: FabricateItemType = item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
+        const partId: string = item.getFlag(Properties.module.name, Properties.flagKeys.item.partId);
+        switch (itemType) {
+            case FabricateItemType.RECIPE:
+                const recipe: Recipe = craftingSystem.getRecipeByPartId(partId);
+                if (recipe) {
+                    return recipe;
+                }
+                throw new Error(`Unable to look up Recipe with Part ID '${partId}' from Crafting System 
+                    '${craftingSystem.compendiumPackKey}. '`);
+            case FabricateItemType.COMPONENT:
+                const craftingComponent: CraftingComponent = craftingSystem.getComponentByPartId(partId);
+                if (craftingComponent) {
+                    return craftingComponent;
+                }
+                throw new Error(`Unable to look up Crafting Component with Part ID '${partId}' from Crafting System 
+                    '${craftingSystem.compendiumPackKey}. '`);
+            default:
+                throw new Error(`Unrecognized Fabricate Item Type of '${itemType}' for Item '${item._id}'. 
+                    The allowable values are 'COMPONENT' and 'RECIPE'. `)
+        }
     }
 
     public abstract removeComponent(component: CraftingComponent, quantity?: number): Promise<InventoryModification<CraftingComponent>>;

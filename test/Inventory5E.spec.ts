@@ -11,7 +11,7 @@ import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {FabricateCompendiumData} from "../src/scripts/game/CompendiumData";
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import Properties from "../src/scripts/Properties";
-import {FabricateApplication} from "../src/scripts/application/FabricateApplication";
+import FabricateApplication from "../src/scripts/application/FabricateApplication";
 
 const Sandbox: SinonSandbox = Sinon.createSandbox();
 
@@ -37,32 +37,32 @@ const compendiumPackKey: string = 'fabricate.fabricate-test';
 
 const wax: CraftingComponent = CraftingComponent.builder()
     .withName('Wax')
-    .withSystemId('fabricate.fabricate-test')
+    .withSystemId(compendiumPackKey)
     .withPartId('DPYl8D5QtcRVH5YX')
     .build();
 const mud: CraftingComponent = CraftingComponent.builder()
     .withName('Mud')
-    .withSystemId('fabricate.fabricate-test')
+    .withSystemId(compendiumPackKey)
     .withPartId('tCmAnq9zcESt0ULf')
     .build();
 const sticks: CraftingComponent = CraftingComponent.builder()
     .withName('Sticks')
-    .withSystemId('fabricate.fabricate-test')
+    .withSystemId(compendiumPackKey)
     .withPartId('arWeEYkLkubimBz3')
     .build();
 const dung: CraftingComponent = CraftingComponent.builder()
     .withName('Dung')
-    .withSystemId('fabricate.fabricate-test')
+    .withSystemId(compendiumPackKey)
     .withPartId('Ra2Z1ujre76weR0i')
     .build();
 const mudPie: CraftingComponent = CraftingComponent.builder()
     .withName('Mud Pie')
-    .withSystemId('fabricate.fabricate-test')
+    .withSystemId(compendiumPackKey)
     .withPartId('4iHqWSLTMFjPbpuI')
     .build();
 const mudPieRecipe: Recipe = Recipe.builder()
     .withName('Recipe: Mud Pie')
-    .withSystemId('fabricate.fabricate-test')
+    .withSystemId(compendiumPackKey)
     .withPartId('z9y2U9ZfCEBN0rW6')
     .build();
 
@@ -71,6 +71,9 @@ before(() => {
     Sandbox.restore();
 
     const dummyCraftingSystem: CraftingSystem = <CraftingSystem><unknown>{
+        compendiumPackKey: compendiumPackKey,
+        recipes: [mudPieRecipe],
+        components: [wax, mud, sticks, dung, mudPie],
         getComponentByPartId: Sandbox.stub(),
         getRecipeByPartId: Sandbox.stub(),
     };
@@ -85,25 +88,14 @@ before(() => {
     // @ts-ignore
     dummyCraftingSystem.getRecipeByPartId.withArgs('z9y2U9ZfCEBN0rW6').returns(mudPieRecipe);
 
-
-    // @ts-ignore
-    global.fabricate = <FabricateApplication>{
-        inventories: {
-            getFor: Sandbox.stub()
-        },
-        systems: {
-            getSystemByCompendiumPackKey: Sandbox.stub()
-        }
-    }
-
-    // @ts-ignore
-    fabricate.systems.getSystemByCompendiumPackKey.withArgs(compendiumPackKey).returns(dummyCraftingSystem);
+    FabricateApplication.systems.register(dummyCraftingSystem);
 
 });
 
 
 
 beforeEach(() => {
+
     // @ts-ignore
     global.game = <Game>{
         packs: {
@@ -117,6 +109,7 @@ beforeEach(() => {
     game.packs.get.withArgs(compendiumPackKey).returns(compendium);
     compendium.getEntity.withArgs('DPYl8D5QtcRVH5YX').returns({data:{data:{}}});
     compendium.getEntity.withArgs('Ra2Z1ujre76weR0i').returns({data:{data:{}}});
+
 });
 
 describe('Inventory5E |', () => {

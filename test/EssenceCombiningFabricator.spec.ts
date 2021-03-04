@@ -13,14 +13,8 @@ import {AlchemicalResultSet} from "../src/scripts/core/AlchemicalResultSet";
 import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
-import {FabricateApplication} from "../src/scripts/application/FabricateApplication";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
-
-const mockActorId = 'lxQTQkhiymhGyjzx';
-const mockActor = <Actor><unknown>{
-    id: mockActorId
-};
 
 const mockInventory: Inventory = <Inventory5E><unknown>{
     containsIngredient: Sandbox.stub(),
@@ -31,16 +25,6 @@ const mockInventory: Inventory = <Inventory5E><unknown>{
 
 beforeEach(() => {
     Sandbox.restore();
-    // @ts-ignore
-    global.fabricate = <FabricateApplication>{
-        inventories: {
-            getFor: Sandbox.stub()
-        },
-        systems: Sandbox.stub()
-    };
-
-    // @ts-ignore
-    fabricate.inventories.getFor.withArgs(mockActorId).returns(mockInventory);
 });
 
 describe('Essence Combining Fabricator |', () => {
@@ -210,7 +194,7 @@ describe('Essence Combining Fabricator |', () => {
 
             // @ts-ignore
             mockInventory.denormalizedContainedComponents.returns([ironwoodHeart, hydrathistle, voidroot]);
-            const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockActor, instantRopeRecipe);
+            const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, instantRopeRecipe);
 
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
             expect(outcome.type, 'Expected Fabrication to be successful').to.equal(OutcomeType.SUCCESS);
@@ -329,7 +313,7 @@ describe('Essence Combining Fabricator |', () => {
             mockInventory.addComponent.returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
 
             const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
-            const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockActor, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
+            const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockInventory, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
             const addResults = outcome.actions.filter((action: FabricationAction) => action.type === ActionType.ADD);
             expect(addResults.length).to.equal(1);
@@ -359,7 +343,7 @@ describe('Essence Combining Fabricator |', () => {
 
             // @ts-ignore
             mockInventory.denormalizedContainedComponents.returns([luminousCapDust, luminousCapDust, wispStalks, fennelSilk]);
-            const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockActor, flashbangRecipe);
+            const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, flashbangRecipe);
 
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
             expect(outcome.type, 'Expected a successful Fabrication Outcome').to.equal(OutcomeType.SUCCESS);

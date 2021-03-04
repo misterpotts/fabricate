@@ -13,10 +13,6 @@ import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-const mockActorId = 'lxQTQkhiymhGyjzx';
-const mockActor = <Actor><unknown>{
-    id: mockActorId
-};
 const mockInventory: Inventory = <Inventory5E><unknown>{
     containsIngredient: Sandbox.stub(),
     addComponent: Sandbox.stub(),
@@ -24,30 +20,8 @@ const mockInventory: Inventory = <Inventory5E><unknown>{
     denormalizedContainedComponents: Sandbox.stub()
 }
 
-before(() => {
-    Sandbox.restore();
-
-    // @ts-ignore
-    global.fabricate = <FabricateModule>{
-        inventories: {
-            getFor: Sandbox.stub()
-        },
-        systems: Sandbox.stub()
-    };
-    // @ts-ignore
-    fabricate.inventories.getFor.withArgs(mockActorId).returns(mockInventory);
-});
-
 beforeEach(() => {
-    // @ts-ignore
-    global.game = {
-        actors: {
-            get: Sandbox.stub()
-        }
-    };
-    // @ts-ignore
-    game.actors.get.withArgs(mockActorId).returns(mockActor);
-
+    Sandbox.restore();
 });
 
 describe('Default Fabricator |', () => {
@@ -102,7 +76,7 @@ describe('Default Fabricator |', () => {
         it('Should create a Mud Pie from Recipe and components', async () => {
 
             const underTest = new DefaultFabricator();
-            const fabricationOutcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockActor, mudPieRecipe);
+            const fabricationOutcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, mudPieRecipe);
             expect(fabricationOutcome.actions.length).to.equal(3);
             expect(fabricationOutcome.actions).to.deep.include.members([
                 FabricationAction.builder()

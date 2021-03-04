@@ -4,7 +4,6 @@ import {CraftingComponent} from "./CraftingComponent";
 import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
 import {FabricationOutcome} from "./FabricationOutcome";
-import FabricateApplication from "../application/FabricateApplication";
 
 class CraftingSystem {
     private readonly _name: string;
@@ -53,9 +52,7 @@ class CraftingSystem {
         return this._description;
     }
 
-    public async craft(actorId: string, recipeId: string): Promise<FabricationOutcome> {
-        const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
-        const recipe: Recipe = this.getRecipeByPartId(recipeId);
+    public async craft(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
 
         const missingIngredients: Ingredient[] = [];
         recipe.ingredients.forEach((ingredient: Ingredient) => {
@@ -68,20 +65,17 @@ class CraftingSystem {
             throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${message}`);
         }
 
-        const actor: Actor = game.actors.get(actorId);
-        const fabricationOutcome = await this.fabricator.fabricateFromRecipe(actor, recipe);
+        const fabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
 
         return fabricationOutcome;
     }
 
-    public async craftWithComponents(actorId: string, components: CraftingComponent[]): Promise<FabricationOutcome> {
-        const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
+    public async craftWithComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
 
         if (!inventory.hasAllComponents(components)) {
-            throw new Error(`There are insufficient crafting components of the specified type in the inventory of Actor ID ${actorId}`);
+            throw new Error('There are insufficient crafting components of the specified type in the inventory. ');
         }
-        const actor: Actor = game.actors.get(actorId);
-        const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(actor, components);
+        const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
         return fabricationOutcome;
     }
 

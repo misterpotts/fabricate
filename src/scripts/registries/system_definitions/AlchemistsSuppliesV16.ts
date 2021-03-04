@@ -2,10 +2,10 @@ import {AlchemicalResult5E} from "../../dnd5e/AlchemicalResult5E";
 import {AlchemicalResult, AlchemicalResultSet} from "../../core/AlchemicalResultSet";
 import {EssenceCombiner} from "../../core/EssenceCombiner";
 import {DefaultEssenceCombiner5E} from "../../dnd5e/DefaultEssenceCombiner5E";
-import {EssenceCombiningFabricator} from "../../core/Fabricator";
 import {GameSystemType} from "../../core/GameSystemType";
 import {CraftingComponent} from "../../core/CraftingComponent";
 import {CraftingSystemSpecification} from "../../core/CraftingSystemSpecification";
+import {EssenceCombiningFabricator} from "../../core/Fabricator";
 
 const blinding: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
     .withEssenceCombination(['EARTH', 'EARTH'])
