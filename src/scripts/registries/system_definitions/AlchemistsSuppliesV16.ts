@@ -94,6 +94,8 @@ const knownAlchemicalResults: AlchemicalResultSet<ItemData5e> = AlchemicalResult
     .withResult(increaseDC)
     .build();
 
+const alchemistsSuppliesV16 = 'fabricate.alchemists-supplies-v16';
+
 const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.builder()
     .withMaxComponents(6)
     .withMaxEssences(6)
@@ -102,7 +104,7 @@ const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.bu
         .withName('Alchemical Bomb')
         .withImageUrl('systems/dnd5e/icons/items/inventory/bomb.jpg')
         .withPartId('90z9nOwmGnP4aUUk')
-        .withSystemId('fabricate.alchemists-supplies-v11')
+        .withSystemId(alchemistsSuppliesV16)
         .withEssences([])
         .build())
     .build();
@@ -111,7 +113,7 @@ const fabricator: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningF
 
 const AlchemistsSuppliesSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
     .withName('Alchemist\'s Supplies v1.6')
-    .withCompendiumPackKey('fabricate.alchemists-supplies-v16')
+    .withCompendiumPackKey(alchemistsSuppliesV16)
     .withEnableHint('Enable the Alchemist\'s Supplies v1.6 crafting system by /u/calculusChild?')
     .withDescription('Alchemy is the skill of exploiting unique properties of certain plants, minerals, and ' +
         'creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic ' +

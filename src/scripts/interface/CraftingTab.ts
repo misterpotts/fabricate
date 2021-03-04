@@ -145,7 +145,7 @@ class CraftingTab {
             const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByPartId(hopperItem.entryId));
 
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
-            await craftingSystem.craftWithComponents(this._actor.id, craftingComponents);
+            await craftingSystem.craftWithComponents(FabricateApplication.inventories.getFor(this._actor.id), craftingComponents);
 
             this._suppressedInNav = true;
             await this.render();

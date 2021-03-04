@@ -2,6 +2,7 @@ import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
 import {CraftingSystem} from "../core/CraftingSystem";
 import FabricateApplication from "../application/FabricateApplication";
+import {Inventory} from "../game/Inventory";
 
 class ItemRecipeTab {
     private static readonly recipeType: string = Properties.types.recipe;
@@ -73,9 +74,9 @@ class ItemRecipeTab {
     private handleItemSheetEvents(): void {
 
         this._sheetHtml.find('.craft-button').click(async (event: any) => {
-            const recipeId = event.target.getAttribute('data-recipe-id');
-            const actorId = event.target.getAttribute('data-actor-id');
-            await this._craftingSystem.craft(actorId, recipeId);
+            const actorId: string = event.target.getAttribute('data-actor-id');
+            const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
+            await this._craftingSystem.craft(inventory, this._recipe);
             this._suppressedInNav = true;
             await this.render();
         });

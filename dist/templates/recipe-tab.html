@@ -41,7 +41,7 @@
         <div class="fabricate-components">
             <ul>
                 {{#each recipe.results}}
-                {{#ifEquals action "ADD"}}
+                {{#ifEquals type "ADD"}}
                 <li>
                     <a title="View in Compendium" class="open-compendium-item" data-part-id="{{partId}}" data-system-id="{{systemId}}">
                         <div class="component">
@@ -60,7 +60,7 @@
     <div class="controls">
         {{#if system.enabled}}
         <a title="Craft">
-            <p class="craft-button" data-recipe-id="{{recipe.entryId}}" data-actor-id="{{item.actor.id}}"><i class="fas fa-flask"></i> Craft</p>
+            <p class="craft-button" data-actor-id="{{item.actor.id}}"><i class="fas fa-flask"></i> Craft</p>
         </a>
         {{else}}
         <p class="craft-button"><i class="fas fa-lock"></i> The crafting system "{{system.name}}" is disabled! </p>
