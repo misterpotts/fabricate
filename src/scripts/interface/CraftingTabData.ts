@@ -49,7 +49,7 @@ class CraftingTabData {
         if (this._craftingSystemData.hasEnabledSystems) {
             const selectedCraftingSystem = this._craftingSystems.find((system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId);
 
-            this._recipeData = this.prepareRecipeDataForSystem(selectedCraftingSystem, this._actor, this._inventory);
+            this._recipeData = await this.prepareRecipeDataForSystem(selectedCraftingSystem, this._actor, this._inventory);
 
             this._inventoryContents = this.prepareInventoryDataForSystem(selectedCraftingSystem,this._actor, this._inventory);
         }
@@ -89,19 +89,25 @@ class CraftingTabData {
         }
     }
 
-    prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory): RecipeData[] {
+    async prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory): Promise<RecipeData[]> {
         const storedKnownRecipes: string[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.compendiumPackKey));
         const knownRecipes: string[] = storedKnownRecipes ? storedKnownRecipes : [];
         const recipeData: RecipeData[] = [];
-        craftingSystem.recipes.forEach((recipe: Recipe) =>
+        const selectedRecipeId: string = await this._actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+        craftingSystem.recipes.forEach((recipe: Recipe) => {
+            const isKnown: boolean = knownRecipes.includes(recipe.partId);
+            const isOwned: boolean = inventory.containsRecipe(recipe.partId);
+            const isCraftable: boolean = (isKnown || isOwned) ? inventory.hasAllIngredientsFor(recipe) : false;
+            const isSelected: boolean = recipe.partId === selectedRecipeId;
             recipeData.push({
                 name: recipe.name,
                 partId: recipe.partId,
-                known: knownRecipes.includes(recipe.partId),
-                owned: inventory.containsRecipe(recipe.partId),
-                craftable: inventory.hasAllIngredientsFor(recipe)
-            })
-        );
+                known: isKnown,
+                owned: isOwned,
+                craftable: isCraftable,
+                selected: isSelected
+            });
+        });
         return recipeData;
     }
 

@@ -3,6 +3,8 @@ import {ActionType} from "./ActionType";
 import {FabricationAction} from "./FabricationAction";
 import {Inventory, InventoryModification} from "../game/Inventory";
 import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
+import {InventoryRecord} from "../game/InventoryRecord";
+import {Recipe} from "./Recipe";
 
 class FabricationHelper {
 
@@ -79,15 +81,28 @@ class FabricationHelper {
         return FabricationHelper.primes;
     }
 
-    public static combinationHistogram(components:  CraftingComponent[]): CraftingComponent[][] {
+    public static asComponentCombinations(componentRecords: InventoryRecord<CraftingComponent>[], recipe: Recipe): CraftingComponent[][] {
+        const denormalizedComponents: CraftingComponent[] = [];
+        componentRecords.forEach((record: InventoryRecord<CraftingComponent>) => {
+            const ceiling = record.totalQuantity < recipe.essences.length ? record.totalQuantity : recipe.essences.length;
+            for (let i = 0; i < ceiling; i++) {
+                denormalizedComponents.push(CraftingComponent.builder()
+                    .withName(record.fabricateItem.name)
+                    .withEssences(record.fabricateItem.essences)
+                    .withPartId(record.fabricateItem.partId)
+                    .withSystemId(record.fabricateItem.systemId)
+                    .withImageUrl(record.fabricateItem.imageUrl)
+                    .build());
+            }
+        });
         const combinations: CraftingComponent[][] = [];
-        const iterations = Math.pow(2, components.length);
+        const iterations = Math.pow(2, denormalizedComponents.length);
 
         for (let i = 0; i < iterations; i++) {
             const combination: CraftingComponent[] = [];
-            for (let j = 0; j < components.length; j++) {
+            for (let j = 0; j < denormalizedComponents.length; j++) {
                 if (i & Math.pow(2, j)) {
-                    combination.push(components[j]);
+                    combination.push(denormalizedComponents[j]);
                 }
             }
             if (combination.length > 0) {

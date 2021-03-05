@@ -17,6 +17,7 @@ const Properties = {
     flagKeys: {
         actor: {
             selectedCraftingSystem: 'crafting.selectedSystemId',
+            selectedRecipe: 'crafting.selectedRecipeId',
             hopperForSystem: (systemId: string) => `crafting.${systemId}.hopper`,
             knownRecipesForSystem: (systemId: string) => `crafting.${systemId}.knownRecipes`,
         },

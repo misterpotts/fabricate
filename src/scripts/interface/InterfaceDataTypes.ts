@@ -24,6 +24,7 @@ interface RecipeData {
     known: boolean;
     owned: boolean;
     craftable: boolean;
+    selected: boolean;
 }
 
 export {InventoryRecordData, CraftingSystemData, CraftingSystemInfo, RecipeData}

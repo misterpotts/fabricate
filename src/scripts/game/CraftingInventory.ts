@@ -42,6 +42,11 @@ abstract class CraftingInventory implements Inventory {
         return this.contents.length;
     }
 
+    get componentCount(): number {
+        return this.components.map((componentRecord: InventoryRecord<CraftingComponent>) => componentRecord.totalQuantity)
+            .reduce((left, right) => left + right, 0);
+    }
+
     public supportsGameSystem(gameSystem: GameSystemType): boolean {
         return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
     }
@@ -180,8 +185,6 @@ abstract class CraftingInventory implements Inventory {
     public abstract update(): void;
 
     public abstract updateQuantityFor(item: any): Promise<boolean>;
-
-    abstract denormalizedContainedComponents(): CraftingComponent[];
 
 }
 

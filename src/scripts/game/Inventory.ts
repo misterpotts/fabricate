@@ -40,7 +40,6 @@ interface Inventory {
     supportsGameSystem(gameSystem: GameSystemType): boolean;
     containsIngredient(ingredient: Ingredient): boolean;
     containsRecipe(partId: string): boolean;
-    denormalizedContainedComponents(): CraftingComponent[];
     hasAllIngredientsFor(recipe: Recipe): boolean;
     addComponent(component: CraftingComponent, quantity?: number, customData?: any): Promise<InventoryModification<CraftingComponent>>;
     removeComponent(component: CraftingComponent, quantity?: number): Promise<InventoryModification<CraftingComponent>>;

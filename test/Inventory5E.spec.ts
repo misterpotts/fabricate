@@ -144,8 +144,7 @@ describe('Inventory5E |', () => {
             expect(underTest.components.length).to.equal(4);
             expect(underTest.recipes.length).to.equal(1);
 
-            const craftingComponents: CraftingComponent[] = underTest.denormalizedContainedComponents();
-            expect(craftingComponents.length).to.equal(15);
+            expect(underTest.componentCount).to.equal(15);
 
         });
 
@@ -173,7 +172,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContainedComponents().length;
+            const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
             const initialContains = underTest.containsIngredient(oneDung);
@@ -184,7 +183,7 @@ describe('Inventory5E |', () => {
             const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(5);
 
-            const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
+            const postAddOneComponentCount = underTest.componentCount;
             expect(postAddOneComponentCount).to.equal(16);
 
             const postAddOneContains = underTest.containsIngredient(oneDung);
@@ -214,7 +213,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContainedComponents().length;
+            const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
             await underTest.addComponent(dung, TWO);
@@ -222,7 +221,7 @@ describe('Inventory5E |', () => {
             const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(5);
 
-            const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
+            const postAddOneComponentCount = underTest.componentCount;
             expect(postAddOneComponentCount).to.equal(17);
 
             expect(underTest.containsIngredient(twoDung)).to.be.true;
@@ -254,7 +253,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContainedComponents().length;
+            const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
             const doesNotHaveFourBeforehand = underTest.containsIngredient(fourMudIngredient);
@@ -268,7 +267,7 @@ describe('Inventory5E |', () => {
             const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(4);
 
-            const postAddOneComponentCount = underTest.denormalizedContainedComponents().length;
+            const postAddOneComponentCount = underTest.componentCount;
             expect(postAddOneComponentCount).to.equal(17);
 
             const hasFourAfterwards = underTest.containsIngredient(fourMudIngredient);
@@ -305,7 +304,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContainedComponents().length;
+            const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
             const containsTwoBeforehand = underTest.containsIngredient(twoMudIngredient);
@@ -316,7 +315,7 @@ describe('Inventory5E |', () => {
             const postRemoveOneContents = underTest.components;
             expect(postRemoveOneContents.length).to.equal(4);
 
-            const postRemoveOneComponentCount = underTest.denormalizedContainedComponents().length;
+            const postRemoveOneComponentCount = underTest.componentCount;
             expect(postRemoveOneComponentCount).to.equal(14);
 
             const containsTwoAfterwards = underTest.containsIngredient(twoMudIngredient);
@@ -353,7 +352,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContainedComponents().length;
+            const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
             const containsTwoBeforehand = underTest.containsIngredient(twoSticksIngredient);
@@ -364,7 +363,7 @@ describe('Inventory5E |', () => {
             const postRemoveOneContents = underTest.components;
             expect(postRemoveOneContents.length).to.equal(4);
 
-            const postRemoveOneComponentCount = underTest.denormalizedContainedComponents().length;
+            const postRemoveOneComponentCount = underTest.componentCount;
             expect(postRemoveOneComponentCount).to.equal(14);
 
             const containsTwoAfterwards = underTest.containsIngredient(twoSticksIngredient);
@@ -404,7 +403,7 @@ describe('Inventory5E |', () => {
             const initialContents = underTest.components;
             expect(initialContents.length).to.equal(4);
 
-            const initialComponentCount = underTest.denormalizedContainedComponents().length;
+            const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
             const containsTenBeforehand = underTest.containsIngredient(tenWaxIngredient);
@@ -415,7 +414,7 @@ describe('Inventory5E |', () => {
             const postRemoveSevenContents = underTest.components;
             expect(postRemoveSevenContents.length).to.equal(4);
 
-            const postRemoveSevenComponentCount = underTest.denormalizedContainedComponents().length;
+            const postRemoveSevenComponentCount = underTest.componentCount;
             expect(postRemoveSevenComponentCount).to.equal(8);
 
             const containsThreeAfterwards = underTest.containsIngredient(threeWaxIngredient);

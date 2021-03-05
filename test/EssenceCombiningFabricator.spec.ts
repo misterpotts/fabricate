@@ -13,6 +13,8 @@ import {AlchemicalResultSet} from "../src/scripts/core/AlchemicalResultSet";
 import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
+import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
+import {FabricateItemType} from "../src/scripts/game/CompendiumData";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -20,7 +22,7 @@ const mockInventory: Inventory = <Inventory5E><unknown>{
     containsIngredient: Sandbox.stub(),
     addComponent: Sandbox.stub(),
     removeComponent: Sandbox.stub(),
-    denormalizedContainedComponents: Sandbox.stub()
+    components: Sandbox.stub()
 }
 
 beforeEach(() => {
@@ -192,8 +194,75 @@ describe('Essence Combining Fabricator |', () => {
 
             const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
 
-            // @ts-ignore
-            mockInventory.denormalizedContainedComponents.returns([ironwoodHeart, hydrathistle, voidroot]);
+            const mockActor: Actor = <Actor><unknown>{};
+
+            const contents: InventoryRecord<CraftingComponent>[] = [];
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(ironwoodHeart)
+                .withTotalQuantity(1)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(hydrathistle)
+                .withTotalQuantity(1)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(voidroot)
+                .withTotalQuantity(1)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            mockInventory.components = contents;
+
+            const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, instantRopeRecipe);
+
+            expect(outcome, 'Expected a Fabrication Outcome').to.exist;
+            expect(outcome.type, 'Expected Fabrication to be successful').to.equal(OutcomeType.SUCCESS);
+            expect(outcome.actions).to.deep.include.members([
+                FabricationAction.builder().withComponent(voidroot).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(hydrathistle).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(ironwoodHeart).withAction(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(instantRope).withAction(ActionType.ADD).withQuantity(1).build()
+            ]);
+
+        });
+
+        it('Should Fabricate from a Recipe that requires essences with a large number of candidate components', async () => {
+
+            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
+
+            const mockActor: Actor = <Actor><unknown>{};
+
+            const contents: InventoryRecord<CraftingComponent>[] = [];
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(ironwoodHeart)
+                .withTotalQuantity(500)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(hydrathistle)
+                .withTotalQuantity(500)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(voidroot)
+                .withTotalQuantity(500)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            mockInventory.components = contents;
+
             const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, instantRopeRecipe);
 
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
@@ -341,8 +410,32 @@ describe('Essence Combining Fabricator |', () => {
 
             const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
 
-            // @ts-ignore
-            mockInventory.denormalizedContainedComponents.returns([luminousCapDust, luminousCapDust, wispStalks, fennelSilk]);
+            const mockActor: Actor = <Actor><unknown>{};
+
+            const contents: InventoryRecord<CraftingComponent>[] = [];
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(luminousCapDust)
+                .withTotalQuantity(2)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(wispStalks)
+                .withTotalQuantity(1)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(fennelSilk)
+                .withTotalQuantity(1)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            mockInventory.components = contents;
+
             const outcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, flashbangRecipe);
 
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;

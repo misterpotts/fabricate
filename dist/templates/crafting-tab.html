@@ -29,19 +29,35 @@
         <div class="form-group controls">
             <label>Select an available recipe</label>
             <div class="form-fields" style="flex: 6">
-                <select>
+                <select name="fabricate.crafting.selectedRecipe">
                     {{#each recipes}}
                         {{#if known}}
-                        <option value="{{partId}}">{{name}}</option>
+                            {{#if craftable}}
+                                {{#if selected}}
+                                <option value="{{partId}}" selected>{{name}}</option>
+                                {{else}}
+                                <option value="{{partId}}">{{name}}</option>
+                                {{/if}}
+                            {{else}}
+                            <option value="{{partId}}" disabled>{{name}} (insufficient ingredients)</option>
+                            {{/if}}
                         {{else if owned}}
-                        <option value="{{partId}}">{{name}}</option>
+                            {{#if craftable}}
+                                {{#if selected}}
+                                    <option value="{{partId}}" selected>{{name}}</option>
+                                {{else}}
+                                    <option value="{{partId}}">{{name}}</option>
+                                {{/if}}
+                            {{else}}
+                            <option value="{{partId}}" disabled>{{name}} (insufficient ingredients)</option>
+                            {{/if}}
                         {{/if}}
                     {{else}}
                     <option disabled="true">No Recipes can be crafted</option>
                     {{/each}}
                 </select>
                 <a title="Craft">
-                    <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
+                    <p class="craft-button actor-recipe-crafting"><i class="fas fa-flask"></i> Craft</p>
                 </a>
             </div>
         </div>

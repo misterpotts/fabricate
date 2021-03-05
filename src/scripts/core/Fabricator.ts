@@ -6,6 +6,7 @@ import {FabricationHelper} from "./FabricationHelper";
 import {AlchemicalResult, EssenceCombiner} from "./EssenceCombiner";
 import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
 import {Inventory} from "../game/Inventory";
+import {InventoryRecord} from "../game/InventoryRecord";
 
 interface Fabricator {
 
@@ -69,7 +70,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
     }
 
     public fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
-        const craftingComponents = inventory.denormalizedContainedComponents().filter((component: CraftingComponent) => component.systemId === recipe.systemId);
+        const craftingComponents = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
         if (!craftingComponents || craftingComponents.length === 0) {
             throw new Error(`Essence Combining Fabricators require components to Fabricate Recipes. `);
         }
@@ -82,17 +83,18 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
     }
 
-    private analyzeCombinationsForRecipe(components:  CraftingComponent[], recipe: Recipe): CraftingComponentCombination[] {
+    private analyzeCombinationsForRecipe(records: InventoryRecord<CraftingComponent>[], recipe: Recipe): CraftingComponentCombination[] {
         const essenceIdentities: Map<string, number> = FabricationHelper.assignEssenceIdentities(recipe.essences);
-        const usableComponents: CraftingComponent[] = components.filter((component: CraftingComponent) => component.essences.filter((essence: string) => recipe.essences.includes(essence)).length > 0);
+        const usableComponentRecords: InventoryRecord<CraftingComponent>[] = records.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.essences.filter((essence: string) => recipe.essences.includes(essence)).length > 0);
         const recipeIdentity = FabricationHelper.essenceCombinationIdentity(recipe.essences, essenceIdentities);
         const componentEssenceIdentity: Map<string, number> = new Map();
-        usableComponents.forEach((component: CraftingComponent) => {
-            if (!componentEssenceIdentity.has(component.partId)) {
-                componentEssenceIdentity.set(component.partId, FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities));
+        usableComponentRecords.forEach((record: InventoryRecord<CraftingComponent>) => {
+            if (!componentEssenceIdentity.has(record.fabricateItem.partId)) {
+                componentEssenceIdentity.set(record.fabricateItem.partId, FabricationHelper.essenceCombinationIdentity(record.fabricateItem.essences, essenceIdentities));
             }
         });
-        return FabricationHelper.combinationHistogram(usableComponents).map((combination: CraftingComponent[]) => {
+        return FabricationHelper.asComponentCombinations(usableComponentRecords, recipe)
+            .map((combination: CraftingComponent[]) => {
             const essenceCombinationIdentity = combination.map((component: CraftingComponent) => componentEssenceIdentity.get(component.partId))
                 .reduce((left: number, right: number) => left * right, 1);
             const craftableRecipes: Recipe[] = [];

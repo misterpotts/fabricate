@@ -3,9 +3,10 @@ import {Recipe} from "../core/Recipe";
 import {CraftingSystem} from "../core/CraftingSystem";
 import FabricateApplication from "../application/FabricateApplication";
 import {Inventory} from "../game/Inventory";
+import {FabricateCompendiumData} from "../game/CompendiumData";
+import {EssenceTypeIconConverter} from "../core/EssenceType";
 
 class ItemRecipeTab {
-    private static readonly recipeType: string = Properties.types.recipe;
     private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
 
     // @ts-ignore
@@ -17,16 +18,24 @@ class ItemRecipeTab {
     private _suppressedInNav: boolean = false;
     private static tabKey: string = 'fabricate-recipe';
 
-    public static bind(itemApplication: any, sheetHtml: HTMLElement): void {
-        if ((!itemApplication.item.data.flags.fabricate) || (itemApplication.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType)) {
+    public static bind(itemApplication: any, sheetHtml: any): void {
+        if (!itemApplication.item.data.flags.fabricate) {
             return;
         }
-        let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
-        if (!tab) {
-            tab = new ItemRecipeTab(itemApplication);
-            ItemRecipeTab.tabs.set(itemApplication.id, tab);
+        const fabricateFlags: FabricateCompendiumData = itemApplication.item.data.flags.fabricate;
+        if (fabricateFlags.type === Properties.types.recipe) {
+            let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
+            if (!tab) {
+                tab = new ItemRecipeTab(itemApplication);
+                ItemRecipeTab.tabs.set(itemApplication.id, tab);
+            }
+            tab.init(sheetHtml);
         }
-        tab.init(sheetHtml);
+        if (fabricateFlags.type === Properties.types.component && fabricateFlags.component.essences && fabricateFlags.component.essences.length > 0) {
+            const essences: any[] = fabricateFlags.component.essences;
+            const essenceDescription = EssenceTypeIconConverter.convertSeriesToIconMarkup(essences);
+            sheetHtml.find('ol.properties-list').append($(`<li>${essenceDescription}</li>`));
+        }
     }
 
     constructor(itemApplication: any) {

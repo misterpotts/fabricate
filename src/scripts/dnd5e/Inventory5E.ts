@@ -105,7 +105,7 @@ class Inventory5E extends CraftingInventory {
         } else {
             recordForType.itemsOfType.sort((left: Item<ItemData5e>, right: Item<ItemData5e>) => left.data.data.quantity - right.data.data.quantity);
             const item: any = recordForType.itemsOfType[0];
-            const updatedQuantityForItem = item.data.data.quantity + amountToAdd;
+            const updatedQuantityForItem = item.data.quantity + amountToAdd;
             // @ts-ignore
             const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item.id, data: {quantity: updatedQuantityForItem}});
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
@@ -213,22 +213,6 @@ class Inventory5E extends CraftingInventory {
             .reduce((left, right) => left + right, 0);
         inventoryRecordForType.totalQuantity = totalExcludingChanged + item.data.quantity;
         return true;
-    }
-
-    public denormalizedContainedComponents(): CraftingComponent[] {
-        return Array.from(this._componentDirectory.values()).map((record: InventoryRecord<CraftingComponent>) => {
-            const denormalizedComponents: CraftingComponent[] = [];
-            for (let i = 0; i < record.totalQuantity; i++) {
-                denormalizedComponents.push(CraftingComponent.builder()
-                    .withName(record.fabricateItem.name)
-                    .withEssences(record.fabricateItem.essences)
-                    .withPartId(record.fabricateItem.partId)
-                    .withSystemId(record.fabricateItem.systemId)
-                    .withImageUrl(record.fabricateItem.imageUrl)
-                    .build());
-            }
-            return denormalizedComponents;
-        }).reduce((left: CraftingComponent[], right: CraftingComponent[]) => left.concat(right), []);
     }
 
     update(): void {
