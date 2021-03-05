@@ -1,13 +1,11 @@
-import {AlchemicalResult} from "../../core/AlchemicalResult";
-import {ItemData5e} from "../../../global";
 import {AlchemicalResult5E} from "../../dnd5e/AlchemicalResult5E";
-import {AlchemicalResultSet} from "../../core/AlchemicalResultSet";
+import {AlchemicalResult, AlchemicalResultSet} from "../../core/AlchemicalResultSet";
 import {EssenceCombiner} from "../../core/EssenceCombiner";
 import {DefaultEssenceCombiner5E} from "../../dnd5e/DefaultEssenceCombiner5E";
-import {EssenceCombiningFabricator} from "../../core/Fabricator";
-import {CraftingSystem} from "../../core/CraftingSystem";
 import {GameSystemType} from "../../core/GameSystemType";
 import {CraftingComponent} from "../../core/CraftingComponent";
+import {CraftingSystemSpecification} from "../../core/CraftingSystemSpecification";
+import {EssenceCombiningFabricator} from "../../core/Fabricator";
 
 const blinding: AlchemicalResult<ItemData5e> = AlchemicalResult5E.builder()
     .withEssenceCombination(['EARTH', 'EARTH'])
@@ -96,6 +94,8 @@ const knownAlchemicalResults: AlchemicalResultSet<ItemData5e> = AlchemicalResult
     .withResult(increaseDC)
     .build();
 
+const alchemistsSuppliesV16 = 'fabricate.alchemists-supplies-v16';
+
 const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.builder()
     .withMaxComponents(6)
     .withMaxEssences(6)
@@ -103,18 +103,23 @@ const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.bu
     .withResultantItem(CraftingComponent.builder()
         .withName('Alchemical Bomb')
         .withImageUrl('systems/dnd5e/icons/items/inventory/bomb.jpg')
-        .withCompendiumEntry('fabricate.alchemists-supplies-v11', '90z9nOwmGnP4aUUk')
+        .withPartId('90z9nOwmGnP4aUUk')
+        .withSystemId(alchemistsSuppliesV16)
         .withEssences([])
         .build())
     .build();
 
 const fabricator: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
 
-const AlchemistsSuppliesSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
-    .withName('Alchemist\'s Supplies v1.1')
-    .withCompendiumPackKey('fabricate.alchemists-supplies-v11')
-    .withEnableHint('Enable the Alchemist\'s Supplies v1.1 crafting system by /u/calculusChild?')
+const AlchemistsSuppliesSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+    .withName('Alchemist\'s Supplies v1.6')
+    .withCompendiumPackKey(alchemistsSuppliesV16)
+    .withEnableHint('Enable the Alchemist\'s Supplies v1.6 crafting system by /u/calculusChild?')
+    .withDescription('Alchemy is the skill of exploiting unique properties of certain plants, minerals, and ' +
+        'creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic ' +
+        'minor magical effects, although the creations themselves are nonmagical.')
     .withSupportedGameSystem(GameSystemType.DND5E)
-    .withFabricator(fabricator);
+    .withFabricator(fabricator)
+    .build();
 
 export {AlchemistsSuppliesSystemSpec};

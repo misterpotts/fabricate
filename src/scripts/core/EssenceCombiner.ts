@@ -1,6 +1,5 @@
+import {AlchemicalResult, AlchemicalResultSet} from "./AlchemicalResultSet";
 import {CraftingComponent} from "./CraftingComponent";
-import {AlchemicalResult} from "./AlchemicalResult";
-import {AlchemicalResultSet} from "./AlchemicalResultSet";
 
 interface EssenceCombiner<T> {
     maxComponents: number;

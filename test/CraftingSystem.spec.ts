@@ -5,14 +5,20 @@ import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {CraftingResult} from "../src/scripts/core/CraftingResult";
+import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {ActionType} from "../src/scripts/core/ActionType";
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
-import {InventoryRegistry} from "../src/scripts/registries/InventoryRegistry";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {Inventory} from "../src/scripts/game/Inventory";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
+import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
+
+const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
+
+beforeEach(() => {
+    Sandbox.restore();
+});
 
 describe('Crafting System |', () => {
 
@@ -20,17 +26,12 @@ describe('Crafting System |', () => {
 
         it('Should create a Crafting System', () => {
 
-            let mockFabricator = <Fabricator>{
-                fabricateFromComponents(): CraftingResult[] {
-                    // @ts-ignore
-                    return [];
-                },
-                // @ts-ignore
-                fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
-                    return [];
-                }
+            const mockFabricator = <Fabricator><unknown>{
+                fabricateFromComponents: Sandbox.stub(),
+                fabricateFromRecipe: Sandbox.stub()
             };
-            Sinon.stub(mockFabricator, "fabricateFromRecipe").returns([]);
+            // @ts-ignore
+            mockFabricator.fabricateFromRecipe.returns({});
 
             let compendiumKey = 'fabricate.fabricate-test';
             let testSystem = CraftingSystem.builder()
@@ -40,29 +41,32 @@ describe('Crafting System |', () => {
                 .withFabricator(mockFabricator)
                 .withRecipe(Recipe.builder()
                     .withName('Recipe: Mud Pie')
-                    .withEntryId('4iHqWSLTMFjPbpuI')
+                    .withPartId('4iHqWSLTMFjPbpuI')
                     .withIngredient(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(2)
-                        .withComponentType(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Mud')
-                            .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
+                            .withPartId('tCmAnq9zcESt0ULf')
+                            .withSystemId(compendiumKey)
                             .build())
                         .build())
                     .withIngredient(Ingredient.builder()
                         .isConsumed(true)
                         .withQuantity(1)
-                        .withComponentType(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Sticks')
-                            .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
+                            .withPartId('arWeEYkLkubimBz3')
+                            .withSystemId(compendiumKey)
                             .build())
                         .build())
-                    .withResult(CraftingResult.builder()
+                    .withResult(FabricationAction.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
-                        .withItem(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')
-                            .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
+                            .withPartId('nWhTa8gD1QL1f9O3')
+                            .withSystemId(compendiumKey)
                             .build())
                         .build())
                     .build())
@@ -76,29 +80,32 @@ describe('Crafting System |', () => {
             expect(testSystem.recipes).to.deep.include.members([
                 Recipe.builder()
                     .withName('Recipe: Mud Pie')
-                    .withEntryId('4iHqWSLTMFjPbpuI')
+                    .withPartId('4iHqWSLTMFjPbpuI')
                     .withIngredient(Ingredient.builder()
-                        .withComponentType(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Mud')
-                            .withCompendiumEntry('fabricate.fabricate-test', 'tCmAnq9zcESt0ULf')
+                            .withSystemId('fabricate.fabricate-test')
+                            .withPartId('tCmAnq9zcESt0ULf')
                             .build())
                         .withQuantity(2)
                         .isConsumed(true)
                         .build())
                     .withIngredient(Ingredient.builder()
-                        .withComponentType(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Sticks')
-                            .withCompendiumEntry('fabricate.fabricate-test', 'arWeEYkLkubimBz3')
+                            .withPartId('arWeEYkLkubimBz3')
+                            .withSystemId('fabricate.fabricate-test')
                             .build())
                         .withQuantity(1)
                         .isConsumed(true)
                         .build())
-                    .withResult(CraftingResult.builder()
+                    .withResult(FabricationAction.builder()
                         .withAction(ActionType.ADD)
                         .withQuantity(1)
-                        .withItem(CraftingComponent.builder()
+                        .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')
-                            .withCompendiumEntry('fabricate.fabricate-test', 'nWhTa8gD1QL1f9O3')
+                            .withPartId('nWhTa8gD1QL1f9O3')
+                            .withSystemId('fabricate.fabricate-test')
                             .build())
                         .build())
                     .build()
@@ -108,49 +115,42 @@ describe('Crafting System |', () => {
         it('Should craft a recipe using the System\'s Fabricator', async () => {
 
             let mockFabricator = <Fabricator>{
-                fabricateFromComponents(): CraftingResult[] {
-                    // @ts-ignore
-                    return []
-                },
-                // @ts-ignore
-                fabricateFromRecipe(recipe: Recipe): CraftingResult[] {
-                    return [];
-                }
-            };
-
-            const mockActor = <Actor><unknown>{
-                id: 'lxQTQkhiymhGyjzx'
+                fabricateFromComponents: Sandbox.stub(),
+                fabricateFromRecipe: Sandbox.stub()
             };
 
             let compendiumKey = 'fabricate.fabricate-test';
             const twoMud = Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(2)
-                .withComponentType(CraftingComponent.builder()
+                .withComponent(CraftingComponent.builder()
                     .withName('Mud')
-                    .withCompendiumEntry(compendiumKey, 'tCmAnq9zcESt0ULf')
+                    .withPartId('tCmAnq9zcESt0ULf')
+                    .withSystemId(compendiumKey)
                     .build())
                 .build();
             const oneStick = Ingredient.builder()
                 .isConsumed(true)
                 .withQuantity(1)
-                .withComponentType(CraftingComponent.builder()
+                .withComponent(CraftingComponent.builder()
                     .withName('Sticks')
-                    .withCompendiumEntry(compendiumKey, 'arWeEYkLkubimBz3')
+                    .withPartId('arWeEYkLkubimBz3')
+                    .withSystemId(compendiumKey)
                     .build())
                 .build();
-            const mudPie = CraftingResult.builder()
+            const mudPie = FabricationAction.builder()
                 .withAction(ActionType.ADD)
                 .withQuantity(1)
-                .withItem(CraftingComponent.builder()
+                .withComponent(CraftingComponent.builder()
                     .withName('Mud Pie')
-                    .withCompendiumEntry(compendiumKey, 'nWhTa8gD1QL1f9O3')
+                    .withPartId('nWhTa8gD1QL1f9O3')
+                    .withSystemId(compendiumKey)
                     .build())
                 .build();
 
             const mudPieRecipe = Recipe.builder()
                 .withName('Recipe: Mud Pie')
-                .withEntryId('4iHqWSLTMFjPbpuI')
+                .withPartId('4iHqWSLTMFjPbpuI')
                 .withIngredient(twoMud)
                 .withIngredient(oneStick)
                 .withResult(mudPie)
@@ -165,43 +165,45 @@ describe('Crafting System |', () => {
                 .build();
 
             const mockInventory: Inventory = <Inventory5E><unknown>{
-                contains: Sinon.stub(),
-                add: Sinon.stub(),
-                remove: Sinon.stub(),
-                denormalizedContents: Sinon.stub()
+                containsIngredient: Sandbox.stub(),
+                addComponent: Sandbox.stub(),
+                removeComponent: Sandbox.stub(),
+                denormalizedContainedComponents: Sandbox.stub()
             }
+
             // @ts-ignore
-            mockInventory.contains.withArgs(twoMud).returns(true);
+            mockInventory.containsIngredient.withArgs(twoMud).returns(true);
             // @ts-ignore
-            mockInventory.contains.withArgs(oneStick).returns(true);
+            mockInventory.containsIngredient.withArgs(oneStick).returns(true);
+            const mockActor: Actor = <Actor><unknown>{};
             // @ts-ignore
-            mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
-                .withCraftingComponent(mudPie.item)
+            mockInventory.addComponent.withArgs(mudPie).returns(InventoryRecord.builder()
+                .withFabricateItem(mudPie.component)
                 .withTotalQuantity(mudPie.quantity)
                 .withActor(mockActor)
                 .build());
             // @ts-ignore
-            mockInventory.remove.returns(true);
+            mockInventory.removeComponent.returns(true);
             // @ts-ignore
-            mockInventory.denormalizedContents.returns([]);
+            mockInventory.denormalizedContainedComponents.returns([]);
 
-            const removeOneStick = CraftingResult.builder()
-                .withItem(oneStick.componentType)
+            const removeOneStick = FabricationAction.builder()
+                .withComponent(oneStick.component)
                 .withQuantity(oneStick.quantity)
                 .withAction(ActionType.REMOVE)
                 .build();
-            const removeTwoMud = CraftingResult.builder()
-                .withItem(twoMud.componentType)
+            const removeTwoMud = FabricationAction.builder()
+                .withComponent(twoMud.component)
                 .withQuantity(twoMud.quantity)
                 .withAction(ActionType.REMOVE)
                 .build();
-            Sinon.stub(mockFabricator, 'fabricateFromRecipe').returns([removeOneStick, removeTwoMud, mudPie]);
 
-            InventoryRegistry.addFor(mockActor.id, mockInventory);
+            // @ts-ignore
+            mockFabricator.fabricateFromRecipe.returns(new FabricationOutcome(OutcomeType.SUCCESS, 'Test user message', [removeOneStick, removeTwoMud, mudPie]));
 
-            const craftingResults = await testSystem.craft(mockActor.id, mudPieRecipe.entryId);
-            expect(craftingResults.length).to.equal(3);
-            expect(craftingResults).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
+            const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockInventory, mudPieRecipe);
+            expect(fabricationOutcome.actions.length).to.equal(3);
+            expect(fabricationOutcome.actions).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
 
         })
 

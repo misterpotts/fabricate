@@ -1,100 +1,52 @@
-import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
+import {CompendiumEntry, FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
+import {FabricateItem} from "./FabricateItem";
 
-class CompendiumEntry {
-    private readonly _compendiumKey;
-    private readonly _entryId;
-
-    constructor(compendiumKey: string, entryId: string) {
-        this._compendiumKey = compendiumKey;
-        this._entryId = entryId;
-    }
-
-    get compendiumKey() {
-        return this._compendiumKey;
-    }
-
-    get entryId() {
-        return this._entryId;
-    }
-
-    public equals(other: CompendiumEntry): boolean {
-        if (!other) {
-            return false;
-        }
-        return (this.entryId === other.entryId)
-            && (this.compendiumKey === other.compendiumKey);
-    }
-
-    isValid(): boolean {
-        return (this.entryId != null && this.entryId.length > 0)
-            && (this.compendiumKey != null && this.compendiumKey.length > 0);
-    }
-}
-
-class CraftingComponent {
-    private readonly _name: string;
-    private readonly _compendiumEntry: CompendiumEntry;
+class CraftingComponent extends FabricateItem {
     private readonly _essences: string[];
-    private _imageUrl: string;
 
     constructor(builder: CraftingComponent.Builder) {
-        this._name = builder.name;
-        this._compendiumEntry = builder.compendiumEntry;
+        super(builder.systemId, builder.partId, builder.imageUrl, builder.name);
         this._essences = builder.essences;
-        this._imageUrl = builder.imageUrl;
-    }
-
-    get name(): string {
-        return this._name;
-    }
-
-    get compendiumEntry(): CompendiumEntry {
-        return this._compendiumEntry;
     }
 
     get essences(): string[] {
         return this._essences;
     }
 
-    get imageUrl(): string {
-        return this._imageUrl;
-    }
-
-    set imageUrl(imageUrl: string) {
-        this._imageUrl = imageUrl;
-    }
-
     public static builder() {
         return new CraftingComponent.Builder();
     }
 
-    public static fromFlags(fabricateFlags: FabricateCompendiumData, imageUrl?: string): CraftingComponent {
+    public static fromFlags(fabricateFlags: FabricateCompendiumData, name: string, imageUrl: string): CraftingComponent {
         if (fabricateFlags.type !== FabricateItemType.COMPONENT) {
             throw new Error(`Error attempting to instantiate a Fabricate Crafting Component from ${fabricateFlags.type} data. `);
         }
-        const compendiumEntryConfig = fabricateFlags.component.compendiumEntry;
-        const builder = CraftingComponent.builder()
-            .withName(fabricateFlags.component.name)
-            .withCompendiumEntry(compendiumEntryConfig.compendiumKey, compendiumEntryConfig.entryId)
-            .withEssences(fabricateFlags.component.essences);
-        if (imageUrl && imageUrl.length > 0) {
-            builder.withImageUrl(imageUrl);
-        }
-        return builder.build();
+        return CraftingComponent.builder()
+            .withName(name)
+            .withSystemId(fabricateFlags.identity.systemId)
+            .withPartId(fabricateFlags.identity.partId)
+            .withEssences(fabricateFlags.component.essences)
+            .withImageUrl(imageUrl)
+            .build();
     }
 
-    public equals(other: CraftingComponent): boolean {
+    public equals(other: CraftingComponent) {
         if (!other) {
             return false;
         }
-        return this._compendiumEntry.equals(other.compendiumEntry);
+        return this.sharesType(other)
+            && other.name === this.name
+            && other.imageUrl === this.imageUrl
+            && other.essences.length === this.essences.length
+            && other.essences.every((essence: string) => this.essences.includes(essence));
     }
 
-    isValid(): boolean {
+    public isValid(): boolean {
         return (this.name != null && this.name.length > 0)
             && (this.essences != null)
-            && this.compendiumEntry.isValid();
+            && super.isValid();
     }
+
 }
 
 namespace CraftingComponent {
@@ -103,14 +55,21 @@ namespace CraftingComponent {
         public compendiumEntry!: CompendiumEntry;
         public essences: string[] = [];
         public imageUrl: string;
+        public systemId: string;
+        public partId: string;
 
         public withName(value: string): Builder {
             this.name = value;
             return this;
         }
 
-        public withCompendiumEntry(key: string, id: string): Builder {
-            this.compendiumEntry = new CompendiumEntry(key, id);
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
+            return this;
+        }
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
             return this;
         }
 

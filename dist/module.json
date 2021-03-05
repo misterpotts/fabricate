@@ -27,9 +27,9 @@
       "system": "dnd5e"
     },
     {
-      "name": "alchemists-supplies-v11",
-      "label": "Alchemist's Supplies (v1.1)",
-      "path": "packs/alchemists-supplies-v11.db",
+      "name": "alchemists-supplies-v16",
+      "label": "Alchemist's Supplies (v1.6)",
+      "path": "packs/alchemists-supplies-v16.db",
       "entity": "Item",
       "module": "fabricate",
       "system": "dnd5e"

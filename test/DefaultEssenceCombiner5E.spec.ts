@@ -5,23 +5,25 @@ import {DefaultEssenceCombiner5E} from "../src/scripts/dnd5e/DefaultEssenceCombi
 import {AlchemicalResultSet} from "../src/scripts/core/AlchemicalResultSet";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {AlchemicalResult5E} from "../src/scripts/dnd5e/AlchemicalResult5E";
-import {ItemData5e} from "../src/global";
 
 describe('Default Essence Combiner 5E |', () => {
 
     const luminousCapDust: CraftingComponent = CraftingComponent.builder()
         .withName('Luminous Cap Dust')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a23xyz')
+        .withPartId('a23xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['FIRE', 'AIR'])
         .build();
     const wrackwortBulbs: CraftingComponent = CraftingComponent.builder()
         .withName('Wrackwort Bulbs')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a56xyz')
+        .withPartId('a56xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['EARTH', 'FIRE'])
         .build();
     const radiantSynthSeed: CraftingComponent = CraftingComponent.builder()
         .withName('Radiant Synthseed')
-        .withCompendiumEntry('alchemists-supplies-v11', 'a67xyz')
+        .withPartId('a67xyz')
+        .withSystemId('alchemists-supplies-v11')
         .withEssences(['POSITIVE_ENERGY'])
         .build();
 

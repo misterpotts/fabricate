@@ -1,53 +1,45 @@
 import {Ingredient} from "./Ingredient";
-import {CraftingResult} from "./CraftingResult";
+import {FabricationAction} from "./FabricationAction";
 import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
+import {FabricateItem} from "./FabricateItem";
 
-class Recipe {
+class Recipe extends FabricateItem {
     private readonly _ingredients: Ingredient[];
     private readonly _essences: string[];
-    private readonly _results: CraftingResult[];
-    private readonly _name: string;
-    private readonly _entryId: string;
+    private readonly _results: FabricationAction[];
 
     constructor(builder: Recipe.Builder) {
+        super(builder.systemId, builder.partId, builder.imageUrl, builder.name);
         this._ingredients = builder.ingredients;
         this._essences = builder.essences;
         this._results = builder.results;
-        this._name = builder.name;
-        this._entryId = builder.entryId;
     }
 
-    public static fromFlags(flags: FabricateCompendiumData): Recipe {
+    public static fromFlags(flags: FabricateCompendiumData, name: string, imageUrl: string): Recipe {
         if (flags.type !== FabricateItemType.RECIPE) {
             throw new Error(`Error attempting to instantiate a Fabricate Recipe from ${flags.type} data. `);
         }
         return Recipe.builder()
-            .withName(flags.recipe.name)
-            .withEntryId(flags.recipe.entryId)
+            .withName(name)
+            .withImageUrl(imageUrl)
+            .withPartId(flags.identity.partId)
             .withEssences(flags.recipe.essences)
-            .withResults(CraftingResult.manyFromFlags(flags.recipe.results))
-            .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients))
+            .withSystemId(flags.identity.systemId)
+            .withResults(FabricationAction.manyFromFlags(flags.recipe.results, flags.identity.systemId))
+            .withIngredients(Ingredient.manyFromFlags(flags.recipe.ingredients, flags.identity.systemId))
             .build();
-    }
-
-    get name(): string {
-        return this._name;
     }
 
     get ingredients(): Ingredient[] {
         return this._ingredients;
     }
 
-    get results(): CraftingResult[] {
+    get results(): FabricationAction[] {
         return this._results;
     }
 
     get essences(): string[] {
         return this._essences;
-    }
-
-    get entryId(): string {
-        return this._entryId;
     }
 
     public static builder() {
@@ -56,7 +48,7 @@ class Recipe {
 
     isValid(): boolean {
         const nameValid = this.name != null && this.name.length > 0;
-        const idValid = this.entryId != null && this.entryId.length > 0;
+        const idValid = this.partId && this.systemId;
         let ingredientsValid = true;
         this.ingredients.forEach((ingredient: Ingredient) => {
             if (!ingredient.isValid()) {
@@ -64,7 +56,7 @@ class Recipe {
             }
         });
         let resultsValid = true;
-        this.results.forEach((result: CraftingResult) => {
+        this.results.forEach((result: FabricationAction) => {
             if (!result.isValid()) {
                 resultsValid = false;
             }
@@ -73,15 +65,20 @@ class Recipe {
         const hasInputSpecified: boolean = this.essences.length > 0 || this.ingredients.length > 0;
         return nameValid && idValid && ingredientsValid && resultsValid && essencesValid && hasInputSpecified;
     }
+
 }
 
 namespace Recipe {
+
     export class Builder {
+
         public ingredients: Ingredient[] = [];
         public essences: string[] = [];
-        public results: CraftingResult[] = [];
+        public results: FabricationAction[] = [];
         public name!: string;
-        public entryId!: string;
+        public systemId!: string;
+        public partId!: string;
+        public imageUrl: string;
 
         public build() {
             return new Recipe(this);
@@ -112,20 +109,31 @@ namespace Recipe {
             return this;
         }
 
-        withResult(value: CraftingResult) {
+        withResult(value: FabricationAction) {
             this.results.push(value);
             return this;
         }
 
-        withResults(value: CraftingResult[]) {
+        withResults(value: FabricationAction[]) {
             this.results = value;
             return this;
         }
 
-        withEntryId(value: string) {
-            this.entryId = value;
+        withSystemId(value: string) {
+            this.systemId = value
             return this;
         }
+
+        withPartId(value: string) {
+            this.partId = value
+            return this;
+        }
+
+        withImageUrl(value: string) {
+            this.imageUrl = value
+            return this;
+        }
+
     }
 }
 

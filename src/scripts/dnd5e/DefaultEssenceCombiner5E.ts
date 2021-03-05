@@ -1,6 +1,5 @@
 import {AbstractEssenceCombiner, AlchemicalResult} from "../core/EssenceCombiner";
 import {AlchemicalResultSet} from "../core/AlchemicalResultSet";
-import {ItemData5e} from "../../global";
 import {CraftingComponent} from "../core/CraftingComponent";
 
 class DefaultEssenceCombiner5E extends AbstractEssenceCombiner<ItemData5e> {

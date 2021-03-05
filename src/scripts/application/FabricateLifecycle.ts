@@ -1,10 +1,10 @@
 import {ItemRecipeTab} from "../interface/ItemRecipeTab";
 import {CraftingTab} from "../interface/CraftingTab";
-import {InventoryRegistry} from "../registries/InventoryRegistry";
 import {Inventory} from "../game/Inventory";
 import {EssenceTypeIconConverter} from "../core/EssenceType";
-import {CraftingSystem} from "../core/CraftingSystem";
-import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
+import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
+import Properties from "../Properties";
+import FabricateApplication from "./FabricateApplication";
 
 class FabricateLifecycle {
 
@@ -23,13 +23,13 @@ class FabricateLifecycle {
         });
 
         // @ts-ignore
-        Handlebars.registerHelper('essenceIcon', function(arg1, arg2, options) {
+        Handlebars.registerHelper('essenceIcon', function(arg1) {
             // @ts-ignore
             return EssenceTypeIconConverter.convertToIconMarkup(arg1);
         });
 
         // @ts-ignore
-        Handlebars.registerHelper('essenceIconSeries', function(arg1, arg2, options) {
+        Handlebars.registerHelper('essenceIconSeries', function(arg1) {
             // @ts-ignore
             return EssenceTypeIconConverter.convertSeriesToIconMarkup(arg1);
         });
@@ -55,21 +55,21 @@ class FabricateLifecycle {
     private static registerApplicationListeners() {
 
         Hooks.on('createOwnedItem', (actor: any) => {
-            const inventory = InventoryRegistry.getFor(actor.id);
+            const inventory = FabricateApplication.inventories.getFor(actor.id);
             if (inventory) {
                 inventory.update();
             }
         });
 
         Hooks.on('deleteOwnedItem', (actor: any) => {
-            const inventory = InventoryRegistry.getFor(actor.id);
+            const inventory = FabricateApplication.inventories.getFor(actor.id);
             if (inventory) {
                 inventory.update();
             }
         });
 
         Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
-            const inventory: Inventory = InventoryRegistry.getFor(actor.id);
+            const inventory: Inventory = FabricateApplication.inventories.getFor(actor.id);
             if (inventory) {
                 if (typeof update.data !== 'undefined') {
                     await inventory.updateQuantityFor(item);
@@ -79,15 +79,15 @@ class FabricateLifecycle {
 
     }
 
-    public static registerCraftingSystemSettings(systemSpec: CraftingSystem.Builder) {
-        game.settings.register("fabricate", systemSpec.compendiumPackKey + ".enabled", {
+    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification) {
+        game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey), {
             name: systemSpec.name,
             hint: systemSpec.enableHint,
             scope: "world",
             type: Boolean,
             default: true,
             config: true,
-            onChange: (enabled: boolean) => { CraftingSystemRegistry.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
+            onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
         });
     }
 }

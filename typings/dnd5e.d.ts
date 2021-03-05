@@ -89,5 +89,3 @@ type AttackBonus = {
 type SaveBonus = {
     dc: number;
 };
-
-export {ItemData5e, Item5e, ActionType5e, DamageType5E, WeaponType5E, ActivationType5e, AbilityBonus, AttackBonus, ItemType5e, SaveBonus, TargetUnitType5e, TargetType5e, AbilityType5E, DurationType5e}

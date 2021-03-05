@@ -18,10 +18,18 @@
     "target": "ES6",
     "lib": ["DOM", "ES6", "ES2017", "ES2018"],
     "types": ["foundry-pc-types", "node", "mocha", "chai", "sinon", "handlebars"],
-    "typeRoots": ["./src/global.d.ts"],
+    "typeRoots": [
+      "./typings"
+    ],
     "allowUmdGlobalAccess": true
   },
-  "include": ["./src/**/*.ts", "./src/global.d.ts"],
+  "include": ["./src/**/*.ts", "./typings/**/*.ts"],
   "exclude": ["node_modules", "./gulpfile.ts"],
-  "files": ["./src/global.d.ts"]
+  "files": [
+    "./typings/dnd5e.d.ts"
+  ],
+  "ts-node": {
+    "files": true,
+    "transpileOnly": true
+  }
 }

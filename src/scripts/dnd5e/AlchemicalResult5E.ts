@@ -1,6 +1,5 @@
 import {CompendiumEntry} from "../game/CompendiumData";
-import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../core/AlchemicalResult";
-import {AbilityType5E, DamageType5E, DurationType5e, ItemData5e, TargetType5e, TargetUnitType5e} from "../../global";
+import {AlchemicalResult, ItemEffect, ItemEffectModifier} from "../core/AlchemicalResultSet";
 
 type DamageMethod = 'ROLLED' | 'FIXED';
 const AoETypeValues: string[] = ['cone', 'cube' , 'cylinder', 'line', 'radius', 'sphere', 'square'];
@@ -328,7 +327,7 @@ namespace AlchemicalResult5E {
         }
 
         public withResultantItem(compendiumKey: string, entryId: string): Builder {
-            this.resultantItem = {compendiumKey: compendiumKey, entryId: entryId};
+            this.resultantItem = {systemId: compendiumKey, partId: entryId};
             return this;
         }
 

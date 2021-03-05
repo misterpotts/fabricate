@@ -1,12 +1,12 @@
 <div class="crafting-tab-content">
-    {{#if hasEnabledSystems}}
+    {{#if crafting.hasEnabledSystems}}
     <div class="crafting-system">
         <h2>Crafting System</h2>
         <div class="form-group">
             <label>Select your crafting system</label>
             <div class="form-fields" style="flex: 3">
                 <select name="fabricate.crafting.selectedSystem">
-                    {{#each craftingSystems}}
+                    {{#each crafting.systems}}
                     {{#if selected}}
                     <option value="{{compendiumPackKey}}" selected>{{name}}</option>
                     {{else if disabled}}
@@ -23,20 +23,41 @@
     <div class="recipes">
         <div class="description">
             <h2>Craftable Recipes</h2>
-            <p>The following recipes can be crafted from items in your inventory.</p>
+            <p>The following Recipes are either known by your character or are on their person. If you have sufficient
+                ingredients for them, they can be crafted from the items in your inventory.</p>
         </div>
         <div class="form-group controls">
             <label>Select an available recipe</label>
             <div class="form-fields" style="flex: 6">
-                <select>
-                    {{#each craftableRecipes}}
-                    <option value="{{entryId}}">{{name}}</option>
+                <select name="fabricate.crafting.selectedRecipe">
+                    {{#each recipes}}
+                        {{#if known}}
+                            {{#if craftable}}
+                                {{#if selected}}
+                                <option value="{{partId}}" selected>{{name}}</option>
+                                {{else}}
+                                <option value="{{partId}}">{{name}}</option>
+                                {{/if}}
+                            {{else}}
+                            <option value="{{partId}}" disabled>{{name}} (insufficient ingredients)</option>
+                            {{/if}}
+                        {{else if owned}}
+                            {{#if craftable}}
+                                {{#if selected}}
+                                    <option value="{{partId}}" selected>{{name}}</option>
+                                {{else}}
+                                    <option value="{{partId}}">{{name}}</option>
+                                {{/if}}
+                            {{else}}
+                            <option value="{{partId}}" disabled>{{name}} (insufficient ingredients)</option>
+                            {{/if}}
+                        {{/if}}
                     {{else}}
                     <option disabled="true">No Recipes can be crafted</option>
                     {{/each}}
                 </select>
                 <a title="Craft">
-                    <p class="craft-button" data-recipe-id="" data-actor-id=""><i class="fas fa-flask"></i> Craft</p>
+                    <p class="craft-button actor-recipe-crafting"><i class="fas fa-flask"></i> Craft</p>
                 </a>
             </div>
         </div>
@@ -50,7 +71,7 @@
         </div>
         <div class="fabricate-components">
             <ul>
-                {{#each inventoryContents}}
+                {{#each inventory.ownedComponents}}
                 <a class="add-crafting-component" title="Add to the mix" data-component-id="{{entryId}}">
                     <li>
                         <div class="component">
@@ -70,7 +91,7 @@
         </div>
         <div class="fabricate-components">
             <ul>
-                {{#each hopperContents}}
+                {{#each inventory.preparedComponents}}
                 <a class="remove-crafting-component" title="Remove from the mix" data-component-id="{{entryId}}">
                 <li>
                     <div class="component" data-component-id="{{entryId}}">

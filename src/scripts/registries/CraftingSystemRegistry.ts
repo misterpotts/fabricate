@@ -2,72 +2,80 @@ import {CraftingSystem} from "../core/CraftingSystem";
 import {Recipe} from "../core/Recipe";
 import {GameSystemType} from "../core/GameSystemType";
 import {DefaultFabricator} from "../core/Fabricator";
+import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
+import {AlchemistsSuppliesSystemSpec} from "./system_definitions/AlchemistsSuppliesV16";
+import {CraftingComponent} from "../core/CraftingComponent";
 
 class CraftingSystemRegistry {
-    private static instance: CraftingSystemRegistry = new CraftingSystemRegistry();
 
-    private static craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
-    private static craftingSystemsByRecipeId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
-    private static _systemSpecifications: CraftingSystem.Builder[] = [];
+    private _craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
+    private _craftingSystemsByPartId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
+    private _systemSpecifications: CraftingSystemSpecification[] = CraftingSystemRegistry.systemSpecifications();
 
-    constructor() {
-        if (CraftingSystemRegistry.instance) {
-            throw new Error('CraftingSystemRegistry is a singleton. Use `CraftingSystemRegistry.getInstance()` instead. ');
+    public register(system: CraftingSystem): void {
+        this._craftingSystemsByCompendiumKey.set(system.compendiumPackKey, system);
+        this._craftingSystemsByPartId = this.resolvePartsForSystem(system, this._craftingSystemsByPartId);
+    }
+
+    private resolvePartsForSystem(system: CraftingSystem, parts: Map<string, CraftingSystem>): Map<string, CraftingSystem> {
+        const recipeLinks: Map<string, CraftingSystem> = new Map(system.recipes.map((recipe: Recipe) => [recipe.partId, system]));
+        const componentLinks: Map<string, CraftingSystem> = new Map(system.components.map((component: CraftingComponent) => [component.partId, system]));
+        const systemParts: Map<string, CraftingSystem> = new Map([...recipeLinks, ...componentLinks]);
+        if (systemParts.size !== (recipeLinks.size + componentLinks.size)) {
+            throw new Error(`The Crafting System with ID ${system.compendiumPackKey} contains duplicate Part IDs. `);
         }
+        const mergedParts: Map<string, CraftingSystem> = new Map([...parts, ...systemParts]);
+        if (mergedParts.size !== (systemParts.size + parts.size)) {
+            throw new Error(`The Crafting System with ID ${system.compendiumPackKey} shares ${(systemParts.size + parts.size) - mergedParts.size} Part IDs with already registered systems. `);
+        }
+        return mergedParts;
     }
 
-    public static getInstance(): CraftingSystemRegistry {
-        return CraftingSystemRegistry.instance;
-    }
-
-    public static register(system: CraftingSystem): void {
-        CraftingSystemRegistry.craftingSystemsByCompendiumKey.set(system.compendiumPackKey, system);
-        CraftingSystemRegistry.resolveRecipesForSystem(system);
-    }
-
-    private static resolveRecipesForSystem(system: CraftingSystem): void {
-        system.recipes.forEach((recipe: Recipe) => {
-            CraftingSystemRegistry.craftingSystemsByRecipeId.set(recipe.entryId, system);
-        });
-    }
-
-    public static getSystemByCompendiumPackKey(id:string): CraftingSystem {
-        if (CraftingSystemRegistry.craftingSystemsByCompendiumKey.has(id)) {
-            return CraftingSystemRegistry.craftingSystemsByCompendiumKey.get(id);
+    public getSystemByCompendiumPackKey(id:string): CraftingSystem {
+        if (this._craftingSystemsByCompendiumKey.has(id)) {
+            return this._craftingSystemsByCompendiumKey.get(id);
         }
         throw new Error(`No Crafting system is registered with Fabricate for the Compendium Pack Key ${id}. `);
     }
 
-    public static getSystemByRecipeId(id:string): CraftingSystem {
-        if (CraftingSystemRegistry.craftingSystemsByRecipeId.has(id)) {
-            return CraftingSystemRegistry.craftingSystemsByRecipeId.get(id);
+    public getSystemByPartId(id:string): CraftingSystem {
+        if (this._craftingSystemsByPartId.has(id)) {
+            return this._craftingSystemsByPartId.get(id);
         }
         throw new Error(`No Crafting system is registered with Fabricate for the Recipe ${id}. `);
     }
 
-    public static getAllSystems(): CraftingSystem[] {
-        return Array.from(CraftingSystemRegistry.craftingSystemsByCompendiumKey.values());
+    public getAllSystems(): CraftingSystem[] {
+        return Array.from(this._craftingSystemsByCompendiumKey.values());
     }
 
-    public static get systemSpecifications(): CraftingSystem.Builder[] {
+    public get systemSpecifications(): CraftingSystemSpecification[] {
         return this._systemSpecifications;
     }
 
-    public static declareSpecification(spec: CraftingSystem.Builder) {
-        CraftingSystemRegistry._systemSpecifications.push(spec);
+    public declareSpecification(spec: CraftingSystemSpecification): void {
+        this._systemSpecifications.push(spec);
+    }
+
+    public static systemSpecifications(): CraftingSystemSpecification[] {
+
+        const systemSpecifications: CraftingSystemSpecification[] = [];
+
+        const testSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+            .withName('Child\'s Play')
+            .withEnableHint('Enable the test Crafting System for Fabricate?')
+            .withDescription('A simple tech demo used for the early development of Fabricate. ')
+            .withCompendiumPackKey('fabricate.fabricate-test')
+            .withSupportedGameSystem(GameSystemType.DND5E)
+            .withFabricator(new DefaultFabricator())
+            .build();
+        systemSpecifications.push(testSystemSpec);
+
+        systemSpecifications.push(AlchemistsSuppliesSystemSpec);
+
+        return systemSpecifications;
     }
 
 }
-
-const testSystemSpec: CraftingSystem.Builder = CraftingSystem.builder()
-    .withName('Child\'s Play')
-    .withEnableHint('Enable the test Crafting System for Fabricate?')
-    .withCompendiumPackKey('fabricate.fabricate-test')
-    .withSupportedGameSystem(GameSystemType.DND5E)
-    .withFabricator(new DefaultFabricator());
-CraftingSystemRegistry.declareSpecification(testSystemSpec);
-
-import {AlchemistsSuppliesSystemSpec} from './system_definitions/AlchemistsSuppliesV11'
-CraftingSystemRegistry.declareSpecification(AlchemistsSuppliesSystemSpec);
 
 export {CraftingSystemRegistry}

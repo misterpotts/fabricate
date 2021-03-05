@@ -1,13 +1,12 @@
 import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
-import {CraftingSystemRegistry} from "../registries/CraftingSystemRegistry";
 import {CraftingSystem} from "../core/CraftingSystem";
-import {Ingredient} from "../core/Ingredient";
-import {CraftingComponent} from "../core/CraftingComponent";
-import {CraftingResult} from "../core/CraftingResult";
+import FabricateApplication from "../application/FabricateApplication";
+import {Inventory} from "../game/Inventory";
+import {FabricateCompendiumData} from "../game/CompendiumData";
+import {EssenceTypeIconConverter} from "../core/EssenceType";
 
 class ItemRecipeTab {
-    private static readonly recipeType: string = Properties.types.recipe;
     private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
 
     // @ts-ignore
@@ -19,31 +18,32 @@ class ItemRecipeTab {
     private _suppressedInNav: boolean = false;
     private static tabKey: string = 'fabricate-recipe';
 
-    public static bind(itemApplication: any, sheetHtml: HTMLElement): void {
-        if ((!itemApplication.item.data.flags.fabricate) || (itemApplication.item.data.flags.fabricate.type !== ItemRecipeTab.recipeType)) {
+    public static bind(itemApplication: any, sheetHtml: any): void {
+        if (!itemApplication.item.data.flags.fabricate) {
             return;
         }
-        let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
-        if (!tab) {
-            tab = new ItemRecipeTab(itemApplication);
-            ItemRecipeTab.tabs.set(itemApplication.id, tab);
+        const fabricateFlags: FabricateCompendiumData = itemApplication.item.data.flags.fabricate;
+        if (fabricateFlags.type === Properties.types.recipe) {
+            let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
+            if (!tab) {
+                tab = new ItemRecipeTab(itemApplication);
+                ItemRecipeTab.tabs.set(itemApplication.id, tab);
+            }
+            tab.init(sheetHtml);
         }
-        tab.init(sheetHtml);
+        if (fabricateFlags.type === Properties.types.component && fabricateFlags.component.essences && fabricateFlags.component.essences.length > 0) {
+            const essences: any[] = fabricateFlags.component.essences;
+            const essenceDescription = EssenceTypeIconConverter.convertSeriesToIconMarkup(essences);
+            sheetHtml.find('ol.properties-list').append($(`<li>${essenceDescription}</li>`));
+        }
     }
 
     constructor(itemApplication: any) {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
-        this._recipe = Recipe.fromFlags(itemApplication.item.data.flags.fabricate);
-        this._craftingSystem = CraftingSystemRegistry.getSystemByRecipeId(this._recipe.entryId);
-        this._recipe.ingredients.forEach((ingredient: Ingredient) => {
-            const component: CraftingComponent = ingredient.componentType;
-            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
-        });
-        this._recipe.results.forEach((result: CraftingResult) => {
-            const component: CraftingComponent = result.item;
-            component.imageUrl = this._craftingSystem.getComponentByEntryId(component.compendiumEntry.entryId).imageUrl;
-        });
+        const partId: string = itemApplication.item.data.flags.fabricate.identity.partId;
+        this._craftingSystem = FabricateApplication.systems.getSystemByPartId(partId);
+        this._recipe = this._craftingSystem.getRecipeByPartId(partId);
     }
 
     private init(sheetHtml: any) {
@@ -81,13 +81,28 @@ class ItemRecipeTab {
     }
 
     private handleItemSheetEvents(): void {
+
         this._sheetHtml.find('.craft-button').click(async (event: any) => {
-            const recipeId = event.target.getAttribute('data-recipe-id');
-            const actorId = event.target.getAttribute('data-actor-id');
-            await this._craftingSystem.craft(actorId, recipeId);
+            const actorId: string = event.target.getAttribute('data-actor-id');
+            const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
+            await this._craftingSystem.craft(inventory, this._recipe);
             this._suppressedInNav = true;
             await this.render();
         });
+
+        this._sheetHtml.find('.open-compendium-item').click(async (event: any) => {
+            const partId = event.currentTarget.getAttribute('data-part-id');
+            const systemId = event.currentTarget.getAttribute('data-system-id');
+            const compendium: Compendium = game.packs.get(systemId);
+            const entity: Entity = await compendium.getEntity(partId);
+            if (!game.user.isGM && entity.permission === 0) {
+                console.warn('You are attempting to view the details of a Crafting Component that you have no ' +
+                    'access to. Ask your GM oran administrator to grant you access to the items in the compendium for ' +
+                    'the Crafting System "' + this._craftingSystem.name + '"');
+            }
+            entity.sheet.render(true);
+        });
+
     }
 
     private isActiveInNav(): boolean {

@@ -21,7 +21,8 @@ gulp.task('test', () => {
   return gulp.src('test/**/*.ts')
       .pipe(gulp_mocha({
         reporter: 'list',
-        require: ['ts-node/register']
+        require: ['ts-node/register'],
+        ui: 'bdd'
       }));
 });
 
@@ -40,6 +41,8 @@ gulp.task('copy', async () => {
 });
 
 gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy', 'test'));
+
+gulp.task('build-unsafe', gulp.parallel('compile-ts', 'compile-less', 'copy'));
 
 // Copy the dist folder into the modules directory for testing
 // TODO - parameterize this property before asking anyone to contribute
