@@ -16,6 +16,15 @@ import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOu
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
+before(() => {
+    // @ts-ignore
+    global.ChatMessage = {
+        create: Sandbox.stub()
+    };
+    // @ts-ignore
+    global.game = Sandbox.stub();
+});
+
 beforeEach(() => {
     Sandbox.restore();
 });
@@ -198,10 +207,16 @@ describe('Crafting System |', () => {
                 .withAction(ActionType.REMOVE)
                 .build();
 
+            const outcome = FabricationOutcome.builder()
+                .withOutcomeType(OutcomeType.SUCCESS)
+                .withRecipe(mudPieRecipe)
+                .withActions([removeOneStick, removeTwoMud, mudPie])
+                .withDisplayItems([])
+                .build();
             // @ts-ignore
-            mockFabricator.fabricateFromRecipe.returns(new FabricationOutcome(OutcomeType.SUCCESS, 'Test user message', [removeOneStick, removeTwoMud, mudPie]));
+            mockFabricator.fabricateFromRecipe.returns(outcome);
 
-            const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockInventory, mudPieRecipe);
+            const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockActor, mockInventory, mudPieRecipe);
             expect(fabricationOutcome.actions.length).to.equal(3);
             expect(fabricationOutcome.actions).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
 

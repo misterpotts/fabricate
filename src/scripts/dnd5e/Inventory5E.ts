@@ -120,7 +120,7 @@ class Inventory5E extends CraftingInventory {
         const data: Entity.Data<ItemData5e> = duplicate(item.data);
         mergeObject(data.data, customData);
         const recordForType: InventoryRecord<CraftingComponent> = this._componentDirectory.get(component.partId);
-        const createdItem: Item<ItemData5e> = await this._actor.createEmbeddedEntity('OwnedItem', data);
+        const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', data);
         if (recordForType) {
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
             return new InventoryModification([createdItem], ActionType.ADD, recordForType);
@@ -128,7 +128,7 @@ class Inventory5E extends CraftingInventory {
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
                 .withItem(createdItem)
-                .withTotalQuantity(createdItem.data.data.quantity)
+                .withTotalQuantity(createdItem.data.quantity)
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);

@@ -36,7 +36,7 @@ class DefaultFabricator implements Fabricator {
         });
 
         const fabricationActions: FabricationAction[] = input.concat(output);
-        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
+        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS, recipe);
     }
 
     public fabricateFromComponents(): Promise<FabricationOutcome> {
@@ -80,7 +80,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
             throw new Error(`There are insufficient components available to craft Recipe ${recipe.partId}. `)
         }
         const fabricationActions = FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
-        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
+        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS, recipe);
     }
 
     private analyzeCombinationsForRecipe(records: InventoryRecord<CraftingComponent>[], recipe: Recipe): CraftingComponentCombination[] {
