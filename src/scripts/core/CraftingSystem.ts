@@ -52,7 +52,7 @@ class CraftingSystem {
         return this._description;
     }
 
-    public async craft(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
+    public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
 
         const missingIngredients: Ingredient[] = [];
         recipe.ingredients.forEach((ingredient: Ingredient) => {
@@ -65,17 +65,18 @@ class CraftingSystem {
             throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${message}`);
         }
 
-        const fabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
-
+        const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
+        ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
         return fabricationOutcome;
     }
 
-    public async craftWithComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
+    public async craftWithComponents(actor: Actor, inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
 
         if (!inventory.hasAllComponents(components)) {
             throw new Error('There are insufficient crafting components of the specified type in the inventory. ');
         }
         const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
+        ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
         return fabricationOutcome;
     }
 

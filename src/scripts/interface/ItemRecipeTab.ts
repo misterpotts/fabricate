@@ -84,8 +84,9 @@ class ItemRecipeTab {
 
         this._sheetHtml.find('.craft-button').click(async (event: any) => {
             const actorId: string = event.target.getAttribute('data-actor-id');
+            const actor: Actor = game.actors.get(actorId);
             const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
-            await this._craftingSystem.craft(inventory, this._recipe);
+            await this._craftingSystem.craft(actor, inventory, this._recipe);
             this._suppressedInNav = true;
             await this.render();
         });

@@ -10,17 +10,18 @@ class FabricationHelper {
 
     private static readonly primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
-    private static additiveItemModificationsFrom(modifications: InventoryModification<CraftingComponent>[]): Item[] {
-        return modifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === ActionType.ADD)
+    public static async takeActionsForOutcome(inventory: Inventory, fabricationActions: FabricationAction[], outcome: OutcomeType, recipe?: Recipe): Promise<FabricationOutcome> {
+        const inventoryModifications: InventoryModification<CraftingComponent>[] = await FabricationHelper.applyResults(fabricationActions, inventory);
+        const addedItems: Item[] = inventoryModifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === ActionType.ADD)
             .map((additiveChange: InventoryModification<CraftingComponent>) => additiveChange.changedItems)
             .reduce((left: Item[], right: Item[]) => left.concat(right), []);
-    }
 
-    public static async takeActionsForOutcome(inventory: Inventory, fabricationActions: FabricationAction[], outcome: OutcomeType): Promise<FabricationOutcome> {
-        const inventoryModifications: InventoryModification<CraftingComponent>[] = await FabricationHelper.applyResults(fabricationActions, inventory);
-        const addedItems: Item[] = FabricationHelper.additiveItemModificationsFrom(inventoryModifications);
-        const description: string = fabricationActions.map((action: FabricationAction) => action.describe()).join(', ');
-        return new FabricationOutcome(outcome, description, fabricationActions, addedItems);
+        return FabricationOutcome.builder()
+            .withActions(fabricationActions)
+            .withOutcomeType(outcome)
+            .withDisplayItems(addedItems)
+            .withRecipe(recipe)
+            .build();
     }
 
     public static asCraftingResults(components: CraftingComponent[], action: ActionType): FabricationAction[] {
