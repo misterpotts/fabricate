@@ -42,9 +42,6 @@ The most recent changes to Fabricate are documented here.
 - - the crafting systems thatcan be selected to craft from
 - The Actor5E Crafting Tab supports crafting without a recipe for Alchemist's Supplies (v1.6 Alchemical Bombs only)
 
-## Version 0.2.0
-- Crafting now considers and decrements quantities from owned items in an actor's inventory when crafting and consuming components
-
 If you'd like to be involved I'd love to have some help! I'm always happy to talk to you about how people can contribute.
 
 # License
