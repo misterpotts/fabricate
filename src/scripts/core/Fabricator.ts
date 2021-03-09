@@ -77,7 +77,7 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         const craftingComponentCombinations = this.analyzeCombinationsForRecipe(craftingComponents, recipe);
         const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
         if (!selectedCombination ||selectedCombination.length === 0) {
-            throw new Error(`There are insufficient components available to craft Recipe ${recipe.partId}. `)
+            throw new Error(`There are insufficient components available to craft the Recipe "${recipe.name}". `)
         }
         const fabricationActions = FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
         return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS, recipe);
