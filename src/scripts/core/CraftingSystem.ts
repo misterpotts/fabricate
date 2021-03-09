@@ -71,6 +71,7 @@ class CraftingSystem {
             ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
             return fabricationOutcome;
         } catch (err) {
+            console.error(err);
             ChatMessage.create({user: game.user, speaker: actor, content: err});
         }
 
@@ -88,6 +89,7 @@ class CraftingSystem {
             ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
             return fabricationOutcome;
         } catch (err) {
+            console.error(err);
             ChatMessage.create({user: game.user, speaker: actor, content: err});
         }
 
