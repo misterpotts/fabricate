@@ -26,6 +26,14 @@ Crafting from components containing essences without a recipe.
 
 The most recent changes to Fabricate are documented here.
 
+## Version 0.5.0
+
+- The Actor crafting tab now lists owned and known recipes 
+- Known and owned recipes with sufficient ingredients can be crafted from the actor crafting tab
+- Known and owned recipes with insufficient ingredients are disabled in the select box
+- Crafting results are now written to the game chat  
+- Refactored the Fabricator significantly to enable crafting checks, failure outcomes and other upcoming features
+
 ## Version 0.4.0
 - The D&D 5E Actor Sheet now displays a crafting tab for systems that support 5E
 - The Actor5E Crafting Tab lists:
@@ -33,14 +41,6 @@ The most recent changes to Fabricate are documented here.
 - - the craftable recipes from the selected crafting system
 - - the crafting systems thatcan be selected to craft from
 - The Actor5E Crafting Tab supports crafting without a recipe for Alchemist's Supplies (v1.6 Alchemical Bombs only)
-
-## Version 0.3.0
-- Crafting from component essences is now possible for all alchemical recipes in "Alchemist's Supplies V1.1" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/)
-- A placeholder crafting tab exists on the Actor
-- Resolved defects [#1][i1] and [#9][i9]
-
-[i1]: https://github.com/misterpotts/fabricate/issues/1
-[i9]: https://github.com/misterpotts/fabricate/issues/9
 
 ## Version 0.2.0
 - Crafting now considers and decrements quantities from owned items in an actor's inventory when crafting and consuming components
