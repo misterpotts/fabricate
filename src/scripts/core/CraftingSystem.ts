@@ -61,23 +61,36 @@ class CraftingSystem {
             }
         });
         if (missingIngredients.length > 0) {
-            const message = missingIngredients.map((ingredient: Ingredient) => ingredient.quantity + ':' + ingredient.component.name).join(',');
-            throw new Error(`Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${message}`);
+            const missingIngredientMessage: string = missingIngredients.map((ingredient: Ingredient) => ingredient.quantity + ':' + ingredient.component.name).join(',');
+            const errorMessage: string = `Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${missingIngredientMessage}. `;
+            ChatMessage.create({user: game.user, speaker: actor, content: errorMessage});
         }
 
-        const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
-        ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
-        return fabricationOutcome;
+        try {
+            const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
+            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
+            return fabricationOutcome;
+        } catch (err) {
+            ChatMessage.create({user: game.user, speaker: actor, content: err});
+        }
+
     }
 
     public async craftWithComponents(actor: Actor, inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
 
         if (!inventory.hasAllComponents(components)) {
-            throw new Error('There are insufficient crafting components of the specified type in the inventory. ');
+            const errorMessage: string = 'There are insufficient crafting components of the specified type in the inventory. ';
+            ChatMessage.create({user: game.user, speaker: actor, content: errorMessage});
+            return;
         }
-        const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
-        ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
-        return fabricationOutcome;
+        try {
+            const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
+            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
+            return fabricationOutcome;
+        } catch (err) {
+            ChatMessage.create({user: game.user, speaker: actor, content: err});
+        }
+
     }
 
     get compendiumPackKey(): string {
