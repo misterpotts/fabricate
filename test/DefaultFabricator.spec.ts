@@ -4,9 +4,8 @@ import * as Sinon from "sinon";
 import {DefaultFabricator} from "../src/scripts/core/Fabricator";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {FabricationAction} from "../src/scripts/core/FabricationAction";
+import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
 import {Ingredient} from "../src/scripts/core/Ingredient";
-import {ActionType} from "../src/scripts/core/ActionType";
 import {FabricationOutcome} from "../src/scripts/core/FabricationOutcome";
 import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
@@ -35,7 +34,7 @@ describe('Default Fabricator |', () => {
             .withSystemId(compendiumPackKey)
             .build()
         // @ts-ignore
-        mockInventory.removeComponent.withArgs(mud).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+        mockInventory.removeComponent.withArgs(mud).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
         const sticks: CraftingComponent = CraftingComponent.builder()
             .withName('Sticks')
@@ -43,7 +42,7 @@ describe('Default Fabricator |', () => {
             .withSystemId(compendiumPackKey)
             .build();
         // @ts-ignore
-        mockInventory.removeComponent.withArgs(sticks).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+        mockInventory.removeComponent.withArgs(sticks).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
         const mudPie = CraftingComponent.builder()
             .withName('Mud Pie')
@@ -67,7 +66,7 @@ describe('Default Fabricator |', () => {
                 .withComponent(sticks)
                 .build())
             .withResult(FabricationAction.builder()
-                .withAction(ActionType.ADD)
+                .withAction(FabricationActionType.ADD)
                 .withQuantity(1)
                 .withComponent(mudPie)
                 .build())
@@ -80,17 +79,17 @@ describe('Default Fabricator |', () => {
             expect(fabricationOutcome.actions.length).to.equal(3);
             expect(fabricationOutcome.actions).to.deep.include.members([
                 FabricationAction.builder()
-                    .withAction(ActionType.ADD)
+                    .withAction(FabricationActionType.ADD)
                     .withQuantity(1)
                     .withComponent(mudPie)
                     .build(),
                 FabricationAction.builder()
-                    .withAction(ActionType.REMOVE)
+                    .withAction(FabricationActionType.REMOVE)
                     .withQuantity(2)
                     .withComponent(mud)
                     .build(),
                 FabricationAction.builder()
-                    .withAction(ActionType.REMOVE)
+                    .withAction(FabricationActionType.REMOVE)
                     .withQuantity(1)
                     .withComponent(sticks)
                     .build()

@@ -1,7 +1,7 @@
 import {AlchemicalResult5E} from "../../dnd5e/AlchemicalResult5E";
 import {AlchemicalResult, AlchemicalResultSet} from "../../core/AlchemicalResultSet";
 import {EssenceCombiner} from "../../core/EssenceCombiner";
-import {DefaultEssenceCombiner5E} from "../../dnd5e/DefaultEssenceCombiner5E";
+import {EssenceCombiner5E} from "../../dnd5e/EssenceCombiner5E";
 import {GameSystemType} from "../../core/GameSystemType";
 import {CraftingComponent} from "../../core/CraftingComponent";
 import {CraftingSystemSpecification} from "../../core/CraftingSystemSpecification";
@@ -96,7 +96,7 @@ const knownAlchemicalResults: AlchemicalResultSet<ItemData5e> = AlchemicalResult
 
 const alchemistsSuppliesV16 = 'fabricate.alchemists-supplies-v16';
 
-const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.builder()
+const essenceCombiner: EssenceCombiner<ItemData5e> = EssenceCombiner5E.builder()
     .withMaxComponents(6)
     .withMaxEssences(6)
     .withKnownAlchemicalResults(knownAlchemicalResults)

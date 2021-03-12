@@ -1,6 +1,5 @@
-import {FabricationAction} from "./FabricationAction";
+import {FabricationAction, FabricationActionType} from "./FabricationAction";
 import {Recipe} from "./Recipe";
-import {ActionType} from "./ActionType";
 
 enum OutcomeType {
     SUCCESS = 'SUCCESS',
@@ -48,13 +47,13 @@ class FabricationOutcome {
             break;
         }
         if (this.actions && this.actions.length > 0) {
-            const removedParts: string = this.actions.filter((action: FabricationAction) => action.type === ActionType.REMOVE)
+            const removedParts: string = this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.REMOVE)
                 .map((action: FabricationAction) => action.quantity + ' ' + action.name)
                 .join(', ');
             if (removedParts && removedParts.length > 0) {
                 descriptionParts.push(`Removed: ${removedParts}. `)
             }
-            const addedParts: string = this.actions.filter((action: FabricationAction) => action.type === ActionType.ADD)
+            const addedParts: string = this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.ADD)
                 .map((action: FabricationAction) => action.quantity + ' ' + action.name)
                 .join(', ');
             if (addedParts && addedParts.length > 0) {

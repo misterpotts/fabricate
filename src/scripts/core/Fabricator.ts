@@ -45,10 +45,10 @@ class DefaultFabricator implements Fabricator {
 
 }
 
-class EssenceCombiningFabricator<T> implements Fabricator {
-    private readonly _essenceCombiner: EssenceCombiner<T>;
+class EssenceCombiningFabricator<E, I> implements Fabricator {
+    private readonly _essenceCombiner: EssenceCombiner<E, I>;
 
-    constructor(essenceCombiner?: EssenceCombiner<T>) {
+    constructor(essenceCombiner?: EssenceCombiner<E, I>) {
         this._essenceCombiner = essenceCombiner;
     }
 
@@ -56,8 +56,8 @@ class EssenceCombiningFabricator<T> implements Fabricator {
         if (!this._essenceCombiner) {
             throw new Error(`No Essence Combiner has been provided for this system. You may only craft from Recipes. `);
         }
-        const alchemicalResult:AlchemicalResult<T> = this._essenceCombiner.combine(components);
-        const resultantItem: CraftingComponent = this._essenceCombiner.resultantItem;
+        const alchemicalResult: AlchemicalResult<T> = this._essenceCombiner.combine(components);
+        const resultantItem: CraftingComponent = this._essenceCombiner.baseItem;
         const addedComponent: FabricationAction = FabricationAction.builder()
             .withAction(ActionType.ADD)
             .withQuantity(1)

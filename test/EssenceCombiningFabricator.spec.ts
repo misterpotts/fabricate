@@ -2,12 +2,11 @@ import {expect} from 'chai';
 import * as Sinon from "sinon";
 
 import {Recipe} from "../src/scripts/core/Recipe";
-import {FabricationAction} from "../src/scripts/core/FabricationAction";
-import {ActionType} from "../src/scripts/core/ActionType";
+import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
 import {AlchemicalResult, EssenceCombiner} from "../src/scripts/core/EssenceCombiner";
-import {DefaultEssenceCombiner5E} from "../src/scripts/dnd5e/DefaultEssenceCombiner5E";
+import {EssenceCombiner5E} from "../src/scripts/dnd5e/EssenceCombiner5E";
 import {AlchemicalResult5E} from "../src/scripts/dnd5e/AlchemicalResult5E";
 import {AlchemicalResultSet} from "../src/scripts/core/AlchemicalResultSet";
 import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
@@ -148,7 +147,7 @@ describe('Essence Combining Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences(['EARTH', 'EARTH', 'WATER', 'WATER', 'NEGATIVE_ENERGY'])
         .withResult(FabricationAction.builder()
-            .withAction(ActionType.ADD)
+            .withAction(FabricationActionType.ADD)
             .withQuantity(1)
             .withComponent(instantRope)
             .build())
@@ -159,7 +158,7 @@ describe('Essence Combining Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences(['EARTH', 'FIRE', 'POSITIVE_ENERGY'])
         .withResult(FabricationAction.builder()
-            .withAction(ActionType.ADD)
+            .withAction(FabricationActionType.ADD)
             .withQuantity(1)
             .withComponent(acid)
             .build())
@@ -170,7 +169,7 @@ describe('Essence Combining Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences(['FIRE', 'AIR', 'AIR'])
         .withResult(FabricationAction.builder()
-            .withAction(ActionType.ADD)
+            .withAction(FabricationActionType.ADD)
             .withQuantity(1)
             .withComponent(flashbang)
             .build())
@@ -225,10 +224,10 @@ describe('Essence Combining Fabricator |', () => {
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
             expect(outcome.type, 'Expected Fabrication to be successful').to.equal(OutcomeType.SUCCESS);
             expect(outcome.actions).to.deep.include.members([
-                FabricationAction.builder().withComponent(voidroot).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(hydrathistle).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(ironwoodHeart).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(instantRope).withAction(ActionType.ADD).withQuantity(1).build()
+                FabricationAction.builder().withComponent(voidroot).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(hydrathistle).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(ironwoodHeart).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(instantRope).withAction(FabricationActionType.ADD).withQuantity(1).build()
             ]);
 
         });
@@ -268,10 +267,10 @@ describe('Essence Combining Fabricator |', () => {
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
             expect(outcome.type, 'Expected Fabrication to be successful').to.equal(OutcomeType.SUCCESS);
             expect(outcome.actions).to.deep.include.members([
-                FabricationAction.builder().withComponent(voidroot).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(hydrathistle).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(ironwoodHeart).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(instantRope).withAction(ActionType.ADD).withQuantity(1).build()
+                FabricationAction.builder().withComponent(voidroot).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(hydrathistle).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(ironwoodHeart).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(instantRope).withAction(FabricationActionType.ADD).withQuantity(1).build()
             ]);
 
         });
@@ -365,7 +364,7 @@ describe('Essence Combining Fabricator |', () => {
                 .withResult(increaseDC)
                 .build();
 
-            const essenceCombiner: EssenceCombiner<ItemData5e> = DefaultEssenceCombiner5E.builder()
+            const essenceCombiner: EssenceCombiner<ItemData5e> = EssenceCombiner5E.builder()
                 .withMaxComponents(6)
                 .withMaxEssences(6)
                 .withKnownAlchemicalResults(knownAlchemicalResults)
@@ -384,13 +383,13 @@ describe('Essence Combining Fabricator |', () => {
             const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(essenceCombiner);
             const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockInventory, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
-            const addResults = outcome.actions.filter((action: FabricationAction) => action.type === ActionType.ADD);
+            const addResults = outcome.actions.filter((action: FabricationAction) => action.type === FabricationActionType.ADD);
             expect(addResults.length).to.equal(1);
             const addResult: FabricationAction = addResults[0];
             expect(addResult.component.systemId).to.equal('fabricate.alchemists-supplies-v11');
             expect(addResult.component.partId).to.equal('90z9nOwmGnP4aUUk');
             expect(addResult.quantity).to.equal(1);
-            expect(addResult.type).to.equal(ActionType.ADD);
+            expect(addResult.type).to.equal(FabricationActionType.ADD);
 
             const customItemData: ItemData5e = addResult.customData;
 
@@ -442,9 +441,9 @@ describe('Essence Combining Fabricator |', () => {
             expect(outcome.type, 'Expected a successful Fabrication Outcome').to.equal(OutcomeType.SUCCESS);
             expect(outcome.actions.length, 'Expected three Crafting Results').to.equal(3);
             expect(outcome.actions).to.deep.include.members([
-                FabricationAction.builder().withComponent(wispStalks).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(fennelSilk).withAction(ActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withComponent(flashbang).withAction(ActionType.ADD).withQuantity(1).build()
+                FabricationAction.builder().withComponent(wispStalks).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(fennelSilk).withAction(FabricationActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withComponent(flashbang).withAction(FabricationActionType.ADD).withQuantity(1).build()
             ]);
         });
 

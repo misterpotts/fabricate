@@ -1,24 +1,17 @@
-import {AlchemicalResult, AlchemicalResultSet} from "./AlchemicalResultSet";
 import {CraftingComponent} from "./CraftingComponent";
+import {AlchemicalEffect} from "./AlchemicalEffect";
 
-interface EssenceCombiner<T> {
-    maxComponents: number;
-    maxEssences: number;
-    resultantItem: CraftingComponent;
-    combine(components: CraftingComponent[]): AlchemicalResult<T>;
-}
+abstract class EssenceCombiner<E extends AlchemicalEffect<{}>, I> {
+    protected readonly _maxComponents: number;
+    protected readonly _maxEssences: number;
+    protected readonly _effects: E[];
+    protected readonly _baseItem: Entity<I>;
 
-abstract class AbstractEssenceCombiner<T> implements EssenceCombiner<T> {
-    private readonly _maxComponents: number;
-    private readonly _maxEssences: number;
-    private readonly _availableResults: AlchemicalResultSet<T>;
-    private readonly _resultantItem: CraftingComponent;
-
-    protected constructor(maxComponents: number, maxEssences: number, availableResults: AlchemicalResultSet<T>, resultantItem: CraftingComponent) {
+    protected constructor(maxComponents: number, maxEssences: number, effects: E[], baseItem: Entity<I>) {
         this._maxComponents = maxComponents;
         this._maxEssences = maxEssences;
-        this._availableResults = availableResults;
-        this._resultantItem = resultantItem;
+        this._effects = effects;
+        this._baseItem = baseItem;
     }
 
     get maxComponents(): number {
@@ -29,14 +22,19 @@ abstract class AbstractEssenceCombiner<T> implements EssenceCombiner<T> {
         return this._maxEssences;
     }
 
-    get resultantItem(): CraftingComponent {
-        return this._resultantItem;
+    get effects(): E[] {
+        return this._effects;
     }
 
-    combine(components: CraftingComponent[]): AlchemicalResult<T> {
+    get baseItem(): Entity<I> {
+        return this._baseItem;
+    }
+
+    combine(components: CraftingComponent[]): Entity<I> {
         this.validate(components);
-        const effects: AlchemicalResult<T>[] = this.getAlchemicalResultsForComponents(components);
-        return this.combineAlchemicalResults(effects);
+        const effects: E[] = this.determineAlchemicalEffectsForComponents(components);
+        const orderedEffects: E[] = this.orderAlchemicalEffects(effects);
+        return this.applyEffectsToBaseItem(orderedEffects, this.baseItem);
     }
 
     protected validate(components: CraftingComponent[]) {
@@ -52,12 +50,70 @@ abstract class AbstractEssenceCombiner<T> implements EssenceCombiner<T> {
         }
     }
 
-    abstract combineAlchemicalResults(effects: AlchemicalResult<T>[]): AlchemicalResult<T>;
+    abstract applyEffectsToBaseItem(effects: E[], baseItem: Entity<I>): Entity<I>;
 
-    getAlchemicalResultsForComponents(components: CraftingComponent[]): AlchemicalResult<T>[] {
+    determineAlchemicalEffectsForComponents(components: CraftingComponent[]): E[] {
+        if (components.length === 0 || this.effects.length === 0) {
+            return [];
+        }
+        const effectEssenceMatchSizes: number[] = this.effects.map((effect: E) => effect.essenceCombination.length)
+            .filter((count: number, index: number, essenceCounts: number[]) => essenceCounts.indexOf(count) === index)
+            .sort((left: number, right: number) => right - left);
+        const remainingComponents: CraftingComponent[] = components;
+        effectEssenceMatchSizes.forEach((essenceCount: number) => {
+            const unmatched: CraftingComponent[] = [];
+            remainingComponents.forEach((component: CraftingComponent) => {
+                if (component.essences.length === essenceCount) {
+                    potentialEffectMatches.push(component);
+                    this.effects.find((effect: AlchemicalEffect<E>) => effect.essenceCombination)
+                } else {
+                    unmatched.push(component);
+                }
+            });
+
+        });
         return components.map((component: CraftingComponent) => this._availableResults.getByEssenceCombination(component.essences));
+    }
+
+    protected abstract orderAlchemicalEffects(effects: E[]): E[];
+}
+
+namespace EssenceCombiner {
+
+    export class Builder<E, I> {
+
+        public maxComponents: number;
+        public maxEssences: number
+        public effects: E[] = [];
+        public baseItem: Entity<I>;
+
+        public withMaxComponents(value: number): Builder<E, I> {
+            this.maxComponents = value;
+            return this;
+        }
+
+        public withMaxEssences(value: number): Builder<E, I> {
+            this.maxComponents = value;
+            return this;
+        }
+
+        public withAlchemicalEffect(value: E): Builder<E, I> {
+            this.effects.push(value);
+            return this;
+        }
+
+        public withAlchemicalEffects(value: E[]): Builder<E, I> {
+            this.effects = value;
+            return this;
+        }
+
+        public withBaseItem(value: Entity<I>): Builder<E, I> {
+            this.baseItem = value;
+            return this;
+        }
+
     }
 
 }
 
-export {EssenceCombiner, AlchemicalResult, AbstractEssenceCombiner}
+export {EssenceCombiner}
