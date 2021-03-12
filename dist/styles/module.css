@@ -80,10 +80,8 @@
   font-size: 14px;
   line-height: 28px;
 }
-.fabricate-crafting {
-  margin-top: 10px;
-}
 .fabricate-crafting .crafting-tab-content {
+  margin-top: 10px;
   padding-bottom: 15px;
 }
 .fabricate-crafting .crafting-tab-content .controls {
