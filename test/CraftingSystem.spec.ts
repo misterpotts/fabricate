@@ -12,7 +12,6 @@ import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {Inventory} from "../src/scripts/game/Inventory";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
-import {AlchemicalEffect5E} from "../src/scripts/core/AlchemicalEffect";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -132,59 +131,6 @@ describe('Crafting System |', () => {
                 new EssenceDefinition('Fire', 'Elemental fire, one of the fundamental forces of nature', 'fire'),
                 new EssenceDefinition('Positive Energy', 'The essence of life and creation', 'sun'),
                 new EssenceDefinition('Negative Energy', 'The essence of death and destruction', 'moon')
-            ]);
-            expect(testSystem.alchemicalEffects).to.deep.include.members([
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['earth', 'earth'])
-                    .withCondition('blinded')
-                    .withDescription('Release a burst of stinging dust. Affected targets are blinded for the next round. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['water', 'water'])
-                    .withCondition('prone')
-                    .withDescription('Release a puddle of slippery oil. Affected targets immediately fall prone. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['air', 'air'])
-                    .withDamage('1d4', 'lightning')
-                    .withDescription('Deal 1d4 lightning damage on contact. Double damage to targets touching a metal surface or ' +
-                        'using metal weapons or armor. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['fire', 'fire'])
-                    .withDamage('1d4', 'fire')
-                    .withDescription('Deal 1d4 fire damage on contact. Double damage to targets with cloth or leather armor. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['earth', 'water'])
-                    .withDescription('Release gel that sticks to targets. Each round, any damage-dealing effects continue to ' +
-                        'deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['water', 'air'])
-                    .withDamage('1d4', 'cold')
-                    .withDescription('Deal 1d4 cold damage on contact. Reduce target speed by 10 feet for the next round. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['air', 'fire'])
-                    .withAoeExtension(5, 'ft')
-                    .withDescription('Release concentrated mist in all directions. Increase the radius of all effects by 5 feet. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['fire', 'earth'])
-                    .withDamage('1d8', 'acid')
-                    .withDescription('Deal 1d8 acid damage on contact. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['positive-energy'])
-                    .withDiceMultiplier(2)
-                    .withDescription('Roll double the number of all damage dice. ')
-                    .build(),
-                AlchemicalEffect5E.builder()
-                    .withEssenceCombination(['negative-energy'])
-                    .withSavingThrowModifier(2)
-                    .withDescription('Increase the DC to avoid bomb effects by 2. ')
-                    .build()
             ]);
         });
 

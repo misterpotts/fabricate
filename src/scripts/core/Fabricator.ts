@@ -1,85 +1,107 @@
 import {Recipe} from "./Recipe";
-import {FabricationAction} from "./FabricationAction";
-import {ActionType} from "./ActionType";
+import {FabricationAction, FabricationActionType} from "./FabricationAction";
 import {CraftingComponent} from "./CraftingComponent";
 import {FabricationHelper} from "./FabricationHelper";
-import {AlchemicalResult, EssenceCombiner} from "./EssenceCombiner";
+import {EssenceCombiner} from "./EssenceCombiner";
 import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
 import {Inventory} from "../game/Inventory";
 import {InventoryRecord} from "../game/InventoryRecord";
+import {Ingredient} from "./Ingredient";
 
-interface Fabricator {
+class AlchemySpecification<T> {
+    private readonly _essenceCombiner: EssenceCombiner<T>;
+    private _baseItemData: T;
+    private readonly _baseComponent: CraftingComponent;
 
-    fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome>;
-    fabricateFromComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome>;
-
-}
-
-class DefaultFabricator implements Fabricator {
-
-    public async fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
-
-        let input: FabricationAction[] = recipe.ingredients.map((component) => {
-            return FabricationAction.builder()
-                .withComponent(component.component)
-                .withQuantity(component.quantity)
-                .withAction(component.consumed ? ActionType.REMOVE : ActionType.ADD)
-                .build();
-        });
-
-        let output: FabricationAction[] = recipe.results.map((result) => {
-            return FabricationAction.builder()
-                .withComponent(result.component)
-                .withAction(ActionType.ADD)
-                .withQuantity(result.quantity)
-                .build();
-        });
-
-        const fabricationActions: FabricationAction[] = input.concat(output);
-        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS, recipe);
-    }
-
-    public fabricateFromComponents(): Promise<FabricationOutcome> {
-        throw new Error(`The Default Fabricator requires a Recipe and one was not provided. `);
-    }
-
-}
-
-class EssenceCombiningFabricator<E, I> implements Fabricator {
-    private readonly _essenceCombiner: EssenceCombiner<E, I>;
-
-    constructor(essenceCombiner?: EssenceCombiner<E, I>) {
+    constructor(essenceCombiner: EssenceCombiner<T>, baseComponent: CraftingComponent) {
+        if (!essenceCombiner || !baseComponent) {
+            throw new Error('Alchemy Specifications require an Essence Combiner and a Base Crafting Component. ');
+        }
         this._essenceCombiner = essenceCombiner;
+        this._baseComponent = baseComponent;
+    }
+
+    get essenceCombiner(): EssenceCombiner<T> {
+        return this._essenceCombiner;
+    }
+
+    get baseComponent(): CraftingComponent {
+        return this._baseComponent;
+    }
+
+    async getBaseItemData(): Promise<T> {
+        if (this._baseItemData) {
+            return this._baseItemData;
+        }
+        const compendium: Compendium = game.packs.get(this.baseComponent.systemId);
+        // @ts-ignore
+        const entity: Entity<T> = await compendium.getEntity(this.baseComponent.partId);
+        this._baseItemData = entity.data.data;
+        return this._baseItemData;
+    }
+}
+
+class Fabricator<T> {
+    private readonly _alchemySpecification: AlchemySpecification<T>;
+
+    constructor(alchemySpecification?: AlchemySpecification<T>) {
+        this._alchemySpecification = alchemySpecification;
     }
 
     public async fabricateFromComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
-        if (!this._essenceCombiner) {
-            throw new Error(`No Essence Combiner has been provided for this system. You may only craft from Recipes. `);
+        if (!this._alchemySpecification) {
+            throw new Error(`No Alchemy Specification has been provided for this system. You may only craft from Recipes. `);
         }
-        const alchemicalResult: AlchemicalResult<T> = this._essenceCombiner.combine(components);
-        const resultantItem: CraftingComponent = this._essenceCombiner.baseItem;
-        const addedComponent: FabricationAction = FabricationAction.builder()
-            .withAction(ActionType.ADD)
+        const baseItemData: T = await this._alchemySpecification.getBaseItemData();
+        const alchemicallyModifiedItemData: T = this._alchemySpecification.essenceCombiner.combine(components, duplicate(baseItemData));
+        const resultantComponentType: CraftingComponent = this._alchemySpecification.baseComponent;
+        const addComponentAction: FabricationAction = FabricationAction.builder()
+            .withAction(FabricationActionType.ADD)
             .withQuantity(1)
-            .withCustomData(alchemicalResult.asItemData())
-            .withComponent(resultantItem)
+            .withCustomData(alchemicallyModifiedItemData)
+            .withComponent(resultantComponentType)
             .build();
-        const fabricationActions: FabricationAction[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
-        fabricationActions.push(addedComponent);
+        const fabricationActions: FabricationAction[] = FabricationHelper.asCraftingResults(components, FabricationActionType.REMOVE);
+        fabricationActions.push(addComponentAction);
         return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
     }
 
     public fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
-        const craftingComponents = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
-        if (!craftingComponents || craftingComponents.length === 0) {
-            throw new Error(`Essence Combining Fabricators require components to Fabricate Recipes. `);
+        const ownedComponents: InventoryRecord<CraftingComponent>[] = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
+
+        const catalysts: CraftingComponent[] = [];
+        const consumedIngredients: CraftingComponent[] = [];
+        if (recipe.ingredients && recipe.ingredients.length > 0) {
+           recipe.ingredients.forEach((ingredient: Ingredient) => {
+               const component: CraftingComponent = CraftingComponent.builder()
+                   .withName(ingredient.name)
+                   .withPartId(ingredient.partId)
+                   .withSystemId(ingredient.systemId)
+                   .withImageUrl(ingredient.imageUrl)
+                   .build();
+               if (!ingredient.consumed) {
+                   catalysts.push(component);
+               } else {
+                   consumedIngredients.push(component);
+               }
+           });
         }
-        const craftingComponentCombinations = this.analyzeCombinationsForRecipe(craftingComponents, recipe);
+
+        ownedComponents.map((componentRecord: InventoryRecord<CraftingComponent>));
+
+        if (recipe.essences && recipe.essences.length > 0) {
+
+        }
+
+        const input: FabricationAction[] = [];
+        const output: FabricationAction[] = [];
+
+        const craftingComponentCombinations = this.analyzeCombinationsForRecipe(ownedComponents, recipe);
         const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
-        if (!selectedCombination ||selectedCombination.length === 0) {
+        if (!selectedCombination || selectedCombination.length === 0) {
             throw new Error(`There are insufficient components available to craft the Recipe "${recipe.name}". `)
         }
-        const fabricationActions = FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE).concat(recipe.results);
+        const fabricationActions = FabricationHelper.asCraftingResults(selectedCombination, FabricationActionType.REMOVE).concat(recipe.results);
         return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS, recipe);
     }
 
@@ -181,4 +203,4 @@ class CraftingComponentCombination {
     }
 }
 
-export {Fabricator, DefaultFabricator, EssenceCombiningFabricator};
+export {Fabricator};
