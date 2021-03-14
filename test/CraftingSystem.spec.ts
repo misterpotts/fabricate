@@ -34,7 +34,7 @@ describe('Crafting System |', () => {
 
         it('Should create a Crafting System', () => {
 
-            const mockFabricator = <Fabricator><unknown>{
+            const mockFabricator = <Fabricator<{}>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
@@ -136,7 +136,7 @@ describe('Crafting System |', () => {
 
         it('Should craft a recipe using the System\'s Fabricator', async () => {
 
-            let mockFabricator = <Fabricator>{
+            let mockFabricator = <Fabricator<{}>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };

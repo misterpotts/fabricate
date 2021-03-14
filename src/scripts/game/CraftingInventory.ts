@@ -146,7 +146,7 @@ abstract class CraftingInventory implements Inventory {
         return !failedToFind;
     }
 
-    protected getOwningCraftingSystemForItem(item: Item): CraftingSystem {
+    protected getOwningCraftingSystemForItem(item: Item): CraftingSystem<{}> {
         const systemId = item.getFlag(Properties.module.name, Properties.flagKeys.item.systemId);
         const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
         if (!craftingSystem) {
@@ -156,7 +156,7 @@ abstract class CraftingInventory implements Inventory {
     }
 
     protected lookUp(item: Item): FabricateItem {
-        const craftingSystem: CraftingSystem = this.getOwningCraftingSystemForItem(item);
+        const craftingSystem: CraftingSystem<{}> = this.getOwningCraftingSystemForItem(item);
         const itemType: FabricateItemType = item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
         const partId: string = item.getFlag(Properties.module.name, Properties.flagKeys.item.partId);
         switch (itemType) {

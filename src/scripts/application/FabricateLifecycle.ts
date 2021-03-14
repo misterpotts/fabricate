@@ -23,7 +23,7 @@ class FabricateLifecycle {
         });
 
         const convertEssenceSlugToIconMarkup = (essenceSlug: string, systemId: string) => {
-            const system: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
+            const system: CraftingSystem<{}> = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
             const essenceDefinition: EssenceDefinition = system.getEssenceBySlug(essenceSlug);
             if (essenceDefinition) {
                 return essenceDefinition.icon;
@@ -85,7 +85,7 @@ class FabricateLifecycle {
 
     }
 
-    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification) {
+    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification<{}>) {
         game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey), {
             name: systemSpec.name,
             hint: systemSpec.enableHint,

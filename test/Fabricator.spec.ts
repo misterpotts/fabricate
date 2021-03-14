@@ -381,6 +381,7 @@ describe('Crafting |', () => {
             const mockEssenceCombiner: EssenceCombiner<ItemData5e> = <EssenceCombiner<ItemData5e>><unknown>{
                 combine: Sandbox.stub()
             };
+            // @ts-ignore
             mockEssenceCombiner.combine.returns({
                 description: {
                     value: '<p>Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.</p> <p>Deal 1d8 acid damage on contact.</p> <p>Roll double the number of all damage dice.</p>'

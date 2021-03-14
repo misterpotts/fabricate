@@ -15,7 +15,7 @@ describe('Crafting System Registry |', () => {
 
     describe('Register and Retrieve |', () => {
 
-        const mockFabricator = <Fabricator><unknown>{
+        const mockFabricator = <Fabricator<{}>><unknown>{
             fabricateFromComponents: Sandbox.stub(),
             fabricateFromRecipe: Sandbox.stub()
         };

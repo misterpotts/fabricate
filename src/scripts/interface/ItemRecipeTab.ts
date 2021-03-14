@@ -13,7 +13,7 @@ class ItemRecipeTab {
     private _sheetHtml: any;
     private readonly _item: any;
     private readonly _recipe: Recipe;
-    private readonly _craftingSystem: CraftingSystem;
+    private readonly _craftingSystem: CraftingSystem<{}>;
     private _suppressedInNav: boolean = false;
     private static tabKey: string = 'fabricate-recipe';
 

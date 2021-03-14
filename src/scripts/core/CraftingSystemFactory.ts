@@ -11,8 +11,8 @@ import Properties from "../Properties";
 import {FabricateItem} from "./FabricateItem";
 
 interface CraftingSystemFactory {
-    systemSpecification: CraftingSystemSpecification;
-    make(): Promise<CraftingSystem>;
+    systemSpecification: CraftingSystemSpecification<{}>;
+    make(): Promise<CraftingSystem<{}>>;
 }
 
 interface BasicSystemData {
@@ -21,17 +21,17 @@ interface BasicSystemData {
 }
 
 abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
-    private readonly _systemSpecification: CraftingSystemSpecification;
+    private readonly _systemSpecification: CraftingSystemSpecification<{}>;
 
-    constructor(systemSpecification: CraftingSystemSpecification) {
+    constructor(systemSpecification: CraftingSystemSpecification<{}>) {
         this._systemSpecification = systemSpecification;
     }
 
-    get systemSpecification(): CraftingSystemSpecification {
+    get systemSpecification(): CraftingSystemSpecification<{}> {
         return this._systemSpecification;
     }
 
-    async make(): Promise<CraftingSystem> {
+    async make(): Promise<CraftingSystem<{}>> {
         const basicSystemData = await this.prepare();
         const componentErrors: string[] = [];
         basicSystemData.components.forEach((craftingComponent: CraftingComponent) => {
@@ -163,7 +163,7 @@ class FileReadingCraftingSystemFactory extends AbstractCraftingSystemFactory {
     private readonly _filePath: string;
     private readonly _fileErrorsByLineNumber: Map<number, string[]> = new Map();
 
-    constructor(systemSpecification: CraftingSystemSpecification, filePath: string) {
+    constructor(systemSpecification: CraftingSystemSpecification<{}>, filePath: string) {
         super(systemSpecification);
         this._filePath = filePath;
     }
