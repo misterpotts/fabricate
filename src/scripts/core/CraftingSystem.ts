@@ -43,10 +43,10 @@ class EssenceDefinition {
     }
 }
 
-class CraftingSystem {
+class CraftingSystem<T> {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
-    private readonly _fabricator: Fabricator;
+    private readonly _fabricator: Fabricator<T>;
     private readonly _recipesById: Map<string, Recipe> = new Map();
     private readonly _componentsById: Map<string, CraftingComponent> = new Map();
     private readonly _supportedGameSystems: string[] = [];
@@ -57,7 +57,7 @@ class CraftingSystem {
 
     private _enabled: boolean;
 
-    constructor(builder: CraftingSystem.Builder) {
+    constructor(builder: CraftingSystem.Builder<T>) {
         this._name = builder.name;
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
@@ -150,7 +150,7 @@ class CraftingSystem {
         return this._compendiumPackKey;
     }
 
-    get fabricator(): Fabricator {
+    get fabricator(): Fabricator<T> {
         return this._fabricator;
     }
 
@@ -184,11 +184,11 @@ class CraftingSystem {
 
 namespace CraftingSystem {
 
-    export class Builder {
+    export class Builder<T> {
 
         public name!: string;
         public compendiumPackKey!: string;
-        public fabricator!: Fabricator;
+        public fabricator!: Fabricator<T>;
         public supportedGameSystems: string[] = [];
         public recipes: Map<string, Recipe> = new Map();
         public components: Map<string, CraftingComponent> = new Map();
@@ -197,76 +197,76 @@ namespace CraftingSystem {
         public description!: string;
         public essences: EssenceDefinition[] = [];
 
-        public build() : CraftingSystem {
+        public build() : CraftingSystem<T> {
             return new CraftingSystem(this);
         }
 
-        public withName(value: string): Builder {
+        public withName(value: string): Builder<T> {
             this.name = value;
             return this;
         }
 
-        public withCompendiumPackKey(value: string): Builder {
+        public withCompendiumPackKey(value: string): Builder<T> {
             this.compendiumPackKey = value;
             return this;
         }
 
-        public withFabricator(value: Fabricator): Builder {
+        public withFabricator(value: Fabricator<T>): Builder<T> {
             this.fabricator = value;
             return this;
         }
 
-        public withSupportedGameSystems(value: string[]): Builder {
+        public withSupportedGameSystems(value: string[]): Builder<T> {
             this.supportedGameSystems = value;
             return this;
         }
 
-        public withSupportedGameSystem(value: string): Builder {
+        public withSupportedGameSystem(value: string): Builder<T> {
             this.supportedGameSystems.push(value);
             return this;
         }
 
-        public withRecipes(value: Map<string, Recipe>): Builder {
+        public withRecipes(value: Map<string, Recipe>): Builder<T> {
             this.recipes = value;
             return this;
         }
 
-        public withRecipe(value: Recipe): Builder {
+        public withRecipe(value: Recipe): Builder<T> {
             this.recipes.set(value.partId, value);
             return this;
         }
 
-        public withComponent(value: CraftingComponent): Builder {
+        public withComponent(value: CraftingComponent): Builder<T> {
             this.components.set(value.partId, value);
             return this;
         }
 
-        public withComponents(value: Map<string, CraftingComponent>): Builder {
+        public withComponents(value: Map<string, CraftingComponent>): Builder<T> {
             this.components = value;
             return this;
         }
 
-        public isEnabled(value: boolean): Builder {
+        public isEnabled(value: boolean): Builder<T> {
             this.enabled = value;
             return this;
         }
 
-        public withEnableHint(value: string): Builder {
+        public withEnableHint(value: string): Builder<T> {
             this.enableHint = value;
             return this;
         }
 
-        public withDescription(value: string): Builder {
+        public withDescription(value: string): Builder<T> {
             this.description = value;
             return this;
         }
 
-        public withEssence(value: EssenceDefinition): Builder {
+        public withEssence(value: EssenceDefinition): Builder<T> {
             this.essences.push(value);
             return this;
         }
 
-        public withEssences(value: EssenceDefinition[]): Builder {
+        public withEssences(value: EssenceDefinition[]): Builder<T> {
             this.essences = value;
             return this;
         }
