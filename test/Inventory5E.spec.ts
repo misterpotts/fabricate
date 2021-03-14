@@ -162,7 +162,7 @@ describe('Inventory5E |', () => {
             };
             Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
-            mockActor.createEmbeddedEntity.returns({data:{quantity:1}});
+            mockActor.createEmbeddedEntity.returns({data:{data:{quantity:1}}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
             const oneDung = Ingredient.builder()
                 .withQuantity(JUST_ONE)
@@ -202,7 +202,7 @@ describe('Inventory5E |', () => {
             };
             Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
-            mockActor.createEmbeddedEntity.returns({data:{quantity:2}});
+            mockActor.createEmbeddedEntity.returns({data:{data:{quantity:2}}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const twoDung = Ingredient.builder()

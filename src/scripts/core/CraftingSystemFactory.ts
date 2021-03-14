@@ -86,9 +86,10 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
             throw new Error(`Unable to build Crafting System ${this.systemSpecification.name}. There were one or more issues with reading populating Recipes: ${recipeErrors}. `);
         }
         return CraftingSystem.builder()
-            .withRecipes(populatedRecipes)
+            .withRecipes(new Map(populatedRecipes.map((recipe: Recipe) => [recipe.partId, recipe])))
             .withName(this.systemSpecification.name)
-            .withComponentDictionary(componentDictionary)
+            .withComponents(componentDictionary)
+            .withEssences(this.systemSpecification.essences)
             .withEnableHint(this.systemSpecification.enableHint)
             .withFabricator(this.systemSpecification.fabricator)
             .withDescription(this.systemSpecification.description)

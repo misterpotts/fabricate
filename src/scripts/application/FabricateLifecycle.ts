@@ -1,10 +1,10 @@
 import {ItemRecipeTab} from "../interface/ItemRecipeTab";
 import {CraftingTab} from "../interface/CraftingTab";
 import {Inventory} from "../game/Inventory";
-import {EssenceTypeIconConverter} from "../core/EssenceType";
 import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
 import Properties from "../Properties";
 import FabricateApplication from "./FabricateApplication";
+import {CraftingSystem, EssenceDefinition} from "../core/CraftingSystem";
 
 class FabricateLifecycle {
 
@@ -22,16 +22,22 @@ class FabricateLifecycle {
             return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
         });
 
-        // @ts-ignore
-        Handlebars.registerHelper('essenceIcon', function(arg1) {
-            // @ts-ignore
-            return EssenceTypeIconConverter.convertToIconMarkup(arg1);
+        const convertEssenceSlugToIconMarkup = (essenceSlug: string, systemId: string) => {
+            const system: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
+            const essenceDefinition: EssenceDefinition = system.getEssenceBySlug(essenceSlug);
+            if (essenceDefinition) {
+                return essenceDefinition.icon;
+            }
+            return essenceSlug;
+        };
+
+        Handlebars.registerHelper('essenceIcon', function(arg1, arg2) {
+            return convertEssenceSlugToIconMarkup(arg1, arg2);
         });
 
         // @ts-ignore
-        Handlebars.registerHelper('essenceIconSeries', function(arg1) {
-            // @ts-ignore
-            return EssenceTypeIconConverter.convertSeriesToIconMarkup(arg1);
+        Handlebars.registerHelper('essenceIconSeries', function(arg1, arg2) {
+            return arg1.map((essence: string) => convertEssenceSlugToIconMarkup(essence, arg2)).join(', ');
         });
 
     }

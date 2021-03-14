@@ -4,7 +4,6 @@ import {CraftingSystem} from "../core/CraftingSystem";
 import FabricateApplication from "../application/FabricateApplication";
 import {Inventory} from "../game/Inventory";
 import {FabricateCompendiumData} from "../game/CompendiumData";
-import {EssenceTypeIconConverter} from "../core/EssenceType";
 
 class ItemRecipeTab {
     private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
@@ -32,8 +31,10 @@ class ItemRecipeTab {
             tab.init(sheetHtml);
         }
         if (fabricateFlags.type === Properties.types.component && fabricateFlags.component.essences && fabricateFlags.component.essences.length > 0) {
-            const essences: any[] = fabricateFlags.component.essences;
-            const essenceDescription = EssenceTypeIconConverter.convertSeriesToIconMarkup(essences);
+            const essences: string[] = fabricateFlags.component.essences;
+            const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(fabricateFlags.identity.systemId);
+            const essenceDescription = essences.map((essence: string) => craftingSystem.getEssenceBySlug(essence).icon)
+                .join(', ');
             sheetHtml.find('ol.properties-list').append($(`<li>${essenceDescription}</li>`));
         }
     }

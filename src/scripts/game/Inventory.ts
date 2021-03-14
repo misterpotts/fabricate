@@ -4,14 +4,14 @@ import {Ingredient} from "../core/Ingredient";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {Recipe} from "../core/Recipe";
 import {FabricateItem} from "../core/FabricateItem";
-import {ActionType} from "../core/ActionType";
+import {FabricationActionType} from "../core/FabricationAction";
 
 class InventoryModification<T extends FabricateItem> {
     private readonly _changedItems: Item[];
-    private readonly _action: ActionType;
+    private readonly _action: FabricationActionType;
     private readonly _updatedRecord: InventoryRecord<T>;
 
-    constructor(changedItems: Item[], action: ActionType, updatedRecord: InventoryRecord<T>) {
+    constructor(changedItems: Item[], action: FabricationActionType, updatedRecord: InventoryRecord<T>) {
         this._changedItems = changedItems;
         this._action = action;
         this._updatedRecord = updatedRecord;
@@ -21,7 +21,7 @@ class InventoryModification<T extends FabricateItem> {
         return this._changedItems;
     }
 
-    get action(): ActionType {
+    get action(): FabricationActionType {
         return this._action;
     }
 

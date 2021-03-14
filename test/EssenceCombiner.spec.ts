@@ -25,6 +25,7 @@ before(() => {
         number: 1,
         expression: '2d8'
     };
+    // @ts-ignore
     global.DiceTerm.fromExpression.withArgs('1d8').returns(mock1D4DiceTerm);
 
 });

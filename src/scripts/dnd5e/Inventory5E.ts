@@ -8,7 +8,7 @@ import {Ingredient} from "../core/Ingredient";
 import {Recipe} from "../core/Recipe";
 import {FabricateItem} from "../core/FabricateItem";
 import {InventoryModification} from "../game/Inventory";
-import {ActionType} from "../core/ActionType";
+import {FabricationActionType} from "../core/FabricationAction";
 
 type RecipeConsumer = (fabricateItem: InventoryRecord<Recipe>) => void;
 type CraftingComponentConsumer = (fabricateItem: InventoryRecord<CraftingComponent>) => void;
@@ -93,23 +93,23 @@ class Inventory5E extends CraftingInventory {
             const compendium: Compendium = game.packs.get(component.systemId);
             const item: Entity<ItemData5e> = await compendium.getEntity(component.partId);
             item.data.data.quantity = amountToAdd;
-            const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', item);
+            const createdItem: Item<ItemData5e> = await this._actor.createEmbeddedEntity('OwnedItem', item);
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
                 .withItem(createdItem)
-                .withTotalQuantity(createdItem.data.quantity)
+                .withTotalQuantity(createdItem.data.data.quantity)
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
-            return new InventoryModification([createdItem], ActionType.ADD, inventoryRecord);
+            return new InventoryModification([createdItem], FabricationActionType.ADD, inventoryRecord);
         } else {
             recordForType.itemsOfType.sort((left: Item<ItemData5e>, right: Item<ItemData5e>) => left.data.data.quantity - right.data.data.quantity);
-            const item: any = recordForType.itemsOfType[0];
-            const updatedQuantityForItem = item.data.quantity + amountToAdd;
+            const item: Item<ItemData5e> = recordForType.itemsOfType[0];
+            const updatedQuantityForItem = item.data.data.quantity + amountToAdd;
             // @ts-ignore
-            const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item.id, data: {quantity: updatedQuantityForItem}});
+            const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item._id, data: {quantity: updatedQuantityForItem}});
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
-            return new InventoryModification([updatedItem], ActionType.ADD, recordForType);
+            return new InventoryModification([updatedItem], FabricationActionType.ADD, recordForType);
         }
     }
 
@@ -123,7 +123,7 @@ class Inventory5E extends CraftingInventory {
         const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', data);
         if (recordForType) {
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
-            return new InventoryModification([createdItem], ActionType.ADD, recordForType);
+            return new InventoryModification([createdItem], FabricationActionType.ADD, recordForType);
         } else {
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
@@ -132,7 +132,7 @@ class Inventory5E extends CraftingInventory {
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
-            return new InventoryModification([createdItem], ActionType.ADD, inventoryRecord);
+            return new InventoryModification([createdItem], FabricationActionType.ADD, inventoryRecord);
         }
     }
 
@@ -179,7 +179,7 @@ class Inventory5E extends CraftingInventory {
         if (remainingItems.length === 0) {
             this._componentDirectory.delete(component.partId);
         }
-        return new InventoryModification<CraftingComponent>(modifiedItems, ActionType.REMOVE, recordForType);
+        return new InventoryModification<CraftingComponent>(modifiedItems, FabricationActionType.REMOVE, recordForType);
     }
 
     public async updateQuantityFor(item: Item.Data<ItemData5e>): Promise<boolean> {

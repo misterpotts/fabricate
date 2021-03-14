@@ -2,8 +2,8 @@ import {CraftingComponent} from "./CraftingComponent";
 import {FabricationAction, FabricationActionType} from "./FabricationAction";
 import {Inventory, InventoryModification} from "../game/Inventory";
 import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
-import {InventoryRecord} from "../game/InventoryRecord";
 import {Recipe} from "./Recipe";
+import {Ingredient} from "./Ingredient";
 
 class FabricationHelper {
 
@@ -86,18 +86,12 @@ class FabricationHelper {
         return FabricationHelper.primes;
     }
 
-    public static asComponentCombinations(componentRecords: InventoryRecord<CraftingComponent>[], essences: string[]): CraftingComponent[][] {
+    public static asComponentCombinations(availableIngredients: Ingredient[], limit: number): CraftingComponent[][] {
         const denormalizedComponents: CraftingComponent[] = [];
-        componentRecords.forEach((record: InventoryRecord<CraftingComponent>) => {
-            const ceiling = record.totalQuantity < essences.length ? record.totalQuantity : essences.length;
+        availableIngredients.forEach((ingredient: Ingredient) => {
+            const ceiling = ingredient.quantity < limit ? ingredient.quantity : limit;
             for (let i = 0; i < ceiling; i++) {
-                denormalizedComponents.push(CraftingComponent.builder()
-                    .withName(record.fabricateItem.name)
-                    .withEssences(record.fabricateItem.essences)
-                    .withPartId(record.fabricateItem.partId)
-                    .withSystemId(record.fabricateItem.systemId)
-                    .withImageUrl(record.fabricateItem.imageUrl)
-                    .build());
+                denormalizedComponents.push(ingredient.component);
             }
         });
         const combinations: CraftingComponent[][] = [];

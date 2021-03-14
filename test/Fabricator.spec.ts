@@ -4,13 +4,14 @@ import * as Sinon from "sinon";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {EssenceCombiningFabricator} from "../src/scripts/core/Fabricator";
 import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 import {FabricateItemType} from "../src/scripts/game/CompendiumData";
 import {EssenceCombiner} from "../src/scripts/core/EssenceCombiner";
+import {AlchemySpecification, Fabricator} from "../src/scripts/core/Fabricator";
+import {Ingredient} from "../src/scripts/core/Ingredient";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -21,11 +22,15 @@ const mockInventory: Inventory = <Inventory5E><unknown>{
     components: Sandbox.stub()
 }
 
+before(() => {
+    global.duplicate = (object: any) => object;
+});
+
 beforeEach(() => {
     Sandbox.restore();
 });
 
-describe('Essence Combining Fabricator |', () => {
+describe('Crafting |', () => {
 
     /* =======================================================================
      * Consumed Components
@@ -39,7 +44,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['EARTH', 'EARTH'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(ironwoodHeart).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(ironwoodHeart).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const hydrathistle: CraftingComponent = CraftingComponent.builder()
         .withName('Hydrathistle')
@@ -49,7 +54,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['WATER', 'WATER'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(hydrathistle).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(hydrathistle).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const voidroot: CraftingComponent = CraftingComponent.builder()
         .withName('Voidroot')
@@ -59,7 +64,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['NEGATIVE_ENERGY'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(voidroot).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(voidroot).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const luminousCapDust: CraftingComponent = CraftingComponent.builder()
         .withName('Luminous Cap Dust')
@@ -68,7 +73,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['FIRE', 'AIR'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(luminousCapDust).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(luminousCapDust).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const wispStalks: CraftingComponent = CraftingComponent.builder()
         .withName('Wisp Stalks')
@@ -77,7 +82,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['AIR', 'AIR'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(wispStalks).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(wispStalks).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const fennelSilk: CraftingComponent = CraftingComponent.builder()
         .withName('Fennel Silk')
@@ -86,7 +91,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['FIRE'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(fennelSilk).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(fennelSilk).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const wrackwortBulbs: CraftingComponent = CraftingComponent.builder()
         .withName('Wrackwort Bulbs')
@@ -95,7 +100,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['EARTH', 'FIRE'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(wrackwortBulbs).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(wrackwortBulbs).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     const radiantSynthSeed: CraftingComponent = CraftingComponent.builder()
         .withName('Radiant Synthseed')
@@ -104,7 +109,7 @@ describe('Essence Combining Fabricator |', () => {
         .withEssences(['POSITIVE_ENERGY'])
         .build();
     // @ts-ignore
-    mockInventory.removeComponent.withArgs(radiantSynthSeed).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
+    mockInventory.removeComponent.withArgs(radiantSynthSeed).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
 
     /* =======================================================================
      * Recipe Results
@@ -116,7 +121,7 @@ describe('Essence Combining Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .build();
     // @ts-ignore
-    mockInventory.addComponent.withArgs(instantRope).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
+    mockInventory.addComponent.withArgs(instantRope).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
 
     const acid: CraftingComponent = CraftingComponent.builder()
         .withName('Acid')
@@ -124,7 +129,7 @@ describe('Essence Combining Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .build();
     // @ts-ignore
-    mockInventory.addComponent.withArgs(acid).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
+    mockInventory.addComponent.withArgs(acid).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
 
     const flashbang: CraftingComponent = CraftingComponent.builder()
         .withName('Flashbang')
@@ -132,7 +137,7 @@ describe('Essence Combining Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .build();
     // @ts-ignore
-    mockInventory.addComponent.withArgs(flashbang).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
+    mockInventory.addComponent.withArgs(flashbang).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
 
     /* =======================================================================
      * Recipes
@@ -172,11 +177,103 @@ describe('Essence Combining Fabricator |', () => {
             .build())
         .build();
 
-    describe('Crafting |', () => {
+    describe('Simple Recipes |', () => {
+
+        const compendiumPackKey = 'fabricate.fabricate-test';
+        const mud: CraftingComponent = CraftingComponent.builder()
+            .withName('Mud')
+            .withPartId('tCmAnq9zcESt0ULf')
+            .withSystemId(compendiumPackKey)
+            .build()
+        // @ts-ignore
+        mockInventory.removeComponent.withArgs(mud).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+
+        const sticks: CraftingComponent = CraftingComponent.builder()
+            .withName('Sticks')
+            .withPartId('arWeEYkLkubimBz3')
+            .withSystemId(compendiumPackKey)
+            .build();
+        // @ts-ignore
+        mockInventory.removeComponent.withArgs(sticks).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+
+        const mudPie = CraftingComponent.builder()
+            .withName('Mud Pie')
+            .withPartId('nWhTa8gD1QL1f9O3')
+            .withSystemId(compendiumPackKey)
+            .build();
+        // @ts-ignore
+        mockInventory.addComponent.withArgs(mudPie).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+
+        const mudPieRecipe: Recipe = Recipe.builder()
+            .withName('Recipe: Mud Pie')
+            .withPartId('4iHqWSLTMFjPbpuI')
+            .withIngredient(Ingredient.builder()
+                .isConsumed(true)
+                .withQuantity(2)
+                .withComponent(mud)
+                .build())
+            .withIngredient(Ingredient.builder()
+                .isConsumed(true)
+                .withQuantity(1)
+                .withComponent(sticks)
+                .build())
+            .withResult(FabricationAction.builder()
+                .withAction(FabricationActionType.ADD)
+                .withQuantity(1)
+                .withComponent(mudPie)
+                .build())
+            .build();
+
+        it('Should create a Mud Pie from Recipe and components', async () => {
+
+            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
+
+            const mockActor: Actor = <Actor><unknown>{};
+
+            const contents: InventoryRecord<CraftingComponent>[] = [];
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(mud)
+                .withTotalQuantity(2)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            contents.push(InventoryRecord.builder<CraftingComponent>()
+                .withFabricateItemType(FabricateItemType.COMPONENT)
+                .withFabricateItem(sticks)
+                .withTotalQuantity(1)
+                .withActor(mockActor)
+                .withItems([])
+                .build());
+            mockInventory.components = contents;
+
+            const fabricationOutcome: FabricationOutcome = await underTest.fabricateFromRecipe(mockInventory, mudPieRecipe);
+            expect(fabricationOutcome.actions.length).to.equal(3);
+            expect(fabricationOutcome.actions).to.deep.include.members([
+                FabricationAction.builder()
+                    .withAction(FabricationActionType.ADD)
+                    .withQuantity(1)
+                    .withComponent(mudPie)
+                    .build(),
+                FabricationAction.builder()
+                    .withAction(FabricationActionType.REMOVE)
+                    .withQuantity(2)
+                    .withComponent(mud)
+                    .build(),
+                FabricationAction.builder()
+                    .withAction(FabricationActionType.REMOVE)
+                    .withQuantity(1)
+                    .withComponent(sticks)
+                    .build()
+            ]);
+        });
+    });
+
+    describe('Essence Combination |', () => {
 
         it('Should list craftable Recipes from Components', () => {
 
-            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
+            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
             const result: Recipe[] = underTest.filterCraftableRecipesFor([ironwoodHeart, hydrathistle, voidroot], [instantRopeRecipe, acidRecipe, flashbangRecipe]);
 
             expect(result, 'List of recipes was null!').to.exist;
@@ -188,7 +285,7 @@ describe('Essence Combining Fabricator |', () => {
 
         it('Should Fabricate from a Recipe that requires essences', async () => {
 
-            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
+            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -231,7 +328,7 @@ describe('Essence Combining Fabricator |', () => {
 
         it('Should Fabricate from a Recipe that requires essences with a large number of candidate components', async () => {
 
-            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
+            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -273,13 +370,44 @@ describe('Essence Combining Fabricator |', () => {
         });
 
         it('Should Fabricate from Components with no Recipe', async () => {
-
-            const mockEssenceCombiner: EssenceCombiner<ItemData5e> = Sandbox.stub();
+            const baseComponent = CraftingComponent.builder()
+                .withName('Alchemical Bomb')
+                .withImageUrl('/img/bomb.jpg')
+                .withPartId('90z9nOwmGnP4aUUk')
+                .withSystemId('fabricate.alchemists-supplies-v11')
+                .build();
 
             // @ts-ignore
-            mockInventory.addComponent.returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
+            const mockEssenceCombiner: EssenceCombiner<ItemData5e> = <EssenceCombiner<ItemData5e>><unknown>{
+                combine: Sandbox.stub()
+            };
+            mockEssenceCombiner.combine.returns({
+                description: {
+                    value: '<p>Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.</p> <p>Deal 1d8 acid damage on contact.</p> <p>Roll double the number of all damage dice.</p>'
+                },
+                target: {
+                    value: 5,
+                    units: 'ft',
+                    type: 'radius'
+                },
+                damage: {
+                    parts: [['2d8', 'acid']]
+                }
+            });
+            // @ts-ignore
+            const mockAlchemySpecification: AlchemySpecification<ItemData5e> = <AlchemySpecification<ItemData5e>>{
+                essenceCombiner: mockEssenceCombiner,
+                baseComponent: baseComponent,
+                getBaseItemData: Sandbox.stub()
+            };
+            const mockBaseItemData = require('./resources/alchemical-bomb-compendum-entry-itemData5e.json');
+            // @ts-ignore
+            mockAlchemySpecification.getBaseItemData.returns(mockBaseItemData);
 
-            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>(mockEssenceCombiner);
+            // @ts-ignore
+            mockInventory.addComponent.returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+
+            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>(mockAlchemySpecification);
             const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockInventory, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
             const addResults = outcome.actions.filter((action: FabricationAction) => action.type === FabricationActionType.ADD);
@@ -306,7 +434,7 @@ describe('Essence Combining Fabricator |', () => {
 
         it('Should efficiently consume recipe components to reduce essence wastage', async () => {
 
-            const underTest: EssenceCombiningFabricator<ItemData5e> = new EssenceCombiningFabricator<ItemData5e>();
+            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -346,6 +474,6 @@ describe('Essence Combining Fabricator |', () => {
             ]);
         });
 
-    });
-
+    })
 });
+

@@ -53,6 +53,7 @@ class CraftingSystem {
     private readonly _enableHint: string;
     private readonly _description: string;
     private readonly _essences: EssenceDefinition[] = [];
+    private readonly _essencesBySlug: Map<string, EssenceDefinition> = new Map();
 
     private _enabled: boolean;
 
@@ -67,6 +68,7 @@ class CraftingSystem {
         this._enableHint = builder.enableHint;
         this._description = builder.description;
         this._essences = builder.essences;
+        this._essencesBySlug = new Map(builder.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
     }
 
     public static builder() {
@@ -95,6 +97,10 @@ class CraftingSystem {
 
     get essences(): EssenceDefinition[] {
         return this._essences;
+    }
+
+    getEssenceBySlug(slug: string) {
+        return this._essencesBySlug.get(slug);
     }
 
     public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {

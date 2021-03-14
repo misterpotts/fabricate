@@ -1,4 +1,5 @@
 import {Fabricator} from "./Fabricator";
+import {EssenceDefinition} from "./CraftingSystem";
 
 class CraftingSystemSpecification {
     private readonly _compendiumPackKey: string;
@@ -8,6 +9,7 @@ class CraftingSystemSpecification {
     private readonly _enabled: boolean;
     private readonly _supportedGameSystems: string[] = [];
     private readonly _fabricator: Fabricator;
+    private readonly _essences: EssenceDefinition[] = [];
 
     constructor(builder: CraftingSystemSpecification.Builder) {
         this._compendiumPackKey = builder.compendiumPackKey;
@@ -17,6 +19,11 @@ class CraftingSystemSpecification {
         this._enabled = builder.enabled;
         this._supportedGameSystems = builder.supportedGameSystems;
         this._fabricator = builder.fabricator;
+        this._essences = builder.essences;
+    }
+
+    public static builder(): CraftingSystemSpecification.Builder {
+        return new CraftingSystemSpecification.Builder();
     }
 
     get compendiumPackKey(): string {
@@ -47,8 +54,8 @@ class CraftingSystemSpecification {
         return this._enabled;
     }
 
-    public static builder(): CraftingSystemSpecification.Builder {
-        return new CraftingSystemSpecification.Builder();
+    get essences(): EssenceDefinition[] {
+        return this._essences;
     }
 
 }
@@ -64,6 +71,7 @@ namespace CraftingSystemSpecification {
         public enabled!: boolean;
         public supportedGameSystems: string[] = [];
         public fabricator!: Fabricator;
+        public essences: EssenceDefinition[] = [];
 
         public build() : CraftingSystemSpecification {
             return new CraftingSystemSpecification(this);
@@ -108,6 +116,17 @@ namespace CraftingSystemSpecification {
             this.description = value;
             return this;
         }
+
+        public withEssence(value: EssenceDefinition): Builder {
+            this.essences.push(value);
+            return this;
+        }
+
+        public withEssences(value: EssenceDefinition[]): Builder {
+            this.essences = value;
+            return this;
+        }
+
     }
 
 }
