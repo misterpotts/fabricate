@@ -152,17 +152,20 @@ describe('Inventory5E |', () => {
 
     describe('Add Items |', () => {
 
-        it.skip('Should add an Item with quantity 1', async () => {
+        it('Should add an Item with quantity 1', async () => {
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
                     values: () => {}
                 },
-                createEmbeddedEntity: Sandbox.stub()
+                createEmbeddedEntity: Sandbox.stub(),
+                getOwnedItem: Sandbox.stub()
             };
             Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
-            mockActor.createEmbeddedEntity.returns({data:{data:{quantity:1}}});
+            mockActor.getOwnedItem.returns({data:{data:{quantity:1}}});
+            // @ts-ignore
+            mockActor.createEmbeddedEntity.returns({data:{quantity:1}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
             const oneDung = Ingredient.builder()
                 .withQuantity(JUST_ONE)
@@ -191,18 +194,21 @@ describe('Inventory5E |', () => {
 
         });
 
-        it.skip('Should add an Item with quantity 2', async () => {
+        it('Should add an Item with quantity 2', async () => {
 
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
                     values: () => {}
                 },
-                createEmbeddedEntity: Sandbox.stub()
+                createEmbeddedEntity: Sandbox.stub(),
+                getOwnedItem: Sandbox.stub()
             };
             Sandbox.stub(mockActor.items, 'values').returns(testData);
             // @ts-ignore
-            mockActor.createEmbeddedEntity.returns({data:{data:{quantity:2}}});
+            mockActor.createEmbeddedEntity.returns({data:{quantity:2}});
+            // @ts-ignore
+            mockActor.getOwnedItem.returns({data:{data:{quantity:2}}});
             const underTest: Inventory5E = new Inventory5E(mockActor);
 
             const twoDung = Ingredient.builder()
