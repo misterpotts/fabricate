@@ -2,11 +2,10 @@ import {expect} from 'chai';
 import * as Sinon from 'sinon';
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {Recipe} from "../src/scripts/core/Recipe";
-import {FabricationAction} from "../src/scripts/core/FabricationAction";
+import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
 import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {ActionType} from "../src/scripts/core/ActionType";
 import {CraftingSystemRegistry} from "../src/scripts/registries/CraftingSystemRegistry";
 import {SinonSandbox} from "sinon";
 
@@ -16,7 +15,7 @@ describe('Crafting System Registry |', () => {
 
     describe('Register and Retrieve |', () => {
 
-        const mockFabricator = <Fabricator><unknown>{
+        const mockFabricator = <Fabricator<{}>><unknown>{
             fabricateFromComponents: Sandbox.stub(),
             fabricateFromRecipe: Sandbox.stub()
         };
@@ -53,7 +52,7 @@ describe('Crafting System Registry |', () => {
                             .build())
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withAction(ActionType.ADD)
+                        .withAction(FabricationActionType.ADD)
                         .withQuantity(1)
                         .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')

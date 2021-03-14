@@ -1,10 +1,9 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {ActionType} from "./ActionType";
-import {FabricationAction} from "./FabricationAction";
+import {FabricationAction, FabricationActionType} from "./FabricationAction";
 import {Inventory, InventoryModification} from "../game/Inventory";
 import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
-import {InventoryRecord} from "../game/InventoryRecord";
 import {Recipe} from "./Recipe";
+import {Ingredient} from "./Ingredient";
 
 class FabricationHelper {
 
@@ -12,7 +11,7 @@ class FabricationHelper {
 
     public static async takeActionsForOutcome(inventory: Inventory, fabricationActions: FabricationAction[], outcome: OutcomeType, recipe?: Recipe): Promise<FabricationOutcome> {
         const inventoryModifications: InventoryModification<CraftingComponent>[] = await FabricationHelper.applyResults(fabricationActions, inventory);
-        const addedItems: Item[] = inventoryModifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === ActionType.ADD)
+        const addedItems: Item[] = inventoryModifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === FabricationActionType.ADD)
             .map((additiveChange: InventoryModification<CraftingComponent>) => additiveChange.changedItems)
             .reduce((left: Item[], right: Item[]) => left.concat(right), []);
 
@@ -24,7 +23,7 @@ class FabricationHelper {
             .build();
     }
 
-    public static asCraftingResults(components: CraftingComponent[], action: ActionType): FabricationAction[] {
+    public static asCraftingResults(components: CraftingComponent[], action: FabricationActionType): FabricationAction[] {
         const componentsById: Map<string, CraftingComponent[]> = new Map();
         components.forEach((component: CraftingComponent) => {
             const identicalComponents: CraftingComponent[] = componentsById.get(component.partId);
@@ -56,7 +55,12 @@ class FabricationHelper {
     };
 
     public static essenceCombinationIdentity(essences: string[], essenceIdentities: Map<string, number>): number {
-        return essences.map((essence: string) => essenceIdentities.get(essence))
+        return essences.map((essence: string) => {
+            if (!essenceIdentities.has(essence)) {
+                throw new Error(`No known essence is registered for the slug '${essence}'. Known essences are: ${Array.from(essenceIdentities.keys()).join(', ')}`);
+            }
+            return essenceIdentities.get(essence);
+        })
             .reduce((left, right) => left * right);
     }
 
@@ -82,18 +86,12 @@ class FabricationHelper {
         return FabricationHelper.primes;
     }
 
-    public static asComponentCombinations(componentRecords: InventoryRecord<CraftingComponent>[], recipe: Recipe): CraftingComponent[][] {
+    public static asComponentCombinations(availableIngredients: Ingredient[], limit: number): CraftingComponent[][] {
         const denormalizedComponents: CraftingComponent[] = [];
-        componentRecords.forEach((record: InventoryRecord<CraftingComponent>) => {
-            const ceiling = record.totalQuantity < recipe.essences.length ? record.totalQuantity : recipe.essences.length;
+        availableIngredients.forEach((ingredient: Ingredient) => {
+            const ceiling = ingredient.quantity < limit ? ingredient.quantity : limit;
             for (let i = 0; i < ceiling; i++) {
-                denormalizedComponents.push(CraftingComponent.builder()
-                    .withName(record.fabricateItem.name)
-                    .withEssences(record.fabricateItem.essences)
-                    .withPartId(record.fabricateItem.partId)
-                    .withSystemId(record.fabricateItem.systemId)
-                    .withImageUrl(record.fabricateItem.imageUrl)
-                    .build());
+                denormalizedComponents.push(ingredient.component);
             }
         });
         const combinations: CraftingComponent[][] = [];
@@ -117,7 +115,7 @@ class FabricationHelper {
         const inventoryModifications: InventoryModification<CraftingComponent>[] = [];
         for (const craftingResult of craftingResults) {
             switch (craftingResult.type) {
-                case ActionType.ADD:
+                case FabricationActionType.ADD:
                     if (craftingResult.customData) {
                         const inventoryModification: InventoryModification<CraftingComponent> = await inventory.addComponent(craftingResult.component, craftingResult.quantity, craftingResult.customData);
                         inventoryModifications.push(inventoryModification);
@@ -126,7 +124,7 @@ class FabricationHelper {
                         inventoryModifications.push(inventoryModification);
                     }
                     break;
-                case ActionType.REMOVE:
+                case FabricationActionType.REMOVE:
                     const inventoryModification: InventoryModification<CraftingComponent> = await inventory.removeComponent(craftingResult.component, craftingResult.quantity);
                     inventoryModifications.push(inventoryModification);
                     break;

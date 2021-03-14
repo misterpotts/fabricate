@@ -1,12 +1,11 @@
 import {expect} from 'chai';
 import * as Sinon from 'sinon';
 
-import {CraftingSystem} from "../src/scripts/core/CraftingSystem";
+import {CraftingSystem, EssenceDefinition} from "../src/scripts/core/CraftingSystem";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {FabricationAction} from "../src/scripts/core/FabricationAction";
-import {ActionType} from "../src/scripts/core/ActionType";
+import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
@@ -35,7 +34,7 @@ describe('Crafting System |', () => {
 
         it('Should create a Crafting System', () => {
 
-            const mockFabricator = <Fabricator><unknown>{
+            const mockFabricator = <Fabricator<{}>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
@@ -46,6 +45,12 @@ describe('Crafting System |', () => {
             let testSystem = CraftingSystem.builder()
                 .withName('Test System')
                 .withCompendiumPackKey(compendiumKey)
+                .withEssence(new EssenceDefinition('Earth', 'Elemental earth, one of the fundamental forces of nature', 'mountain'))
+                .withEssence(new EssenceDefinition('Water', 'Elemental water, one of the fundamental forces of nature', 'tint'))
+                .withEssence(new EssenceDefinition('Air', 'Elemental air, one of the fundamental forces of nature', 'wind'))
+                .withEssence(new EssenceDefinition('Fire', 'Elemental fire, one of the fundamental forces of nature', 'fire'))
+                .withEssence(new EssenceDefinition('Positive Energy', 'The essence of life and creation', 'sun'))
+                .withEssence(new EssenceDefinition('Negative Energy', 'The essence of death and destruction', 'moon'))
                 .withSupportedGameSystem(GameSystemType.DND5E)
                 .withFabricator(mockFabricator)
                 .withRecipe(Recipe.builder()
@@ -70,7 +75,7 @@ describe('Crafting System |', () => {
                             .build())
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withAction(ActionType.ADD)
+                        .withAction(FabricationActionType.ADD)
                         .withQuantity(1)
                         .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')
@@ -109,7 +114,7 @@ describe('Crafting System |', () => {
                         .isConsumed(true)
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withAction(ActionType.ADD)
+                        .withAction(FabricationActionType.ADD)
                         .withQuantity(1)
                         .withComponent(CraftingComponent.builder()
                             .withName('Mud Pie')
@@ -119,11 +124,19 @@ describe('Crafting System |', () => {
                         .build())
                     .build()
             ]);
+            expect(testSystem.essences).to.deep.include.members([
+                new EssenceDefinition('Earth', 'Elemental earth, one of the fundamental forces of nature', 'mountain'),
+                new EssenceDefinition('Water', 'Elemental water, one of the fundamental forces of nature', 'tint'),
+                new EssenceDefinition('Air', 'Elemental air, one of the fundamental forces of nature', 'wind'),
+                new EssenceDefinition('Fire', 'Elemental fire, one of the fundamental forces of nature', 'fire'),
+                new EssenceDefinition('Positive Energy', 'The essence of life and creation', 'sun'),
+                new EssenceDefinition('Negative Energy', 'The essence of death and destruction', 'moon')
+            ]);
         });
 
         it('Should craft a recipe using the System\'s Fabricator', async () => {
 
-            let mockFabricator = <Fabricator>{
+            let mockFabricator = <Fabricator<{}>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
@@ -148,7 +161,7 @@ describe('Crafting System |', () => {
                     .build())
                 .build();
             const mudPie = FabricationAction.builder()
-                .withAction(ActionType.ADD)
+                .withAction(FabricationActionType.ADD)
                 .withQuantity(1)
                 .withComponent(CraftingComponent.builder()
                     .withName('Mud Pie')
@@ -199,12 +212,12 @@ describe('Crafting System |', () => {
             const removeOneStick = FabricationAction.builder()
                 .withComponent(oneStick.component)
                 .withQuantity(oneStick.quantity)
-                .withAction(ActionType.REMOVE)
+                .withAction(FabricationActionType.REMOVE)
                 .build();
             const removeTwoMud = FabricationAction.builder()
                 .withComponent(twoMud.component)
                 .withQuantity(twoMud.quantity)
-                .withAction(ActionType.REMOVE)
+                .withAction(FabricationActionType.REMOVE)
                 .build();
 
             const outcome = FabricationOutcome.builder()

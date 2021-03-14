@@ -5,27 +5,70 @@ import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
 import {FabricationOutcome} from "./FabricationOutcome";
 
-class CraftingSystem {
+class EssenceDefinition {
+
+    private readonly _name: string;
+    private readonly _slug: string;
+    private readonly _description: string;
+    private readonly _iconCode: string;
+
+    constructor(name: string, description: string, iconCode?: string) {
+        this._name = name;
+        this._slug = name.toLowerCase().replace(' ', '-');
+        this._description = description;
+        this._iconCode = iconCode;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get description(): string {
+        return this._description;
+    }
+
+    get iconCode(): string {
+        return this._iconCode;
+    }
+
+    get icon(): string {
+        if (this.iconCode) {
+            return `<i class="fas fa-${this._iconCode}" title="${this.description}"></i>`;
+        }
+        return this.name;
+    }
+
+    get slug(): string {
+        return this._slug;
+    }
+}
+
+class CraftingSystem<T> {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
-    private readonly _fabricator: Fabricator;
+    private readonly _fabricator: Fabricator<T>;
     private readonly _recipesById: Map<string, Recipe> = new Map();
     private readonly _componentsById: Map<string, CraftingComponent> = new Map();
     private readonly _supportedGameSystems: string[] = [];
-    private _enabled: boolean;
     private readonly _enableHint: string;
     private readonly _description: string;
+    private readonly _essences: EssenceDefinition[] = [];
+    private readonly _essencesBySlug: Map<string, EssenceDefinition> = new Map();
 
-    constructor(builder: CraftingSystem.Builder) {
+    private _enabled: boolean;
+
+    constructor(builder: CraftingSystem.Builder<T>) {
         this._name = builder.name;
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
-        this._recipesById = new Map(builder.recipes.map((recipe: Recipe) => [recipe.partId, recipe]));
-        this._componentsById = builder.componentDictionary;
+        this._recipesById = builder.recipes;
+        this._componentsById = builder.components;
         this._supportedGameSystems = builder.supportedGameSystems;
         this._enabled = builder.enabled;
         this._enableHint = builder.enableHint;
         this._description = builder.description;
+        this._essences = builder.essences;
+        this._essencesBySlug = new Map(builder.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
     }
 
     public static builder() {
@@ -50,6 +93,14 @@ class CraftingSystem {
 
     get description(): string {
         return this._description;
+    }
+
+    get essences(): EssenceDefinition[] {
+        return this._essences;
+    }
+
+    getEssenceBySlug(slug: string) {
+        return this._essencesBySlug.get(slug);
     }
 
     public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
@@ -99,7 +150,7 @@ class CraftingSystem {
         return this._compendiumPackKey;
     }
 
-    get fabricator(): Fabricator {
+    get fabricator(): Fabricator<T> {
         return this._fabricator;
     }
 
@@ -132,86 +183,95 @@ class CraftingSystem {
 }
 
 namespace CraftingSystem {
-    export class Builder {
+
+    export class Builder<T> {
+
         public name!: string;
         public compendiumPackKey!: string;
-        public fabricator!: Fabricator;
+        public fabricator!: Fabricator<T>;
         public supportedGameSystems: string[] = [];
-        public recipes: Recipe[] = [];
-        public componentDictionary: Map<string, CraftingComponent> = new Map();
+        public recipes: Map<string, Recipe> = new Map();
+        public components: Map<string, CraftingComponent> = new Map();
         public enabled: boolean;
-        public enableHint: string;
-        public description: string;
+        public enableHint!: string;
+        public description!: string;
+        public essences: EssenceDefinition[] = [];
 
-        public build() : CraftingSystem {
+        public build() : CraftingSystem<T> {
             return new CraftingSystem(this);
         }
 
-        public withName(value: string): Builder {
+        public withName(value: string): Builder<T> {
             this.name = value;
             return this;
         }
 
-        public withCompendiumPackKey(value: string): Builder {
+        public withCompendiumPackKey(value: string): Builder<T> {
             this.compendiumPackKey = value;
             return this;
         }
 
-        public withFabricator(value: Fabricator): Builder {
+        public withFabricator(value: Fabricator<T>): Builder<T> {
             this.fabricator = value;
             return this;
         }
 
-        public withSupportedGameSystems(value: string[]): Builder {
+        public withSupportedGameSystems(value: string[]): Builder<T> {
             this.supportedGameSystems = value;
             return this;
         }
 
-        public withSupportedGameSystem(value: string): Builder {
+        public withSupportedGameSystem(value: string): Builder<T> {
             this.supportedGameSystems.push(value);
             return this;
         }
 
-        public withRecipes(value: Recipe[]): Builder {
+        public withRecipes(value: Map<string, Recipe>): Builder<T> {
             this.recipes = value;
             return this;
         }
 
-        public withRecipe(value: Recipe): Builder {
-            this.recipes.push(value);
+        public withRecipe(value: Recipe): Builder<T> {
+            this.recipes.set(value.partId, value);
             return this;
         }
 
-        public withComponents(value: CraftingComponent[]): Builder {
-            value.forEach(this.withComponent);
+        public withComponent(value: CraftingComponent): Builder<T> {
+            this.components.set(value.partId, value);
             return this;
         }
 
-        public withComponent(value: CraftingComponent): Builder {
-            this.componentDictionary.set(value.partId, value);
+        public withComponents(value: Map<string, CraftingComponent>): Builder<T> {
+            this.components = value;
             return this;
         }
 
-        public withComponentDictionary(value: Map<string, CraftingComponent>): Builder {
-            this.componentDictionary = value;
-            return this;
-        }
-
-        public isEnabled(value: boolean): Builder {
+        public isEnabled(value: boolean): Builder<T> {
             this.enabled = value;
             return this;
         }
 
-        public withEnableHint(value: string): Builder {
+        public withEnableHint(value: string): Builder<T> {
             this.enableHint = value;
             return this;
         }
 
-        withDescription(value: string) {
+        public withDescription(value: string): Builder<T> {
             this.description = value;
             return this;
         }
+
+        public withEssence(value: EssenceDefinition): Builder<T> {
+            this.essences.push(value);
+            return this;
+        }
+
+        public withEssences(value: EssenceDefinition[]): Builder<T> {
+            this.essences = value;
+            return this;
+        }
+
     }
 }
 
-export { CraftingSystem };
+export {CraftingSystem, EssenceDefinition};

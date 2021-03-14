@@ -1,4 +1,4 @@
-import {ActionType} from "../core/ActionType";
+import {FabricationActionType} from "../core/FabricationAction";
 
 enum FabricateItemType {
     RECIPE = 'RECIPE',
@@ -21,7 +21,7 @@ interface FabricateIngredientFlags {
 }
 
 interface FabricateResultFlags {
-    action: ActionType,
+    action: FabricationActionType,
     partId: string,
     quantity: number
 }

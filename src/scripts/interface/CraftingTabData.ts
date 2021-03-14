@@ -13,7 +13,7 @@ interface InventoryContents {
 
 class CraftingTabData {
 
-    private readonly _craftingSystems: CraftingSystem[];
+    private readonly _craftingSystems: CraftingSystem<{}>[];
     private readonly _inventory: Inventory;
     private readonly _actor: Actor;
 
@@ -21,7 +21,7 @@ class CraftingTabData {
     private _recipeData: RecipeData[] = [];
     private _inventoryContents: InventoryContents;
 
-    constructor(craftingSystems: CraftingSystem[], inventory: Inventory, actor: Actor) {
+    constructor(craftingSystems: CraftingSystem<{}>[], inventory: Inventory, actor: Actor) {
         this._craftingSystems = craftingSystems;
         this._inventory = inventory;
         this._actor = actor;
@@ -47,7 +47,7 @@ class CraftingTabData {
         this._craftingSystemData = await this.prepareCraftingSystemData(this._craftingSystems, this._actor);
 
         if (this._craftingSystemData.hasEnabledSystems) {
-            const selectedCraftingSystem = this._craftingSystems.find((system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId);
+            const selectedCraftingSystem = this._craftingSystems.find((system: CraftingSystem<{}>) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId);
 
             this._recipeData = await this.prepareRecipeDataForSystem(selectedCraftingSystem, this._actor, this._inventory);
 
@@ -55,11 +55,11 @@ class CraftingTabData {
         }
     }
 
-    async prepareCraftingSystemData(craftingSystems: CraftingSystem[], actor: Actor): Promise<CraftingSystemData> {
+    async prepareCraftingSystemData(craftingSystems: CraftingSystem<{}>[], actor: Actor): Promise<CraftingSystemData> {
         let enabledSystems: number = 0;
         const craftingSystemsInfo: CraftingSystemInfo[] = [];
         const storedSystemId = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedCraftingSystem);
-        craftingSystems.forEach((system: CraftingSystem) => {
+        craftingSystems.forEach((system: CraftingSystem<{}>) => {
             if (system.enabled) {
                 enabledSystems++;
             }
@@ -89,7 +89,7 @@ class CraftingTabData {
         }
     }
 
-    async prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory): Promise<RecipeData[]> {
+    async prepareRecipeDataForSystem(craftingSystem: CraftingSystem<{}>, actor: Actor, inventory: Inventory): Promise<RecipeData[]> {
         const storedKnownRecipes: string[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.compendiumPackKey));
         const knownRecipes: string[] = storedKnownRecipes ? storedKnownRecipes : [];
         const recipeData: RecipeData[] = [];
@@ -111,7 +111,7 @@ class CraftingTabData {
         return recipeData;
     }
 
-    prepareInventoryDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory): InventoryContents {
+    prepareInventoryDataForSystem(craftingSystem: CraftingSystem<{}>, actor: Actor, inventory: Inventory): InventoryContents {
         const inventoryContents: InventoryContents = {
             ownedComponents: [],
             preparedComponents: []

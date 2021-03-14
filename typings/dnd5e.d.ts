@@ -1,22 +1,22 @@
-type AbilityType5E = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
+type AbilityType5e = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
 type ActionType5e = 'mwak' | 'rwak' | 'rsak' | 'msak' | 'save';
 type ActivationType5e = 'action' | 'bonus' | 'reaction' | 'special';
 type ItemType5e = 'weapon' | 'equipment' | 'consumable' | 'tool' | 'loot' | 'class' | 'spell' | 'feat' | 'backpack';
 type TargetType5e = 'ally' | 'cone' | 'creature' | 'cube'  | 'cylinder' | 'enemy' | 'line' | 'none' | 'object' | 'radius' | 'self' | 'space' | 'sphere' | 'square' | 'wall';
 type TargetUnitType5e = 'none' | 'self' | 'touch' | 'special'  | 'any' | 'ft' | 'miles';
 type DurationType5e = 'days' | 'hours' | 'instantaneous' | 'minutes' | 'months' | 'permanent' | 'rounds' | 'special' | 'turns' | 'years';
-type WeaponType5E = 'simpleM' | 'martialM' | 'simpleR' | 'martialR' | 'natural' | 'improv' | 'siege';
-type DamageType5E = 'acid' | 'bludgeoning' | 'cold' | 'fire' | 'force' | 'lightning' | 'necrotic' | 'piercing' | 'poison' | 'psychic' | 'radiant' | 'slashing' | 'thunder' | 'none';
+type WeaponType5e = 'simpleM' | 'martialM' | 'simpleR' | 'martialR' | 'natural' | 'improv' | 'siege';
+type DamageType5e = 'acid' | 'bludgeoning' | 'cold' | 'fire' | 'force' | 'lightning' | 'necrotic' | 'piercing' | 'poison' | 'psychic' | 'radiant' | 'slashing' | 'thunder' | 'none';
 
 interface ItemData5e {
-    ability?: AbilityType5E;
+    ability?: AbilityType5e;
     actionType?: ActionType5e;
     activation?: {
         type?: ActivationType5e | '';
     };
     attackBonus?: number;
     damage?: {
-        parts: [string, DamageType5E][];
+        parts: [string, DamageType5e][];
         versatile: string | '';
     };
     formula?: string | '';
@@ -46,7 +46,7 @@ interface ItemData5e {
         units: TargetUnitType5e;
     };
     save?: {
-        ability: AbilityType5E;
+        ability: AbilityType5e;
         dc: number;
         scaling?: string;
     };
@@ -56,7 +56,7 @@ interface ItemData5e {
         units?: TargetUnitType5e;
         type?: TargetType5e;
     };
-    weaponType?: WeaponType5E;
+    weaponType?: WeaponType5e;
 }
 
 interface Item5e extends Item<ItemData5e> {

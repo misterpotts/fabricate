@@ -1,10 +1,10 @@
 import {CraftingSystem} from "../core/CraftingSystem";
 import {Recipe} from "../core/Recipe";
 import {GameSystemType} from "../core/GameSystemType";
-import {DefaultFabricator} from "../core/Fabricator";
 import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
 import {AlchemistsSuppliesSystemSpec} from "./system_definitions/AlchemistsSuppliesV16";
 import {CraftingComponent} from "../core/CraftingComponent";
+import {Fabricator} from "../core/Fabricator";
 
 class CraftingSystemRegistry {
 
@@ -67,7 +67,7 @@ class CraftingSystemRegistry {
             .withDescription('A simple tech demo used for the early development of Fabricate. ')
             .withCompendiumPackKey('fabricate.fabricate-test')
             .withSupportedGameSystem(GameSystemType.DND5E)
-            .withFabricator(new DefaultFabricator())
+            .withFabricator(new Fabricator())
             .build();
         systemSpecifications.push(testSystemSpec);
 
