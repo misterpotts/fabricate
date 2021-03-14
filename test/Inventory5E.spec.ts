@@ -152,7 +152,7 @@ describe('Inventory5E |', () => {
 
     describe('Add Items |', () => {
 
-        it('Should add an Item with quantity 1', async () => {
+        it.skip('Should add an Item with quantity 1', async () => {
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',
                 items: {
@@ -191,7 +191,7 @@ describe('Inventory5E |', () => {
 
         });
 
-        it('Should add an Item with quantity 2', async () => {
+        it.skip('Should add an Item with quantity 2', async () => {
 
             const mockActor = <Actor><unknown>{
                 id: 'lxQTQkhiymhGyjzx',

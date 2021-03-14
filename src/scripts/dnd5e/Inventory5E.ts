@@ -93,11 +93,12 @@ class Inventory5E extends CraftingInventory {
             const compendium: Compendium = game.packs.get(component.systemId);
             const item: Entity<ItemData5e> = await compendium.getEntity(component.partId);
             item.data.data.quantity = amountToAdd;
-            const createdItem: Item<ItemData5e> = await this._actor.createEmbeddedEntity('OwnedItem', item);
+            const createdItemData: Entity.Data<ItemData5e> = await this._actor.createEmbeddedEntity('OwnedItem', item);
+            const createdItem: Item<ItemData5e> = this._actor.getOwnedItem(createdItemData._id);
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
                 .withItem(createdItem)
-                .withTotalQuantity(createdItem.data.data.quantity)
+                .withTotalQuantity(createdItemData.data.quantity)
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
