@@ -28,39 +28,29 @@ class FabricationOutcome {
         return this._type;
     }
 
-    public describe(): string {
-        const descriptionParts: string[] = [];
+    get title(): string {
         switch (this.type) {
             case OutcomeType.SUCCESS:
                 if (this._recipe) {
-                    descriptionParts.push(`Successfully crafted "${this._recipe.name}"! `)
+                    return `Successfully crafted "${this._recipe.name}"! `;
                 } else {
-                    descriptionParts.push('Crafting success! ');
+                    return 'Crafting success! ';
                 }
-            break;
             case OutcomeType.FAILURE:
                 if (this._recipe) {
-                    descriptionParts.push(`Failed to craft ${this._recipe.name}. `)
+                    return `Failed to craft ${this._recipe.name}. `;
                 } else {
-                    descriptionParts.push('Crafting failure. ');
+                    return 'Crafting failure. ';
                 }
-            break;
         }
-        if (this.actions && this.actions.length > 0) {
-            const removedParts: string = this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.REMOVE)
-                .map((action: FabricationAction) => action.quantity + ' ' + action.name)
-                .join(', ');
-            if (removedParts && removedParts.length > 0) {
-                descriptionParts.push(`Removed: ${removedParts}. `)
-            }
-            const addedParts: string = this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.ADD)
-                .map((action: FabricationAction) => action.quantity + ' ' + action.name)
-                .join(', ');
-            if (addedParts && addedParts.length > 0) {
-                descriptionParts.push(`Added: ${addedParts}. `)
-            }
-        }
-        return descriptionParts.map((line: string) => '<p>' + line + '</p>').join('\n');
+    }
+    get description(): string {
+        return '';
+    }
+
+    get removedComponents(): { quantity: number, name: string }[] {
+        return this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.REMOVE)
+            .map((removedComponent: FabricationAction) => { return { quantity: removedComponent.quantity, name: removedComponent.name } } );
     }
 
     get displayItems(): Item[] {

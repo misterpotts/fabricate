@@ -13,9 +13,10 @@
   "minimumCoreVersion": "0.7.9",
   "compatibleCoreVersion": "0.7.9",
   "manifestPlusVersion": "1.0.0",
-  "url": "",
+  "url": "https://github.com/misterpotts/fabricate",
   "manifest": "",
   "download": "",
+  "bugs": "https://github.com/misterpotts/fabricate/issues",
   "type": "module",
   "packs": [
     {

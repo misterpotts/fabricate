@@ -17,6 +17,8 @@ const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
 before(() => {
     // @ts-ignore
+    global.renderTemplate = (templatePath: string, data: any) => '';
+    // @ts-ignore
     global.ChatMessage = {
         create: Sandbox.stub()
     };
@@ -140,6 +142,17 @@ describe('Crafting System |', () => {
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
+            const mockSuccessOutcome = <FabricationOutcome><undefined>{
+                description: '',
+                actions: [],
+                recipe: {},
+                displayItems: [],
+                type: OutcomeType.SUCCESS
+            };
+            // @ts-ignore
+            mockFabricator.fabricateFromComponents.returns(mockSuccessOutcome);
+            // @ts-ignore
+            mockFabricator.fabricateFromRecipe.returns(mockSuccessOutcome);
 
             let compendiumKey = 'fabricate.fabricate-test';
             const twoMud = Ingredient.builder()
@@ -189,8 +202,7 @@ describe('Crafting System |', () => {
             const mockInventory: Inventory = <Inventory5E><unknown>{
                 containsIngredient: Sandbox.stub(),
                 addComponent: Sandbox.stub(),
-                removeComponent: Sandbox.stub(),
-                denormalizedContainedComponents: Sandbox.stub()
+                removeComponent: Sandbox.stub()
             }
 
             // @ts-ignore
@@ -206,8 +218,6 @@ describe('Crafting System |', () => {
                 .build());
             // @ts-ignore
             mockInventory.removeComponent.returns(true);
-            // @ts-ignore
-            mockInventory.denormalizedContainedComponents.returns([]);
 
             const removeOneStick = FabricationAction.builder()
                 .withComponent(oneStick.component)
