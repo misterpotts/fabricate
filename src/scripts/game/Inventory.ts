@@ -7,18 +7,18 @@ import {FabricateItem} from "../core/FabricateItem";
 import {FabricationActionType} from "../core/FabricationAction";
 
 class InventoryModification<T extends FabricateItem> {
-    private readonly _changedItems: Item[];
     private readonly _action: FabricationActionType;
     private readonly _updatedRecord: InventoryRecord<T>;
+    private readonly _quantityChanged: number;
 
-    constructor(changedItems: Item[], action: FabricationActionType, updatedRecord: InventoryRecord<T>) {
-        this._changedItems = changedItems;
+    constructor(action: FabricationActionType, updatedRecord: InventoryRecord<T>, quantityChanged: number) {
         this._action = action;
         this._updatedRecord = updatedRecord;
+        this._quantityChanged = quantityChanged;
     }
 
-    get changedItems(): Item[] {
-        return this._changedItems;
+    get quantityChanged(): number {
+        return this._quantityChanged;
     }
 
     get action(): FabricationActionType {

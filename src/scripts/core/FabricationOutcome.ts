@@ -1,5 +1,7 @@
 import {FabricationAction, FabricationActionType} from "./FabricationAction";
 import {Recipe} from "./Recipe";
+import {InventoryModification} from "../game/Inventory";
+import {CraftingComponent} from "./CraftingComponent";
 
 enum OutcomeType {
     SUCCESS = 'SUCCESS',
@@ -11,13 +13,13 @@ class FabricationOutcome {
     private readonly _type: OutcomeType;
     private readonly _recipe: Recipe;
     private readonly _actions: FabricationAction[];
-    private readonly _displayItems: Item[];
+    private readonly _addedItems: InventoryModification<CraftingComponent>[];
 
     constructor(builder: FabricationOutcome.Builder) {
         this._type = builder.type;
         this._recipe = builder.recipe;
         this._actions = builder.actions;
-        this._displayItems = builder.displayItems;
+        this._addedItems = builder.addedItems;
     }
 
     public static builder(): FabricationOutcome.Builder {
@@ -28,43 +30,39 @@ class FabricationOutcome {
         return this._type;
     }
 
-    public describe(): string {
-        const descriptionParts: string[] = [];
+    get title(): string {
+        switch (this.type) {
+            case OutcomeType.SUCCESS:
+                return 'Crafting success ';
+            case OutcomeType.FAILURE:
+                return 'Crafting failure ';
+        }
+    }
+
+    get description(): string {
         switch (this.type) {
             case OutcomeType.SUCCESS:
                 if (this._recipe) {
-                    descriptionParts.push(`Successfully crafted "${this._recipe.name}"! `)
+                    return `Successfully crafted "${this._recipe.name}". `;
                 } else {
-                    descriptionParts.push('Crafting success! ');
+                    return 'Your alchemical combination worked. ';
                 }
-            break;
             case OutcomeType.FAILURE:
                 if (this._recipe) {
-                    descriptionParts.push(`Failed to craft ${this._recipe.name}. `)
+                    return `Failed to craft ${this._recipe.name}. `;
                 } else {
-                    descriptionParts.push('Crafting failure. ');
+                    return 'Your alchemical combination failed. ';
                 }
-            break;
         }
-        if (this.actions && this.actions.length > 0) {
-            const removedParts: string = this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.REMOVE)
-                .map((action: FabricationAction) => action.quantity + ' ' + action.name)
-                .join(', ');
-            if (removedParts && removedParts.length > 0) {
-                descriptionParts.push(`Removed: ${removedParts}. `)
-            }
-            const addedParts: string = this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.ADD)
-                .map((action: FabricationAction) => action.quantity + ' ' + action.name)
-                .join(', ');
-            if (addedParts && addedParts.length > 0) {
-                descriptionParts.push(`Added: ${addedParts}. `)
-            }
-        }
-        return descriptionParts.map((line: string) => '<p>' + line + '</p>').join('\n');
     }
 
-    get displayItems(): Item[] {
-        return this._displayItems;
+    get removedComponents(): string[] {
+        return this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.REMOVE)
+            .map((removedComponent: FabricationAction) => `${removedComponent.quantity} ${removedComponent.name}` );
+    }
+
+    get addedItems(): InventoryModification<CraftingComponent>[] {
+        return this._addedItems;
     }
 
     get actions(): FabricationAction[] {
@@ -80,7 +78,7 @@ namespace FabricationOutcome {
         public type: OutcomeType;
         public recipe: Recipe;
         public actions: FabricationAction[];
-        public displayItems: Item[];
+        public addedItems: InventoryModification<CraftingComponent>[];
 
         public build(): FabricationOutcome {
             return new FabricationOutcome(this);
@@ -101,8 +99,8 @@ namespace FabricationOutcome {
             return this;
         }
 
-        public withDisplayItems(value: Item[]): Builder {
-            this.displayItems = value;
+        public withAddedItems(value: InventoryModification<CraftingComponent>[]): Builder {
+            this.addedItems = value;
             return this;
         }
 

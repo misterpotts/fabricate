@@ -4,6 +4,7 @@ import {CraftingComponent} from "./CraftingComponent";
 import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
 import {FabricationOutcome} from "./FabricationOutcome";
+import {CraftingChatMessage} from "../interface/CraftingChatMessage";
 
 class EssenceDefinition {
 
@@ -119,7 +120,8 @@ class CraftingSystem<T> {
 
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
-            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
+            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
+            ChatMessage.create({user: game.user, speaker: actor, content: message.render()});
             return fabricationOutcome;
         } catch (err) {
             console.error(err);
@@ -137,7 +139,7 @@ class CraftingSystem<T> {
         }
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
-            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.describe()});
+            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.description});
             return fabricationOutcome;
         } catch (err) {
             console.error(err);

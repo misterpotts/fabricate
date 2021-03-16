@@ -5,20 +5,19 @@ import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
 import {Recipe} from "./Recipe";
 import {Ingredient} from "./Ingredient";
 
+
 class FabricationHelper {
 
     private static readonly primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
     public static async takeActionsForOutcome(inventory: Inventory, fabricationActions: FabricationAction[], outcome: OutcomeType, recipe?: Recipe): Promise<FabricationOutcome> {
         const inventoryModifications: InventoryModification<CraftingComponent>[] = await FabricationHelper.applyResults(fabricationActions, inventory);
-        const addedItems: Item[] = inventoryModifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === FabricationActionType.ADD)
-            .map((additiveChange: InventoryModification<CraftingComponent>) => additiveChange.changedItems)
-            .reduce((left: Item[], right: Item[]) => left.concat(right), []);
+        const addedItems: InventoryModification<CraftingComponent>[] = inventoryModifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === FabricationActionType.ADD);
 
         return FabricationOutcome.builder()
             .withActions(fabricationActions)
             .withOutcomeType(outcome)
-            .withDisplayItems(addedItems)
+            .withAddedItems(addedItems)
             .withRecipe(recipe)
             .build();
     }
