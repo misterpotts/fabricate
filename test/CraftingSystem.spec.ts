@@ -234,7 +234,7 @@ describe('Crafting System |', () => {
                 .withOutcomeType(OutcomeType.SUCCESS)
                 .withRecipe(mudPieRecipe)
                 .withActions([removeOneStick, removeTwoMud, mudPie])
-                .withDisplayItems([])
+                .withAddedItems([])
                 .build();
             // @ts-ignore
             mockFabricator.fabricateFromRecipe.returns(outcome);

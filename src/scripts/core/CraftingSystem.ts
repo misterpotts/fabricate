@@ -120,7 +120,7 @@ class CraftingSystem<T> {
 
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
-            const message: CraftingChatMessage = new CraftingChatMessage(fabricationOutcome);
+            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
             ChatMessage.create({user: game.user, speaker: actor, content: message.render()});
             return fabricationOutcome;
         } catch (err) {

@@ -102,7 +102,7 @@ class Inventory5E extends CraftingInventory {
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
-            return new InventoryModification([createdItem], FabricationActionType.ADD, inventoryRecord);
+            return new InventoryModification(FabricationActionType.ADD, inventoryRecord, 1);
         } else {
             recordForType.itemsOfType.sort((left: Item<ItemData5e>, right: Item<ItemData5e>) => left.data.data.quantity - right.data.data.quantity);
             const item: Item<ItemData5e> = recordForType.itemsOfType[0];
@@ -110,7 +110,7 @@ class Inventory5E extends CraftingInventory {
             // @ts-ignore
             const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item._id, data: {quantity: updatedQuantityForItem}});
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
-            return new InventoryModification([updatedItem], FabricationActionType.ADD, recordForType);
+            return new InventoryModification(FabricationActionType.ADD, recordForType, 1);
         }
     }
 
@@ -124,7 +124,7 @@ class Inventory5E extends CraftingInventory {
         const createdItem: any = await this._actor.createEmbeddedEntity('OwnedItem', data);
         if (recordForType) {
             recordForType.totalQuantity = recordForType.totalQuantity + amountToAdd;
-            return new InventoryModification([createdItem], FabricationActionType.ADD, recordForType);
+            return new InventoryModification(FabricationActionType.ADD, recordForType, 1);
         } else {
             const inventoryRecord: InventoryRecord<CraftingComponent> = InventoryRecord.builder<CraftingComponent>()
                 .withActor(this._actor)
@@ -133,7 +133,7 @@ class Inventory5E extends CraftingInventory {
                 .withFabricateItem(component)
                 .build();
             this._componentDirectory.set(component.partId, inventoryRecord);
-            return new InventoryModification([createdItem], FabricationActionType.ADD, inventoryRecord);
+            return new InventoryModification(FabricationActionType.ADD, inventoryRecord, 1);
         }
     }
 
@@ -180,7 +180,7 @@ class Inventory5E extends CraftingInventory {
         if (remainingItems.length === 0) {
             this._componentDirectory.delete(component.partId);
         }
-        return new InventoryModification<CraftingComponent>(modifiedItems, FabricationActionType.REMOVE, recordForType);
+        return new InventoryModification<CraftingComponent>(FabricationActionType.REMOVE, recordForType, 1);
     }
 
     public async updateQuantityFor(item: Item.Data<ItemData5e>): Promise<boolean> {

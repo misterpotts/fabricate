@@ -1,5 +1,7 @@
 import {FabricationAction, FabricationActionType} from "./FabricationAction";
 import {Recipe} from "./Recipe";
+import {InventoryModification} from "../game/Inventory";
+import {CraftingComponent} from "./CraftingComponent";
 
 enum OutcomeType {
     SUCCESS = 'SUCCESS',
@@ -11,13 +13,13 @@ class FabricationOutcome {
     private readonly _type: OutcomeType;
     private readonly _recipe: Recipe;
     private readonly _actions: FabricationAction[];
-    private readonly _displayItems: Item[];
+    private readonly _addedItems: InventoryModification<CraftingComponent>[];
 
     constructor(builder: FabricationOutcome.Builder) {
         this._type = builder.type;
         this._recipe = builder.recipe;
         this._actions = builder.actions;
-        this._displayItems = builder.displayItems;
+        this._addedItems = builder.addedItems;
     }
 
     public static builder(): FabricationOutcome.Builder {
@@ -31,30 +33,36 @@ class FabricationOutcome {
     get title(): string {
         switch (this.type) {
             case OutcomeType.SUCCESS:
+                return 'Crafting success ';
+            case OutcomeType.FAILURE:
+                return 'Crafting failure ';
+        }
+    }
+
+    get description(): string {
+        switch (this.type) {
+            case OutcomeType.SUCCESS:
                 if (this._recipe) {
-                    return `Successfully crafted "${this._recipe.name}"! `;
+                    return `Successfully crafted "${this._recipe.name}". `;
                 } else {
-                    return 'Crafting success! ';
+                    return 'Your alchemical combination worked. ';
                 }
             case OutcomeType.FAILURE:
                 if (this._recipe) {
                     return `Failed to craft ${this._recipe.name}. `;
                 } else {
-                    return 'Crafting failure. ';
+                    return 'Your alchemical combination failed. ';
                 }
         }
     }
-    get description(): string {
-        return '';
-    }
 
-    get removedComponents(): { quantity: number, name: string }[] {
+    get removedComponents(): string[] {
         return this.actions.filter((action: FabricationAction) => action.type === FabricationActionType.REMOVE)
-            .map((removedComponent: FabricationAction) => { return { quantity: removedComponent.quantity, name: removedComponent.name } } );
+            .map((removedComponent: FabricationAction) => `${removedComponent.quantity} ${removedComponent.name}` );
     }
 
-    get displayItems(): Item[] {
-        return this._displayItems;
+    get addedItems(): InventoryModification<CraftingComponent>[] {
+        return this._addedItems;
     }
 
     get actions(): FabricationAction[] {
@@ -70,7 +78,7 @@ namespace FabricationOutcome {
         public type: OutcomeType;
         public recipe: Recipe;
         public actions: FabricationAction[];
-        public displayItems: Item[];
+        public addedItems: InventoryModification<CraftingComponent>[];
 
         public build(): FabricationOutcome {
             return new FabricationOutcome(this);
@@ -91,8 +99,8 @@ namespace FabricationOutcome {
             return this;
         }
 
-        public withDisplayItems(value: Item[]): Builder {
-            this.displayItems = value;
+        public withAddedItems(value: InventoryModification<CraftingComponent>[]): Builder {
+            this.addedItems = value;
             return this;
         }
 
