@@ -7,6 +7,8 @@ import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
 import {Inventory} from "../game/Inventory";
 import {InventoryRecord} from "../game/InventoryRecord";
 import {Ingredient} from "./Ingredient";
+import {AlchemyError} from "../error/AlchemyError";
+import {CraftingError} from "../error/CraftingError";
 
 enum EssenceMatchType {
     EXACT = 'EXACT',
@@ -52,7 +54,7 @@ class CraftingComponentCombination {
 
 }
 
-class AlchemySpecification<T> {
+class AlchemySpecification<T extends Item.Data> {
     private readonly _essenceCombiner: EssenceCombiner<T>;
     private _baseItemData: T;
     private readonly _baseComponent: CraftingComponent;
@@ -85,47 +87,70 @@ class AlchemySpecification<T> {
     }
 }
 
-class Fabricator<T> {
+class Fabricator<T extends Item.Data> {
     private readonly _alchemySpecification: AlchemySpecification<T>;
 
     constructor(alchemySpecification?: AlchemySpecification<T>) {
         this._alchemySpecification = alchemySpecification;
     }
 
-    public async fabricateFromComponents(inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
+    public async fabricateFromComponents(inventory: Inventory<T>, components: CraftingComponent[]): Promise<FabricationOutcome> {
         if (!this._alchemySpecification) {
             throw new Error(`No Alchemy Specification has been provided for this system. You may only craft from Recipes. `);
         }
-        const baseItemData: T = await this._alchemySpecification.getBaseItemData();
-        const alchemicallyModifiedItemData: T = this._alchemySpecification.essenceCombiner.combine(components, duplicate(baseItemData));
-        const resultantComponentType: CraftingComponent = this._alchemySpecification.baseComponent;
-        const addComponentAction: FabricationAction = FabricationAction.builder()
-            .withAction(FabricationActionType.ADD)
-            .withQuantity(1)
-            .withCustomData(alchemicallyModifiedItemData)
-            .withComponent(resultantComponentType)
-            .build();
-        const fabricationActions: FabricationAction[] = FabricationHelper.asCraftingResults(components, FabricationActionType.REMOVE);
-        fabricationActions.push(addComponentAction);
-        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS);
+
+        const removeSuppliedComponents: FabricationAction<T>[] = FabricationHelper.asCraftingResults(components, FabricationActionType.REMOVE);
+
+        try {
+            const baseItemData: T = await this._alchemySpecification.getBaseItemData();
+            const alchemicallyModifiedItemData: T = this._alchemySpecification.essenceCombiner.combine(components, duplicate(baseItemData));
+            const resultantComponentType: CraftingComponent = this._alchemySpecification.baseComponent;
+            const addComponent: FabricationAction<T> = FabricationAction.builder<T>()
+                .withActionType(FabricationActionType.ADD)
+                .withQuantity(1)
+                .withCustomItemData(alchemicallyModifiedItemData)
+                .withItemType(resultantComponentType)
+                .build();
+            const actions: FabricationAction<T>[] = removeSuppliedComponents.concat(addComponent);
+            await FabricationHelper.applyResults(actions, inventory);
+            return FabricationOutcome.builder()
+                .withActions(actions)
+                .withOutcomeType(OutcomeType.SUCCESS)
+                .build();
+        } catch (error: any) {
+            if (error instanceof AlchemyError) {
+                const alchemyError: AlchemyError = <AlchemyError>error;
+                const actions: FabricationAction<T>[] = [];
+                if (alchemyError.componentsConsumed) {
+                    actions.push(...removeSuppliedComponents);
+                    await FabricationHelper.applyResults(removeSuppliedComponents, inventory);
+                }
+                return FabricationOutcome.builder()
+                    .withOutcomeType(OutcomeType.FAILURE)
+                    .withFailureDetails(alchemyError.message)
+                    .withActions(actions)
+                    .build();
+            }
+            throw error;
+        }
     }
 
-    public fabricateFromRecipe(inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
+    public async fabricateFromRecipe(inventory: Inventory<T>, recipe: Recipe): Promise<FabricationOutcome> {
         const ownedComponents: InventoryRecord<CraftingComponent>[] = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
 
-        const input: FabricationAction[] = [];
+        const input: FabricationAction<T>[] = [];
         const namedIngredientsByPartId: Map<string, Ingredient> = new Map();
         if (recipe.ingredients && recipe.ingredients.length > 0) {
-           recipe.ingredients.forEach((ingredient: Ingredient) => {
-               namedIngredientsByPartId.set(ingredient.partId, ingredient);
-               if (ingredient.consumed) {
-                   input.push(FabricationAction.builder()
-                       .withQuantity(ingredient.quantity)
-                       .withComponent(ingredient.component)
-                       .withAction(FabricationActionType.REMOVE)
-                       .build());
-               }
-           });
+            recipe.ingredients.forEach((ingredient: Ingredient) => {
+                namedIngredientsByPartId.set(ingredient.partId, ingredient);
+                if (ingredient.consumed) {
+                    input.push(FabricationAction.builder<T>()
+                        .withQuantity(ingredient.quantity)
+                        .withItemType(ingredient.component)
+                        .withActionType(FabricationActionType.REMOVE)
+                        .build());
+                }
+            });
         }
 
         if (recipe.essences && recipe.essences.length > 0) {
@@ -145,19 +170,26 @@ class Fabricator<T> {
                     .withQuantity(componentRecord.totalQuantity)
                     .build();
             });
+            if (!this.isCraftableFromEssencesInIngredients(recipe, availableIngredients)) {
+                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or event just asking your DM nicely. `, false);
+            }
             const craftingComponentCombinations = this.analyzeCombinationsForEssences(availableIngredients, recipe.essences);
             const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
             if (!selectedCombination || selectedCombination.length === 0) {
-                throw new Error(`There are insufficient components available to craft the Recipe "${recipe.name}". `)
+                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or event just asking your DM nicely. `, false)
             }
             const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, FabricationActionType.REMOVE);
             input.push(...consumedComponents);
         }
 
-        const output: FabricationAction[] = recipe.results;
-        const fabricationActions: FabricationAction[] = input.concat(output);
+        const output: FabricationAction<T>[] = recipe.results;
+        const actions: FabricationAction<T>[] = output.concat(input);
 
-        return FabricationHelper.takeActionsForOutcome(inventory, fabricationActions, OutcomeType.SUCCESS, recipe);
+        await FabricationHelper.applyResults(actions, inventory);
+        return FabricationOutcome.builder()
+            .withActions(actions)
+            .withOutcomeType(OutcomeType.SUCCESS)
+            .build();
     }
 
     private analyzeCombinationsForEssences(availableIngredients: Ingredient[], requiredEssences: string[]): CraftingComponentCombination[] {
@@ -198,15 +230,43 @@ class Fabricator<T> {
     }
 
     public filterCraftableRecipesFor(craftingComponents: CraftingComponent[], recipes: Recipe[]) {
-        return recipes.filter((recipe: Recipe) => this.isCraftableFromEssencesIn(recipe, craftingComponents));
+        return recipes.filter((recipe: Recipe) => this.isCraftableFromEssencesInComponents(recipe, craftingComponents));
     }
 
-    private isCraftableFromEssencesIn(recipe: Recipe, components: CraftingComponent[]): boolean {
+    private isCraftableFromEssencesInComponents(recipe: Recipe, components: CraftingComponent[]): boolean {
         const essences = components.map((component: CraftingComponent) => component.essences)
             .reduce((left: string[], right: string[]) => left.concat(right), []);
         return essences.every((essence: string) => recipe.essences.includes(essence)
             &&  (essences.filter((essence:string) => essence === essence).length >= recipe.essences.filter((essence:string) => essence === essence).length));
     }
+
+    private isCraftableFromEssencesInIngredients(recipe: Recipe, ingredients: Ingredient[]): boolean {
+        const essenceCount: Map<string, number> = ingredients.filter((ingredient: Ingredient) => ingredient.component.essences.some((essence: string) => recipe.essences.includes(essence)))
+            .map((ingredient: Ingredient) => new Map(ingredient.component.essences.map((essence: string) => [essence, ingredient.quantity])))
+            .reduce((left: Map<string, number>, right: Map<string, number>) => {
+                const allEssenceKeys: string[] = Array.from(left.keys()).concat(Array.from(right.keys()))
+                    .filter(((essence: string, index: number, mergedKeys: string[]) => mergedKeys.indexOf(essence) === index));
+                const merged: Map<string, number> = new Map();
+                allEssenceKeys.forEach((essence: string) => {
+                    const leftCount: number = left.has(essence) ? left.get(essence) : 0;
+                    const rightCount: number = right.has(essence) ? right.get(essence) : 0;
+                    merged.set(essence, leftCount + rightCount);
+                });
+                return merged;
+            }, new Map<string, number>());
+        for (let i = 0; i < recipe.essences.length; i++) {
+            const essence: string = recipe.essences[i];
+            if (!essenceCount.has(essence)) {
+                return false;
+            }
+            const count: number = essenceCount.get(essence);
+            if (count <= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
 
 export {Fabricator, AlchemySpecification};

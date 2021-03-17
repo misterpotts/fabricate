@@ -7,92 +7,94 @@ enum FabricationActionType {
     REMOVE = 'REMOVE'
 }
 
-class FabricationAction extends FabricateItem {
-    private readonly _component: CraftingComponent;
+class FabricationAction<T extends Item.Data> extends FabricateItem {
+    private readonly _itemType: FabricateItem;
     private readonly _quantity: number;
-    private readonly _type: FabricationActionType;
-    private readonly _customData: any;
+    private readonly _actionType: FabricationActionType;
+    private readonly _customItemData: T;
 
-    constructor(builder: FabricationAction.Builder) {
-        super(builder.component.systemId, builder.component.partId, builder.component.imageUrl, builder.component.name);
-        this._component = builder.component;
+    constructor(builder: FabricationAction.Builder<T>) {
+        super(builder.itemType.systemId, builder.itemType.partId, builder.itemType.imageUrl, builder.itemType.name);
+        this._itemType = builder.itemType;
         this._quantity = builder.quantity;
-        this._type = builder.action;
-        this._customData = builder.customData;
+        this._actionType = builder.actionType;
+        this._customItemData = builder.customItemData;
     }
 
-    public static builder(): FabricationAction.Builder {
-        return new FabricationAction.Builder();
+    public static builder<T extends Item.Data>(): FabricationAction.Builder<T> {
+        return new FabricationAction.Builder<T>();
     }
 
-    get component(): CraftingComponent {
-        return this._component;
+    get itemType(): FabricateItem {
+        return this._itemType;
     }
 
     get quantity(): number {
         return this._quantity;
     }
 
-    get type(): FabricationActionType {
-        return this._type;
+    get actionType(): FabricationActionType {
+        return this._actionType;
     }
 
-    get customData(): any {
-        return this._customData;
+    get customItemData(): Item.Data {
+        return this._customItemData;
     }
 
-    public static fromFlags(flags: FabricateResultFlags, systemId: string): FabricationAction {
-        return this.builder()
-            .withAction(flags.action)
+    public static fromFlags<T extends Item.Data>(flags: FabricateResultFlags, systemId: string): FabricationAction<T> {
+        return this.builder<T>()
+            .withActionType(flags.action)
             .withQuantity(flags.quantity)
-            .withComponent(CraftingComponent.builder()
+            .withItemType(CraftingComponent.builder()
                 .withSystemId(systemId)
                 .withPartId(flags.partId)
                 .build())
             .build();
     }
 
-    public static manyFromFlags(flags: FabricateResultFlags[], systemId: string): FabricationAction[] {
-        return flags.map((flagData) => FabricationAction.fromFlags(flagData, systemId));
+    public static manyFromFlags<T extends Item.Data>(flags: FabricateResultFlags[], systemId: string): FabricationAction<T>[] {
+        return flags.map((flagData) => FabricationAction.fromFlags<T>(flagData, systemId));
     }
 
     isValid(): boolean {
         return (this.quantity != null && this.quantity > 0)
-            && (this.type != null)
-            && (this.type == FabricationActionType.ADD || this.type == FabricationActionType.REMOVE)
-            && this.component.isValid()
+            && (this.actionType != null)
+            && (this.actionType == FabricationActionType.ADD || this.actionType == FabricationActionType.REMOVE)
+            && this.itemType.isValid()
             && super.isValid();
     }
 }
 
 namespace FabricationAction {
-    export class Builder {
-        public component!: CraftingComponent;
-        public quantity!: number;
-        public action!: FabricationActionType;
-        public customData: any;
 
-        public build(): FabricationAction {
+    export class Builder<T extends Item.Data> {
+
+        public itemType!: FabricateItem;
+        public quantity!: number;
+        public actionType!: FabricationActionType;
+        public customItemData: T;
+
+        public build(): FabricationAction<T> {
             return new FabricationAction(this);
         }
 
-        public withComponent(value: CraftingComponent): Builder {
-            this.component = value;
+        public withItemType(value: FabricateItem): Builder<T> {
+            this.itemType = value;
             return this;
         }
 
-        public withQuantity(value: number): Builder {
+        public withQuantity(value: number): Builder<T> {
             this.quantity = value;
             return this;
         }
 
-        public withAction(value: FabricationActionType): Builder {
-            this.action = value;
+        public withActionType(value: FabricationActionType): Builder<T> {
+            this.actionType = value;
             return this;
         }
 
-        withCustomData(value: any) {
-            this.customData = value;
+        withCustomItemData(value: T) {
+            this.customItemData = value;
             return this;
         }
 

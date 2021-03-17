@@ -181,7 +181,7 @@ describe('Inventory5E |', () => {
             const initialContains = underTest.containsIngredient(oneDung);
             expect(initialContains).to.be.false;
 
-            await underTest.addComponent(dung);
+            await underTest.add(dung);
 
             const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(5);
@@ -222,7 +222,7 @@ describe('Inventory5E |', () => {
             const initialComponentCount = underTest.componentCount;
             expect(initialComponentCount).to.equal(15);
 
-            await underTest.addComponent(dung, TWO);
+            await underTest.add(dung, TWO);
 
             const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(5);
@@ -268,7 +268,7 @@ describe('Inventory5E |', () => {
             const hasTwoBeforehand = underTest.containsIngredient(twoMudIngredient);
             expect(hasTwoBeforehand).to.be.true;
 
-            await underTest.addComponent(mud, TWO);
+            await underTest.add(mud, TWO);
 
             const postAddOneContents = underTest.components;
             expect(postAddOneContents.length).to.equal(4);
@@ -316,7 +316,7 @@ describe('Inventory5E |', () => {
             const containsTwoBeforehand = underTest.containsIngredient(twoMudIngredient);
             expect(containsTwoBeforehand).to.be.true;
 
-            await underTest.removeComponent(mud);
+            await underTest.remove(mud);
 
             const postRemoveOneContents = underTest.components;
             expect(postRemoveOneContents.length).to.equal(4);
@@ -364,7 +364,7 @@ describe('Inventory5E |', () => {
             const containsTwoBeforehand = underTest.containsIngredient(twoSticksIngredient);
             expect(containsTwoBeforehand).to.be.true;
 
-            await underTest.removeComponent(sticks);
+            await underTest.remove(sticks);
 
             const postRemoveOneContents = underTest.components;
             expect(postRemoveOneContents.length).to.equal(4);
@@ -415,7 +415,7 @@ describe('Inventory5E |', () => {
             const containsTenBeforehand = underTest.containsIngredient(tenWaxIngredient);
             expect(containsTenBeforehand).to.be.true;
 
-            await underTest.removeComponent(wax, 7);
+            await underTest.remove(wax, 7);
 
             const postRemoveSevenContents = underTest.components;
             expect(postRemoveSevenContents.length).to.equal(4);
@@ -456,7 +456,7 @@ describe('Inventory5E |', () => {
                     .build())
                 .withResult(FabricationAction.builder()
                     .withQuantity(1)
-                    .withComponent(CraftingComponent.builder()
+                    .withItemType(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withPartId('3')
                         .withSystemId('compendium')
@@ -495,7 +495,7 @@ describe('Inventory5E |', () => {
                     .build())
                 .withResult(FabricationAction.builder()
                     .withQuantity(1)
-                    .withComponent(CraftingComponent.builder()
+                    .withItemType(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withPartId('3')
                         .withSystemId('compendium')

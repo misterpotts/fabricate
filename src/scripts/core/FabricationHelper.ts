@@ -1,26 +1,12 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {FabricationAction, FabricationActionType} from "./FabricationAction";
-import {Inventory, InventoryModification} from "../game/Inventory";
-import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
-import {Recipe} from "./Recipe";
+import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
 
 
 class FabricationHelper {
 
     private static readonly primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
-
-    public static async takeActionsForOutcome(inventory: Inventory, fabricationActions: FabricationAction[], outcome: OutcomeType, recipe?: Recipe): Promise<FabricationOutcome> {
-        const inventoryModifications: InventoryModification<CraftingComponent>[] = await FabricationHelper.applyResults(fabricationActions, inventory);
-        const addedItems: InventoryModification<CraftingComponent>[] = inventoryModifications.filter((modification: InventoryModification<CraftingComponent>) => modification.action === FabricationActionType.ADD);
-
-        return FabricationOutcome.builder()
-            .withActions(fabricationActions)
-            .withOutcomeType(outcome)
-            .withAddedItems(addedItems)
-            .withRecipe(recipe)
-            .build();
-    }
 
     public static asCraftingResults(components: CraftingComponent[], action: FabricationActionType): FabricationAction[] {
         const componentsById: Map<string, CraftingComponent[]> = new Map();
@@ -35,18 +21,18 @@ class FabricationHelper {
         if (Object.keys(componentsById).length === components.length) {
             return components.map((component: CraftingComponent) => {
                 return FabricationAction.builder()
-                    .withComponent(component)
+                    .withItemType(component)
                     .withQuantity(1)
-                    .withAction(action)
+                    .withActionType(action)
                     .build();
             });
         }
         const results: FabricationAction[] = [];
         componentsById.forEach((componentsOfType: CraftingComponent[]) => {
             const craftingResult = FabricationAction.builder()
-                .withComponent(componentsOfType[0])
+                .withItemType(componentsOfType[0])
                 .withQuantity(componentsOfType.length)
-                .withAction(action)
+                .withActionType(action)
                 .build();
             results.push(craftingResult);
         });
@@ -110,28 +96,24 @@ class FabricationHelper {
         return combinations.sort((left, right) => left.length - right.length);
     }
 
-    public static async applyResults(craftingResults: FabricationAction[], inventory: Inventory): Promise<InventoryModification<CraftingComponent>[]> {
-        const inventoryModifications: InventoryModification<CraftingComponent>[] = [];
-        for (const craftingResult of craftingResults) {
-            switch (craftingResult.type) {
+    public static async applyResults(actions: FabricationAction[], inventory: Inventory): Promise<boolean> {
+        for (const action of actions) {
+            switch (action.actionType) {
                 case FabricationActionType.ADD:
-                    if (craftingResult.customData) {
-                        const inventoryModification: InventoryModification<CraftingComponent> = await inventory.addComponent(craftingResult.component, craftingResult.quantity, craftingResult.customData);
-                        inventoryModifications.push(inventoryModification);
+                    if (action.customItemData) {
+                        await inventory.add(action.itemType, action.quantity, action.customItemData);
                     } else {
-                        const inventoryModification: InventoryModification<CraftingComponent> = await inventory.addComponent(craftingResult.component, craftingResult.quantity);
-                        inventoryModifications.push(inventoryModification);
+                        await inventory.add(action.itemType, action.quantity);
                     }
                     break;
                 case FabricationActionType.REMOVE:
-                    const inventoryModification: InventoryModification<CraftingComponent> = await inventory.removeComponent(craftingResult.component, craftingResult.quantity);
-                    inventoryModifications.push(inventoryModification);
+                    await inventory.remove(action.itemType, action.quantity);
                     break;
                 default:
-                    throw new Error(`The Crafting Action Type ${craftingResult.type} is not supported. Allowable values are: ADD, REMOVE. `);
+                    throw new Error(`The Crafting Action Type ${action.actionType} is not supported. Allowable values are: ADD, REMOVE. `);
             }
         }
-        return inventoryModifications;
+        return true;
     }
 
 }

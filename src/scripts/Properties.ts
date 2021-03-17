@@ -6,7 +6,8 @@ const Properties = {
         label: 'Fabricate',
         templates: {
             recipeTab: 'modules/fabricate/templates/recipe-tab.html',
-            craftingTab: 'modules/fabricate/templates/crafting-tab.html'
+            craftingTab: 'modules/fabricate/templates/crafting-tab.html',
+            craftingMessage: 'modules/fabricate/templates/chat-message.html'
         }
     },
     types: {

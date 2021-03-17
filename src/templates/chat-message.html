@@ -1,14 +1,30 @@
-<div class="chat-card dnd5e">
+<div class="chat-card dnd5e fabricate-chat-card">
     <header class="card-header flexrow">
-        <img src="modules/fabricate/assets/fabricate-earth.png" title="Fabricate" width="36" height="36">
-        <h3>{{outcomeTitle}}</h3>
+        <img src="{{cardImageUrl}}" title="Fabricate Crafting" width="36" height="36">
+        <h3>{{cardTitle}}</h3>
     </header>
     <div class="card-content">
-        {{content}}
+        <p>{{description}}</p>
+        {{#if hasResults}}
+        <p>The following items were added to your inventory:</p>
+        <div class="fabricate-components">
+            <ul>
+                {{#each results}}
+                <li>
+                    <div class="component">
+                        <span class="quantity">{{quantity}}</span>
+                        <span class="name">{{itemType.name}}</span>
+                        <img src="{{itemType.imageUrl}}" title="{{itemType.name}}">
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
     </div>
     <div class="card-footer">
-        {{#each consumedComponents}}
-        <span>{{quantity}} {{name}}</span>
+        {{#each footerParts}}
+            <span>{{.}}</span>
         {{/each}}
     </div>
 </div>

@@ -2,9 +2,10 @@ import {Fabricator} from "./Fabricator";
 import {Recipe} from "./Recipe";
 import {CraftingComponent} from "./CraftingComponent";
 import {Inventory} from "../game/Inventory";
-import {Ingredient} from "./Ingredient";
 import {FabricationOutcome} from "./FabricationOutcome";
 import {CraftingChatMessage} from "../interface/CraftingChatMessage";
+import Properties from "../Properties";
+import {CraftingError} from "../error/CraftingError";
 
 class EssenceDefinition {
 
@@ -44,10 +45,10 @@ class EssenceDefinition {
     }
 }
 
-class CraftingSystem<T> {
+class CraftingSystem {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
-    private readonly _fabricator: Fabricator<T>;
+    private readonly _fabricator: Fabricator<Item.Data>;
     private readonly _recipesById: Map<string, Recipe> = new Map();
     private readonly _componentsById: Map<string, CraftingComponent> = new Map();
     private readonly _supportedGameSystems: string[] = [];
@@ -58,7 +59,7 @@ class CraftingSystem<T> {
 
     private _enabled: boolean;
 
-    constructor(builder: CraftingSystem.Builder<T>) {
+    constructor(builder: CraftingSystem.Builder<Item.Data>) {
         this._name = builder.name;
         this._compendiumPackKey = builder.compendiumPackKey;
         this._fabricator = builder.fabricator;
@@ -104,55 +105,53 @@ class CraftingSystem<T> {
         return this._essencesBySlug.get(slug);
     }
 
-    public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<FabricationOutcome> {
-
-        const missingIngredients: Ingredient[] = [];
-        recipe.ingredients.forEach((ingredient: Ingredient) => {
-            if (!inventory.containsIngredient(ingredient)) {
-                missingIngredients.push(ingredient);
-            }
-        });
-        if (missingIngredients.length > 0) {
-            const missingIngredientMessage: string = missingIngredients.map((ingredient: Ingredient) => ingredient.quantity + ':' + ingredient.component.name).join(',');
-            const errorMessage: string = `Unable to craft recipe ${recipe.name}. The following ingredients were missing: ${missingIngredientMessage}. `;
-            ChatMessage.create({user: game.user, speaker: actor, content: errorMessage});
-        }
-
+    public async craft(actor: Actor, inventory: Inventory<Item.Data>, recipe: Recipe): Promise<FabricationOutcome> {
+        let chatMessage: HTMLElement;
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
             const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
-            ChatMessage.create({user: game.user, speaker: actor, content: message.render()});
+            chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            ChatMessage.create({user: game.user, speaker: actor, content: chatMessage});
             return fabricationOutcome;
         } catch (err) {
-            console.error(err);
-            ChatMessage.create({user: game.user, speaker: actor, content: err});
+            if (err instanceof CraftingError) {
+                const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(err);
+                chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            } else {
+                const message: CraftingChatMessage = CraftingChatMessage.fromUnexpectedError(err);
+                chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+                console.error(err);
+            }
+            ChatMessage.create({user: game.user, speaker: actor, content: chatMessage});
         }
-
     }
 
-    public async craftWithComponents(actor: Actor, inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
-
-        if (!inventory.hasAllComponents(components)) {
-            const errorMessage: string = 'There are insufficient crafting components of the specified type in the inventory. ';
-            ChatMessage.create({user: game.user, speaker: actor, content: errorMessage});
-            return;
-        }
+    public async craftWithComponents(actor: Actor, inventory: Inventory<Item.Data>, components: CraftingComponent[]): Promise<FabricationOutcome> {
+        let chatMessage: HTMLElement;
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
-            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.description});
+            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
+            chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            ChatMessage.create({user: game.user, speaker: actor, content: chatMessage});
             return fabricationOutcome;
         } catch (err) {
-            console.error(err);
-            ChatMessage.create({user: game.user, speaker: actor, content: err});
+            if (err instanceof CraftingError) {
+                const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(err);
+                chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            } else {
+                const message: CraftingChatMessage = CraftingChatMessage.fromUnexpectedError(err);
+                chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+                console.error(err);
+            }
+            ChatMessage.create({user: game.user, speaker: actor, content: chatMessage});
         }
-
     }
 
     get compendiumPackKey(): string {
         return this._compendiumPackKey;
     }
 
-    get fabricator(): Fabricator<T> {
+    get fabricator(): Fabricator<Item.Data> {
         return this._fabricator;
     }
 
@@ -186,7 +185,7 @@ class CraftingSystem<T> {
 
 namespace CraftingSystem {
 
-    export class Builder<T> {
+    export class Builder<T extends Item.Data> {
 
         public name!: string;
         public compendiumPackKey!: string;
@@ -199,7 +198,7 @@ namespace CraftingSystem {
         public description!: string;
         public essences: EssenceDefinition[] = [];
 
-        public build() : CraftingSystem<T> {
+        public build() : CraftingSystem{
             return new CraftingSystem(this);
         }
 
