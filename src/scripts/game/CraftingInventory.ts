@@ -1,4 +1,4 @@
-import {Inventory, InventoryModification} from "./Inventory";
+import {Inventory} from "./Inventory";
 import {InventoryRecord} from "./InventoryRecord";
 import {GameSystemType} from "../core/GameSystemType";
 import {Ingredient} from "../core/Ingredient";
@@ -9,8 +9,9 @@ import Properties from "../Properties";
 import FabricateApplication from "../application/FabricateApplication";
 import {FabricateItemType} from "./CompendiumData";
 import {CraftingSystem} from "../core/CraftingSystem";
+import {FabricationAction} from "../core/FabricationAction";
 
-abstract class CraftingInventory implements Inventory {
+abstract class CraftingInventory<T> implements Inventory<T> {
 
     protected readonly _actor: any;
     protected _supportedGameSystems: GameSystemType[];
@@ -51,7 +52,7 @@ abstract class CraftingInventory implements Inventory {
         return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
     }
 
-    public abstract addComponent(component: CraftingComponent, quantity?: number): Promise<InventoryModification<CraftingComponent>>;
+    public abstract add(item: FabricateItem, quantity?: number, customData?: any): Promise<FabricationAction<T>>;
 
     containsIngredient(ingredient: Ingredient): boolean {
         const quantity = this.components.filter((candidate: InventoryRecord<CraftingComponent>) => candidate.fabricateItem.sharesType(ingredient))
@@ -60,12 +61,12 @@ abstract class CraftingInventory implements Inventory {
         return ingredient.quantity <= quantity;
     }
 
-    containsRecipe(partId: string): boolean {
+    containsPart(partId: string, quantity: number = 1): boolean {
         const match = this.recipes.find((recipe: InventoryRecord<Recipe>) => recipe.fabricateItem.partId === partId);
-        return !!match;
+        return match.totalQuantity >= quantity;
     }
 
-    hasAllComponents(components: CraftingComponent[]): boolean {
+    containsAll(components: CraftingComponent[]): boolean {
         const componentCountById: Map<string, number> = new Map<string, number>();
         components.forEach((component: CraftingComponent) => {
             if (componentCountById.has(component.partId)) {
@@ -180,7 +181,7 @@ abstract class CraftingInventory implements Inventory {
         }
     }
 
-    public abstract removeComponent(component: CraftingComponent, quantity?: number): Promise<InventoryModification<CraftingComponent>>;
+    public abstract remove(item: FabricateItem, quantity?: number): Promise<FabricationAction<T>>;
 
     public abstract update(): void;
 

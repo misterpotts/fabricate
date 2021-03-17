@@ -4,6 +4,7 @@ import {CraftingComponent} from "../core/CraftingComponent";
 
 class CraftingChatMessage {
 
+    private static readonly _fabricateErrorIconUrl = 'modules/fabricate/assets/caution.svg';
     private static readonly _fabricateFireIconUrl = 'modules/fabricate/assets/fabricate-fire.png';
     private static readonly _fabricateEarthIconUrl = 'modules/fabricate/assets/fabricate-earth.png';
     private static readonly _fabricateWaterIconUrl = 'modules/fabricate/assets/fabricate-water.png';
@@ -22,32 +23,22 @@ class CraftingChatMessage {
     private readonly _cardImageUrl: string;
     private readonly _cardImageTitle: string;
 
-    constructor(cardTitle: string, cardContent: string, displayItems: InventoryModification<CraftingComponent>[], cardFooterParts: string[], cardImageUrl?: string, cardImagetitle?: string) {
+    constructor(cardTitle: string, cardContent: string, cardFooterParts: string[], addedItems?: InventoryModification<CraftingComponent>[], cardImageUrl?: string, cardImageTitle?: string) {
         this._cardTitle = cardTitle;
         this._cardContent = cardContent;
-        this._addedItems = displayItems;
+        this._addedItems = addedItems;
         this._cardFooterParts = cardFooterParts;
         this._cardImageUrl = cardImageUrl;
-        this._cardImageTitle = cardImagetitle;
+        this._cardImageTitle = cardImageTitle;
+    }
+
+    public static fromFabricationError(error: Error) {
+        return new CraftingChatMessage('Crafting error', error.message, [], [], CraftingChatMessage._fabricateErrorIconUrl, 'Something went wrong');
     }
 
     public static fromFabricationOutcome(outcome: FabricationOutcome): CraftingChatMessage {
-        return new CraftingChatMessage(outcome.title, outcome.description, outcome.addedItems, ['<span>Removed: </span>'].concat(outcome.removedComponents));
-    }
-
-    public render(): string {
-        return `<div class="chat-card dnd5e fabricate-card">
-            <header class="card-header flexrow">
-                <img src="${this.cardImageUrl}" title="${this.cardImageTitle}" width="36" height="36" />
-                <h3>${this.title}</h3>
-            </header>
-            <div class="card-content">
-                ${this.content}
-            </div>
-            <div class="card-footer">
-                ${this.footer}
-            </div>
-        </div>`;
+        const footerParts: string[] = ['Removed:'].concat(outcome.removedComponents);
+        return new CraftingChatMessage(outcome.title, outcome.description, footerParts, outcome.addedItems);
     }
 
     get cardImageUrl() {
@@ -65,33 +56,24 @@ class CraftingChatMessage {
         return 'Fabricate Crafting';
     }
 
-    get content() {
-        const summary: string = `<p>${this._cardContent}<p>`;
-        if (!this._addedItems || this._addedItems.length === 0) {
-            return summary;
-        }
-        const itemImages: string = this._addedItems
-            .map((added: InventoryModification<CraftingComponent>) => {
-                return `<li><div class="component">
-                    <span class="quantity">${added.quantityChanged}</span>
-                    <span class="name">${added.updatedRecord.fabricateItem.name}</span>
-                        <img src="${added.updatedRecord.fabricateItem.imageUrl}" title="${added.updatedRecord.fabricateItem.name}"/>
-                </div></li>`
-            })
-            .join('');
-        return summary + `<p>The following items were added to your inventory:</p><div class="fabricate-components"><ul>${itemImages}</ul></div>`
-    }
-
-    get title(): string {
+    get cardTitle(): string {
         return this._cardTitle
     }
 
-    get footer() {
-        return this._cardFooterParts
-            .map((footerPart) => {
-                return`<span>${footerPart}</span>`
-            })
-            .join('');
+    get footerParts() {
+        return this._cardFooterParts;
+    }
+
+    get description() {
+        return this._cardContent;
+    }
+
+    get results() {
+        return this._addedItems;
+    }
+
+    get hasResults(): boolean {
+        return this._addedItems && this._addedItems.length > 0;
     }
 
 }

@@ -62,10 +62,10 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
                     throw new Error(`Recipe ${recipe.name} with ID ${recipe.partId} specified a Result that was not found in the Crafting System: ${result.compendiumEntry}.`);
                 }
                 return FabricationAction.builder()
-                    .withAction(result.type)
-                    .withComponent(craftingComponent)
+                    .withActionType(result.actionType)
+                    .withItemType(craftingComponent)
                     .withQuantity(result.quantity)
-                    .withCustomData(result.customData)
+                    .withCustomItemData(result.customItemData)
                     .build();
             });
             return Recipe.builder()

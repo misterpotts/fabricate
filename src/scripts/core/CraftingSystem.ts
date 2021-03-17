@@ -5,6 +5,7 @@ import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
 import {FabricationOutcome} from "./FabricationOutcome";
 import {CraftingChatMessage} from "../interface/CraftingChatMessage";
+import Properties from "../Properties";
 
 class EssenceDefinition {
 
@@ -44,7 +45,7 @@ class EssenceDefinition {
     }
 }
 
-class CraftingSystem<T> {
+class CraftingSystem<T extends Item.Data> {
     private readonly _name: string;
     private readonly _compendiumPackKey: string;
     private readonly _fabricator: Fabricator<T>;
@@ -121,29 +122,34 @@ class CraftingSystem<T> {
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
             const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
-            ChatMessage.create({user: game.user, speaker: actor, content: message.render()});
+            const template: HTMLElement = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            ChatMessage.create({user: game.user, speaker: actor, content: template});
             return fabricationOutcome;
         } catch (err) {
-            console.error(err);
-            ChatMessage.create({user: game.user, speaker: actor, content: err});
+            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(err);
+            const template: HTMLElement = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            ChatMessage.create({user: game.user, speaker: actor, content: template});
         }
 
     }
 
     public async craftWithComponents(actor: Actor, inventory: Inventory, components: CraftingComponent[]): Promise<FabricationOutcome> {
 
-        if (!inventory.hasAllComponents(components)) {
+        if (!inventory.containsAll(components)) {
             const errorMessage: string = 'There are insufficient crafting components of the specified type in the inventory. ';
             ChatMessage.create({user: game.user, speaker: actor, content: errorMessage});
             return;
         }
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(inventory, components);
-            ChatMessage.create({user: game.user, speaker: actor, content: fabricationOutcome.description});
+            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
+            const template: HTMLElement = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            ChatMessage.create({user: game.user, speaker: actor, content: template});
             return fabricationOutcome;
         } catch (err) {
-            console.error(err);
-            ChatMessage.create({user: game.user, speaker: actor, content: err});
+            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(err);
+            const template: HTMLElement = await renderTemplate(Properties.module.templates.craftingMessage, message);
+            ChatMessage.create({user: game.user, speaker: actor, content: template});
         }
 
     }

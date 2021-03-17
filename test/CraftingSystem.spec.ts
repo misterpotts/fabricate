@@ -9,7 +9,7 @@ import {FabricationAction, FabricationActionType} from "../src/scripts/core/Fabr
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
-import {Inventory} from "../src/scripts/game/Inventory";
+import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
 
@@ -77,9 +77,9 @@ describe('Crafting System |', () => {
                             .build())
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withAction(FabricationActionType.ADD)
+                        .withActionType(FabricationActionType.ADD)
                         .withQuantity(1)
-                        .withComponent(CraftingComponent.builder()
+                        .withItemType(CraftingComponent.builder()
                             .withName('Mud Pie')
                             .withPartId('nWhTa8gD1QL1f9O3')
                             .withSystemId(compendiumKey)
@@ -116,9 +116,9 @@ describe('Crafting System |', () => {
                         .isConsumed(true)
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withAction(FabricationActionType.ADD)
+                        .withActionType(FabricationActionType.ADD)
                         .withQuantity(1)
-                        .withComponent(CraftingComponent.builder()
+                        .withItemType(CraftingComponent.builder()
                             .withName('Mud Pie')
                             .withPartId('nWhTa8gD1QL1f9O3')
                             .withSystemId('fabricate.fabricate-test')
@@ -174,9 +174,9 @@ describe('Crafting System |', () => {
                     .build())
                 .build();
             const mudPie = FabricationAction.builder()
-                .withAction(FabricationActionType.ADD)
+                .withActionType(FabricationActionType.ADD)
                 .withQuantity(1)
-                .withComponent(CraftingComponent.builder()
+                .withItemType(CraftingComponent.builder()
                     .withName('Mud Pie')
                     .withPartId('nWhTa8gD1QL1f9O3')
                     .withSystemId(compendiumKey)
@@ -211,37 +211,48 @@ describe('Crafting System |', () => {
             mockInventory.containsIngredient.withArgs(oneStick).returns(true);
             const mockActor: Actor = <Actor><unknown>{};
             // @ts-ignore
-            mockInventory.addComponent.withArgs(mudPie).returns(InventoryRecord.builder()
-                .withFabricateItem(mudPie.component)
+            mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
+                .withFabricateItem(mudPie.itemType)
                 .withTotalQuantity(mudPie.quantity)
                 .withActor(mockActor)
                 .build());
             // @ts-ignore
-            mockInventory.removeComponent.returns(true);
+            mockInventory.remove.returns(true);
 
-            const removeOneStick = FabricationAction.builder()
-                .withComponent(oneStick.component)
-                .withQuantity(oneStick.quantity)
+            const removeOneStick = InventoryModification.builder<CraftingComponent>()
+                .withUpdatedRecord(InventoryRecord.builder<CraftingComponent>()
+                    .withFabricateItem(oneStick.component)
+                    .build())
+                .withQuantityChanged(oneStick.quantity)
                 .withAction(FabricationActionType.REMOVE)
                 .build();
-            const removeTwoMud = FabricationAction.builder()
-                .withComponent(twoMud.component)
-                .withQuantity(twoMud.quantity)
+            const removeTwoMud = InventoryModification.builder<CraftingComponent>()
+                .withUpdatedRecord(InventoryRecord.builder<CraftingComponent>()
+                    .withFabricateItem(twoMud.component)
+                    .build())
+                .withQuantityChanged(twoMud.quantity)
                 .withAction(FabricationActionType.REMOVE)
                 .build();
+            const addMudPie = InventoryModification.builder<CraftingComponent>()
+                .withUpdatedRecord(InventoryRecord.builder<CraftingComponent>()
+                    .withFabricateItem(mudPie.itemType)
+                    .build())
+                .withQuantityChanged(mudPie.quantity)
+                .withAction(FabricationActionType.ADD)
+                .build();
+
 
             const outcome = FabricationOutcome.builder()
                 .withOutcomeType(OutcomeType.SUCCESS)
                 .withRecipe(mudPieRecipe)
-                .withActions([removeOneStick, removeTwoMud, mudPie])
-                .withAddedItems([])
+                .withActions([removeOneStick, removeTwoMud, addMudPie])
                 .build();
             // @ts-ignore
             mockFabricator.fabricateFromRecipe.returns(outcome);
 
             const fabricationOutcome: FabricationOutcome = await testSystem.craft(mockActor, mockInventory, mudPieRecipe);
             expect(fabricationOutcome.actions.length).to.equal(3);
-            expect(fabricationOutcome.actions).to.contain.members([removeOneStick, removeTwoMud, mudPie]);
+            expect(fabricationOutcome.actions).to.contain.members([removeOneStick, removeTwoMud, addMudPie]);
 
         })
 

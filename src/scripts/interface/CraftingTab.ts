@@ -12,7 +12,7 @@ class CraftingTab {
 
     private _sheetApplication: any;
     private _sheetHtml: any;
-    private readonly _inventory: Inventory;
+    private readonly _inventory: Inventory<Item.Data>;
     private _suppressedInNav: boolean = false;
     private readonly _actor: Actor;
     private static tabKey: string = 'fabricate-crafting';

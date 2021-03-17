@@ -34,7 +34,7 @@ describe('Recipe |', () => {
                     .build())
                 .withResult(FabricationAction.builder()
                     .withQuantity(1)
-                    .withComponent(CraftingComponent.builder()
+                    .withItemType(CraftingComponent.builder()
                         .withName('Mud Pie')
                         .withPartId('3')
                         .withSystemId('compendium')
@@ -124,13 +124,13 @@ describe('Recipe |', () => {
             expect(oneSticksConsumed.equals(underTest.ingredients[1])).to.be.true;
             expect(underTest.results.length).to.equal(1);
             expect(underTest.results[0].quantity).to.equal(1);
-            expect(underTest.results[0].type).to.equal(FabricationActionType.ADD);
+            expect(underTest.results[0].actionType).to.equal(FabricationActionType.ADD);
             const mudPie = CraftingComponent.builder()
                 .withName('Mud Pie')
                 .withPartId('nWhTa8gD1QL1f9O3')
                 .withSystemId('fabricate.fabricate-test')
                 .build();
-            expect(underTest.results[0].component.sharesType(mudPie)).to.be.true;
+            expect(underTest.results[0].itemType.sharesType(mudPie)).to.be.true;
 
         });
 

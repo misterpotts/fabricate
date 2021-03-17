@@ -1,8 +1,9 @@
 import {CraftingComponent} from "./CraftingComponent";
 import {AlchemicalEffect} from "./AlchemicalEffect";
 import {FabricationHelper} from "./FabricationHelper";
+import {AlchemyError} from "../error/AlchemyError";
 
-class EssenceCombiner<T> {
+class EssenceCombiner<T extends Item.Data> {
     private readonly _maxComponents: number;
     private readonly _maxEssences: number;
     private readonly _effects: AlchemicalEffect<T>[];
@@ -27,7 +28,7 @@ class EssenceCombiner<T> {
         this.effects.forEach((effect: AlchemicalEffect<T>) => this._effectsByEssenceCombinationIdentity.set(FabricationHelper.essenceCombinationIdentity(effect.essenceCombination, this._essenceIdentities), effect));
     }
 
-    public static builder<T>(): EssenceCombiner.Builder<T> {
+    public static builder<T extends Item.Data>(): EssenceCombiner.Builder<T> {
         return new EssenceCombiner.Builder<T>();
     }
 
@@ -46,6 +47,9 @@ class EssenceCombiner<T> {
     combine(components: CraftingComponent[], baseItemData: T): T {
         this.validate(components);
         const effects: AlchemicalEffect<T>[] = this.determineAlchemicalEffectsForComponents(components);
+        if (!effects ||effects.length === 0) {
+            throw new AlchemyError('No Alchemical Effects were produced by mixing the provided Components. ', components, false);
+        }
         const orderedEffects: AlchemicalEffect<T>[] = this.orderAlchemicalEffects(effects);
         return this.applyEffectsToBaseItem(orderedEffects, baseItemData);
     }
@@ -89,7 +93,7 @@ class EssenceCombiner<T> {
 
 namespace EssenceCombiner {
 
-    export class Builder<T> {
+    export class Builder<T extends Item.Data> {
 
         public maxComponents: number;
         public maxEssences: number
