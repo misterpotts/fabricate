@@ -9,7 +9,7 @@ import {FabricationAction, FabricationActionType} from "../src/scripts/core/Fabr
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
-import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
+import {Inventory} from "../src/scripts/game/Inventory";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
 
@@ -36,7 +36,7 @@ describe('Crafting System |', () => {
 
         it('Should create a Crafting System', () => {
 
-            const mockFabricator = <Fabricator<{}>><unknown>{
+            const mockFabricator = <Fabricator<Item.Data>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
@@ -138,7 +138,7 @@ describe('Crafting System |', () => {
 
         it('Should craft a recipe using the System\'s Fabricator', async () => {
 
-            let mockFabricator = <Fabricator<{}>><unknown>{
+            let mockFabricator = <Fabricator<Item.Data>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
@@ -199,16 +199,16 @@ describe('Crafting System |', () => {
                 .withRecipe(mudPieRecipe)
                 .build();
 
-            const mockInventory: Inventory = <Inventory5E><unknown>{
-                containsIngredient: Sandbox.stub(),
-                addComponent: Sandbox.stub(),
-                removeComponent: Sandbox.stub()
+            const mockInventory: Inventory<ItemData5e> = <Inventory5E><unknown>{
+                containsPart: Sandbox.stub(),
+                add: Sandbox.stub(),
+                remove: Sandbox.stub()
             }
 
             // @ts-ignore
-            mockInventory.containsIngredient.withArgs(twoMud).returns(true);
+            mockInventory.containsPart.withArgs(twoMud.partId).returns(true);
             // @ts-ignore
-            mockInventory.containsIngredient.withArgs(oneStick).returns(true);
+            mockInventory.containsPart.withArgs(oneStick.partId).returns(true);
             const mockActor: Actor = <Actor><unknown>{};
             // @ts-ignore
             mockInventory.add.withArgs(mudPie).returns(InventoryRecord.builder()
@@ -219,28 +219,21 @@ describe('Crafting System |', () => {
             // @ts-ignore
             mockInventory.remove.returns(true);
 
-            const removeOneStick = InventoryModification.builder<CraftingComponent>()
-                .withUpdatedRecord(InventoryRecord.builder<CraftingComponent>()
-                    .withFabricateItem(oneStick.component)
-                    .build())
-                .withQuantityChanged(oneStick.quantity)
-                .withAction(FabricationActionType.REMOVE)
-                .build();
-            const removeTwoMud = InventoryModification.builder<CraftingComponent>()
-                .withUpdatedRecord(InventoryRecord.builder<CraftingComponent>()
-                    .withFabricateItem(twoMud.component)
-                    .build())
-                .withQuantityChanged(twoMud.quantity)
-                .withAction(FabricationActionType.REMOVE)
-                .build();
-            const addMudPie = InventoryModification.builder<CraftingComponent>()
-                .withUpdatedRecord(InventoryRecord.builder<CraftingComponent>()
-                    .withFabricateItem(mudPie.itemType)
-                    .build())
-                .withQuantityChanged(mudPie.quantity)
-                .withAction(FabricationActionType.ADD)
-                .build();
-
+            const removeOneStick = FabricationAction.builder()
+                .withActionType(FabricationActionType.REMOVE)
+                .withQuantity(oneStick.quantity)
+                .withItemType(oneStick.component)
+                .build()
+            const removeTwoMud = FabricationAction.builder()
+                .withActionType(FabricationActionType.REMOVE)
+                .withQuantity(twoMud.quantity)
+                .withItemType(twoMud.component)
+                .build()
+            const addMudPie = FabricationAction.builder()
+                .withActionType(FabricationActionType.ADD)
+                .withQuantity(1)
+                .withItemType(mudPie)
+                .build()
 
             const outcome = FabricationOutcome.builder()
                 .withOutcomeType(OutcomeType.SUCCESS)

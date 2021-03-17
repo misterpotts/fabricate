@@ -11,7 +11,7 @@ import {FabricateItemType} from "./CompendiumData";
 import {CraftingSystem} from "../core/CraftingSystem";
 import {FabricationAction} from "../core/FabricationAction";
 
-abstract class CraftingInventory<T> implements Inventory<T> {
+abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
 
     protected readonly _actor: any;
     protected _supportedGameSystems: GameSystemType[];
@@ -52,8 +52,6 @@ abstract class CraftingInventory<T> implements Inventory<T> {
         return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
     }
 
-    public abstract add(item: FabricateItem, quantity?: number, customData?: any): Promise<FabricationAction<T>>;
-
     containsIngredient(ingredient: Ingredient): boolean {
         const quantity = this.components.filter((candidate: InventoryRecord<CraftingComponent>) => candidate.fabricateItem.sharesType(ingredient))
             .map((candidate: InventoryRecord<FabricateItem>) => candidate.totalQuantity)
@@ -62,8 +60,8 @@ abstract class CraftingInventory<T> implements Inventory<T> {
     }
 
     containsPart(partId: string, quantity: number = 1): boolean {
-        const match = this.recipes.find((recipe: InventoryRecord<Recipe>) => recipe.fabricateItem.partId === partId);
-        return match.totalQuantity >= quantity;
+        const match = this.contents.find((itemRecord: InventoryRecord<FabricateItem>) => itemRecord.fabricateItem.partId === partId);
+        return match ? match.totalQuantity >= quantity : false;
     }
 
     containsAll(components: CraftingComponent[]): boolean {
@@ -147,7 +145,7 @@ abstract class CraftingInventory<T> implements Inventory<T> {
         return !failedToFind;
     }
 
-    protected getOwningCraftingSystemForItem(item: Item): CraftingSystem<{}> {
+    protected getOwningCraftingSystemForItem(item: Item): CraftingSystem {
         const systemId = item.getFlag(Properties.module.name, Properties.flagKeys.item.systemId);
         const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
         if (!craftingSystem) {
@@ -157,7 +155,7 @@ abstract class CraftingInventory<T> implements Inventory<T> {
     }
 
     protected lookUp(item: Item): FabricateItem {
-        const craftingSystem: CraftingSystem<{}> = this.getOwningCraftingSystemForItem(item);
+        const craftingSystem: CraftingSystem = this.getOwningCraftingSystemForItem(item);
         const itemType: FabricateItemType = item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
         const partId: string = item.getFlag(Properties.module.name, Properties.flagKeys.item.partId);
         switch (itemType) {
@@ -182,6 +180,8 @@ abstract class CraftingInventory<T> implements Inventory<T> {
     }
 
     public abstract remove(item: FabricateItem, quantity?: number): Promise<FabricationAction<T>>;
+
+    public abstract add(item: FabricateItem, quantity?: number, customData?: any): Promise<FabricationAction<T>>;
 
     public abstract update(): void;
 

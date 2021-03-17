@@ -8,6 +8,7 @@ import {Inventory} from "../game/Inventory";
 import {InventoryRecord} from "../game/InventoryRecord";
 import {Ingredient} from "./Ingredient";
 import {AlchemyError} from "../error/AlchemyError";
+import {CraftingError} from "../error/CraftingError";
 
 enum EssenceMatchType {
     EXACT = 'EXACT',
@@ -121,7 +122,7 @@ class Fabricator<T extends Item.Data> {
                 const alchemyError: AlchemyError = <AlchemyError>error;
                 const actions: FabricationAction<T>[] = [];
                 if (alchemyError.componentsConsumed) {
-                    actions.concat(removeSuppliedComponents);
+                    actions.push(...removeSuppliedComponents);
                     await FabricationHelper.applyResults(removeSuppliedComponents, inventory);
                 }
                 return FabricationOutcome.builder()
@@ -169,13 +170,16 @@ class Fabricator<T extends Item.Data> {
                     .withQuantity(componentRecord.totalQuantity)
                     .build();
             });
+            if (!this.isCraftableFromEssencesInIngredients(recipe, availableIngredients)) {
+                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or event just asking your DM nicely. `, false);
+            }
             const craftingComponentCombinations = this.analyzeCombinationsForEssences(availableIngredients, recipe.essences);
             const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
             if (!selectedCombination || selectedCombination.length === 0) {
-                throw new Error(`There are insufficient components available to craft the Recipe "${recipe.name}". `)
+                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or event just asking your DM nicely. `, false)
             }
             const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, FabricationActionType.REMOVE);
-            input.concat(consumedComponents);
+            input.push(...consumedComponents);
         }
 
         const output: FabricationAction<T>[] = recipe.results;
@@ -226,15 +230,43 @@ class Fabricator<T extends Item.Data> {
     }
 
     public filterCraftableRecipesFor(craftingComponents: CraftingComponent[], recipes: Recipe[]) {
-        return recipes.filter((recipe: Recipe) => this.isCraftableFromEssencesIn(recipe, craftingComponents));
+        return recipes.filter((recipe: Recipe) => this.isCraftableFromEssencesInComponents(recipe, craftingComponents));
     }
 
-    private isCraftableFromEssencesIn(recipe: Recipe, components: CraftingComponent[]): boolean {
+    private isCraftableFromEssencesInComponents(recipe: Recipe, components: CraftingComponent[]): boolean {
         const essences = components.map((component: CraftingComponent) => component.essences)
             .reduce((left: string[], right: string[]) => left.concat(right), []);
         return essences.every((essence: string) => recipe.essences.includes(essence)
             &&  (essences.filter((essence:string) => essence === essence).length >= recipe.essences.filter((essence:string) => essence === essence).length));
     }
+
+    private isCraftableFromEssencesInIngredients(recipe: Recipe, ingredients: Ingredient[]): boolean {
+        const essenceCount: Map<string, number> = ingredients.filter((ingredient: Ingredient) => ingredient.component.essences.some((essence: string) => recipe.essences.includes(essence)))
+            .map((ingredient: Ingredient) => new Map(ingredient.component.essences.map((essence: string) => [essence, ingredient.quantity])))
+            .reduce((left: Map<string, number>, right: Map<string, number>) => {
+                const allEssenceKeys: string[] = Array.from(left.keys()).concat(Array.from(right.keys()))
+                    .filter(((essence: string, index: number, mergedKeys: string[]) => mergedKeys.indexOf(essence) === index));
+                const merged: Map<string, number> = new Map();
+                allEssenceKeys.forEach((essence: string) => {
+                    const leftCount: number = left.has(essence) ? left.get(essence) : 0;
+                    const rightCount: number = right.has(essence) ? right.get(essence) : 0;
+                    merged.set(essence, leftCount + rightCount);
+                });
+                return merged;
+            }, new Map<string, number>());
+        for (let i = 0; i < recipe.essences.length; i++) {
+            const essence: string = recipe.essences[i];
+            if (!essenceCount.has(essence)) {
+                return false;
+            }
+            const count: number = essenceCount.get(essence);
+            if (count <= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
 
 export {Fabricator, AlchemySpecification};

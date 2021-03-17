@@ -4,12 +4,11 @@ import Properties from "../Properties";
 import {FabricateCompendiumData, FabricateItemType} from "../game/CompendiumData";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {GameSystemType} from "../core/GameSystemType";
-import {Ingredient} from "../core/Ingredient";
 import {Recipe} from "../core/Recipe";
 import {FabricateItem} from "../core/FabricateItem";
 import {FabricationAction, FabricationActionType} from "../core/FabricationAction";
 
-class Inventory5E extends CraftingInventory<ItemData5e> {
+class Inventory5E extends CraftingInventory<Item.Data<ItemData5e>> {
     private readonly _partDirectory: Map<string, InventoryRecord<FabricateItem>> = new Map();
 
     constructor(actor: any) {
@@ -59,12 +58,10 @@ class Inventory5E extends CraftingInventory<ItemData5e> {
         };
     }
 
-    async add(fabricateItem: FabricateItem, amountToAdd: number = 1, customData?: any): Promise<FabricationAction<ItemData5e>> {
-
+    async add(fabricateItem: FabricateItem, amountToAdd: number = 1, customData?: any): Promise<FabricationAction<Item.Data<ItemData5e>>> {
         if (customData) {
             return this.addCustomItem(fabricateItem, amountToAdd, customData);
         }
-
         if (!this._partDirectory.has(fabricateItem.partId)) {
             return this.addNewRecord(fabricateItem, amountToAdd);
         } else {
@@ -73,7 +70,7 @@ class Inventory5E extends CraftingInventory<ItemData5e> {
         }
     }
 
-    private async addNewRecord(fabricateItem: FabricateItem, amountToAdd: number): Promise<FabricationAction<ItemData5e>> {
+    private async addNewRecord(fabricateItem: FabricateItem, amountToAdd: number): Promise<FabricationAction<Item.Data<ItemData5e>>> {
         const compendium: Compendium = game.packs.get(fabricateItem.systemId);
         const item: Entity<ItemData5e> = await compendium.getEntity(fabricateItem.partId);
         item.data.data.quantity = amountToAdd;
@@ -84,6 +81,7 @@ class Inventory5E extends CraftingInventory<ItemData5e> {
             .withItem(createdItem)
             .withTotalQuantity(createdItem.data.data.quantity)
             .withFabricateItem(fabricateItem)
+            .withFabricateItemType(FabricateItemType.COMPONENT)// Todo - this prevents the addNewRecord method from supporting recipes. It doesn't need to yet, but it probably should
             .build();
         this._partDirectory.set(fabricateItem.partId, inventoryRecord);
         return FabricationAction.builder()
@@ -93,12 +91,12 @@ class Inventory5E extends CraftingInventory<ItemData5e> {
             .build();
     }
 
-    private async updateExistingRecord(fabricateItem: FabricateItem, record: InventoryRecord<FabricateItem>, amountToAdd: number): Promise<FabricationAction<ItemData5e>> {
+    private async updateExistingRecord(fabricateItem: FabricateItem, record: InventoryRecord<FabricateItem>, amountToAdd: number): Promise<FabricationAction<Item.Data<ItemData5e>>> {
         record.itemsOfType.sort((left: Item<ItemData5e>, right: Item<ItemData5e>) => left.data.data.quantity - right.data.data.quantity);
         const itemToModify: Item<ItemData5e> = record.itemsOfType[0];
         const updatedQuantityForItem = itemToModify.data.data.quantity + amountToAdd;
         // @ts-ignore
-        const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: item._id, data: {quantity: updatedQuantityForItem}});
+        const updatedItem: Item<ItemData5e> = await this.actor.updateEmbeddedEntity('OwnedItem', {_id: itemToModify._id, data: {quantity: updatedQuantityForItem}});
         record.totalQuantity = record.totalQuantity + amountToAdd;
         return FabricationAction.builder()
             .withItemType(fabricateItem)
@@ -107,7 +105,7 @@ class Inventory5E extends CraftingInventory<ItemData5e> {
             .build();
     }
 
-    private async addCustomItem(fabricateItem: FabricateItem, amountToAdd: number, customData: ItemData5e): Promise<FabricationAction<ItemData5e>> {
+    private async addCustomItem(fabricateItem: FabricateItem, amountToAdd: number, customData: ItemData5e): Promise<FabricationAction<Item.Data<ItemData5e>>> {
         const compendium: Compendium = game.packs.get(fabricateItem.systemId);
         const compendiumBaseItem: Entity<ItemData5e> = await compendium.getEntity(fabricateItem.partId);
         const baseItemData: Entity.Data<ItemData5e> = duplicate(compendiumBaseItem.data);
@@ -144,8 +142,8 @@ class Inventory5E extends CraftingInventory<ItemData5e> {
         return recipes.concat(components);
     }
 
-    async remove(component: CraftingComponent, amountToRemove: number = 1): Promise<FabricationAction<ItemData5e>> {
-        if (!this.containsIngredient(Ingredient.builder().withQuantity(amountToRemove).withComponent(component).build())) {
+    async remove(component: CraftingComponent, amountToRemove: number = 1): Promise<FabricationAction<Item.Data<ItemData5e>>> {
+        if (!this.containsPart(component.partId, amountToRemove)) {
             throw new Error(`Cannot remove ${amountToRemove} ${component.name} from Inventory for Actor ${this.actorId} - 
                 there is not enough of the component in their inventory! `);
         }

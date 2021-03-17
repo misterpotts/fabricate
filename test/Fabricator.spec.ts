@@ -4,7 +4,7 @@ import * as Sinon from "sinon";
 import {Recipe} from "../src/scripts/core/Recipe";
 import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {Inventory, InventoryModification} from "../src/scripts/game/Inventory";
+import {Inventory} from "../src/scripts/game/Inventory";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
@@ -30,7 +30,7 @@ beforeEach(() => {
     Sandbox.restore();
 });
 
-describe('Crafting |', () => {
+describe('Fabricator |', () => {
 
     /* =======================================================================
      * Consumed Components
@@ -411,9 +411,9 @@ describe('Crafting |', () => {
             const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>(mockAlchemySpecification);
             const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockInventory, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
 
-            const addResults = outcome.actions.filter((action: FabricationAction) => action.actionType === FabricationActionType.ADD);
+            const addResults = outcome.actions.filter((action: FabricationAction<Item.Data>) => action.actionType === FabricationActionType.ADD);
             expect(addResults.length).to.equal(1);
-            const addResult: FabricationAction = addResults[0];
+            const addResult: FabricationAction<Item.Data> = addResults[0];
             expect(addResult.itemType.systemId).to.equal('fabricate.alchemists-supplies-v11');
             expect(addResult.itemType.partId).to.equal('90z9nOwmGnP4aUUk');
             expect(addResult.quantity).to.equal(1);

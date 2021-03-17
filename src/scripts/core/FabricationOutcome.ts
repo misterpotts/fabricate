@@ -49,7 +49,7 @@ class FabricationOutcome {
                 if (this._recipe) {
                     return `Failed to craft ${this._recipe.name}. `;
                 } else {
-                    return 'Your alchemical combination failed. ';
+                    return 'Your alchemical combination failed to produce any results. ';
                 }
         }
     }

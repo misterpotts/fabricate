@@ -1,17 +1,17 @@
 import {Fabricator} from "./Fabricator";
 import {EssenceDefinition} from "./CraftingSystem";
 
-class CraftingSystemSpecification<T> {
+class CraftingSystemSpecification {
     private readonly _compendiumPackKey: string;
     private readonly _name: string;
     private readonly _description: string;
     private readonly _enableHint: string;
     private readonly _enabled: boolean;
     private readonly _supportedGameSystems: string[] = [];
-    private readonly _fabricator: Fabricator<T>;
+    private readonly _fabricator: Fabricator<Item.Data>;
     private readonly _essences: EssenceDefinition[] = [];
 
-    constructor(builder: CraftingSystemSpecification.Builder<T>) {
+    constructor(builder: CraftingSystemSpecification.Builder) {
         this._compendiumPackKey = builder.compendiumPackKey;
         this._name = builder.name;
         this._description = builder.description;
@@ -22,7 +22,7 @@ class CraftingSystemSpecification<T> {
         this._essences = builder.essences;
     }
 
-    public static builder<T>(): CraftingSystemSpecification.Builder<T> {
+    public static builder(): CraftingSystemSpecification.Builder {
         return new CraftingSystemSpecification.Builder();
     }
 
@@ -46,7 +46,7 @@ class CraftingSystemSpecification<T> {
         return this._supportedGameSystems;
     }
 
-    get fabricator(): Fabricator<T> {
+    get fabricator(): Fabricator<Item.Data> {
         return this._fabricator;
     }
 
@@ -62,7 +62,7 @@ class CraftingSystemSpecification<T> {
 
 namespace CraftingSystemSpecification {
 
-    export class Builder<T> {
+    export class Builder{
 
         public compendiumPackKey!: string;
         public name!: string;
@@ -70,59 +70,59 @@ namespace CraftingSystemSpecification {
         public enableHint!: string;
         public enabled!: boolean;
         public supportedGameSystems: string[] = [];
-        public fabricator!: Fabricator<T>;
+        public fabricator!: Fabricator<Item.Data>;
         public essences: EssenceDefinition[] = [];
 
-        public build() : CraftingSystemSpecification<T> {
+        public build() : CraftingSystemSpecification {
             return new CraftingSystemSpecification(this);
         }
 
-        public withName(value: string): Builder<T> {
+        public withName(value: string): Builder {
             this.name = value;
             return this;
         }
 
-        public withCompendiumPackKey(value: string): Builder<T> {
+        public withCompendiumPackKey(value: string): Builder {
             this.compendiumPackKey = value;
             return this;
         }
 
-        public withFabricator(value: Fabricator<T>): Builder<T> {
+        public withFabricator(value: Fabricator<Item.Data>): Builder {
             this.fabricator = value;
             return this;
         }
 
-        public withSupportedGameSystems(value: string[]): Builder<T> {
+        public withSupportedGameSystems(value: string[]): Builder {
             this.supportedGameSystems = value;
             return this;
         }
 
-        public withSupportedGameSystem(value: string): Builder<T> {
+        public withSupportedGameSystem(value: string): Builder {
             this.supportedGameSystems.push(value);
             return this;
         }
 
-        public withEnableHint(value: string): Builder<T> {
+        public withEnableHint(value: string): Builder {
             this.enableHint = value;
             return this;
         }
 
-        public isEnabled(value: boolean): Builder<T> {
+        public isEnabled(value: boolean): Builder {
             this.enabled = value;
             return this;
         }
 
-        withDescription(value: string): Builder<T> {
+        withDescription(value: string): Builder {
             this.description = value;
             return this;
         }
 
-        public withEssence(value: EssenceDefinition): Builder<T> {
+        public withEssence(value: EssenceDefinition): Builder {
             this.essences.push(value);
             return this;
         }
 
-        public withEssences(value: EssenceDefinition[]): Builder<T> {
+        public withEssences(value: EssenceDefinition[]): Builder {
             this.essences = value;
             return this;
         }

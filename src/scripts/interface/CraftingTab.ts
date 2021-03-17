@@ -139,7 +139,7 @@ class CraftingTab {
 
             console.log(`Craft for system ${craftingSystemId} with ${hopperContents.length} components`);
 
-            const craftingSystem: CraftingSystem<{}> = FabricateApplication.systems.getSystemByCompendiumPackKey(craftingSystemId);
+            const craftingSystem: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(craftingSystemId);
             const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByPartId(hopperItem.entryId));
 
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
@@ -167,7 +167,7 @@ class CraftingTab {
 
         this._sheetHtml.find('.actor-recipe-crafting').click(async () => {
             const recipeId = await this._actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
-            const craftingSystem: CraftingSystem<{}> = FabricateApplication.systems.getSystemByPartId(recipeId);
+            const craftingSystem: CraftingSystem = FabricateApplication.systems.getSystemByPartId(recipeId);
             const recipe = craftingSystem.getRecipeByPartId(recipeId);
             const inventory = FabricateApplication.inventories.getFor(this._actor.id);
             await craftingSystem.craft(this._actor, inventory, recipe);

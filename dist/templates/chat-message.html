@@ -12,9 +12,9 @@
                 {{#each results}}
                 <li>
                     <div class="component">
-                        <span class="quantity">{{quantityChanged}}</span>
-                        <span class="name">{{updatedRecord.fabricateItem.name}}</span>
-                        <img src="{{updatedRecord.fabricateItem.imageUrl}}" title="{{updatedRecord.fabricateItem.name}}">
+                        <span class="quantity">{{quantity}}</span>
+                        <span class="name">{{itemType.name}}</span>
+                        <img src="{{itemType.imageUrl}}" title="{{itemType.name}}">
                     </div>
                 </li>
                 {{/each}}

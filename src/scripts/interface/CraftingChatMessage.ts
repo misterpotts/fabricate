@@ -1,10 +1,11 @@
-import {FabricationOutcome} from "../core/FabricationOutcome";
-import {InventoryModification} from "../game/Inventory";
-import {CraftingComponent} from "../core/CraftingComponent";
+import {FabricationOutcome, OutcomeType} from "../core/FabricationOutcome";
+import {FabricationAction} from "../core/FabricationAction";
+import {CraftingError} from "../error/CraftingError";
 
 class CraftingChatMessage {
 
-    private static readonly _fabricateErrorIconUrl = 'modules/fabricate/assets/caution.svg';
+    private static readonly _unexpectedErrorIconUrl = 'modules/fabricate/assets/caution.svg';
+    private static readonly _craftingFailureIconUrl = 'modules/fabricate/assets/fabricate-error.png';
     private static readonly _fabricateFireIconUrl = 'modules/fabricate/assets/fabricate-fire.png';
     private static readonly _fabricateEarthIconUrl = 'modules/fabricate/assets/fabricate-earth.png';
     private static readonly _fabricateWaterIconUrl = 'modules/fabricate/assets/fabricate-water.png';
@@ -19,11 +20,16 @@ class CraftingChatMessage {
     private readonly _cardTitle: string;
     private readonly _cardContent: string;
     private readonly _cardFooterParts: string[];
-    private readonly _addedItems: InventoryModification<CraftingComponent>[];
+    private readonly _addedItems: FabricationAction<Item.Data>[];
     private readonly _cardImageUrl: string;
     private readonly _cardImageTitle: string;
 
-    constructor(cardTitle: string, cardContent: string, cardFooterParts: string[], addedItems?: InventoryModification<CraftingComponent>[], cardImageUrl?: string, cardImageTitle?: string) {
+    constructor(cardTitle: string,
+                cardContent: string,
+                cardFooterParts: string[],
+                addedItems?: FabricationAction<Item.Data>[],
+                cardImageUrl?: string,
+                cardImageTitle?: string) {
         this._cardTitle = cardTitle;
         this._cardContent = cardContent;
         this._addedItems = addedItems;
@@ -32,19 +38,25 @@ class CraftingChatMessage {
         this._cardImageTitle = cardImageTitle;
     }
 
-    public static fromFabricationError(error: Error) {
-        return new CraftingChatMessage('Crafting error', error.message, [], [], CraftingChatMessage._fabricateErrorIconUrl, 'Something went wrong');
+    public static fromFabricationError(error: CraftingError) {
+        return new CraftingChatMessage('Crafting error', error.message, [], [], CraftingChatMessage._craftingFailureIconUrl, 'Crafting ');
+    }
+
+    static fromUnexpectedError(error: Error) {
+        return new CraftingChatMessage('Something went wrong', error.message, [], [], CraftingChatMessage._unexpectedErrorIconUrl, 'Oops!');
     }
 
     public static fromFabricationOutcome(outcome: FabricationOutcome): CraftingChatMessage {
-        const footerParts: string[] = ['Removed:'].concat(outcome.removedComponents);
-        return new CraftingChatMessage(outcome.title, outcome.description, footerParts, outcome.addedItems);
+        const footerParts: string[] = outcome.removedComponents && outcome.removedComponents.length > 0 ? ['Removed:'].concat(outcome.removedComponents) : ['No components were removed'];
+        const cardImageUrl = outcome.type === OutcomeType.SUCCESS ? CraftingChatMessage.randomCardImageUrl : CraftingChatMessage._craftingFailureIconUrl;
+        return new CraftingChatMessage(outcome.title, outcome.description, footerParts, outcome.addedItems, cardImageUrl);
     }
 
     get cardImageUrl() {
-        if (this._cardImageUrl) {
-            return this._cardImageUrl;
-        }
+        return this._cardImageUrl;
+    }
+
+    static get randomCardImageUrl() {
         const selectedImageIndex = Math.floor(Math.random() * CraftingChatMessage._defaultImages.length);
         return CraftingChatMessage._defaultImages[selectedImageIndex];
     }

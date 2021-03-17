@@ -48,7 +48,7 @@ class EssenceCombiner<T extends Item.Data> {
         this.validate(components);
         const effects: AlchemicalEffect<T>[] = this.determineAlchemicalEffectsForComponents(components);
         if (!effects ||effects.length === 0) {
-            throw new AlchemyError('No Alchemical Effects were produced by mixing the provided Components. ', components, false);
+            throw new AlchemyError('No Alchemical Effects were produced by mixing the provided Components. ', components, true);
         }
         const orderedEffects: AlchemicalEffect<T>[] = this.orderAlchemicalEffects(effects);
         return this.applyEffectsToBaseItem(orderedEffects, baseItemData);
