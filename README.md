@@ -1,6 +1,8 @@
 ![](https://img.shields.io/badge/Foundry-v0.7.9-informational)
 <!--- Downloads @ Latest Badge -->
-![Latest Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/latest/module.zip)
+![Latest Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/latest/total?sort=semver&style=for-the-badge)
+<!--- Downloads @ Latest Badge -->
+![Total Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/total?label=total%20downloads&style=for-the-badge)
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->
@@ -26,13 +28,17 @@ Crafting from components containing essences without a recipe.
 
 The most recent changes to Fabricate are documented here.
 
-## Version 0.5.0
+## Version 0.5.6
 
 - The Actor crafting tab now lists owned and known recipes 
 - Known and owned recipes with sufficient ingredients can be crafted from the actor crafting tab
 - Known and owned recipes with insufficient ingredients are disabled in the select box
 - Crafting results are now written to the game chat  
 - Refactored the Fabricator significantly to enable crafting checks, failure outcomes and other upcoming features
+- Chat messages are significantly improved 
+- Crafting tab no longer lists unusable items when crafting from components to combine essences 
+- Crafting tab no longer lists recipes to craft if none can be crafted
+- Recipe tab no longer allows attempting to craft recipes with insufficient owned components 
 
 ## Version 0.4.0
 - The D&D 5E Actor Sheet now displays a crafting tab for systems that support 5E
