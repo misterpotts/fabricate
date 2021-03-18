@@ -41,6 +41,7 @@
     "./lang/**",
     "./scripts/**",
     "./styles/**",
+    "./packs/**",
     "./templates/**",
     "./module.json",
     "./README.md"
