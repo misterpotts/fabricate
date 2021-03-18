@@ -12,6 +12,7 @@ class ItemRecipeTab {
     private _sheetApplication: any;
     private _sheetHtml: any;
     private readonly _item: any;
+    private readonly _owned: boolean;
     private readonly _recipe: Recipe;
     private readonly _craftingSystem: CraftingSystem;
     private readonly _inventory: Inventory<Item.Data>;
@@ -45,9 +46,12 @@ class ItemRecipeTab {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
         if (this._item.isOwned) {
+            this._owned = true;
             const actorId: string = this._item.actor.id;
             this._actor = game.actors.get(actorId);
             this._inventory = FabricateApplication.inventories.getFor(this._actor.id);
+        } else {
+            this._owned = false;
         }
         const partId: string = itemApplication.item.data.flags.fabricate.identity.partId;
         this._craftingSystem = FabricateApplication.systems.getSystemByPartId(partId);
@@ -61,7 +65,7 @@ class ItemRecipeTab {
     }
 
     private async render(): Promise<void> {
-        const isCraftable: boolean = this._inventory.hasAllIngredientsFor(this._recipe);
+        const isCraftable = this._owned ? this._inventory.hasAllIngredientsFor(this._recipe) : false;
         const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item, system: this._craftingSystem, isCraftable: isCraftable});
         const element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {

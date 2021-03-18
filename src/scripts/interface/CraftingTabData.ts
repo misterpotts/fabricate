@@ -132,7 +132,7 @@ class CraftingTabData {
                 hasCraftableRecipe: true
             }
         } else {
-            await this._actor.unsetFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+            // await this._actor.unsetFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
             if (enabledRecipes.size === 0) {
                 return {
                     recipes: disabledRecipes,
@@ -142,7 +142,7 @@ class CraftingTabData {
             const craftableRecipes: RecipeData[] = Array.from(enabledRecipes.values());
             const defaultRecipe: RecipeData = craftableRecipes[0];
             defaultRecipe.selected = true;
-            await this._actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe, defaultRecipe.partId);
+            //await this._actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe, defaultRecipe.partId);
             return {
                 recipes: craftableRecipes.concat(disabledRecipes),
                 hasCraftableRecipe: true
