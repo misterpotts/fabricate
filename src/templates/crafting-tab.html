@@ -21,6 +21,7 @@
     </div>
     <!-- IF Recipes are available in the inventory -->
     <div class="recipes">
+        {{#if recipeCrafting.hasCraftableRecipe}}
         <div class="description">
             <h2>Craftable Recipes</h2>
             <p>The following Recipes are either known by your character or are on their person. If you have sufficient
@@ -30,7 +31,7 @@
             <label>Select an available recipe</label>
             <div class="form-fields" style="flex: 6">
                 <select name="fabricate.crafting.selectedRecipe">
-                    {{#each recipes}}
+                    {{#each recipeCrafting.recipes}}
                         {{#if known}}
                             {{#if craftable}}
                                 {{#if selected}}
@@ -61,6 +62,14 @@
                 </a>
             </div>
         </div>
+        {{else}}
+        <div>
+            <div class="description">
+                <h2>Craftable Recipes</h2>
+                <p>You do not know or own any recipes with sufficient ingredients to craft. </p>
+            </div>
+        </div>
+        {{/if}}
     </div>
     <!-- END IF -->
     <!-- IF Essence-based crafting without a recipe is supported -->

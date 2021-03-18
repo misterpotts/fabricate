@@ -13,7 +13,9 @@ class ItemRecipeTab {
     private _sheetHtml: any;
     private readonly _item: any;
     private readonly _recipe: Recipe;
-    private readonly _craftingSystem: CraftingSystem<{}>;
+    private readonly _craftingSystem: CraftingSystem;
+    private readonly _inventory: Inventory<Item.Data>;
+    private readonly  _actor: Actor;
     private _suppressedInNav: boolean = false;
     private static tabKey: string = 'fabricate-recipe';
 
@@ -42,6 +44,11 @@ class ItemRecipeTab {
     constructor(itemApplication: any) {
         this._sheetApplication = itemApplication;
         this._item = itemApplication.item;
+        if (this._item.isOwned) {
+            const actorId: string = this._item.actor.id;
+            this._actor = game.actors.get(actorId);
+            this._inventory = FabricateApplication.inventories.getFor(this._actor.id);
+        }
         const partId: string = itemApplication.item.data.flags.fabricate.identity.partId;
         this._craftingSystem = FabricateApplication.systems.getSystemByPartId(partId);
         this._recipe = this._craftingSystem.getRecipeByPartId(partId);
@@ -54,7 +61,8 @@ class ItemRecipeTab {
     }
 
     private async render(): Promise<void> {
-        const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item, system: this._craftingSystem});
+        const isCraftable: boolean = this._inventory.hasAllIngredientsFor(this._recipe);
+        const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item, system: this._craftingSystem, isCraftable: isCraftable});
         const element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);
@@ -83,11 +91,8 @@ class ItemRecipeTab {
 
     private handleItemSheetEvents(): void {
 
-        this._sheetHtml.find('.craft-button').click(async (event: any) => {
-            const actorId: string = event.target.getAttribute('data-actor-id');
-            const actor: Actor = game.actors.get(actorId);
-            const inventory: Inventory = FabricateApplication.inventories.getFor(actorId);
-            await this._craftingSystem.craft(actor, inventory, this._recipe);
+        this._sheetHtml.find('.craft-button').click(async () => {
+            await this._craftingSystem.craft(this._actor, this._inventory, this._recipe);
             this._suppressedInNav = true;
             await this.render();
         });

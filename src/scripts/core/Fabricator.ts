@@ -171,12 +171,12 @@ class Fabricator<T extends Item.Data> {
                     .build();
             });
             if (!this.isCraftableFromEssencesInIngredients(recipe, availableIngredients)) {
-                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or event just asking your DM nicely. `, false);
+                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or even just asking your GM nicely. `, false);
             }
             const craftingComponentCombinations = this.analyzeCombinationsForEssences(availableIngredients, recipe.essences);
             const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
             if (!selectedCombination || selectedCombination.length === 0) {
-                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or event just asking your DM nicely. `, false)
+                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or even just asking your GM nicely. `, false)
             }
             const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, FabricationActionType.REMOVE);
             input.push(...consumedComponents);
@@ -187,6 +187,7 @@ class Fabricator<T extends Item.Data> {
 
         await FabricationHelper.applyResults(actions, inventory);
         return FabricationOutcome.builder()
+            .withRecipe(recipe)
             .withActions(actions)
             .withOutcomeType(OutcomeType.SUCCESS)
             .build();

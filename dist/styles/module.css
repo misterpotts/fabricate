@@ -70,7 +70,9 @@
   padding: 0 10px;
 }
 .fabricate-recipe .controls .craft-button,
-.fabricate-crafting .controls .craft-button {
+.fabricate-crafting .controls .craft-button,
+.fabricate-recipe .controls .craft-button-disabled,
+.fabricate-crafting .controls .craft-button-disabled {
   width: 100%;
   text-align: center;
   margin: 8px 1px 0px 1px;

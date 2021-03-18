@@ -27,4 +27,9 @@ interface RecipeData {
     selected: boolean;
 }
 
-export {InventoryRecordData, CraftingSystemData, CraftingSystemInfo, RecipeData}
+interface RecipeCraftingData {
+    recipes: RecipeData[],
+    hasCraftableRecipe: boolean;
+}
+
+export {InventoryRecordData, CraftingSystemData, CraftingSystemInfo, RecipeData, RecipeCraftingData}

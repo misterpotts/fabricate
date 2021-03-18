@@ -4,7 +4,13 @@ import {Recipe} from "../core/Recipe";
 import {InventoryRecord} from "../game/InventoryRecord";
 import Properties from "../Properties";
 import {CraftingComponent} from "../core/CraftingComponent";
-import {CraftingSystemData, CraftingSystemInfo, InventoryRecordData, RecipeData} from "./InterfaceDataTypes";
+import {
+    CraftingSystemData,
+    CraftingSystemInfo,
+    InventoryRecordData,
+    RecipeCraftingData,
+    RecipeData
+} from "./InterfaceDataTypes";
 
 interface InventoryContents {
     ownedComponents: InventoryRecordData[];
@@ -18,7 +24,7 @@ class CraftingTabData {
     private readonly _actor: Actor;
 
     private _craftingSystemData: CraftingSystemData;
-    private _recipeData: RecipeData[] = [];
+    private _recipeData: RecipeCraftingData;
     private _inventoryContents: InventoryContents;
 
     constructor(craftingSystems: CraftingSystem[], inventory: Inventory<Item.Data>, actor: Actor) {
@@ -31,7 +37,7 @@ class CraftingTabData {
         return this._craftingSystemData;
     }
 
-    get recipes(): RecipeData[] {
+    get recipeCrafting(): RecipeCraftingData {
         return this._recipeData;
     }
 
@@ -89,26 +95,59 @@ class CraftingTabData {
         }
     }
 
-    async prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory<Item.Data>): Promise<RecipeData[]> {
+    async prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory<Item.Data>): Promise<RecipeCraftingData> {
         const storedKnownRecipes: string[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.compendiumPackKey));
         const knownRecipes: string[] = storedKnownRecipes ? storedKnownRecipes : [];
-        const recipeData: RecipeData[] = [];
-        const selectedRecipeId: string = await this._actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+        const enabledRecipes: Map<string, RecipeData> = new Map();
+        const disabledRecipes: RecipeData[] = [];
         craftingSystem.recipes.forEach((recipe: Recipe) => {
             const isKnown: boolean = knownRecipes.includes(recipe.partId);
             const isOwned: boolean = inventory.containsPart(recipe.partId);
             const isCraftable: boolean = (isKnown || isOwned) ? inventory.hasAllIngredientsFor(recipe) : false;
-            const isSelected: boolean = recipe.partId === selectedRecipeId;
-            recipeData.push({
-                name: recipe.name,
-                partId: recipe.partId,
-                known: isKnown,
-                owned: isOwned,
-                craftable: isCraftable,
-                selected: isSelected
-            });
+            if (isCraftable) {
+                enabledRecipes.set(recipe.partId, {
+                    name: recipe.name,
+                    partId: recipe.partId,
+                    known: isKnown,
+                    owned: isOwned,
+                    craftable: isCraftable,
+                    selected: false
+                });
+            } else {
+                disabledRecipes.push({
+                    name: recipe.name,
+                    partId: recipe.partId,
+                    known: isKnown,
+                    owned: isOwned,
+                    craftable: isCraftable,
+                    selected: false
+                });
+            }
         });
-        return recipeData;
+        const storedRecipeId: string = await this._actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+        if (enabledRecipes.has(storedRecipeId)) {
+            enabledRecipes.get(storedRecipeId).selected = true;
+            return {
+                recipes: Array.from(enabledRecipes.values()).concat(disabledRecipes),
+                hasCraftableRecipe: true
+            }
+        } else {
+            await this._actor.unsetFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+            if (enabledRecipes.size === 0) {
+                return {
+                    recipes: disabledRecipes,
+                    hasCraftableRecipe: false
+                }
+            }
+            const craftableRecipes: RecipeData[] = Array.from(enabledRecipes.values());
+            const defaultRecipe: RecipeData = craftableRecipes[0];
+            defaultRecipe.selected = true;
+            await this._actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe, defaultRecipe.partId);
+            return {
+                recipes: craftableRecipes.concat(disabledRecipes),
+                hasCraftableRecipe: true
+            }
+        }
     }
 
     prepareInventoryDataForSystem(craftingSystem: CraftingSystem, actor: Actor, inventory: Inventory<Item.Data>): InventoryContents {
