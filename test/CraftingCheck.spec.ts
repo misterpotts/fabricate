@@ -157,14 +157,14 @@ describe('Crafting Check 5E |', () => {
                             int: { mod: 1 }
                         },
                         attributes: {
-                            traits: {
-                                toolProf: {
-                                    value: ['herb', 'thief'],
-                                    custom: 'custom, alchemy'
-                                }
-                            },
                             prof: 2
-                        }
+                        },
+                        traits: {
+                            toolProf: {
+                                value: ['herb', 'thief'],
+                                custom: 'custom, alchemy'
+                            }
+                        },
                     }
                 },
                 items: [
@@ -205,14 +205,14 @@ describe('Crafting Check 5E |', () => {
                             int: { mod: 1 }
                         },
                         attributes: {
-                            traits: {
-                                toolProf: {
-                                    value: ['herb', 'thief'],
-                                    custom: 'custom, alchemy'
-                                }
-                            },
                             prof: 2
-                        }
+                        },
+                        traits: {
+                            toolProf: {
+                                value: ['herb', 'thief'],
+                                custom: 'custom, alchemy'
+                            }
+                        },
                     }
                 },
                 items: []
@@ -251,14 +251,14 @@ describe('Crafting Check 5E |', () => {
                             int: { mod: 1 }
                         },
                         attributes: {
-                            traits: {
-                                toolProf: {
-                                    value: ['herb', 'thief'],
-                                    custom: 'custom'
-                                }
-                            },
                             prof: 2
-                        }
+                        },
+                        traits: {
+                            toolProf: {
+                                value: ['herb', 'thief'],
+                                custom: 'custom'
+                            }
+                        },
                     }
                 },
                 items: [
@@ -299,14 +299,14 @@ describe('Crafting Check 5E |', () => {
                             int: { mod: 1 }
                         },
                         attributes: {
-                            traits: {
-                                toolProf: {
-                                    value: ['herb', 'thief'],
-                                    custom: 'custom'
-                                }
-                            },
                             prof: 2
-                        }
+                        },
+                        traits: {
+                            toolProf: {
+                                value: ['herb', 'thief'],
+                                custom: 'custom'
+                            }
+                        },
                     }
                 },
                 items: []

@@ -64,8 +64,8 @@ abstract class CraftingCheck<T extends Actor> {
         this._exceedThreshold = exceedThreshold;
     }
 
-    public perform(actorData: T, components: CraftingComponent[]): CraftingCheckResult {
-        const rollTerm: DiceTerm = this.constructRollTerm(this.getRollTermData(actorData));
+    public perform(actor: T, components: CraftingComponent[]): CraftingCheckResult {
+        const rollTerm: DiceTerm = this.constructRollTerm(this.getRollTermData(actor));
         // @ts-ignore
         const rolled: {result: number, active: boolean} = rollTerm.roll();
         const successThreshold = this.getSuccessThreshold(components);
@@ -150,9 +150,9 @@ class CraftingCheck5e extends CraftingCheck<Actor5e>{
         if (!tool) {
             return this.convertToExpression(craftingAbility.mod);
         }
-        const allToolProficiencies: string[] = actor.data.data.attributes.traits.toolProf.custom.split(',')
+        const allToolProficiencies: string[] = actor.data.data.traits.toolProf.custom.split(',')
             .map((customProficiency: string) => customProficiency.trim())
-            .concat(actor.data.data.attributes.traits.toolProf.value);
+            .concat(actor.data.data.traits.toolProf.value);
         const toolProficiency: string = allToolProficiencies
             .find((toolProficiency: string) => tool.proficiencyLabel.localeCompare(toolProficiency, undefined, {sensitivity: 'base'}) === 0);
         if (!toolProficiency) {

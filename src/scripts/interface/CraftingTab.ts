@@ -14,11 +14,12 @@ class CraftingTab {
     private _sheetHtml: any;
     private readonly _inventory: Inventory<Item.Data>;
     private _suppressedInNav: boolean = false;
-    private readonly _actor: Actor;
+    private readonly _actor: Actor<Actor.Data>;
     private static tabKey: string = 'fabricate-crafting';
 
     public static bind(actorApplication: any, sheetHtml: HTMLElement, eventData: any): void {
-        const actor: Actor = game.actors.get(eventData.actor._id);
+        // @ts-ignore
+        const actor: Actor<Actor.Data> = game.actors.get(eventData.actor._id);
         if (!game.user.isGM || !actor.owner ) {
             return;
         }
@@ -30,7 +31,7 @@ class CraftingTab {
         tab.init(sheetHtml);
     }
 
-    constructor(actorApplication: any, actor: Actor) {
+    constructor(actorApplication: any, actor: Actor<Actor.Data>) {
         this._sheetApplication = actorApplication;
         this._actor = actor;
         let inventory = FabricateApplication.inventories.getFor(actor.id);

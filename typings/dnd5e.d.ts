@@ -101,6 +101,29 @@ interface AbilityDefinition5e {
 
 interface ActorData5e extends Actor.Data {
     abilities: Record<AbilityType5e, AbilityDefinition5e>;
+    traits: {
+        size: string,
+        di: any,
+        dr: any,
+        dv: any,
+        ci: any,
+        languages: {
+            value: string[],
+            custom: ''
+        }
+        weaponProf: {
+            value: string[],
+            custom: ''
+        }
+        armorProf: {
+            value: string[],
+            custom: ''
+        }
+        toolProf: {
+            value: ToolProficiency5e[],
+            custom: CustomToolProficiency5e | ''
+        }
+    },
     attributes: {
         ac: {
             value: number;
@@ -154,29 +177,6 @@ interface ActorData5e extends Actor.Data {
         prof: number,
         spelldc: number,
         details: any,
-        traits: {
-            size: string,
-            di: any,
-            dr: any,
-            dv: any,
-            ci: any,
-            languages: {
-                value: string[],
-                custom: ''
-            }
-            weaponProf: {
-                value: string[],
-                custom: ''
-            }
-            armorProf: {
-                value: string[],
-                custom: ''
-            }
-            toolProf: {
-                value: ToolProficiency5e[],
-                custom: CustomToolProficiency5e | ''
-            }
-        },
         currency: {
             cp: number
             sp: number,

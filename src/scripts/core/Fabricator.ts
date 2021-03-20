@@ -116,7 +116,7 @@ class Fabricator<I extends Item.Data, A extends Actor> {
         }
 
         if (this._craftingCheck) {
-            const craftingCheckResult: CraftingCheckResult = this.craftingCheck.perform(actor.data.data, components);
+            const craftingCheckResult: CraftingCheckResult = this.craftingCheck.perform(actor, components);
             console.log(craftingCheckResult.outcome);
             switch (craftingCheckResult.outcome) {
                 case OutcomeType.SUCCESS:
@@ -150,6 +150,7 @@ class Fabricator<I extends Item.Data, A extends Actor> {
                 const alchemyError: AlchemyError = <AlchemyError>error;
                 const actions: FabricationAction<I>[] = [];
                 if (alchemyError.componentsConsumed) {
+                    // @ts-ignore
                     actions.push(...removeSuppliedComponents);
                     await FabricationHelper.applyResults(removeSuppliedComponents, inventory);
                 }
@@ -165,7 +166,7 @@ class Fabricator<I extends Item.Data, A extends Actor> {
 
     // todo - add actor as arg and crafting check
     public async fabricateFromRecipe(inventory: Inventory<I>, recipe: Recipe): Promise<FabricationOutcome> {
-        const ownedComponents: InventoryRecord<CraftingComponent>[] = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
+        const ownedComponents: InventoryRecord<CraftingComponent, Item>[] = inventory.components.filter((record: InventoryRecord<CraftingComponent, Item>) => record.fabricateItem.systemId === recipe.systemId);
 
         const input: FabricationAction<I>[] = [];
         const namedIngredientsByPartId: Map<string, Ingredient> = new Map();
@@ -183,7 +184,7 @@ class Fabricator<I extends Item.Data, A extends Actor> {
         }
 
         if (recipe.essences && recipe.essences.length > 0) {
-            const availableIngredients: Ingredient[] = ownedComponents.map((componentRecord: InventoryRecord<CraftingComponent>) => {
+            const availableIngredients: Ingredient[] = ownedComponents.map((componentRecord: InventoryRecord<CraftingComponent, Item>) => {
                 if (namedIngredientsByPartId.has(componentRecord.fabricateItem.partId)) {
                     const namedIngredient: Ingredient = namedIngredientsByPartId.get(componentRecord.fabricateItem.partId);
                     const availableQuantityForEssenceExtraction: number = componentRecord.totalQuantity > namedIngredient.quantity ? componentRecord.totalQuantity - namedIngredient.quantity : 0;
@@ -208,6 +209,7 @@ class Fabricator<I extends Item.Data, A extends Actor> {
                 throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or even just asking your GM nicely. `, false)
             }
             const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE);
+            // @ts-ignore
             input.push(...consumedComponents);
         }
 
