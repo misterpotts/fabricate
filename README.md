@@ -43,9 +43,9 @@ The most recent changes to Fabricate are documented here.
 ## Version 0.4.0
 - The D&D 5E Actor Sheet now displays a crafting tab for systems that support 5E
 - The Actor5E Crafting Tab lists:
-- - the total number of crafting components across any number and combination of inventory items for the same
-- - the craftable recipes from the selected crafting system
-- - the crafting systems thatcan be selected to craft from
+-- the total number of crafting components across any number and combination of inventory items for the same
+-- the craftable recipes from the selected crafting system
+-- the crafting systems thatcan be selected to craft from
 - The Actor5E Crafting Tab supports crafting without a recipe for Alchemist's Supplies (v1.6 Alchemical Bombs only)
 
 If you'd like to be involved I'd love to have some help! I'm always happy to talk to you about how people can contribute.
