@@ -1,14 +1,16 @@
 import {FabricateItemType} from "./CompendiumData";
 import {FabricateItem} from "../core/FabricateItem";
 
-class InventoryRecord<T extends FabricateItem> {
+// todo - inventory records don't care about the inner workings of the fabricate items they describe and nor does the inventory.
+//  Push the first generic parameter down to the property as 'Fabricate' and rework Fabricate items to stop storing components in duplicate
+class InventoryRecord<F extends FabricateItem, I extends Item> {
     private readonly _actor: Actor;
-    private _itemsOfType: Item[];
-    private readonly _fabricateItem: T;
+    private _itemsOfType: I[];
+    private readonly _fabricateItem: F;
     private readonly _fabricateItemType: FabricateItemType;
     private _totalQuantity: number;
 
-    constructor(builder: InventoryRecord.Builder<T>) {
+    constructor(builder: InventoryRecord.Builder<F, I>) {
         this._actor = builder.actor;
         this._itemsOfType = builder.itemsOfType;
         this._totalQuantity = builder.totalQuantity;
@@ -16,18 +18,18 @@ class InventoryRecord<T extends FabricateItem> {
         this._fabricateItemType = builder.fabricateItemType;
     }
 
-    public static builder<T extends FabricateItem>(): InventoryRecord.Builder<T> {
-        return new InventoryRecord.Builder<T>();
+    public static builder<F extends FabricateItem, I extends Item>(): InventoryRecord.Builder<F, I> {
+        return new InventoryRecord.Builder<F, I>();
     }
 
-    public combineWith(other: InventoryRecord<T>): InventoryRecord<T> {
+    public combineWith(other: InventoryRecord<F, I>): InventoryRecord<F, I> {
         if (!this.fabricateItem.sharesType(other.fabricateItem)) {
             throw new Error(`Unable to combine Inventory Records for different Fabricate Item types: ${this.fabricateItem.partId} | ${other.fabricateItem.partId}`);
         }
         if (this.actor.id !== other.actor.id) {
             throw new Error(`Unable to combine inventory records from different Actors: ${this.actor.id} | ${other.actor.id}`);
         }
-        return InventoryRecord.builder<T>()
+        return InventoryRecord.builder<F, I>()
             .withFabricateItem(this.fabricateItem)
             .withFabricateItemType(this.fabricateItemType)
             .withActor(this.actor)
@@ -41,11 +43,11 @@ class InventoryRecord<T extends FabricateItem> {
         return this._actor;
     }
 
-    get itemsOfType(): Item[] {
+    get itemsOfType(): I[] {
         return this._itemsOfType;
     }
 
-    set itemsOfType(value: Item[]) {
+    set itemsOfType(value: I[]) {
         this._itemsOfType = value;
     }
 
@@ -57,7 +59,7 @@ class InventoryRecord<T extends FabricateItem> {
         this._totalQuantity = value;
     }
 
-    get fabricateItem(): T {
+    get fabricateItem(): F {
         return this._fabricateItem;
     }
 
@@ -67,44 +69,44 @@ class InventoryRecord<T extends FabricateItem> {
 }
 
 namespace InventoryRecord {
-    export class Builder<T extends FabricateItem> {
+    export class Builder<F extends FabricateItem, I extends Item> {
         public actor!: Actor;
-        public itemsOfType: Item[] = [];
-        public fabricateItem!: T;
+        public itemsOfType: I[] = [];
+        public fabricateItem!: F;
         public totalQuantity!: number;
         public fabricateItemType: FabricateItemType;
 
-        public withActor(value: Actor): Builder<T> {
+        public withActor(value: Actor): Builder<F, I> {
             this.actor = value;
             return this;
         }
 
-        public withItem(value: Item): Builder<T> {
+        public withItem(value: I): Builder<F, I> {
             this.itemsOfType.push(value);
             return this;
         }
 
-        public withItems(value: Item[]): Builder<T> {
+        public withItems(value: I[]): Builder<F, I> {
             this.itemsOfType.push(...value);
             return this;
         }
 
-        public withFabricateItem(value: T): Builder<T> {
+        public withFabricateItem(value: F): Builder<F, I> {
             this.fabricateItem = value;
             return this;
         }
 
-        public withTotalQuantity(value: number): Builder<T> {
+        public withTotalQuantity(value: number): Builder<F, I> {
             this.totalQuantity = value;
             return this;
         }
 
-        public withFabricateItemType(value: FabricateItemType): Builder<T> {
+        public withFabricateItemType(value: FabricateItemType): Builder<F, I> {
             this.fabricateItemType = value;
             return this;
         }
 
-        public build(): InventoryRecord<T> {
+        public build(): InventoryRecord<F, I> {
             return new InventoryRecord(this);
         }
 

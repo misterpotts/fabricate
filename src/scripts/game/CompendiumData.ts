@@ -1,4 +1,7 @@
-import {FabricationActionType} from "../core/FabricationAction";
+enum ActionType {
+    ADD = 'ADD',
+    REMOVE = 'REMOVE'
+}
 
 enum FabricateItemType {
     RECIPE = 'RECIPE',
@@ -21,7 +24,7 @@ interface FabricateIngredientFlags {
 }
 
 interface FabricateResultFlags {
-    action: FabricationActionType,
+    action: ActionType,
     partId: string,
     quantity: number
 }
@@ -37,4 +40,4 @@ interface FabricateCompendiumData {
     component?: FabricateComponentFlags;
 }
 
-export {FabricateCompendiumData, FabricateItemType, FabricateIngredientFlags, FabricateResultFlags, FabricateComponentFlags, CompendiumEntry}
+export {FabricateCompendiumData, FabricateItemType, FabricateIngredientFlags, FabricateResultFlags, FabricateComponentFlags, CompendiumEntry, ActionType}

@@ -5,13 +5,15 @@ import {CraftingSystem, EssenceDefinition} from "../src/scripts/core/CraftingSys
 import {Recipe} from "../src/scripts/core/Recipe";
 import {Ingredient} from "../src/scripts/core/Ingredient";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
-import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
+import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {GameSystemType} from "../src/scripts/core/GameSystemType";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
 import {Inventory} from "../src/scripts/game/Inventory";
 import {InventoryRecord} from "../src/scripts/game/InventoryRecord";
 import {FabricationOutcome, OutcomeType} from "../src/scripts/core/FabricationOutcome";
+import {CraftingCheck5e} from "../src/scripts/core/CraftingCheck";
+import {ActionType} from "../src/scripts/game/CompendiumData";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -36,7 +38,7 @@ describe('Crafting System |', () => {
 
         it('Should create a Crafting System', () => {
 
-            const mockFabricator = <Fabricator<Item.Data>><unknown>{
+            const mockFabricator = <Fabricator<Item.Data, Actor5e>><unknown>{
                 fabricateFromComponents: Sandbox.stub(),
                 fabricateFromRecipe: Sandbox.stub()
             };
@@ -55,6 +57,11 @@ describe('Crafting System |', () => {
                 .withEssence(new EssenceDefinition('Negative Energy', 'The essence of death and destruction', 'moon'))
                 .withSupportedGameSystem(GameSystemType.DND5E)
                 .withFabricator(mockFabricator)
+                .withCraftingCheck(CraftingCheck5e.builder()
+                    .withAbility('int')
+                    .withBaseDC(6)
+                    .withIngredientDCModifier(2)
+                    .build())
                 .withRecipe(Recipe.builder()
                     .withName('Recipe: Mud Pie')
                     .withPartId('4iHqWSLTMFjPbpuI')
@@ -77,7 +84,7 @@ describe('Crafting System |', () => {
                             .build())
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withActionType(FabricationActionType.ADD)
+                        .withActionType(ActionType.ADD)
                         .withQuantity(1)
                         .withItemType(CraftingComponent.builder()
                             .withName('Mud Pie')
@@ -116,7 +123,7 @@ describe('Crafting System |', () => {
                         .isConsumed(true)
                         .build())
                     .withResult(FabricationAction.builder()
-                        .withActionType(FabricationActionType.ADD)
+                        .withActionType(ActionType.ADD)
                         .withQuantity(1)
                         .withItemType(CraftingComponent.builder()
                             .withName('Mud Pie')
@@ -174,7 +181,7 @@ describe('Crafting System |', () => {
                     .build())
                 .build();
             const mudPie = FabricationAction.builder()
-                .withActionType(FabricationActionType.ADD)
+                .withActionType(ActionType.ADD)
                 .withQuantity(1)
                 .withItemType(CraftingComponent.builder()
                     .withName('Mud Pie')
@@ -220,17 +227,17 @@ describe('Crafting System |', () => {
             mockInventory.remove.returns(true);
 
             const removeOneStick = FabricationAction.builder()
-                .withActionType(FabricationActionType.REMOVE)
+                .withActionType(ActionType.REMOVE)
                 .withQuantity(oneStick.quantity)
                 .withItemType(oneStick.component)
                 .build()
             const removeTwoMud = FabricationAction.builder()
-                .withActionType(FabricationActionType.REMOVE)
+                .withActionType(ActionType.REMOVE)
                 .withQuantity(twoMud.quantity)
                 .withItemType(twoMud.component)
                 .build()
             const addMudPie = FabricationAction.builder()
-                .withActionType(FabricationActionType.ADD)
+                .withActionType(ActionType.ADD)
                 .withQuantity(1)
                 .withItemType(mudPie)
                 .build()

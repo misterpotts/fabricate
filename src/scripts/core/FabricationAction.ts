@@ -1,16 +1,11 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {FabricateResultFlags} from "../game/CompendiumData";
+import {ActionType, FabricateResultFlags} from "../game/CompendiumData";
 import {FabricateItem} from "./FabricateItem";
-
-enum FabricationActionType {
-    ADD = 'ADD',
-    REMOVE = 'REMOVE'
-}
 
 class FabricationAction<T extends Item.Data> extends FabricateItem {
     private readonly _itemType: FabricateItem;
     private readonly _quantity: number;
-    private readonly _actionType: FabricationActionType;
+    private readonly _actionType: ActionType;
     private readonly _customItemData: T;
 
     constructor(builder: FabricationAction.Builder<T>) {
@@ -33,7 +28,7 @@ class FabricationAction<T extends Item.Data> extends FabricateItem {
         return this._quantity;
     }
 
-    get actionType(): FabricationActionType {
+    get actionType(): ActionType {
         return this._actionType;
     }
 
@@ -59,7 +54,7 @@ class FabricationAction<T extends Item.Data> extends FabricateItem {
     isValid(): boolean {
         return (this.quantity != null && this.quantity > 0)
             && (this.actionType != null)
-            && (this.actionType == FabricationActionType.ADD || this.actionType == FabricationActionType.REMOVE)
+            && (this.actionType == ActionType.ADD || this.actionType == ActionType.REMOVE)
             && this.itemType.isValid()
             && super.isValid();
     }
@@ -71,7 +66,7 @@ namespace FabricationAction {
 
         public itemType!: FabricateItem;
         public quantity!: number;
-        public actionType!: FabricationActionType;
+        public actionType!: ActionType;
         public customItemData: T;
 
         public build(): FabricationAction<T> {
@@ -88,7 +83,7 @@ namespace FabricationAction {
             return this;
         }
 
-        public withActionType(value: FabricationActionType): Builder<T> {
+        public withActionType(value: ActionType): Builder<T> {
             this.actionType = value;
             return this;
         }
@@ -101,4 +96,4 @@ namespace FabricationAction {
     }
 }
 
-export {FabricationAction, FabricationActionType}
+export {FabricationAction}

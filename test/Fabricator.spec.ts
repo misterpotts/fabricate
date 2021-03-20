@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import * as Sinon from "sinon";
 
 import {Recipe} from "../src/scripts/core/Recipe";
-import {FabricationAction, FabricationActionType} from "../src/scripts/core/FabricationAction";
+import {FabricationAction} from "../src/scripts/core/FabricationAction";
 import {CraftingComponent} from "../src/scripts/core/CraftingComponent";
 import {Inventory} from "../src/scripts/game/Inventory";
 import {Inventory5E} from "../src/scripts/dnd5e/Inventory5E";
@@ -12,10 +12,11 @@ import {FabricateItemType} from "../src/scripts/game/CompendiumData";
 import {EssenceCombiner} from "../src/scripts/core/EssenceCombiner";
 import {AlchemySpecification, Fabricator} from "../src/scripts/core/Fabricator";
 import {Ingredient} from "../src/scripts/core/Ingredient";
+import {ActionType} from "../src/scripts/game/CompendiumData";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-const mockInventory: Inventory<ItemData5e> = <Inventory5E><unknown>{
+const mockInventory: Inventory<Item.Data<ItemData5e>> = <Inventory5E><unknown>{
     containsIngredient: Sandbox.stub(),
     add: Sandbox.stub(),
     remove: Sandbox.stub(),
@@ -44,7 +45,7 @@ describe('Fabricator |', () => {
         .withEssences(['EARTH', 'EARTH'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(ironwoodHeart).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(ironwoodHeart).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const hydrathistle: CraftingComponent = CraftingComponent.builder()
         .withName('Hydrathistle')
@@ -54,7 +55,7 @@ describe('Fabricator |', () => {
         .withEssences(['WATER', 'WATER'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(hydrathistle).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(hydrathistle).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const voidroot: CraftingComponent = CraftingComponent.builder()
         .withName('Voidroot')
@@ -64,7 +65,7 @@ describe('Fabricator |', () => {
         .withEssences(['NEGATIVE_ENERGY'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(voidroot).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(voidroot).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const luminousCapDust: CraftingComponent = CraftingComponent.builder()
         .withName('Luminous Cap Dust')
@@ -73,7 +74,7 @@ describe('Fabricator |', () => {
         .withEssences(['FIRE', 'AIR'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(luminousCapDust).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(luminousCapDust).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const wispStalks: CraftingComponent = CraftingComponent.builder()
         .withName('Wisp Stalks')
@@ -82,7 +83,7 @@ describe('Fabricator |', () => {
         .withEssences(['AIR', 'AIR'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(wispStalks).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(wispStalks).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const fennelSilk: CraftingComponent = CraftingComponent.builder()
         .withName('Fennel Silk')
@@ -91,7 +92,7 @@ describe('Fabricator |', () => {
         .withEssences(['FIRE'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(fennelSilk).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(fennelSilk).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const wrackwortBulbs: CraftingComponent = CraftingComponent.builder()
         .withName('Wrackwort Bulbs')
@@ -100,7 +101,7 @@ describe('Fabricator |', () => {
         .withEssences(['EARTH', 'FIRE'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(wrackwortBulbs).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(wrackwortBulbs).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     const radiantSynthSeed: CraftingComponent = CraftingComponent.builder()
         .withName('Radiant Synthseed')
@@ -109,7 +110,7 @@ describe('Fabricator |', () => {
         .withEssences(['POSITIVE_ENERGY'])
         .build();
     // @ts-ignore
-    mockInventory.remove.withArgs(radiantSynthSeed).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+    mockInventory.remove.withArgs(radiantSynthSeed).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
     /* =======================================================================
      * Recipe Results
@@ -121,7 +122,7 @@ describe('Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .build();
     // @ts-ignore
-    mockInventory.add.withArgs(instantRope).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+    mockInventory.add.withArgs(instantRope).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
 
     const acid: CraftingComponent = CraftingComponent.builder()
         .withName('Acid')
@@ -129,7 +130,7 @@ describe('Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .build();
     // @ts-ignore
-    mockInventory.add.withArgs(acid).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+    mockInventory.add.withArgs(acid).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
 
     const flashbang: CraftingComponent = CraftingComponent.builder()
         .withName('Flashbang')
@@ -137,7 +138,7 @@ describe('Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .build();
     // @ts-ignore
-    mockInventory.add.withArgs(flashbang).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+    mockInventory.add.withArgs(flashbang).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
 
     /* =======================================================================
      * Recipes
@@ -149,7 +150,7 @@ describe('Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences(['EARTH', 'EARTH', 'WATER', 'WATER', 'NEGATIVE_ENERGY'])
         .withResult(FabricationAction.builder()
-            .withActionType(FabricationActionType.ADD)
+            .withActionType(ActionType.ADD)
             .withQuantity(1)
             .withItemType(instantRope)
             .build())
@@ -160,7 +161,7 @@ describe('Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences(['EARTH', 'FIRE', 'POSITIVE_ENERGY'])
         .withResult(FabricationAction.builder()
-            .withActionType(FabricationActionType.ADD)
+            .withActionType(ActionType.ADD)
             .withQuantity(1)
             .withItemType(acid)
             .build())
@@ -171,7 +172,7 @@ describe('Fabricator |', () => {
         .withSystemId('fabricate.alchemists-supplies-v11')
         .withEssences(['FIRE', 'AIR', 'AIR'])
         .withResult(FabricationAction.builder()
-            .withActionType(FabricationActionType.ADD)
+            .withActionType(ActionType.ADD)
             .withQuantity(1)
             .withItemType(flashbang)
             .build())
@@ -186,7 +187,7 @@ describe('Fabricator |', () => {
             .withSystemId(compendiumPackKey)
             .build()
         // @ts-ignore
-        mockInventory.remove.withArgs(mud).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+        mockInventory.remove.withArgs(mud).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
         const sticks: CraftingComponent = CraftingComponent.builder()
             .withName('Sticks')
@@ -194,7 +195,7 @@ describe('Fabricator |', () => {
             .withSystemId(compendiumPackKey)
             .build();
         // @ts-ignore
-        mockInventory.remove.withArgs(sticks).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.REMOVE});
+        mockInventory.remove.withArgs(sticks).returns(<InventoryModification<CraftingComponent>>{action: ActionType.REMOVE});
 
         const mudPie = CraftingComponent.builder()
             .withName('Mud Pie')
@@ -202,7 +203,7 @@ describe('Fabricator |', () => {
             .withSystemId(compendiumPackKey)
             .build();
         // @ts-ignore
-        mockInventory.add.withArgs(mudPie).returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+        mockInventory.add.withArgs(mudPie).returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
 
         const mudPieRecipe: Recipe = Recipe.builder()
             .withName('Recipe: Mud Pie')
@@ -218,7 +219,7 @@ describe('Fabricator |', () => {
                 .withComponent(sticks)
                 .build())
             .withResult(FabricationAction.builder()
-                .withActionType(FabricationActionType.ADD)
+                .withActionType(ActionType.ADD)
                 .withQuantity(1)
                 .withItemType(mudPie)
                 .build())
@@ -226,7 +227,7 @@ describe('Fabricator |', () => {
 
         it('Should create a Mud Pie from Recipe and components', async () => {
 
-            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
+            const underTest: Fabricator<Item.Data<ItemData5e>, Actor5e> = Fabricator.builder<Item.Data<ItemData5e>, Actor5e>().build()
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -251,17 +252,17 @@ describe('Fabricator |', () => {
             expect(fabricationOutcome.actions.length).to.equal(3);
             expect(fabricationOutcome.actions).to.deep.include.members([
                 FabricationAction.builder()
-                    .withActionType(FabricationActionType.ADD)
+                    .withActionType(ActionType.ADD)
                     .withQuantity(1)
                     .withItemType(mudPie)
                     .build(),
                 FabricationAction.builder()
-                    .withActionType(FabricationActionType.REMOVE)
+                    .withActionType(ActionType.REMOVE)
                     .withQuantity(2)
                     .withItemType(mud)
                     .build(),
                 FabricationAction.builder()
-                    .withActionType(FabricationActionType.REMOVE)
+                    .withActionType(ActionType.REMOVE)
                     .withQuantity(1)
                     .withItemType(sticks)
                     .build()
@@ -273,7 +274,7 @@ describe('Fabricator |', () => {
 
         it('Should list craftable Recipes from Components', () => {
 
-            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
+            const underTest: Fabricator<Item.Data<ItemData5e>, Actor5e> = Fabricator.builder<Item.Data<ItemData5e>, Actor5e>().build()
             const result: Recipe[] = underTest.filterCraftableRecipesFor([ironwoodHeart, hydrathistle, voidroot], [instantRopeRecipe, acidRecipe, flashbangRecipe]);
 
             expect(result, 'List of recipes was null!').to.exist;
@@ -285,7 +286,7 @@ describe('Fabricator |', () => {
 
         it('Should Fabricate from a Recipe that requires essences', async () => {
 
-            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
+            const underTest: Fabricator<Item.Data<ItemData5e>, Actor5e> = Fabricator.builder<Item.Data<ItemData5e>, Actor5e>().build()
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -318,17 +319,17 @@ describe('Fabricator |', () => {
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
             expect(outcome.type, 'Expected Fabrication to be successful').to.equal(OutcomeType.SUCCESS);
             expect(outcome.actions).to.deep.include.members([
-                FabricationAction.builder().withItemType(voidroot).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(hydrathistle).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(ironwoodHeart).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(instantRope).withActionType(FabricationActionType.ADD).withQuantity(1).build()
+                FabricationAction.builder().withItemType(voidroot).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(hydrathistle).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(ironwoodHeart).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(instantRope).withActionType(ActionType.ADD).withQuantity(1).build()
             ]);
 
         });
 
         it('Should Fabricate from a Recipe that requires essences with a large number of candidate components', async () => {
 
-            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
+            const underTest: Fabricator<Item.Data<ItemData5e>, Actor5e> = Fabricator.builder<Item.Data<ItemData5e>, Actor5e>().build()
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -361,10 +362,10 @@ describe('Fabricator |', () => {
             expect(outcome, 'Expected a Fabrication Outcome').to.exist;
             expect(outcome.type, 'Expected Fabrication to be successful').to.equal(OutcomeType.SUCCESS);
             expect(outcome.actions).to.deep.include.members([
-                FabricationAction.builder().withItemType(voidroot).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(hydrathistle).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(ironwoodHeart).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(instantRope).withActionType(FabricationActionType.ADD).withQuantity(1).build()
+                FabricationAction.builder().withItemType(voidroot).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(hydrathistle).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(ironwoodHeart).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(instantRope).withActionType(ActionType.ADD).withQuantity(1).build()
             ]);
 
         });
@@ -406,20 +407,24 @@ describe('Fabricator |', () => {
             mockAlchemySpecification.getBaseItemData.returns(mockBaseItemData);
 
             // @ts-ignore
-            mockInventory.add.returns(<InventoryModification<CraftingComponent>>{action: FabricationActionType.ADD});
+            mockInventory.add.returns(<InventoryModification<CraftingComponent>>{action: ActionType.ADD});
 
-            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>(mockAlchemySpecification);
-            const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockInventory, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
+            const mockActor: Actor5e = <Actor5e><unknown> {};
 
-            const addResults = outcome.actions.filter((action: FabricationAction<Item.Data>) => action.actionType === FabricationActionType.ADD);
+            const underTest: Fabricator<Item.Data<ItemData5e>, Actor5e> = Fabricator.builder<Item.Data<ItemData5e>, Actor5e>()
+                .withAlchemySpecification(mockAlchemySpecification)
+                .build();
+            const outcome: FabricationOutcome = await underTest.fabricateFromComponents(mockActor, mockInventory, [luminousCapDust, wrackwortBulbs, radiantSynthSeed]);
+
+            const addResults = outcome.actions.filter((action: FabricationAction<Item.Data>) => action.actionType === ActionType.ADD);
             expect(addResults.length).to.equal(1);
             const addResult: FabricationAction<Item.Data> = addResults[0];
             expect(addResult.itemType.systemId).to.equal('fabricate.alchemists-supplies-v11');
             expect(addResult.itemType.partId).to.equal('90z9nOwmGnP4aUUk');
             expect(addResult.quantity).to.equal(1);
-            expect(addResult.actionType).to.equal(FabricationActionType.ADD);
+            expect(addResult.actionType).to.equal(ActionType.ADD);
 
-            const customItemData: ItemData5e = addResult.customItemData;
+            const customItemData: Item.Data<ItemData5e> = addResult.customItemData;
 
             expect(customItemData.description.value).to.include('<p>Release concentrated mist in all directions. Increase the radius of all effects by 5 feet.</p>');
             expect(customItemData.description.value).to.include('<p>Deal 1d8 acid damage on contact.</p>');
@@ -435,7 +440,7 @@ describe('Fabricator |', () => {
 
         it('Should efficiently consume recipe components to reduce essence wastage', async () => {
 
-            const underTest: Fabricator<ItemData5e> = new Fabricator<ItemData5e>();
+            const underTest: Fabricator<Item.Data<ItemData5e>, Actor5e> = Fabricator.builder<Item.Data<ItemData5e>, Actor5e>().build()
 
             const mockActor: Actor = <Actor><unknown>{};
 
@@ -469,9 +474,9 @@ describe('Fabricator |', () => {
             expect(outcome.type, 'Expected a successful Fabrication Outcome').to.equal(OutcomeType.SUCCESS);
             expect(outcome.actions.length, 'Expected three Crafting Results').to.equal(3);
             expect(outcome.actions).to.deep.include.members([
-                FabricationAction.builder().withItemType(wispStalks).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(fennelSilk).withActionType(FabricationActionType.REMOVE).withQuantity(1).build(),
-                FabricationAction.builder().withItemType(flashbang).withActionType(FabricationActionType.ADD).withQuantity(1).build()
+                FabricationAction.builder().withItemType(wispStalks).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(fennelSilk).withActionType(ActionType.REMOVE).withQuantity(1).build(),
+                FabricationAction.builder().withItemType(flashbang).withActionType(ActionType.ADD).withQuantity(1).build()
             ]);
         });
 

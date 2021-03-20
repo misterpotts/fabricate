@@ -70,7 +70,7 @@ before(() => {
 
     Sandbox.restore();
 
-    const dummyCraftingSystem: CraftingSystem<{}> = <CraftingSystem<{}>><unknown>{
+    const dummyCraftingSystem: CraftingSystem = <CraftingSystem><unknown>{
         compendiumPackKey: compendiumPackKey,
         recipes: [mudPieRecipe],
         components: [wax, mud, sticks, dung, mudPie],

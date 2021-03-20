@@ -6,7 +6,7 @@ import {FabricateItem} from "./FabricateItem";
 class Recipe extends FabricateItem {
     private readonly _ingredients: Ingredient[];
     private readonly _essences: string[];
-    private readonly _results: FabricationAction[];
+    private readonly _results: FabricationAction<Item.Data>[];
 
     constructor(builder: Recipe.Builder) {
         super(builder.systemId, builder.partId, builder.imageUrl, builder.name);
@@ -34,7 +34,7 @@ class Recipe extends FabricateItem {
         return this._ingredients;
     }
 
-    get results(): FabricationAction[] {
+    get results(): FabricationAction<Item.Data>[] {
         return this._results;
     }
 
@@ -56,7 +56,7 @@ class Recipe extends FabricateItem {
             }
         });
         let resultsValid = true;
-        this.results.forEach((result: FabricationAction) => {
+        this.results.forEach((result: FabricationAction<Item.Data>) => {
             if (!result.isValid()) {
                 resultsValid = false;
             }
@@ -74,7 +74,7 @@ namespace Recipe {
 
         public ingredients: Ingredient[] = [];
         public essences: string[] = [];
-        public results: FabricationAction[] = [];
+        public results: FabricationAction<Item.Data>[] = [];
         public name!: string;
         public systemId!: string;
         public partId!: string;
@@ -109,12 +109,12 @@ namespace Recipe {
             return this;
         }
 
-        withResult(value: FabricationAction) {
+        withResult(value: FabricationAction<Item.Data>) {
             this.results.push(value);
             return this;
         }
 
-        withResults(value: FabricationAction[]) {
+        withResults(value: FabricationAction<Item.Data>[]) {
             this.results = value;
             return this;
         }

@@ -1,14 +1,14 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {FabricationAction, FabricationActionType} from "./FabricationAction";
+import {FabricationAction} from "./FabricationAction";
 import {Inventory} from "../game/Inventory";
 import {Ingredient} from "./Ingredient";
-
+import {ActionType} from "../game/CompendiumData";
 
 class FabricationHelper {
 
     private static readonly primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
-    public static asCraftingResults(components: CraftingComponent[], action: FabricationActionType): FabricationAction[] {
+    public static asCraftingResults(components: CraftingComponent[], action: ActionType): FabricationAction<Item.Data>[] {
         const componentsById: Map<string, CraftingComponent[]> = new Map();
         components.forEach((component: CraftingComponent) => {
             const identicalComponents: CraftingComponent[] = componentsById.get(component.partId);
@@ -27,7 +27,7 @@ class FabricationHelper {
                     .build();
             });
         }
-        const results: FabricationAction[] = [];
+        const results: FabricationAction<Item.Data>[] = [];
         componentsById.forEach((componentsOfType: CraftingComponent[]) => {
             const craftingResult = FabricationAction.builder()
                 .withItemType(componentsOfType[0])
@@ -96,17 +96,17 @@ class FabricationHelper {
         return combinations.sort((left, right) => left.length - right.length);
     }
 
-    public static async applyResults(actions: FabricationAction[], inventory: Inventory): Promise<boolean> {
+    public static async applyResults(actions: FabricationAction<Item.Data>[], inventory: Inventory<Item.Data>): Promise<boolean> {
         for (const action of actions) {
             switch (action.actionType) {
-                case FabricationActionType.ADD:
+                case ActionType.ADD:
                     if (action.customItemData) {
                         await inventory.add(action.itemType, action.quantity, action.customItemData);
                     } else {
                         await inventory.add(action.itemType, action.quantity);
                     }
                     break;
-                case FabricationActionType.REMOVE:
+                case ActionType.REMOVE:
                     await inventory.remove(action.itemType, action.quantity);
                     break;
                 default:

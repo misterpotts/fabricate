@@ -1,5 +1,5 @@
 import {Recipe} from "./Recipe";
-import {FabricationAction, FabricationActionType} from "./FabricationAction";
+import {FabricationAction} from "./FabricationAction";
 import {CraftingComponent} from "./CraftingComponent";
 import {FabricationHelper} from "./FabricationHelper";
 import {EssenceCombiner} from "./EssenceCombiner";
@@ -9,6 +9,8 @@ import {InventoryRecord} from "../game/InventoryRecord";
 import {Ingredient} from "./Ingredient";
 import {AlchemyError} from "../error/AlchemyError";
 import {CraftingError} from "../error/CraftingError";
+import {CraftingCheck, CraftingCheckResult} from "./CraftingCheck";
+import {ActionType} from "../game/CompendiumData";
 
 enum EssenceMatchType {
     EXACT = 'EXACT',
@@ -87,31 +89,57 @@ class AlchemySpecification<T extends Item.Data> {
     }
 }
 
-class Fabricator<T extends Item.Data> {
-    private readonly _alchemySpecification: AlchemySpecification<T>;
+class Fabricator<I extends Item.Data, A extends Actor> {
+    private readonly _alchemySpecification: AlchemySpecification<I>;
+    private readonly _craftingCheck: CraftingCheck<A>;
 
-    constructor(alchemySpecification?: AlchemySpecification<T>) {
-        this._alchemySpecification = alchemySpecification;
+    constructor(builder: Fabricator.Builder<I, A>) {
+        this._alchemySpecification = builder.alchemySpecification;
+        this._craftingCheck = builder.craftingCheck;
     }
 
-    public async fabricateFromComponents(inventory: Inventory<T>, components: CraftingComponent[]): Promise<FabricationOutcome> {
+    public static builder<I extends Item.Data, A extends Actor>(): Fabricator.Builder<I, A> {
+        return new Fabricator.Builder<I, A>();
+    }
+
+    get alchemySpecification(): AlchemySpecification<I> {
+        return this._alchemySpecification;
+    }
+
+    get craftingCheck(): CraftingCheck<A> {
+        return this._craftingCheck;
+    }
+
+    public async fabricateFromComponents(actor: Actor<A>, inventory: Inventory<I>, components: CraftingComponent[]): Promise<FabricationOutcome> {
         if (!this._alchemySpecification) {
             throw new Error(`No Alchemy Specification has been provided for this system. You may only craft from Recipes. `);
         }
 
-        const removeSuppliedComponents: FabricationAction<T>[] = FabricationHelper.asCraftingResults(components, FabricationActionType.REMOVE);
+        if (this._craftingCheck) {
+            const craftingCheckResult: CraftingCheckResult = this.craftingCheck.perform(actor.data.data, components);
+            console.log(craftingCheckResult.outcome);
+            switch (craftingCheckResult.outcome) {
+                case OutcomeType.SUCCESS:
+                    console.log(craftingCheckResult);
+                    break;
+                case OutcomeType.FAILURE:
+                    break;
+            }
+        }
+
+        const removeSuppliedComponents: FabricationAction<Item.Data>[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
 
         try {
-            const baseItemData: T = await this._alchemySpecification.getBaseItemData();
-            const alchemicallyModifiedItemData: T = this._alchemySpecification.essenceCombiner.combine(components, duplicate(baseItemData));
+            const baseItemData: I = await this._alchemySpecification.getBaseItemData();
+            const alchemicallyModifiedItemData: I = this._alchemySpecification.essenceCombiner.combine(components, duplicate(baseItemData));
             const resultantComponentType: CraftingComponent = this._alchemySpecification.baseComponent;
-            const addComponent: FabricationAction<T> = FabricationAction.builder<T>()
-                .withActionType(FabricationActionType.ADD)
+            const addComponent: FabricationAction<I> = FabricationAction.builder<I>()
+                .withActionType(ActionType.ADD)
                 .withQuantity(1)
                 .withCustomItemData(alchemicallyModifiedItemData)
                 .withItemType(resultantComponentType)
                 .build();
-            const actions: FabricationAction<T>[] = removeSuppliedComponents.concat(addComponent);
+            const actions: FabricationAction<Item.Data>[] = removeSuppliedComponents.concat(addComponent);
             await FabricationHelper.applyResults(actions, inventory);
             return FabricationOutcome.builder()
                 .withActions(actions)
@@ -120,7 +148,7 @@ class Fabricator<T extends Item.Data> {
         } catch (error: any) {
             if (error instanceof AlchemyError) {
                 const alchemyError: AlchemyError = <AlchemyError>error;
-                const actions: FabricationAction<T>[] = [];
+                const actions: FabricationAction<I>[] = [];
                 if (alchemyError.componentsConsumed) {
                     actions.push(...removeSuppliedComponents);
                     await FabricationHelper.applyResults(removeSuppliedComponents, inventory);
@@ -135,19 +163,20 @@ class Fabricator<T extends Item.Data> {
         }
     }
 
-    public async fabricateFromRecipe(inventory: Inventory<T>, recipe: Recipe): Promise<FabricationOutcome> {
+    // todo - add actor as arg and crafting check
+    public async fabricateFromRecipe(inventory: Inventory<I>, recipe: Recipe): Promise<FabricationOutcome> {
         const ownedComponents: InventoryRecord<CraftingComponent>[] = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
 
-        const input: FabricationAction<T>[] = [];
+        const input: FabricationAction<I>[] = [];
         const namedIngredientsByPartId: Map<string, Ingredient> = new Map();
         if (recipe.ingredients && recipe.ingredients.length > 0) {
             recipe.ingredients.forEach((ingredient: Ingredient) => {
                 namedIngredientsByPartId.set(ingredient.partId, ingredient);
                 if (ingredient.consumed) {
-                    input.push(FabricationAction.builder<T>()
+                    input.push(FabricationAction.builder<I>()
                         .withQuantity(ingredient.quantity)
                         .withItemType(ingredient.component)
-                        .withActionType(FabricationActionType.REMOVE)
+                        .withActionType(ActionType.REMOVE)
                         .build());
                 }
             });
@@ -178,12 +207,12 @@ class Fabricator<T extends Item.Data> {
             if (!selectedCombination || selectedCombination.length === 0) {
                 throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or even just asking your GM nicely. `, false)
             }
-            const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, FabricationActionType.REMOVE);
+            const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, ActionType.REMOVE);
             input.push(...consumedComponents);
         }
 
-        const output: FabricationAction<T>[] = recipe.results;
-        const actions: FabricationAction<T>[] = output.concat(input);
+        const output: FabricationAction<I>[] = recipe.results;
+        const actions: FabricationAction<I>[] = output.concat(input);
 
         await FabricationHelper.applyResults(actions, inventory);
         return FabricationOutcome.builder()
@@ -266,6 +295,31 @@ class Fabricator<T extends Item.Data> {
             }
         }
         return true;
+    }
+
+}
+
+namespace Fabricator {
+
+    export class Builder<I extends Item.Data, A extends Actor> {
+
+        public alchemySpecification: AlchemySpecification<I>;
+        public craftingCheck: CraftingCheck<A>;
+
+        public build(): Fabricator<I, A> {
+            return new Fabricator<I, A>(this);
+        }
+
+        public withAlchemySpecification(value: AlchemySpecification<I>): Builder<I, A> {
+            this.alchemySpecification = value;
+            return this;
+        }
+
+        public withCraftingCheck(value: CraftingCheck<A>): Builder<I, A> {
+            this.craftingCheck = value;
+            return this;
+        }
+
     }
 
 }

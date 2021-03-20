@@ -1,5 +1,6 @@
-import {FabricationAction, FabricationActionType} from "./FabricationAction";
+import {FabricationAction} from "./FabricationAction";
 import {Recipe} from "./Recipe";
+import {ActionType} from "../game/CompendiumData";
 
 enum OutcomeType {
     SUCCESS = 'SUCCESS',
@@ -63,12 +64,12 @@ class FabricationOutcome {
     }
 
     get removedComponents(): string[] {
-        return this._actions.filter((action: FabricationAction<Item.Data>) => action.actionType === FabricationActionType.REMOVE)
+        return this._actions.filter((action: FabricationAction<Item.Data>) => action.actionType === ActionType.REMOVE)
             .map((action: FabricationAction<Item.Data>) => `${action.quantity} ${action.itemType.name}` );
     }
 
     get addedItems(): FabricationAction<Item.Data>[] {
-        return this._actions.filter((action: FabricationAction<Item.Data>) => action.actionType === FabricationActionType.ADD);
+        return this._actions.filter((action: FabricationAction<Item.Data>) => action.actionType === ActionType.ADD);
     }
 
 }

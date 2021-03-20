@@ -8,7 +8,7 @@ class CraftingSystemSpecification {
     private readonly _enableHint: string;
     private readonly _enabled: boolean;
     private readonly _supportedGameSystems: string[] = [];
-    private readonly _fabricator: Fabricator<Item.Data>;
+    private readonly _fabricator: Fabricator<Item.Data, Actor>;
     private readonly _essences: EssenceDefinition[] = [];
 
     constructor(builder: CraftingSystemSpecification.Builder) {
@@ -46,7 +46,7 @@ class CraftingSystemSpecification {
         return this._supportedGameSystems;
     }
 
-    get fabricator(): Fabricator<Item.Data> {
+    get fabricator(): Fabricator<Item.Data, Actor> {
         return this._fabricator;
     }
 
@@ -70,7 +70,7 @@ namespace CraftingSystemSpecification {
         public enableHint!: string;
         public enabled!: boolean;
         public supportedGameSystems: string[] = [];
-        public fabricator!: Fabricator<Item.Data>;
+        public fabricator!: Fabricator<Item.Data, Actor>;
         public essences: EssenceDefinition[] = [];
 
         public build() : CraftingSystemSpecification {
@@ -87,7 +87,7 @@ namespace CraftingSystemSpecification {
             return this;
         }
 
-        public withFabricator(value: Fabricator<Item.Data>): Builder {
+        public withFabricator(value: Fabricator<Item.Data, Actor>): Builder {
             this.fabricator = value;
             return this;
         }

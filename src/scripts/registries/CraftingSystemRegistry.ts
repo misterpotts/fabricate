@@ -67,7 +67,7 @@ class CraftingSystemRegistry {
             .withDescription('A simple tech demo used for the early development of Fabricate. ')
             .withCompendiumPackKey('fabricate.fabricate-test')
             .withSupportedGameSystem(GameSystemType.DND5E)
-            .withFabricator(new Fabricator())
+            .withFabricator(Fabricator.builder().build())
             .build();
         systemSpecifications.push(testSystemSpec);
 
