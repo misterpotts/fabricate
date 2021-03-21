@@ -49,7 +49,7 @@ class CraftingChatMessage {
     public static fromFabricationOutcome(outcome: FabricationOutcome): CraftingChatMessage {
         const footerParts: string[] = outcome.removedComponents && outcome.removedComponents.length > 0 ? ['Removed:'].concat(outcome.removedComponents) : ['No components were removed'];
         const cardImageUrl = outcome.type === OutcomeType.SUCCESS ? CraftingChatMessage.randomCardImageUrl : CraftingChatMessage._craftingFailureIconUrl;
-        return new CraftingChatMessage(outcome.title, outcome.description, footerParts, outcome.addedItems, cardImageUrl);
+        return new CraftingChatMessage(outcome.title, outcome.failureDetails, footerParts, outcome.addedItems, cardImageUrl);
     }
 
     get cardImageUrl() {

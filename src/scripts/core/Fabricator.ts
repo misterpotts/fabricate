@@ -117,13 +117,16 @@ class Fabricator<I extends Item.Data, A extends Actor> {
 
         if (this._craftingCheck) {
             const craftingCheckResult: CraftingCheckResult = this.craftingCheck.perform(actor, components);
-            console.log(craftingCheckResult.outcome);
             switch (craftingCheckResult.outcome) {
                 case OutcomeType.SUCCESS:
-                    console.log(craftingCheckResult);
+
                     break;
                 case OutcomeType.FAILURE:
-                    break;
+                    return FabricationOutcome.builder()
+                        .withOutcomeType(OutcomeType.FAILURE)
+                        .withFailureDetails(`Rolled a ${craftingCheckResult.result}, needed a ${craftingCheckResult.successThreshold}`)
+                        .withActions([])
+                        .build();
             }
         }
 
