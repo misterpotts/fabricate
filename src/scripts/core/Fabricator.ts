@@ -122,10 +122,12 @@ class Fabricator<I extends Item.Data, A extends Actor> {
 
                     break;
                 case OutcomeType.FAILURE:
+                    const removedComponents: FabricationAction<Item.Data>[] = FabricationHelper.asCraftingResults(components, ActionType.REMOVE);
+                    FabricationHelper.applyResults(removedComponents, inventory);
                     return FabricationOutcome.builder()
                         .withOutcomeType(OutcomeType.FAILURE)
                         .withFailureDetails(`Rolled a ${craftingCheckResult.result}, needed a ${craftingCheckResult.successThreshold}`)
-                        .withActions([])
+                        .withActions(removedComponents)
                         .build();
             }
         }
