@@ -89,7 +89,7 @@ class AlchemySpecification<T extends Item.Data> {
     }
 }
 
-class Fabricator<I extends Item.Data, A extends Actor> {
+class Fabricator<I extends Item.Data, A extends Actor<Actor.Data, I>> {
     private readonly _alchemySpecification: AlchemySpecification<I>;
     private readonly _craftingCheck: CraftingCheck<A>;
 
@@ -110,7 +110,7 @@ class Fabricator<I extends Item.Data, A extends Actor> {
         return this._craftingCheck;
     }
 
-    public async fabricateFromComponents(actor: Actor<A>, inventory: Inventory<I>, components: CraftingComponent[]): Promise<FabricationOutcome> {
+    public async fabricateFromComponents(actor: A, inventory: Inventory<I>, components: CraftingComponent[]): Promise<FabricationOutcome> {
         if (!this._alchemySpecification) {
             throw new Error(`No Alchemy Specification has been provided for this system. You may only craft from Recipes. `);
         }
