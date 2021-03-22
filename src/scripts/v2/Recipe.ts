@@ -30,6 +30,14 @@ class Recipe extends AbstractFabricateItem {
         return this._catalysts.length > 0;
     }
 
+    get hasNamedComponents(): boolean {
+        return this.requiresCatalysts || this.hasSpecificIngredients;
+    }
+
+    get namedComponents(): Ingredient[] {
+        return this._ingredients.concat(this._catalysts);
+    }
+
     get catalysts(): Ingredient[] {
         return this._catalysts;
     }

@@ -1,4 +1,5 @@
 import {AbstractFabricateItem, FabricateItem} from "./FabricateItem";
+import {EssenceDefinition} from "./EssenceDefinition";
 
 class Ingredient {
 
@@ -22,35 +23,46 @@ class Ingredient {
 
 class CraftingComponent extends AbstractFabricateItem {
 
-    private readonly _property: any;
+    private readonly _essences: EssenceDefinition[];
+    private readonly _salvage: CraftingComponent[];
 
     constructor(builder: CraftingComponent.Builder) {
         super(builder);
-        this._property = builder.property;
+        this._essences = builder.essences;
+        this._salvage = builder.salvage;
     }
 
     public static builder() {
         return new CraftingComponent.Builder();
     }
 
-    get property(): any {
-        return this._property;
+    get essences(): EssenceDefinition[] {
+        return this._essences;
     }
 
+    get salvage(): CraftingComponent[] {
+        return this._salvage;
+    }
 }
 
 namespace CraftingComponent {
 
     export class Builder extends FabricateItem.Builder{
 
-        public property: any;
+        public essences: EssenceDefinition[];
+        public salvage: CraftingComponent[];
 
         public build(): CraftingComponent {
             return new CraftingComponent(this);
         }
 
-        public withProperty(value: any) {
-            this.property = value;
+        public withEssences(value: EssenceDefinition[]) {
+            this.essences = value;
+            return this;
+        }
+
+        public withSalvage(value: CraftingComponent[]) {
+            this.salvage = value;
             return this;
         }
 
