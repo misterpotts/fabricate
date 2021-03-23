@@ -1,29 +1,10 @@
 import {AbstractFabricateItem, FabricateItem} from "./FabricateItem";
+import {Combination} from "./Combination";
 import {EssenceDefinition} from "./EssenceDefinition";
-
-class Ingredient {
-
-    private readonly _component: CraftingComponent;
-    private readonly _quantity: number;
-
-    constructor(component: CraftingComponent, quantity: number) {
-        this._component = component;
-        this._quantity = quantity;
-    }
-
-    get component(): CraftingComponent {
-        return this._component;
-    }
-
-    get quantity(): number {
-        return this._quantity;
-    }
-
-}
 
 class CraftingComponent extends AbstractFabricateItem {
 
-    private readonly _essences: EssenceDefinition[];
+    private readonly _essences: Combination<EssenceDefinition>;
     private readonly _salvage: CraftingComponent[];
 
     constructor(builder: CraftingComponent.Builder) {
@@ -36,7 +17,7 @@ class CraftingComponent extends AbstractFabricateItem {
         return new CraftingComponent.Builder();
     }
 
-    get essences(): EssenceDefinition[] {
+    get essences(): Combination<EssenceDefinition> {
         return this._essences;
     }
 
@@ -49,14 +30,14 @@ namespace CraftingComponent {
 
     export class Builder extends FabricateItem.Builder{
 
-        public essences: EssenceDefinition[];
+        public essences: Combination<EssenceDefinition>;
         public salvage: CraftingComponent[];
 
         public build(): CraftingComponent {
             return new CraftingComponent(this);
         }
 
-        public withEssences(value: EssenceDefinition[]) {
+        public withEssences(value: Combination<EssenceDefinition>) {
             this.essences = value;
             return this;
         }
@@ -70,4 +51,4 @@ namespace CraftingComponent {
 
 }
 
-export {CraftingComponent, Ingredient}
+export {CraftingComponent}

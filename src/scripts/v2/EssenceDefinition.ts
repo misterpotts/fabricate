@@ -1,3 +1,5 @@
+import {Unit} from "./Combination";
+
 class EssenceDefinition {
 
     private readonly _name: string;
@@ -47,22 +49,48 @@ class EssenceDefinition {
 
 }
 
-class EssenceUnit {
+class EssenceIdentityProvider {
 
-    private readonly _essence: EssenceDefinition;
-    private readonly _quantity: number;
+    private static readonly _primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
-    constructor(essence: EssenceDefinition, quantity: number) {
-        this._essence = essence;
-        this._quantity = quantity;
+    private readonly _essenceIdentities: Map<EssenceDefinition, number>;
+
+    private constructor(essenceIdentities: Map<EssenceDefinition, number>) {
+        this._essenceIdentities = essenceIdentities;
     }
 
-    get essence(): EssenceDefinition {
-        return this._essence;
+    public getForEssence(essence: EssenceDefinition): number {
+        return this._essenceIdentities.get(essence);
     }
 
-    get quantity(): number {
-        return this._quantity;
+    public getForEssenceCombination(essenceCombination: Unit<EssenceDefinition>[]): number {
+        return essenceCombination.map((essenceUnit => this.getForEssence(essenceUnit.type) * essenceUnit.quantity))
+            .reduce((left: number, right: number) => left * right, 1);
+    }
+
+    public static for(essences: EssenceDefinition[]) {
+        return new EssenceIdentityProvider(EssenceIdentityProvider.assignEssenceIdentities(essences));
+    }
+
+    private static assignEssenceIdentities(essences: EssenceDefinition[]): Map<EssenceDefinition, number> {
+        const primes: number[] = this.generatePrimes(essences.length);
+        const essenceIdentities: Map<EssenceDefinition, number> = new Map();
+        essences.forEach((definition: EssenceDefinition, index: number) => essenceIdentities.set(definition, primes[index]));
+        return essenceIdentities;
+    }
+
+    private static generatePrimes(quantity: number): number[] {
+        if (quantity <= EssenceIdentityProvider._primes.length) {
+            return EssenceIdentityProvider._primes.slice(0, quantity);
+        }
+        let candidate = 98;
+        while (EssenceIdentityProvider._primes.length < quantity) {
+            if (EssenceIdentityProvider._primes.every((p) => candidate % p)) {
+                EssenceIdentityProvider._primes.push(candidate);
+            }
+            candidate++;
+        }
+        return EssenceIdentityProvider._primes;
     }
 
 }
@@ -104,4 +132,4 @@ namespace EssenceDefinition {
 
 }
 
-export {EssenceDefinition, EssenceUnit}
+export {EssenceDefinition, EssenceIdentityProvider}
