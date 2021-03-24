@@ -10,7 +10,40 @@ type DurationType5e = 'days' | 'hours' | 'instantaneous' | 'minutes' | 'months' 
 type WeaponType5e = 'simpleM' | 'martialM' | 'simpleR' | 'martialR' | 'natural' | 'improv' | 'siege';
 type DamageType5e = 'acid' | 'bludgeoning' | 'cold' | 'fire' | 'force' | 'lightning' | 'necrotic' | 'piercing' | 'poison' | 'psychic' | 'radiant' | 'slashing' | 'thunder' | 'none';
 
-interface ItemData5e extends Item.Data {
+type AbilityBonus = {
+    check: string;
+    save: string;
+    skill: string;
+};
+
+type AttackBonus = {
+    attack: string;
+    damage: string;
+};
+
+type SaveBonus = {
+    dc: number;
+};
+
+interface Skill5e {
+    value: number
+    ability: AbilityType5e
+    bonus: number
+    mod: number
+    passive: number
+    prof: number
+    total: number
+}
+
+interface AbilityDefinition5e {
+    value: number;
+    proficient: number;
+    mod: number;
+    save: number;
+    prof: number;
+}
+
+interface ItemDataValue5e {
     ability?: AbilityType5e;
     actionType?: ActionType5e;
     activation?: {
@@ -61,45 +94,25 @@ interface ItemData5e extends Item.Data {
     weaponType?: WeaponType5e;
 }
 
-interface Item5e extends Item<ItemData5e> {
-    data: Item.Data<ItemData5e>;
+interface ItemData5e extends Item.Data<ItemDataValue5e> {
+    data: ItemDataValue5e;
+    effects: ActiveEffect.Data[];
+    img: string;
+    name: string;
+    permission: Entity.Permission;
+    sort: number;
     type: ItemType5e;
 }
 
-type AbilityBonus = {
-    check: string;
-    save: string;
-    skill: string;
-};
-
-type AttackBonus = {
-    attack: string;
-    damage: string;
-};
-
-type SaveBonus = {
-    dc: number;
-};
-
-interface Skill5e {
-    value: number
-    ability: AbilityType5e
-    bonus: number
-    mod: number
-    passive: number
-    prof: number
-    total: number
+interface Item5e extends Item<ItemData5e> {
+    data: ItemData5e;
+    img: string;
+    name: string;
+    sort: number;
+    type: ItemType5e;
 }
 
-interface AbilityDefinition5e {
-    value: number;
-    proficient: number;
-    mod: number;
-    save: number;
-    prof: number;
-}
-
-interface ActorData5e extends Actor.Data {
+interface ActorDataValue5e {
     abilities: Record<AbilityType5e, AbilityDefinition5e>;
     traits: {
         size: string,
@@ -217,9 +230,19 @@ interface ActorData5e extends Actor.Data {
     }
 }
 
+interface ActorData5e extends Actor.Data<ActorDataValue5e, ItemData5e> {
+    data: ActorDataValue5e;
+    folder: string;
+    img: string;
+    items: ItemData5e[];
+    name: string;
+    permission: Entity.Permission;
+    sort: number;
+}
+
 interface Actor5e extends Actor<ActorData5e, Item5e> {
-    data: Actor.Data<ActorData5e>;
+    data: ActorData5e;
     token: Token;
     items: Collection<Item5e>;
-    effects: Collection<ActiveEffect>;
+    effects: Collection<ActiveEffect<this>>
 }

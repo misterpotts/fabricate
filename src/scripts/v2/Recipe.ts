@@ -1,13 +1,14 @@
 import {AbstractFabricateItem, FabricateItem} from "./FabricateItem";
-import {ComponentUnit} from "./CraftingComponent";
-import {EssenceCombination} from "./EssenceDefinition";
+import {Combination} from "./Combination";
+import {CraftingComponent} from "./CraftingComponent";
+import {EssenceDefinition} from "./EssenceDefinition";
 
 class Recipe extends AbstractFabricateItem {
 
-    private readonly _ingredients: ComponentUnit[];
-    private readonly _catalysts: ComponentUnit[];
-    private readonly _essences: EssenceCombination;
-    private readonly _results: ComponentUnit[];
+    private readonly _ingredients: Combination<CraftingComponent>;
+    private readonly _catalysts: Combination<CraftingComponent>;
+    private readonly _essences: Combination<EssenceDefinition>;
+    private readonly _results: Combination<CraftingComponent>;
 
     constructor(builder: Recipe.Builder) {
         super(builder);
@@ -22,26 +23,26 @@ class Recipe extends AbstractFabricateItem {
     }
 
     get hasSpecificIngredients() {
-        return this._catalysts.length > 0 || this._ingredients.length > 0;
+        return this._ingredients && !this._ingredients.isEmpty();
     }
 
-    get ingredients(): ComponentUnit[] {
+    get ingredients(): Combination<CraftingComponent> {
         return this._ingredients;
     }
 
     get requiresCatalysts() {
-        return this._catalysts.length > 0;
+        return this._catalysts && !this._catalysts.isEmpty();
     }
 
     get hasNamedComponents(): boolean {
         return this.requiresCatalysts || this.hasSpecificIngredients;
     }
 
-    get namedComponents(): ComponentUnit[] {
-        return this._ingredients.concat(this._catalysts);
+    get namedComponents(): Combination<CraftingComponent> {
+        return this._ingredients.combineWith(this._catalysts);
     }
 
-    get catalysts(): ComponentUnit[] {
+    get catalysts(): Combination<CraftingComponent> {
         return this._catalysts;
     }
 
@@ -49,11 +50,11 @@ class Recipe extends AbstractFabricateItem {
         return !!this._essences;
     }
 
-    get essences(): EssenceCombination {
+    get essences(): Combination<EssenceDefinition> {
         return this._essences;
     }
 
-    get results(): ComponentUnit[] {
+    get results(): Combination<CraftingComponent> {
         return this._results;
     }
 }
@@ -62,32 +63,32 @@ namespace Recipe {
 
     export class Builder extends FabricateItem.Builder {
 
-        public ingredients: ComponentUnit[] = [];
-        public catalysts: ComponentUnit[] = [];
-        public essences: EssenceCombination;
-        public results: ComponentUnit[] = [];
+        public ingredients: Combination<CraftingComponent>;
+        public catalysts: Combination<CraftingComponent>;
+        public essences: Combination<EssenceDefinition>;
+        public results: Combination<CraftingComponent>;
 
         public build(): Recipe {
             return new Recipe(this);
         }
 
-        public withIngredient(value: ComponentUnit): Builder {
-            this.ingredients.push(value);
+        public withIngredients(value: Combination<CraftingComponent>): Builder {
+            this.ingredients = value;
             return this;
         }
 
-        public withCatalyst(value: ComponentUnit): Builder {
-            this.catalysts.push(value);
+        public withCatalysts(value: Combination<CraftingComponent>): Builder {
+            this.catalysts = value;
             return this;
         }
 
-        public withEssences(value: EssenceCombination): Builder {
+        public withEssences(value: Combination<EssenceDefinition>): Builder {
             this.essences = value;
             return this;
         }
 
-        public withResult(value: ComponentUnit): Builder {
-            this.results.push(value);
+        public withResults(value: Combination<CraftingComponent>): Builder {
+            this.results = value;
             return this;
         }
 

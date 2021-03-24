@@ -1,58 +1,48 @@
 import {CraftingComponent} from "./CraftingComponent";
-import {InventoryRecord} from "./InventoryRecord";
-import {EssenceDefinition, EssenceIdentityProvider} from "./EssenceDefinition";
+import {EssenceDefinition} from "./EssenceDefinition";
 import {Combination, Unit} from "./Combination";
+import {FabricationAction} from "./FabricationAction";
 
 interface Inventory<I extends Item, A extends Actor<Actor.Data, I>> {
     actor: A;
-    contents: Map<CraftingComponent, InventoryRecord<I>>;
-    containsIngredients(ingredients: Unit<CraftingComponent>[]): boolean;
+    ownedComponents: Combination<CraftingComponent>;
+    containsIngredients(ingredients: Combination<CraftingComponent>): boolean;
     containsEssences(essences: Combination<EssenceDefinition>): boolean;
-    selectFor(essences: Combination<EssenceDefinition>, identityProvider: EssenceIdentityProvider): Unit<CraftingComponent>[];
-    excluding(ingredients: Unit<CraftingComponent>[]): Inventory<I, A>;
+    selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent>;
+    excluding(ingredients: Combination<CraftingComponent>): Inventory<I, A>;
+    removeAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]>;
+    addAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]>;
 }
 
-interface InventorySearch<I extends Item> {
-    perform(contents: Map<CraftingComponent, InventoryRecord<I>>): boolean;
+interface InventorySearch {
+    perform(contents: Combination<CraftingComponent>): boolean;
 }
 
-class IngredientSearch<I extends Item> implements InventorySearch<I> {
-    private readonly _ingredients: Unit<CraftingComponent>[];
+class IngredientSearch implements InventorySearch {
+    private readonly _ingredients: Combination<CraftingComponent>;
 
-    constructor(ingredients: Unit<CraftingComponent>[]) {
+    constructor(ingredients: Combination<CraftingComponent>) {
         this._ingredients = ingredients;
     }
 
-    public perform(contents: Map<CraftingComponent, InventoryRecord<I>>): boolean {
-        return this._ingredients.map((ingredient)  => {
-            const component: CraftingComponent = ingredient.type;
-            if (!contents.has(component)) {
-                return false;
-            }
-            const record: InventoryRecord<Item> = contents.get(component);
-            const requiredQuantity = ingredient.quantity;
-            if (requiredQuantity < record.totalQuantity) {
-                return false;
-            }
-        }).reduce((previousValue, currentValue) => previousValue && currentValue, true);
+    public perform(contents: Combination<CraftingComponent>): boolean {
+        return this._ingredients.isIn(contents);
     }
 
 }
 
-class EssenceSearch<I extends Item> implements InventorySearch<I> {
+class EssenceSearch implements InventorySearch {
     private readonly _essences: Combination<EssenceDefinition>;
 
     constructor(essences: Combination<EssenceDefinition>) {
         this._essences = essences;
     }
 
-    public perform(contents: Map<CraftingComponent, InventoryRecord<I>>): boolean {
+    public perform(contents: Combination<CraftingComponent>): boolean {
         const remaining: Combination<EssenceDefinition> = this._essences.clone();
-        for (const entry of contents) {
-            const component: CraftingComponent = entry[0];
-            if (component.essences) {
-                const record: InventoryRecord<I> = entry[1];
-                const essenceAmount: Combination<EssenceDefinition> = component.essences.multiply(record.totalQuantity);
+        for (const component of contents.members) {
+            if (!component.essences.isEmpty()) {
+                const essenceAmount: Combination<EssenceDefinition> = component.essences.multiply(contents.amountFor(component));
                 remaining.subtract(essenceAmount);
             }
             if (remaining.isEmpty()) {
@@ -64,129 +54,128 @@ class EssenceSearch<I extends Item> implements InventorySearch<I> {
 
 }
 
-class EssenceSelection<I extends Item> {
+class EssenceSelection {
 
     private readonly _essences: Combination<EssenceDefinition>;
-    private readonly _identities: EssenceIdentityProvider;
 
-    constructor(essences: Combination<EssenceDefinition>, identities: EssenceIdentityProvider) {
+    constructor(essences: Combination<EssenceDefinition>) {
         this._essences = essences;
-        this._identities = identities;
     }
 
-    perform(contents: Map<CraftingComponent, InventoryRecord<I>>): Unit<CraftingComponent>[] {
-        const availableComponents: Unit<CraftingComponent>[];
-        contents.forEach(((record: InventoryRecord<I>, component: CraftingComponent) => {
-            if (!component.essences || component.essences.intersects(this._essences)) {
-                return;
+    perform(contents: Combination<CraftingComponent>): Combination<CraftingComponent> {
+        let availableComponents: Combination<CraftingComponent> = contents.clone();
+        contents.members.forEach(((component: CraftingComponent) => {
+            if (component.essences.isEmpty() || !component.essences.intersects(this._essences)) {
+                const componentsToRemove: Combination<CraftingComponent> = Combination.ofUnit(new Unit<CraftingComponent>(component, contents.amountFor(component)));
+                availableComponents = availableComponents.subtract(componentsToRemove);
             }
-            availableComponents.push(new Unit<CraftingComponent>(component, record.totalQuantity));
         }));
+        const sortedComponents = availableComponents.asUnits().sort(((left: Unit<CraftingComponent>, right: Unit<CraftingComponent>) => left.type.essences.size() - right.type.essences.size()));
+        let remainingEssences: Combination<EssenceDefinition> = this._essences.clone();
+        const selectedComponents: Unit<CraftingComponent>[] = [];
+        for (let i = 0; i < sortedComponents.length; i++) {
+            const thisComponent: Unit<CraftingComponent> = sortedComponents[i];
+            let quantitySelected: number = 0;
+            for (let j = 0; j < thisComponent.quantity; j++) {
+                if (thisComponent.type.essences.intersects(remainingEssences)) {
+                    remainingEssences.subtract(thisComponent.type.essences);
+                    quantitySelected++;
+                }
+            }
+            selectedComponents.push(thisComponent.toAmount(quantitySelected));
+            if (remainingEssences.isEmpty()) {
+                return Combination.ofUnits(selectedComponents);
+            }
+        }
+        return Combination.EMPTY;
     }
 
 }
 
-
-class AbstractInventory<I extends Item, A extends Actor<Actor.Data, I>> implements Inventory<I, A> {
+class CraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> implements Inventory<I, A> {
 
     private readonly _actor: A;
-    private readonly _contents: Map<CraftingComponent, InventoryRecord<I>> = new Map();
+    private readonly _ownedComponents: Combination<CraftingComponent>;
+    private readonly _managedItems: Map<CraftingComponent, I[]>;
 
-    constructor(builder: AbstractInventory.Builder<I, A>) {
+    constructor(builder: CraftingInventory.Builder<I, A>) {
         this._actor = builder.actor;
-        this._contents = builder.contents;
+        this._ownedComponents = builder.ownedComponents;
+        this._managedItems = builder.managedItems;
+    }
+
+    public static builder<I extends Item, A extends Actor<Actor.Data, I>>(): CraftingInventory.Builder<I, A> {
+        return new CraftingInventory.Builder<I, A>();
     }
 
     get actor(): A {
         return this._actor;
     }
 
-    get contents(): Map<CraftingComponent, InventoryRecord<I>> {
-        return new Map(this._contents);
+    get ownedComponents(): Combination<CraftingComponent> {
+        return this._ownedComponents.clone();
     }
 
-    public index() {
-
-    }
-
-    containsIngredients(ingredients: Unit<CraftingComponent>[]): boolean {
-        return new IngredientSearch(ingredients).perform(this.contents);
+    containsIngredients(ingredients: Combination<CraftingComponent>): boolean {
+        return new IngredientSearch(ingredients).perform(this.ownedComponents);
     }
 
     containsEssences(essences: Combination<EssenceDefinition>): boolean {
-        return new EssenceSearch(essences).perform(this.contents);
+        return new EssenceSearch(essences).perform(this.ownedComponents);
     }
 
-    excluding(ingredients: Unit<CraftingComponent>[]): Inventory<I, A> {
-        return new ReadonlyInventory<I, A>(this, ingredients);
+    excluding(ingredients: Combination<CraftingComponent>): Inventory<I, A> {
+        return CraftingInventory.builder<I, A>()
+            .withActor(this._actor)
+            .withOwnedComponents(this._ownedComponents.subtract(ingredients))
+            .withManagedItems(this._managedItems)
+            .build();
     }
 
-    selectFor(essences: Combination<EssenceDefinition>, identityProvider: EssenceIdentityProvider): Unit<CraftingComponent>[] {
-        return new EssenceSelection(essences, identityProvider).perform(this.contents);
+    selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent> {
+        return new EssenceSelection(essences).perform(this.ownedComponents);
     }
+
+    addAll(): Promise<FabricationAction[]> {
+        throw new Error('Crafting Inventories present are immutable views of the underlying Actor Data. ' +
+            'To add items, use a child type of Crafting Inventory that understands Item data structures ' +
+            'for the game system, e.g. Inventory5e for dnd5e');
+    }
+
+    removeAll(): Promise<FabricationAction[]> {
+        throw new Error('Crafting Inventories present are immutable views of the underlying Actor Data. ' +
+            'To remove items, use a child type of Crafting Inventory that understands Item data structures ' +
+            'for the game system, e.g. Inventory5e for dnd5e');
+    }
+
+
 
 }
 
-class ReadonlyInventory<I extends Item, A extends Actor<Actor.Data, I>> implements Inventory<I, A> {
-
-    private readonly _source: Inventory<I, A>;
-    private readonly _contents: Map<CraftingComponent, InventoryRecord<I>> = new Map();
-
-    constructor(source: Inventory<I, A>, exclude?: Unit<CraftingComponent>[]) {
-        this._source = source;
-        const reducedComponentQuantities: Map<string, number> = new Map();
-        if (exclude) {
-            exclude.forEach((unit => reducedComponentQuantities.set(unit.type.partId, -Math.abs(unit.quantity))));
-        }
-        source.contents.forEach((sourceRecord: InventoryRecord<I>, component: CraftingComponent) => {
-            if (reducedComponentQuantities.has(component.partId)) {
-                this._contents.set(component, sourceRecord.readOnly(reducedComponentQuantities.get(component.partId)))
-            } else {
-                this._contents.set(component, sourceRecord.readOnly());
-            }
-        });
-    }
-
-    containsIngredients(ingredients: Unit<CraftingComponent>[]): boolean {
-        return new IngredientSearch(ingredients).perform(this.contents);
-    }
-
-    containsEssences(essences: Combination<EssenceDefinition>): boolean {
-        return new EssenceSearch(essences).perform(this.contents);
-    }
-
-    get actor(): A {
-        return this._source.actor;
-    }
-
-    get contents(): Map<CraftingComponent, InventoryRecord<I>> {
-        return new Map(this._contents);
-    }
-
-    excluding(ingredients: Unit<CraftingComponent>[]): Inventory<I, A> {
-        return new ReadonlyInventory<I, A>(this, ingredients);
-    }
-
-    selectFor(essences: Combination<EssenceDefinition>, identityProvider: EssenceIdentityProvider): Unit<CraftingComponent>[] {
-        return new EssenceSelection(essences, identityProvider).perform(this.contents);
-    }
-
-}
-
-namespace AbstractInventory {
+namespace CraftingInventory {
 
     export class Builder<I extends Item, A extends Actor<Actor.Data, I>> {
 
         public actor: A;
-        public contents: Map<CraftingComponent, InventoryRecord<I>>;
+        public ownedComponents: Combination<CraftingComponent>;
+        public managedItems: Map<CraftingComponent, I[]>;
+
+        public build(): Inventory<I, A> {
+            return new CraftingInventory(this);
+        }
 
         public withActor(value: A): Builder<I, A> {
             this.actor = value;
             return this;
         }
 
-        public withContents(value: Map<CraftingComponent, InventoryRecord<I>>): Builder<I, A> {
-            this.contents = value;
+        public withOwnedComponents(value: Combination<CraftingComponent>): Builder<I, A> {
+            this.ownedComponents = value;
+            return this;
+        }
+
+        public withManagedItems(value: Map<CraftingComponent, I[]>): Builder<I, A> {
+            this.managedItems = value;
             return this;
         }
 
@@ -194,4 +183,4 @@ namespace AbstractInventory {
 
 }
 
-export {Inventory, AbstractInventory}
+export {Inventory, CraftingInventory}

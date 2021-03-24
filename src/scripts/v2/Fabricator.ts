@@ -1,28 +1,31 @@
 import {Inventory} from './Inventory';
 import {Recipe} from "./Recipe";
-import {ComponentUnit} from "./CraftingComponent";
-import {CraftingCheck} from "./CraftingCheck";
-import {EssenceDefinition, EssenceIdentityProvider} from "./EssenceDefinition";
-
-class FabricationOutcome {
-
-}
+import {CraftingCheck, CraftingCheckResult} from "./CraftingCheck";
+import {Combination} from "./Combination";
+import {CraftingComponent} from "./CraftingComponent";
+import {FabricationAction} from "./FabricationAction";
+import {OutcomeType} from "./OutcomeType";
+import {FabricationOutcome} from "./FabricationOutcome";
 
 class Fabricator<I extends Item, A extends Actor<Actor.Data, I>> {
 
-    private readonly _craftingCheck: CraftingCheck;
-    private readonly _essenceIdentityProvider: EssenceIdentityProvider;
+    private readonly _craftingCheck: CraftingCheck<I, A>;
+    private _consumeComponentsOnFailure: boolean;
 
     constructor(builder: Fabricator.Builder<I, A>) {
         this._craftingCheck = builder.craftingCheck;
-        this._essenceIdentityProvider = EssenceIdentityProvider.for(builder.systemEssences);
+        this._consumeComponentsOnFailure = builder.consumeComponentsOnFailure;
+    }
+
+    get craftingCheck(): CraftingCheck<I, A> {
+        return this._craftingCheck;
     }
 
     get hasCraftingCheck(): boolean {
         return !!this._craftingCheck;
     }
 
-    public followRecipe(actor: A, inventory: Inventory<I, A>, recipe: Recipe) {
+    public async followRecipe(actor: A, inventory: Inventory<I, A>, recipe: Recipe) {
         if (recipe.hasNamedComponents && !inventory.containsIngredients(recipe.namedComponents)) {
             return this.abort(`You don't have all of the ingredients for ${recipe.name}. `);
         }
@@ -32,50 +35,55 @@ class Fabricator<I extends Item, A extends Actor<Actor.Data, I>> {
             return this.abort(`There aren't enough essences amongst components in your inventory to craft ${recipe.name}. `);
         }
 
-        const essenceContribution: ComponentUnit[] = remainingComponents.selectFor(recipe.essences, this._essenceIdentityProvider);
-        const preparedComponents = recipe.ingredients.concat(essenceContribution);
+        const essenceContribution: Combination<CraftingComponent> = remainingComponents.selectFor(recipe.essences);
+        const preparedComponents = recipe.ingredients.combineWith(essenceContribution);
 
         if (!this.hasCraftingCheck) {
-            return this.succeed(inventory, preparedComponents, recipe.results);
+            return await this.succeed(inventory, preparedComponents, recipe.results);
         }
 
         const performedCheck = this.craftingCheck.perform(actor, preparedComponents);
         switch (performedCheck.outcome) {
             case 'FAILURE':
-                const wastedComponents = this.consumeComponentsOnFailure ? preparedComponents : [];
-                return this.fail(inventory, wastedComponents, performedCheck);
+                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? preparedComponents : Combination.EMPTY;
+                return await this.fail(inventory, wastedComponents, performedCheck);
             case 'SUCCESS':
-                return this.succeed(inventory, preparedComponents, recipe.results, performedCheck);
+                return await this.succeed(inventory, preparedComponents, recipe.results, performedCheck);
         }
 
     }
 
     private abort(message: string) {
-        return FabricationOutcome.builder
-            .withOutcome('NOT_ATTEMPTED')
+        return FabricationOutcome.builder()
+            .withOutcome(OutcomeType.NOT_ATTEMPTED)
             .withActions([])
+            .withMessage(message)
             .build();
     }
 
-    private fail(inventory: Inventory<I, A>, wastedComponents: ComponentUnit[], craftingCheck: CraftingCheck) {
-        const removals = FabricationAction.asRemovals(wastedComponents);
-        await inventory.removeAll(removals);
-        return FabricationOutcome.builder
-            .withOutcome('FAILURE')
+    private async fail(inventory: Inventory<I, A>,
+                       wastedComponents: Combination<CraftingComponent>,
+                       checkResult: CraftingCheckResult) {
+        const removals: FabricationAction[] = await inventory.removeAll(wastedComponents);
+        return FabricationOutcome.builder()
+            .withOutcome(OutcomeType.FAILURE)
             .withActions(removals)
-            .withCheckResult(craftingCheck)
+            .withCheckResult(checkResult)
             .build();
     }
 
-    private succeed(inventory: Inventory<I, A>, consumedComponents: ComponentUnit[], addedComponents: ComponentUnit[], craftingCheck?: CraftingCheck) {
-        const removals = FabricationAction.asRemovals(consumedComponents);
-        await inventory.removeAll(removals);
-        const additions = FabricationAction.asRemovals(addedComponents);
-        await inventory.addAll(additions);
-        return FabricationOutcome.builder
-            .withOutcome('SUCCESS')
+    private async succeed(inventory: Inventory<I, A>,
+                          consumedComponents: Combination<CraftingComponent>,
+                          addedComponents: Combination<CraftingComponent>,
+                          checkResult?: CraftingCheckResult) {
+
+        const removals: FabricationAction[] = await inventory.removeAll(consumedComponents);
+        const additions: FabricationAction[] = await inventory.addAll(addedComponents);
+
+        return FabricationOutcome.builder()
+            .withOutcome(OutcomeType.SUCCESS)
             .withActions(removals.concat(additions))
-            .withCheckResult(craftingCheck)
+            .withCheckResult(checkResult)
             .build();
     }
 
@@ -85,20 +93,20 @@ namespace Fabricator {
 
     export class Builder<I extends Item, A extends Actor<Actor.Data, I>> {
 
-        public craftingCheck: CraftingCheck;
-        public systemEssences: EssenceDefinition[] = [];
+        public craftingCheck: CraftingCheck<I, A>;
+        public consumeComponentsOnFailure: boolean;
 
         public build(): Fabricator<I, A> {
-            return new Fabricator<I, A>(this)
+            return new Fabricator<I, A>(this);
         }
 
-        public withCraftingCheck(value: CraftingCheck): Builder<I, A> {
+        public withCraftingCheck(value: CraftingCheck<I, A>): Builder<I, A> {
             this.craftingCheck = value;
             return this;
         }
 
-        public withSystemEssences(value: EssenceDefinition[]): Builder<I, A> {
-            this.systemEssences = value;
+        public withConsumeComponentsOnFailure(value: boolean): Builder<I, A> {
+            this.consumeComponentsOnFailure = value;
             return this;
         }
 

@@ -7,6 +7,10 @@ class Unit<T> {
         this._quantity = quantity;
     }
 
+    public toAmount(amount: number): Unit<T> {
+        return new Unit<T>(this._type, amount);
+    }
+
     get type(): T {
         return this._type;
     }
@@ -25,7 +29,11 @@ class Combination<T> {
         this._amounts = amounts;
     }
 
-    public static fromUnits<T>(units: Unit<T>[]) {
+    public static get EMPTY() {
+        return new Combination([], new Map());
+    }
+
+    public static ofUnits<T>(units: Unit<T>[]): Combination<T> {
         const members: T[] = [];
         const amounts: Map<T, number> = new Map();
         units.forEach((unit => {
@@ -39,12 +47,21 @@ class Combination<T> {
         return new Combination(members, amounts);
     }
 
+    public static ofUnit<T>(unit: Unit<T>): Combination<T> {
+        return new Combination<T>([unit.type], new Map([[unit.type, unit.quantity]]));
+    }
+
     get members(): T[] {
         return this._members;
     }
 
     get amounts(): Map<T, number> {
         return this._amounts;
+    }
+
+    public size(): number {
+        return this._members.map((member => this._amounts.get(member)))
+            .reduce((left: number, right: number) => left + right, 0);
     }
 
     public clone(): Combination<T> {
@@ -63,7 +80,36 @@ class Combination<T> {
         return this.members.length === 0 && this._amounts.size === 0;
     }
 
+    public asUnits(): Unit<T>[] {
+        return this._members.map((member: T) => new Unit<T>(member, this._amounts.get(member)));
+    }
+
+    public isIn(other: Combination<T>): boolean {
+        return this.members.map((thisMember: T) => {
+            if (!other.contains(thisMember)) {
+                return false;
+            }
+            const amount: number = other.amountFor(thisMember) - this.amountFor(thisMember);
+            return amount >= 0;
+        }).reduce((left: boolean, right: boolean) => left && right, true);
+    }
+
+    public combineWith(other: Combination<T>): Combination<T> {
+        const members: T[] = other.members.concat(this._members)
+            .filter(((member: T, index: number, combinedMembers: T[]) => combinedMembers.indexOf(member) === index))
+        const combination: Map<T, number> = new Map();
+        members.forEach((member: T) => {
+            const otherAmount: number = other.contains(member) ? other.amountFor(member) : 0;
+            const thisAmount: number = this.contains(member) ? this.amountFor(member) : 0;
+            combination.set(member, otherAmount + thisAmount);
+        });
+        return new Combination<T>(members, combination);
+    }
+
     public subtract(other: Combination<T>): Combination<T> {
+        if (other.isEmpty()) {
+            return this.clone();
+        }
         const members: T[] = [];
         const combination: Map<T, number> = new Map();
         other.amounts.forEach(((subtract: number, member: T) => {
