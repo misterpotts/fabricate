@@ -3,7 +3,6 @@ type ActionType5e = 'mwak' | 'rwak' | 'rsak' | 'msak' | 'save';
 type ActivationType5e = 'action' | 'bonus' | 'reaction' | 'special';
 type ItemType5e = 'weapon' | 'equipment' | 'consumable' | 'tool' | 'loot' | 'class' | 'spell' | 'feat' | 'backpack';
 type ToolProficiency5e = 'herb' | 'art' | 'disg' | 'forg'| 'game' | 'music' | 'navg' | 'pois' | 'thief' | 'vehicle';
-type CustomToolProficiency5e = 'Alchemy' | 'alc' | 'Alchemist\'s Supplies' | 'Alchemists Supplies' | 'Alchemy kit' | 'Alchemist\'s Kit' | 'Alchemists Kit' | '';
 type TargetType5e = 'ally' | 'cone' | 'creature' | 'cube'  | 'cylinder' | 'enemy' | 'line' | 'none' | 'object' | 'radius' | 'self' | 'space' | 'sphere' | 'square' | 'wall';
 type TargetUnitType5e = 'none' | 'self' | 'touch' | 'special'  | 'any' | 'ft' | 'miles';
 type DurationType5e = 'days' | 'hours' | 'instantaneous' | 'minutes' | 'months' | 'permanent' | 'rounds' | 'special' | 'turns' | 'years';
@@ -134,7 +133,7 @@ interface ActorDataValue5e {
         }
         toolProf: {
             value: ToolProficiency5e[],
-            custom: CustomToolProficiency5e | ''
+            custom: '' // comma-separated values in a single string
         }
     },
     attributes: {
