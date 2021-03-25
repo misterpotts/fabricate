@@ -70,19 +70,19 @@ class EssenceSelection {
                 availableComponents = availableComponents.subtract(componentsToRemove);
             }
         }));
-        const sortedComponents = availableComponents.asUnits().sort(((left: Unit<CraftingComponent>, right: Unit<CraftingComponent>) => left.type.essences.size() - right.type.essences.size()));
+        const sortedComponents = availableComponents.asUnits().sort(((left: Unit<CraftingComponent>, right: Unit<CraftingComponent>) => left.part.essences.size() - right.part.essences.size()));
         let remainingEssences: Combination<EssenceDefinition> = this._essences.clone();
         const selectedComponents: Unit<CraftingComponent>[] = [];
         for (let i = 0; i < sortedComponents.length; i++) {
             const thisComponent: Unit<CraftingComponent> = sortedComponents[i];
             let quantitySelected: number = 0;
             for (let j = 0; j < thisComponent.quantity; j++) {
-                if (thisComponent.type.essences.intersects(remainingEssences)) {
-                    remainingEssences.subtract(thisComponent.type.essences);
+                if (thisComponent.part.essences.intersects(remainingEssences)) {
+                    remainingEssences.subtract(thisComponent.part.essences);
                     quantitySelected++;
                 }
             }
-            selectedComponents.push(thisComponent.toAmount(quantitySelected));
+            selectedComponents.push(thisComponent.withQuantity(quantitySelected));
             if (remainingEssences.isEmpty()) {
                 return Combination.ofUnits(selectedComponents);
             }

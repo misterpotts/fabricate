@@ -17,7 +17,7 @@
     "noErrorTruncation": true,
     "target": "ES6",
     "lib": ["DOM", "ES6", "ES2017", "ES2018"],
-    "types": ["node", "mocha", "chai", "sinon", "handlebars", "@league-of-foundry-developers/foundry-vtt-types"],
+    "types": ["node", "mocha", "chai", "sinon", "jest", "handlebars", "@league-of-foundry-developers/foundry-vtt-types"],
     "typeRoots": [
       "./typings"
     ],

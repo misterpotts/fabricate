@@ -47,6 +47,26 @@ namespace CraftingComponent {
             return this;
         }
 
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
+            return this;
+        }
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
+
+        public withImageUrl(value: string): Builder {
+            this.imageUrl = value;
+            return this;
+        }
+
+        public withName(value: string): Builder {
+            this.name = value;
+            return this;
+        }
+
     }
 
 }

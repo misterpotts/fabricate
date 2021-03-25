@@ -1,21 +1,32 @@
-interface FabricateItem {
+interface Identifiable {
+    id: string;
+}
+
+interface FabricateItem extends Identifiable {
     systemId: string;
     partId: string;
     imageUrl: string;
     name: string;
+    equals(other: FabricateItem): boolean;
 }
 
 abstract class AbstractFabricateItem implements FabricateItem {
     protected readonly _systemId: string;
     protected readonly _partId: string;
+    protected readonly _id: string;
     protected readonly _imageUrl: string;
     protected readonly _name: string;
 
     protected constructor(builder: FabricateItem.Builder) {
         this._systemId = builder.systemId;
         this._partId = builder.partId;
+        this._id = `${builder.partId}:${builder.systemId}`;
         this._imageUrl = builder.imageUrl;
         this._name = builder.name;
+    }
+
+    get id(): string {
+        return this._id;
     }
 
     get partId(): string {
@@ -34,19 +45,14 @@ abstract class AbstractFabricateItem implements FabricateItem {
         return this._name;
     }
 
-    sharesType(other: FabricateItem): boolean {
+    equals(other: FabricateItem): boolean {
         if (!other) {
             return false;
         }
         return this.partId === other.partId
-            && this.systemId === other.systemId;
-    }
-
-    isValid(): boolean {
-        return this.partId && this.partId.length > 0
-            && this.systemId && this.systemId.length > 0
-            && this.imageUrl != null && this.imageUrl.length > 0
-            && this.name != null && this.name.length > 0;
+            && this.systemId === other.systemId
+            && this.imageUrl === other.imageUrl
+            && this.name === other.name;
     }
 
 }
@@ -60,28 +66,8 @@ namespace FabricateItem {
         public imageUrl: string;
         public name: string;
 
-        public withSystemId(value: string): Builder {
-            this.systemId = value;
-            return this;
-        }
-
-        public withPartId(value: string): Builder {
-            this.partId = value;
-            return this;
-        }
-
-        public withImageUrl(value: string): Builder {
-            this.imageUrl = value;
-            return this;
-        }
-
-        public withName(value: string): Builder {
-            this.name = value;
-            return this;
-        }
-
     }
 
 }
 
-export {FabricateItem, AbstractFabricateItem}
+export {Identifiable, FabricateItem, AbstractFabricateItem}

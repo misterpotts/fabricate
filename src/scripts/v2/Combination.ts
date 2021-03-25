@@ -1,136 +1,179 @@
-class Unit<T> {
-    private readonly _type: T;
+import {Identifiable} from "./FabricateItem";
+
+class Unit<T extends Identifiable> {
+    private readonly _part: T;
     private readonly _quantity: number;
 
     constructor(type: T, quantity: number) {
-        this._type = type;
+        this._part = type;
         this._quantity = quantity;
     }
 
-    public toAmount(amount: number): Unit<T> {
-        return new Unit<T>(this._type, amount);
-    }
-
-    get type(): T {
-        return this._type;
+    get part(): T {
+        return this._part;
     }
 
     get quantity(): number {
         return this._quantity;
     }
+
+    public add(amount: number): Unit<T> {
+        return new Unit<T>(this._part, amount + this._quantity);
+    }
+
+    public withQuantity(amount: number): Unit<T> {
+        return new Unit<T>(this._part, amount);
+    }
+
+    multiply(factor: number) {
+        return new Unit<T>(this._part, this._quantity * factor);
+    }
 }
 
-class Combination<T> {
-    private readonly _members: T[];
-    private readonly _amounts: Map<T, number>;
+class Combination<T extends Identifiable> {
+    private readonly _amounts: Map<string, Unit<T>>;
 
-    protected constructor(members: T[], amounts: Map<T, number>) {
-        this._members = members;
+    private constructor(amounts: Map<string, Unit<T>>) {
         this._amounts = amounts;
     }
 
-    public static get EMPTY() {
-        return new Combination([], new Map());
+    /**
+     * Constructs and returns an empty Combination
+     * */
+    public static EMPTY<T extends Identifiable>() {
+        return new Combination<T>(new Map());
     }
 
-    public static ofUnits<T>(units: Unit<T>[]): Combination<T> {
-        const members: T[] = [];
-        const amounts: Map<T, number> = new Map();
+    /**
+     * Create a Combination from an array of Units. Normalizes any duplicate Units into a single entry for an amount
+     * within the Combination.
+    * */
+    public static ofUnits<T extends Identifiable>(units: Unit<T>[]): Combination<T> {
+        const amounts: Map<string, Unit<T>> = new Map();
         units.forEach((unit => {
-            if (!members.includes(unit.type)) {
-                members.push(unit.type);
-                amounts.set(unit.type, unit.quantity);
+            if (!amounts.has(unit.part.id)) {
+                amounts.set(unit.part.id, unit);
             } else {
-                amounts.set(unit.type, amounts.get(unit.type) + unit.quantity);
+                const current: Unit<T> = amounts.get(unit.part.id);
+                amounts.set(unit.part.id, current.add(unit.quantity));
             }
         }));
-        return new Combination(members, amounts);
+        return new Combination(amounts);
     }
 
-    public static ofUnit<T>(unit: Unit<T>): Combination<T> {
-        return new Combination<T>([unit.type], new Map([[unit.type, unit.quantity]]));
+    public static ofUnit<T extends Identifiable>(unit: Unit<T>): Combination<T> {
+        return new Combination<T>(new Map([[unit.part.id, unit]]));
     }
 
-    get members(): T[] {
-        return this._members;
-    }
-
-    get amounts(): Map<T, number> {
+    get amounts(): Map<string, Unit<T>> {
         return this._amounts;
     }
 
     public size(): number {
-        return this._members.map((member => this._amounts.get(member)))
-            .reduce((left: number, right: number) => left + right, 0);
+        let size = 0;
+        this.amounts.forEach((unit: Unit<T>) => {
+            size += unit.quantity;
+        });
+        return size;
     }
 
     public clone(): Combination<T> {
-        return new Combination<T>(Array.from(this._members), new Map(this._amounts));
+        return new Combination<T>(new Map(this._amounts));
     }
 
     public contains(member: T): boolean {
-        return this._members.includes(member);
+        return this.amounts.has(member.id);
     }
 
     public amountFor(member: T): number {
-        return this._amounts.has(member) ? this._amounts.get(member) : 0;
+        return this._amounts.has(member.id) ? this._amounts.get(member.id).quantity : 0;
     }
 
     public isEmpty(): boolean {
-        return this.members.length === 0 && this._amounts.size === 0;
+        return this.size() === 0;
     }
 
     public asUnits(): Unit<T>[] {
-        return this._members.map((member: T) => new Unit<T>(member, this._amounts.get(member)));
+        const units: Unit<T>[] = [];
+        this.amounts.forEach((unit: Unit<T>) => units.push(unit));
+        return units;
     }
 
     public isIn(other: Combination<T>): boolean {
-        return this.members.map((thisMember: T) => {
-            if (!other.contains(thisMember)) {
+        for (const unit of this.amounts.values()) {
+            if (!other.contains(unit.part)) {
                 return false;
             }
-            const amount: number = other.amountFor(thisMember) - this.amountFor(thisMember);
-            return amount >= 0;
-        }).reduce((left: boolean, right: boolean) => left && right, true);
+            const amount: number = other.amountFor(unit.part) - this.amountFor(unit.part);
+            if (amount < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public get members(): T[] {
+        const members: T[] = [];
+        for (const unit of this.amounts.values()) {
+            members.push(unit.part);
+        }
+        return members;
+    }
+
+    public get units(): Unit<T>[] {
+        const amounts: Unit<T>[] = [];
+        for (const unit of this.amounts.values()) {
+            amounts.push(unit);
+        }
+        return amounts;
     }
 
     public combineWith(other: Combination<T>): Combination<T> {
-        const members: T[] = other.members.concat(this._members)
-            .filter(((member: T, index: number, combinedMembers: T[]) => combinedMembers.indexOf(member) === index))
-        const combination: Map<T, number> = new Map();
-        members.forEach((member: T) => {
-            const otherAmount: number = other.contains(member) ? other.amountFor(member) : 0;
-            const thisAmount: number = this.contains(member) ? this.amountFor(member) : 0;
-            combination.set(member, otherAmount + thisAmount);
+        const combination: Map<string, Unit<T>> = new Map(this.amounts);
+        other.units.forEach((otherUnit: Unit<T>) => {
+            if (!combination.has(otherUnit.part.id)) {
+                combination.set(otherUnit.part.id, otherUnit);
+            } else {
+                const current: Unit<T> = combination.get(otherUnit.part.id);
+                const updated: Unit<T> = current.add(otherUnit.quantity);
+                combination.set(otherUnit.part.id, updated);
+            }
         });
-        return new Combination<T>(members, combination);
+        return new Combination<T>(combination);
+    }
+
+    public add(additionalUnit: Unit<T>): Combination<T> {
+        const amounts: Map<string, Unit<T>> = new Map(this.amounts);
+        const currentAmount: Unit<T> =  amounts.get(additionalUnit.part.id);
+        const updatedAmount: Unit<T> = currentAmount.add(additionalUnit.quantity);
+        amounts.set(additionalUnit.part.id, updatedAmount);
+        return new Combination<T>(amounts);
     }
 
     public subtract(other: Combination<T>): Combination<T> {
         if (other.isEmpty()) {
             return this.clone();
         }
-        const members: T[] = [];
-        const combination: Map<T, number> = new Map();
-        other.amounts.forEach(((subtract: number, member: T) => {
-            if (!this.contains(member)) {
+        const combination: Map<string, Unit<T>> = new Map();
+        other.amounts.forEach((otherUnit: Unit<T>) => {
+            if (!this.contains(otherUnit.part)) {
                 return;
             }
-            const modifiedAmount = this.amountFor(member) - subtract;
+            const modifiedAmount: number = this.amountFor(otherUnit.part) - otherUnit.quantity;
             if (modifiedAmount > 0) {
-                members.push(member);
-                combination.set(member, modifiedAmount);
+                combination.set(otherUnit.part.id, otherUnit.withQuantity(modifiedAmount));
             }
-        }));
-        return new Combination<T>(members, combination);
+        });
+        return new Combination<T>(combination);
     }
 
     public multiply(factor: number) {
-        const modifiedAmounts: Map<T, number> = new Map(this._amounts);
+        const modifiedAmounts: Map<string, Unit<T>> = new Map(this._amounts);
         this.members.forEach((member: T) => {
-            modifiedAmounts.set(member, modifiedAmounts.get(member) * factor);
+            const unit: Unit<T> = modifiedAmounts.get(member.id);
+            modifiedAmounts.set(member.id, unit.multiply(factor));
         });
-        return new Combination(this._members, modifiedAmounts);
+        return new Combination(modifiedAmounts);
     }
 
     intersects(other: Combination<T>) {

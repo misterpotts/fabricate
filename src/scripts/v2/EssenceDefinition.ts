@@ -1,6 +1,7 @@
 import {Unit} from "./Combination";
+import {Identifiable} from "./FabricateItem";
 
-class EssenceDefinition {
+class EssenceDefinition implements Identifiable {
 
     private readonly _name: string;
     private readonly _slug: string;
@@ -18,6 +19,10 @@ class EssenceDefinition {
 
     public static builder() {
         return new EssenceDefinition.Builder();
+    }
+
+    get id(): string {
+        return this._slug;
     }
 
     get name(): string {
@@ -64,7 +69,7 @@ class EssenceIdentityProvider {
     }
 
     public getForEssenceCombination(essenceCombination: Unit<EssenceDefinition>[]): number {
-        return essenceCombination.map((essenceUnit => this.getForEssence(essenceUnit.type) * essenceUnit.quantity))
+        return essenceCombination.map((essenceUnit => this.getForEssence(essenceUnit.part) * essenceUnit.quantity))
             .reduce((left: number, right: number) => left * right, 1);
     }
 
