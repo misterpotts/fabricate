@@ -16,13 +16,9 @@ Fabricate is a system-agnostic, flexible crafting module for FoundryVTT. The cur
 development. It supports the majority of the functionality of "Alchemist's Supplies V1.6" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/). 
 Once complete, Fabricate will ship with several crafting systems, but initial support will be limited to D&D 5E.
 
-Here's a quick preview of one of the early features - crafting from a Recipe that requires component essences.
+Here's a quick preview of one of the early features.
 
-![](/screens/fabricate-preview-3.gif)
-
-Crafting from components containing essences without a recipe.
-
-![](/screens/fabricate-preview-5.gif)
+![](/screens/fabricate-preview-6.gif)
 
 # Changelog
 
