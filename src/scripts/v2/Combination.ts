@@ -81,7 +81,7 @@ class Combination<T extends Identifiable> {
         return new Combination<T>(new Map(this._amounts));
     }
 
-    public contains(member: T): boolean {
+    public containsPart(member: T): boolean {
         return this.amounts.has(member.id);
     }
 
@@ -101,7 +101,7 @@ class Combination<T extends Identifiable> {
 
     public isIn(other: Combination<T>): boolean {
         for (const unit of this.amounts.values()) {
-            if (!other.contains(unit.part)) {
+            if (!other.containsPart(unit.part)) {
                 return false;
             }
             const amount: number = other.amountFor(unit.part) - this.amountFor(unit.part);
@@ -156,7 +156,7 @@ class Combination<T extends Identifiable> {
         }
         const combination: Map<string, Unit<T>> = new Map();
         other.amounts.forEach((otherUnit: Unit<T>) => {
-            if (!this.contains(otherUnit.part)) {
+            if (!this.containsPart(otherUnit.part)) {
                 return;
             }
             const modifiedAmount: number = this.amountFor(otherUnit.part) - otherUnit.quantity;
