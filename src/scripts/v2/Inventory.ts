@@ -39,11 +39,11 @@ class EssenceSearch implements InventorySearch {
     }
 
     public perform(contents: Combination<CraftingComponent>): boolean {
-        const remaining: Combination<EssenceDefinition> = this._essences.clone();
+        let remaining: Combination<EssenceDefinition> = this._essences.clone();
         for (const component of contents.members) {
             if (!component.essences.isEmpty()) {
                 const essenceAmount: Combination<EssenceDefinition> = component.essences.multiply(contents.amountFor(component));
-                remaining.subtract(essenceAmount);
+                remaining = remaining.subtract(essenceAmount);
             }
             if (remaining.isEmpty()) {
                 return true;
@@ -87,25 +87,25 @@ class EssenceSelection {
                 return Combination.ofUnits(selectedComponents);
             }
         }
-        return Combination.EMPTY;
+        return Combination.EMPTY();
     }
 
 }
 
-class CraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> implements Inventory<I, A> {
+class BaseCraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> implements Inventory<I, A> {
 
     private readonly _actor: A;
     private readonly _ownedComponents: Combination<CraftingComponent>;
     private readonly _managedItems: Map<CraftingComponent, I[]>;
 
-    constructor(builder: CraftingInventory.Builder<I, A>) {
+    constructor(builder: BaseCraftingInventory.Builder<I, A>) {
         this._actor = builder.actor;
         this._ownedComponents = builder.ownedComponents;
         this._managedItems = builder.managedItems;
     }
 
-    public static builder<I extends Item, A extends Actor<Actor.Data, I>>(): CraftingInventory.Builder<I, A> {
-        return new CraftingInventory.Builder<I, A>();
+    public static builder<I extends Item, A extends Actor<Actor.Data, I>>(): BaseCraftingInventory.Builder<I, A> {
+        return new BaseCraftingInventory.Builder<I, A>();
     }
 
     get actor(): A {
@@ -125,7 +125,7 @@ class CraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> implemen
     }
 
     excluding(ingredients: Combination<CraftingComponent>): Inventory<I, A> {
-        return CraftingInventory.builder<I, A>()
+        return BaseCraftingInventory.builder<I, A>()
             .withActor(this._actor)
             .withOwnedComponents(this._ownedComponents.subtract(ingredients))
             .withManagedItems(this._managedItems)
@@ -152,16 +152,16 @@ class CraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> implemen
 
 }
 
-namespace CraftingInventory {
+namespace BaseCraftingInventory {
 
     export class Builder<I extends Item, A extends Actor<Actor.Data, I>> {
 
         public actor: A;
-        public ownedComponents: Combination<CraftingComponent>;
-        public managedItems: Map<CraftingComponent, I[]>;
+        public ownedComponents: Combination<CraftingComponent> = Combination.EMPTY();
+        public managedItems: Map<CraftingComponent, I[]> = new Map();
 
         public build(): Inventory<I, A> {
-            return new CraftingInventory(this);
+            return new BaseCraftingInventory(this);
         }
 
         public withActor(value: A): Builder<I, A> {
@@ -183,4 +183,4 @@ namespace CraftingInventory {
 
 }
 
-export {Inventory, CraftingInventory}
+export {Inventory, BaseCraftingInventory}

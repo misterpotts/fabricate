@@ -155,15 +155,16 @@ class Combination<T extends Identifiable> {
             return this.clone();
         }
         const combination: Map<string, Unit<T>> = new Map();
-        other.amounts.forEach((otherUnit: Unit<T>) => {
-            if (!this.containsPart(otherUnit.part)) {
-                return;
+        for (const thisElement of this._amounts.values()) {
+            if (!other.containsPart(thisElement.part)) {
+                combination.set(thisElement.part.id, thisElement);
+            } else {
+                const resultingAmount = thisElement.quantity - other.amountFor(thisElement.part);
+                if (resultingAmount > 0) {
+                    combination.set(thisElement.part.id, thisElement.withQuantity(resultingAmount));
+                }
             }
-            const modifiedAmount: number = this.amountFor(otherUnit.part) - otherUnit.quantity;
-            if (modifiedAmount > 0) {
-                combination.set(otherUnit.part.id, otherUnit.withQuantity(modifiedAmount));
-            }
-        });
+        }
         return new Combination<T>(combination);
     }
 

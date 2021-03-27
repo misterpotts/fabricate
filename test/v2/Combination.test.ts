@@ -2,43 +2,14 @@ import {expect, jest, test} from "@jest/globals";
 
 import {Combination, Unit} from "../../src/scripts/v2/Combination";
 import {CraftingComponent} from "../../src/scripts/v2/CraftingComponent";
+// @ts-ignore
+import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 
 beforeEach(() => {
     jest.resetAllMocks();
 });
 
-const testComponentOne: CraftingComponent = CraftingComponent.builder()
-    .withPartId('ABC123')
-    .withSystemId('system-one')
-    .withImageUrl('/img/picture.png')
-    .withName('Test Component One')
-    .build();
-const testComponentTwo: CraftingComponent = CraftingComponent.builder()
-    .withPartId('ABC234')
-    .withSystemId('system-one')
-    .withImageUrl('/img/picture.png')
-    .withName('Test Component Two')
-    .build();
-const testComponentThree: CraftingComponent = CraftingComponent.builder()
-    .withPartId('ABC345')
-    .withSystemId('system-one')
-    .withImageUrl('/img/picture.png')
-    .withName('Test Component Three')
-    .build();
-const testComponentFour: CraftingComponent = CraftingComponent.builder()
-    .withPartId('ABC456')
-    .withSystemId('system-one')
-    .withImageUrl('/img/picture.png')
-    .withName('Test Component Four')
-    .build();
-const testComponentFive: CraftingComponent = CraftingComponent.builder()
-    .withPartId('ABC567')
-    .withSystemId('system-one')
-    .withImageUrl('/img/picture.png')
-    .withName('Test Component Five')
-    .build();
-
-test('Create an empty Combination',() => {
+test('Should create an empty Combination',() => {
     const underTest: Combination<CraftingComponent> = Combination.EMPTY();
 
     expect(underTest.size()).toBe(0);
@@ -55,17 +26,18 @@ test('Create an empty Combination',() => {
     expect(underTestAsUnits.length).toBe(0);
 });
 
-test('Create a Combination from a single Unit',() => {
+test('Should create a Combination from a single Unit',() => {
     const underTest: Combination<CraftingComponent> = Combination.ofUnit(new Unit(testComponentOne, 1));
 
     expect(underTest.size()).toBe(1);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.containsPart(testComponentOne)).toBe(true);
     expect(underTest.containsPart(CraftingComponent.builder()
-        .withPartId('ABC123')
-        .withSystemId('system-one')
-        .withImageUrl('/img/picture.png')
-        .withName('Test Component')
+        .withPartId(testComponentOne.partId)
+        .withSystemId(testComponentOne.systemId)
+        .withImageUrl(testComponentOne.imageUrl)
+        .withName(testComponentOne.name)
+        .withEssences(testComponentOne.essences)
         .build())).toBe(true);
     expect(underTest.containsPart(CraftingComponent.builder()
         .withPartId('XYZ345')
@@ -77,7 +49,7 @@ test('Create a Combination from a single Unit',() => {
     expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne]));
 });
 
-test('Create a Combination from a several Units',() => {
+test('Should create a Combination from a several Units',() => {
     const underTest: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentOne, 1),
@@ -94,10 +66,11 @@ test('Create a Combination from a several Units',() => {
     expect(underTest.containsPart(testComponentTwo)).toBe(true);
     expect(underTest.containsPart(testComponentThree)).toBe(true);
     expect(underTest.containsPart(CraftingComponent.builder()
-        .withPartId('ABC123')
-        .withSystemId('system-one')
-        .withImageUrl('/img/picture.png')
-        .withName('Test Component')
+        .withPartId(testComponentOne.partId)
+        .withSystemId(testComponentOne.systemId)
+        .withImageUrl(testComponentOne.imageUrl)
+        .withName(testComponentOne.name)
+        .withEssences(testComponentOne.essences)
         .build())).toBe(true);
     expect(underTest.containsPart(CraftingComponent.builder()
         .withPartId('XYZ345')
@@ -105,14 +78,23 @@ test('Create a Combination from a several Units',() => {
         .withImageUrl('/img/picture.png')
         .withName('Test Component 2')
         .build())).toBe(false);
-
     expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree]));
+});
+
+test('Should convert a combination to Units',() => {
+    const underTest: Combination<CraftingComponent> = Combination.ofUnits([
+        new Unit(testComponentOne, 1),
+        new Unit(testComponentOne, 1),
+        new Unit(testComponentTwo, 2),
+        new Unit(testComponentThree, 3)
+    ]);
 
     const underTestAsUnits: Unit<CraftingComponent>[] = underTest.asUnits();
+
     expect(underTestAsUnits.length).toBe(3);
 });
 
-test('Create a Combination from combining existing Combinations',() => {
+test('Should create a Combination from combining existing Combinations',() => {
     const sourceA: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentTwo, 2),
@@ -148,19 +130,30 @@ test('Create a Combination from combining existing Combinations',() => {
     expect(testResultTwo.containsPart(testComponentFour)).toBe(true);
     expect(testResultTwo.containsPart(testComponentFive)).toBe(true);
     expect(testResultTwo.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive]));
-
-    const testResultThree: Combination<CraftingComponent> = testResultTwo.add(new Unit(testComponentOne, 10));
-    expect(testResultThree.size()).toBe(27);
-    expect(testResultThree.isEmpty()).toBe(false);
-    expect(testResultThree.containsPart(testComponentOne)).toBe(true);
-    expect(testResultThree.containsPart(testComponentTwo)).toBe(true);
-    expect(testResultThree.containsPart(testComponentThree)).toBe(true);
-    expect(testResultThree.containsPart(testComponentFour)).toBe(true);
-    expect(testResultThree.containsPart(testComponentFive)).toBe(true);
-    expect(testResultThree.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive]));
 });
 
-test('One Combination should contain another', () => {
+test('Should add one Combination to another', () => {
+    const source: Combination<CraftingComponent> = Combination.ofUnits([
+        new Unit(testComponentOne, 17),
+        new Unit(testComponentTwo, 21),
+        new Unit(testComponentThree, 36)
+    ]);
+
+    const underTest: Combination<CraftingComponent> = source.add(new Unit(testComponentOne, 10));
+    expect(underTest.size()).toBe(84);
+    expect(underTest.isEmpty()).toBe(false);
+    expect(underTest.containsPart(testComponentOne)).toBe(true);
+    expect(underTest.containsPart(testComponentTwo)).toBe(true);
+    expect(underTest.containsPart(testComponentThree)).toBe(true);
+    expect(underTest.containsPart(testComponentFour)).toBe(false);
+    expect(underTest.containsPart(testComponentFive)).toBe(false);
+    expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree]));
+    expect(underTest.amountFor(testComponentOne)).toBe(27);
+    expect(underTest.amountFor(testComponentTwo)).toBe(21);
+    expect(underTest.amountFor(testComponentThree)).toBe(36);
+});
+
+test('Should determine when wne Combination contains another', () => {
     const superset: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentTwo, 2),
@@ -186,7 +179,7 @@ test('One Combination should contain another', () => {
     expect(superset.isIn(excludedSubset)).toBe(false);
 })
 
-test('Subtract one Combination from another', () => {
+test('Should subtract one Combination from another', () => {
     const largeCombination: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 10),
         new Unit(testComponentTwo, 10),
@@ -231,7 +224,7 @@ test('Subtract one Combination from another', () => {
     expect(testResultThree.amountFor(testComponentThree)).toBe(5);
 });
 
-test('Multiply a Combination by a factor', () => {
+test('Should multiply a Combination by a factor', () => {
     const sourceCombination: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 10),
         new Unit(testComponentTwo, 8),
@@ -249,7 +242,7 @@ test('Multiply a Combination by a factor', () => {
     expect(underTest.amountFor(testComponentThree)).toBe(3);
 });
 
-test('Two Combinations intersect', () => {
+test('Should determine when two Combinations intersect', () => {
     const sourceCombinationA: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 10),
         new Unit(testComponentTwo, 8),
