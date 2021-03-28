@@ -65,6 +65,10 @@ class Combination<T extends Identifiable> {
         return new Combination<T>(new Map([[unit.part.id, unit]]));
     }
 
+    public just(member: T): Combination<T> {
+        return new Combination<T>(new Map([[member.id, new Unit<T>(member, this.amountFor(member))]]));
+    }
+
     get amounts(): Map<string, Unit<T>> {
         return this._amounts;
     }
@@ -144,9 +148,13 @@ class Combination<T extends Identifiable> {
 
     public add(additionalUnit: Unit<T>): Combination<T> {
         const amounts: Map<string, Unit<T>> = new Map(this.amounts);
-        const currentAmount: Unit<T> =  amounts.get(additionalUnit.part.id);
-        const updatedAmount: Unit<T> = currentAmount.add(additionalUnit.quantity);
-        amounts.set(additionalUnit.part.id, updatedAmount);
+        if (amounts.has(additionalUnit.part.id)) {
+            const currentAmount: Unit<T> =  amounts.get(additionalUnit.part.id);
+            const updatedAmount: Unit<T> = currentAmount.add(additionalUnit.quantity);
+            amounts.set(additionalUnit.part.id, updatedAmount);
+        } else {
+            amounts.set(additionalUnit.part.id, additionalUnit);
+        }
         return new Combination<T>(amounts);
     }
 
@@ -179,6 +187,24 @@ class Combination<T extends Identifiable> {
 
     intersects(other: Combination<T>) {
         return other.members.some((otherMember: T) => this.members.includes(otherMember));
+    }
+
+    explode <R extends Identifiable>(transformFunction: (thisType: T) => Combination<R>): Combination<R> {
+        let exploded: Combination<R> = Combination.EMPTY<R>();
+        this.amounts.forEach((unit: Unit<T>) => {
+            exploded = exploded.combineWith(transformFunction(unit.part).multiply(unit.quantity));
+        });
+        return exploded;
+    }
+
+    equals(other: Combination<T>) {
+        if (!other) {
+            return false;
+        }
+        if (other.size() !== this.size()) {
+            return false;
+        }
+        return other.isIn(this) && this.isIn(other);
     }
 }
 

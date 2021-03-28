@@ -1,4 +1,4 @@
-import {Unit} from "./Combination";
+import {Combination} from "./Combination";
 import {Identifiable} from "./FabricateItem";
 
 class EssenceDefinition implements Identifiable {
@@ -68,8 +68,8 @@ class EssenceIdentityProvider {
         return this._essenceIdentities.get(essence);
     }
 
-    public getForEssenceCombination(essenceCombination: Unit<EssenceDefinition>[]): number {
-        return essenceCombination.map((essenceUnit => this.getForEssence(essenceUnit.part) * essenceUnit.quantity))
+    public getForEssenceCombination(combination: Combination<EssenceDefinition>): number {
+        return combination.members.map((essence => this.getForEssence(essence) * combination.amountFor(essence)))
             .reduce((left: number, right: number) => left * right, 1);
     }
 

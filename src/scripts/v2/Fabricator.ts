@@ -6,15 +6,18 @@ import {CraftingComponent} from "./CraftingComponent";
 import {FabricationAction} from "./FabricationAction";
 import {OutcomeType} from "./OutcomeType";
 import {FabricationOutcome} from "./FabricationOutcome";
+import {EssenceIdentityProvider} from "./EssenceDefinition";
 
 class Fabricator<I extends Item, A extends Actor<Actor.Data, I>> {
 
     private readonly _craftingCheck: CraftingCheck<I, A>;
-    private _consumeComponentsOnFailure: boolean;
+    private readonly _consumeComponentsOnFailure: boolean;
+    private readonly _essenceIdentityProvider: EssenceIdentityProvider;
 
     constructor(builder: Fabricator.Builder<I, A>) {
         this._craftingCheck = builder.craftingCheck;
         this._consumeComponentsOnFailure = builder.consumeComponentsOnFailure;
+        this._essenceIdentityProvider = builder.essenceIdentityProvider;
     }
 
     get craftingCheck(): CraftingCheck<I, A> {
@@ -35,7 +38,7 @@ class Fabricator<I extends Item, A extends Actor<Actor.Data, I>> {
             return this.abort(`There aren't enough essences amongst components in your inventory to craft ${recipe.name}. `);
         }
 
-        const essenceContribution: Combination<CraftingComponent> = remainingComponents.selectFor(recipe.essences);
+        const essenceContribution: Combination<CraftingComponent> = remainingComponents.selectFor(recipe.essences, this._essenceIdentityProvider);
         const preparedComponents = recipe.ingredients.combineWith(essenceContribution);
 
         if (!this.hasCraftingCheck) {
@@ -45,7 +48,7 @@ class Fabricator<I extends Item, A extends Actor<Actor.Data, I>> {
         const performedCheck = this.craftingCheck.perform(actor, preparedComponents);
         switch (performedCheck.outcome) {
             case 'FAILURE':
-                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? preparedComponents : Combination.EMPTY;
+                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? preparedComponents : Combination.EMPTY();
                 return await this.fail(inventory, wastedComponents, performedCheck);
             case 'SUCCESS':
                 return await this.succeed(inventory, preparedComponents, recipe.results, performedCheck);
@@ -95,6 +98,7 @@ namespace Fabricator {
 
         public craftingCheck: CraftingCheck<I, A>;
         public consumeComponentsOnFailure: boolean;
+        public essenceIdentityProvider: EssenceIdentityProvider;
 
         public build(): Fabricator<I, A> {
             return new Fabricator<I, A>(this);
@@ -107,6 +111,11 @@ namespace Fabricator {
 
         public withConsumeComponentsOnFailure(value: boolean): Builder<I, A> {
             this.consumeComponentsOnFailure = value;
+            return this;
+        }
+
+        public withEssenceIdentityProvider(value: EssenceIdentityProvider): Builder<I, A> {
+            this.essenceIdentityProvider = value;
             return this;
         }
 
