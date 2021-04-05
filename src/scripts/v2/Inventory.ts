@@ -29,7 +29,6 @@ class IngredientSearch implements InventorySearch {
     public perform(contents: Combination<CraftingComponent>): boolean {
         return this._ingredients.isIn(contents);
     }
-
 }
 
 class EssenceSearch implements InventorySearch {
@@ -52,7 +51,6 @@ class EssenceSearch implements InventorySearch {
         }
         return false;
     }
-
 }
 
 class ComponentCombinationNode {
@@ -197,7 +195,7 @@ class EssenceSelection {
 
 }
 
-class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
+abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
 
     private readonly _actor: A;
     private readonly _ownedComponents: Combination<CraftingComponent>;
@@ -207,10 +205,6 @@ class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> 
         this._actor = builder.actor;
         this._ownedComponents = builder.ownedComponents;
         this._managedItems = builder.managedItems;
-    }
-
-    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>>(): BaseCraftingInventory.Builder<D, A> {
-        return new BaseCraftingInventory.Builder<D, A>();
     }
 
     get actor(): A {
@@ -230,34 +224,20 @@ class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> 
     }
 
     excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A> {
-        return BaseCraftingInventory.builder<D, A>()
-            .withActor(this._actor)
-            .withOwnedComponents(this._ownedComponents.subtract(ingredients))
-            .withManagedItems(this._managedItems)
-            .build();
+        return this.from(this._actor, this._ownedComponents.subtract(ingredients), this._managedItems);
     }
 
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent> {
         return new EssenceSelection(essences).perform(this.ownedComponents);
     }
 
-    addAll(): Promise<FabricationAction[]> {
-        throw new Error('Crafting Inventories present are immutable views of the underlying Actor Data. ' +
-            'To add items, use a child type of Crafting Inventory that understands Item data structures ' +
-            'for the game system, e.g. Inventory5e for dnd5e');
-    }
+    abstract removeAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]>;
 
-    removeAll(): Promise<FabricationAction[]> {
-        throw new Error('Crafting Inventories present are immutable views of the underlying Actor Data. ' +
-            'To remove items, use a child type of Crafting Inventory that understands Item data structures ' +
-            'for the game system, e.g. Inventory5e for dnd5e');
-    }
+    abstract addAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]>;
 
-    createAll(): Promise<FabricationAction[]> {
-        throw new Error('Crafting Inventories present are immutable views of the underlying Actor Data. ' +
-            'To create custom items, use a child type of Crafting Inventory that understands Item data structures ' +
-            'for the game system, e.g. Inventory5e for dnd5e');
-    }
+    abstract createAll(itemData: D[]): Promise<FabricationAction[]>;
+
+    abstract from(actor: A, ownedComponents: Combination<CraftingComponent>, managedItems: Map<CraftingComponent, Item.Data<D>[]>): Inventory<D, A>;
 
 }
 
@@ -268,10 +248,6 @@ namespace BaseCraftingInventory {
         public actor: A;
         public ownedComponents: Combination<CraftingComponent> = Combination.EMPTY();
         public managedItems: Map<CraftingComponent, Item.Data<D>[]> = new Map();
-
-        public build(): Inventory<D, A> {
-            return new BaseCraftingInventory(this);
-        }
 
         public withActor(value: A): Builder<D, A> {
             this.actor = value;
