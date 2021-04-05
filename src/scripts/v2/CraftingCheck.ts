@@ -58,7 +58,7 @@ class Tool {
     }
 }
 
-abstract class CraftingCheck<I extends Item, A extends Actor<Actor.Data, I>> {
+abstract class CraftingCheck<A extends Actor> {
     private readonly _exceedThreshold: boolean;
 
     protected constructor(exceedThreshold: boolean) {
@@ -104,7 +104,7 @@ abstract class CraftingCheck<I extends Item, A extends Actor<Actor.Data, I>> {
 
 }
 
-class CraftingCheck5e extends CraftingCheck<Item5e, Actor5e>{
+class CraftingCheck5e extends CraftingCheck<Actor5e>{
     private readonly _ability: AbilityType5e;
     private readonly _baseDC: number;
     private readonly _ingredientDCModifier: number;

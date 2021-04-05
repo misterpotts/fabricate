@@ -3,15 +3,16 @@ import {EssenceDefinition} from "./EssenceDefinition";
 import {Combination, Unit} from "./Combination";
 import {FabricationAction} from "./FabricationAction";
 
-interface Inventory<I extends Item, A extends Actor<Actor.Data, I>> {
+interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     actor: A;
     ownedComponents: Combination<CraftingComponent>;
     containsIngredients(ingredients: Combination<CraftingComponent>): boolean;
     containsEssences(essences: Combination<EssenceDefinition>): boolean;
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent>;
-    excluding(ingredients: Combination<CraftingComponent>): Inventory<I, A>;
+    excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A>;
     removeAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]>;
     addAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]>;
+    createAll(itemData: D[]): Promise<FabricationAction[]>;
 }
 
 interface InventorySearch {
@@ -196,20 +197,20 @@ class EssenceSelection {
 
 }
 
-class BaseCraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> implements Inventory<I, A> {
+class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
 
     private readonly _actor: A;
     private readonly _ownedComponents: Combination<CraftingComponent>;
-    private readonly _managedItems: Map<CraftingComponent, I[]>;
+    private readonly _managedItems: Map<CraftingComponent, Item.Data<D>[]>;
 
-    constructor(builder: BaseCraftingInventory.Builder<I, A>) {
+    constructor(builder: BaseCraftingInventory.Builder<D, A>) {
         this._actor = builder.actor;
         this._ownedComponents = builder.ownedComponents;
         this._managedItems = builder.managedItems;
     }
 
-    public static builder<I extends Item, A extends Actor<Actor.Data, I>>(): BaseCraftingInventory.Builder<I, A> {
-        return new BaseCraftingInventory.Builder<I, A>();
+    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>>(): BaseCraftingInventory.Builder<D, A> {
+        return new BaseCraftingInventory.Builder<D, A>();
     }
 
     get actor(): A {
@@ -228,8 +229,8 @@ class BaseCraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> impl
         return new EssenceSearch(essences).perform(this.ownedComponents);
     }
 
-    excluding(ingredients: Combination<CraftingComponent>): Inventory<I, A> {
-        return BaseCraftingInventory.builder<I, A>()
+    excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A> {
+        return BaseCraftingInventory.builder<D, A>()
             .withActor(this._actor)
             .withOwnedComponents(this._ownedComponents.subtract(ingredients))
             .withManagedItems(this._managedItems)
@@ -252,33 +253,37 @@ class BaseCraftingInventory<I extends Item, A extends Actor<Actor.Data, I>> impl
             'for the game system, e.g. Inventory5e for dnd5e');
     }
 
-
+    createAll(): Promise<FabricationAction[]> {
+        throw new Error('Crafting Inventories present are immutable views of the underlying Actor Data. ' +
+            'To create custom items, use a child type of Crafting Inventory that understands Item data structures ' +
+            'for the game system, e.g. Inventory5e for dnd5e');
+    }
 
 }
 
 namespace BaseCraftingInventory {
 
-    export class Builder<I extends Item, A extends Actor<Actor.Data, I>> {
+    export class Builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
         public actor: A;
         public ownedComponents: Combination<CraftingComponent> = Combination.EMPTY();
-        public managedItems: Map<CraftingComponent, I[]> = new Map();
+        public managedItems: Map<CraftingComponent, Item.Data<D>[]> = new Map();
 
-        public build(): Inventory<I, A> {
+        public build(): Inventory<D, A> {
             return new BaseCraftingInventory(this);
         }
 
-        public withActor(value: A): Builder<I, A> {
+        public withActor(value: A): Builder<D, A> {
             this.actor = value;
             return this;
         }
 
-        public withOwnedComponents(value: Combination<CraftingComponent>): Builder<I, A> {
+        public withOwnedComponents(value: Combination<CraftingComponent>): Builder<D, A> {
             this.ownedComponents = value;
             return this;
         }
 
-        public withManagedItems(value: Map<CraftingComponent, I[]>): Builder<I, A> {
+        public withManagedItems(value: Map<CraftingComponent, Item.Data<D>[]>): Builder<D, A> {
             this.managedItems = value;
             return this;
         }
