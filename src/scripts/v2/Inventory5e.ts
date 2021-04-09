@@ -1,26 +1,48 @@
 import {BaseCraftingInventory, Inventory} from "./Inventory";
-import {FabricationAction} from "./FabricationAction";
 import {Combination} from "./Combination";
 import {CraftingComponent} from "./CraftingComponent";
 
-class Inventory5e extends BaseCraftingInventory<ItemDataValue5e, Actor5e> {
+class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
 
-    addAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]> {
-        return null;
+    constructor(builder: Inventory5e.Builder) {
+        super(builder);
     }
 
-    removeAll(components: Combination<CraftingComponent>): Promise<FabricationAction[]> {
-        return null;
+    public static builder(): Inventory5e.Builder {
+        return new Inventory5e.Builder();
     }
 
-    createAll(itemData: ItemDataValue5e[]): Promise<FabricationAction[]> {
-        return null;
+    createFrom(actor: Actor5e, ownedComponents: Combination<CraftingComponent>): Inventory<Item5e.Data.Data, Actor5e> {
+        return Inventory5e.builder()
+            .withActor(actor)
+            .withOwnedComponents(ownedComponents)
+            .build();
     }
 
-    from(actor: Actor5e, ownedComponents: Combination<CraftingComponent>, managedItems: Map<CraftingComponent, Item.Data<ItemDataValue5e>[]>): Inventory<ItemDataValue5e, Actor5e> {
-        return null;
+    getOwnedItems(actor: Actor5e): Item<Item.Data<Item5e.Data.Data>>[] {
+        return actor.items.entries();
     }
 
+    getQuantityFor(item: Item5e): number {
+        return item.data.data.quantity;
+    }
+
+    setQuantityFor(itemData: Item5e.Data, quantity: number): Item.Data<Item5e.Data.Data> {
+        itemData.data.quantity = quantity;
+        return itemData;
+    }
+
+}
+
+namespace Inventory5e {
+
+    export class Builder extends BaseCraftingInventory.Builder<Item5e.Data.Data, Actor5e> {
+
+        public build(): Inventory5e {
+            return new Inventory5e(this);
+        }
+
+    }
 
 }
 

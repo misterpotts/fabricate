@@ -61,6 +61,11 @@ class Combination<T extends Identifiable> {
         return new Combination(amounts);
     }
 
+    public static of<T extends Identifiable>(member: T, quantity: number): Combination<T> {
+        const unit: Unit<T> = new Unit<T>(member, quantity);
+        return Combination.ofUnit(unit);
+    }
+
     public static ofUnit<T extends Identifiable>(unit: Unit<T>): Combination<T> {
         return new Combination<T>(new Map([[unit.part.id, unit]]));
     }
@@ -70,7 +75,7 @@ class Combination<T extends Identifiable> {
     }
 
     get amounts(): Map<string, Unit<T>> {
-        return this._amounts;
+        return new Map(this._amounts);
     }
 
     public size(): number {
@@ -85,7 +90,7 @@ class Combination<T extends Identifiable> {
         return new Combination<T>(new Map(this._amounts));
     }
 
-    public containsPart(member: T): boolean {
+    public contains(member: T): boolean {
         return this.amounts.has(member.id);
     }
 
@@ -97,15 +102,9 @@ class Combination<T extends Identifiable> {
         return this.size() === 0;
     }
 
-    public asUnits(): Unit<T>[] {
-        const units: Unit<T>[] = [];
-        this.amounts.forEach((unit: Unit<T>) => units.push(unit));
-        return units;
-    }
-
     public isIn(other: Combination<T>): boolean {
         for (const unit of this.amounts.values()) {
-            if (!other.containsPart(unit.part)) {
+            if (!other.contains(unit.part)) {
                 return false;
             }
             const amount: number = other.amountFor(unit.part) - this.amountFor(unit.part);
@@ -132,6 +131,12 @@ class Combination<T extends Identifiable> {
         return amounts;
     }
 
+    /**
+     * Merges two Combinations without altering them to produce a third, representing the union of both Combinations.
+     *
+     * @param other The other combination to merge with this one
+     * @returns a new combination, resulting from a merge of this combination and the other provided combination
+     * */
     public combineWith(other: Combination<T>): Combination<T> {
         const combination: Map<string, Unit<T>> = new Map(this.amounts);
         other.units.forEach((otherUnit: Unit<T>) => {
@@ -146,6 +151,33 @@ class Combination<T extends Identifiable> {
         return new Combination<T>(combination);
     }
 
+    /**
+     * Merges the provided Combination into this one by mutating its contents to represent the union of both
+     * Combinations. This is a mutation operation and should be used with care.
+     *
+     * @param other The other Combination to merge with this one
+     * @returns a self-reference (this combination)
+     * */
+    accept(other: Combination<T>): Combination<T> {
+        other.members.forEach((otherMember: T) => {
+            if (this.amounts.has(otherMember.id)) {
+                const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
+                const modifiedAmount: Unit<T> = currentAmount.add(other.amountFor(otherMember));
+                this.amounts.set(otherMember.id, modifiedAmount);
+            } else {
+                this.amounts.set(otherMember.id, new Unit(otherMember, other.amountFor(otherMember)));
+            }
+        });
+        return this;
+    }
+
+    /**
+     * Merges an additional Unit into this Combination without altering it to produce a third, representing the result
+     * of adding the new Unit.
+     *
+     * @param additionalUnit The additional Unit to merge into this Combination
+     * @returns a new Combination, resulting from a merge of the provided Unit into this Combination
+     * */
     public add(additionalUnit: Unit<T>): Combination<T> {
         const amounts: Map<string, Unit<T>> = new Map(this.amounts);
         if (amounts.has(additionalUnit.part.id)) {
@@ -158,13 +190,20 @@ class Combination<T extends Identifiable> {
         return new Combination<T>(amounts);
     }
 
+    /**
+     * Removes the contents of the provided Combination from this one without altering it to produce a third,
+     * representing the result of the subtraction operation.
+     *
+     * @param other The other Combination representing the amounts to remove
+     * @returns a new Combination, resulting from a the subtraction of the other from this one
+     * */
     public subtract(other: Combination<T>): Combination<T> {
         if (other.isEmpty()) {
             return this.clone();
         }
         const combination: Map<string, Unit<T>> = new Map();
         for (const thisElement of this._amounts.values()) {
-            if (!other.containsPart(thisElement.part)) {
+            if (!other.contains(thisElement.part)) {
                 combination.set(thisElement.part.id, thisElement);
             } else {
                 const resultingAmount = thisElement.quantity - other.amountFor(thisElement.part);
@@ -174,6 +213,32 @@ class Combination<T extends Identifiable> {
             }
         }
         return new Combination<T>(combination);
+    }
+
+    /**
+     * Removes the contents of the provided Combination from this one. This is a mutation operation and should be used
+     * with care.
+     *
+     * @param other The other Combination to remove the contents of from this Combination
+     * @returns a self-reference (this combination)
+     * */
+    drop(other: Combination<T>): Combination<T> {
+        other.members.forEach((otherMember: T) => {
+            if (this.amounts.has(otherMember.id)) {
+                const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
+                const deleteUnit: boolean = currentAmount.quantity <= other.amountFor(otherMember);
+                switch (deleteUnit) {
+                    case true:
+                        this.amounts.delete(otherMember.id);
+                        break;
+                    case false:
+                        const modifiedAmount: Unit<T> = currentAmount.withQuantity(currentAmount.quantity - other.amountFor(otherMember));
+                        this.amounts.set(otherMember.id, modifiedAmount);
+                        break;
+                }
+            }
+        });
+        return this;
     }
 
     public multiply(factor: number) {
@@ -206,6 +271,7 @@ class Combination<T extends Identifiable> {
         }
         return other.isIn(this) && this.isIn(other);
     }
+
 }
 
 export {Unit, Combination}

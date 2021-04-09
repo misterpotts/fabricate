@@ -1,6 +1,6 @@
 import {AlchemicalEffect} from "./AlchemicalEffect";
 import {EssenceDefinition, EssenceIdentityProvider} from "./EssenceDefinition";
-import {Combination} from "./Combination";
+import {Combination, Unit} from "./Combination";
 import {CraftingComponent} from "./CraftingComponent";
 import {AlchemyError} from "./AlchemyError";
 
@@ -75,7 +75,7 @@ class AlchemicalCombiner<D> {
      * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
      * mixed, or if insufficient effects are matched
      * */
-    async perform(componentCombination: Combination<CraftingComponent>): Promise<D> {
+    async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, D]> {
         const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
         this.validate(componentCombination, essenceCombination);
         const effects: [AlchemicalEffect<D>, number][] = this.determineAlchemicalEffectsForComponents(componentCombination);
@@ -83,7 +83,8 @@ class AlchemicalCombiner<D> {
             throw new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of ${this.minimumEffectMatches} was required, but only ${effects ? effects.length : 0} were found. `, componentCombination, true);
         }
         const orderedEffects: [AlchemicalEffect<D>, number][] = this.orderAlchemicalEffects(effects);
-        return this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
+        const alchemyItemData: D = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
+        return [new Unit(this.baseComponent, 1), alchemyItemData];
     }
 
     private validate(components: Combination<CraftingComponent>, essences: Combination<EssenceDefinition>) {
@@ -115,7 +116,7 @@ class AlchemicalCombiner<D> {
         if (componentCombination.isEmpty()) {
             return [];
         }
-        return componentCombination.asUnits()
+        return componentCombination.units
             .map(componentUnit => {
                 const essenceCombinationIdentity: number = this._essenceIdentityProvider.getForEssenceCombination(componentUnit.part.essences);
                 const effectQuantity: number = this._effectsByEssenceCombinationIdentity.has(essenceCombinationIdentity) ? componentUnit.quantity : 0;

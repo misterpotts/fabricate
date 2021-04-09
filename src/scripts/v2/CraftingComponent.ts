@@ -1,11 +1,11 @@
-import {AbstractFabricateItem, FabricateItem} from "./FabricateItem";
+import {FabricateItem, FabricateItem} from "./FabricateItem";
 import {Combination} from "./Combination";
 import {EssenceDefinition} from "./EssenceDefinition";
 
-class CraftingComponent extends AbstractFabricateItem {
+class CraftingComponent extends FabricateItem {
 
     private readonly _essences: Combination<EssenceDefinition>;
-    private readonly _salvage: CraftingComponent[];
+    private readonly _salvage: Combination<CraftingComponent>;
 
     constructor(builder: CraftingComponent.Builder) {
         super(builder);
@@ -31,7 +31,7 @@ namespace CraftingComponent {
     export class Builder extends FabricateItem.Builder{
 
         public essences: Combination<EssenceDefinition>;
-        public salvage: CraftingComponent[];
+        public salvage: Combination<CraftingComponent>;
 
         public build(): CraftingComponent {
             return new CraftingComponent(this);
@@ -42,28 +42,8 @@ namespace CraftingComponent {
             return this;
         }
 
-        public withSalvage(value: CraftingComponent[]) {
+        public withSalvage(value: Combination<CraftingComponent>) {
             this.salvage = value;
-            return this;
-        }
-
-        public withSystemId(value: string): Builder {
-            this.systemId = value;
-            return this;
-        }
-
-        public withPartId(value: string): Builder {
-            this.partId = value;
-            return this;
-        }
-
-        public withImageUrl(value: string): Builder {
-            this.imageUrl = value;
-            return this;
-        }
-
-        public withName(value: string): Builder {
-            this.name = value;
             return this;
         }
 

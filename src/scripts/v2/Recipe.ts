@@ -1,9 +1,9 @@
-import {AbstractFabricateItem, FabricateItem} from "./FabricateItem";
+import {FabricateItem, FabricateItem} from "./FabricateItem";
 import {Combination} from "./Combination";
 import {CraftingComponent} from "./CraftingComponent";
 import {EssenceDefinition} from "./EssenceDefinition";
 
-class Recipe extends AbstractFabricateItem {
+class Recipe extends FabricateItem {
 
     private readonly _ingredients: Combination<CraftingComponent>;
     private readonly _catalysts: Combination<CraftingComponent>;

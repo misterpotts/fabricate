@@ -1,9 +1,9 @@
 import {Inventory} from './Inventory';
 import {Recipe} from "./Recipe";
 import {CraftingCheck, CraftingCheckResult} from "./CraftingCheck";
-import {Combination} from "./Combination";
+import {Combination, Unit} from "./Combination";
 import {CraftingComponent} from "./CraftingComponent";
-import {FabricationAction} from "./FabricationAction";
+import {ActionType, FabricationAction} from "./FabricationAction";
 import {OutcomeType} from "./OutcomeType";
 import {FabricationOutcome} from "./FabricationOutcome";
 import {AlchemicalCombiner} from "./AlchemicalCombiner";
@@ -69,7 +69,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
         }
 
         const alchemicalCombiner: AlchemicalCombiner<D> = this._alchemicalCombinersByBaseComponent.get(baseComponent);
-        const alchemyResult: D = await alchemicalCombiner.perform(componentMix);
+        const alchemyResult: [Unit<CraftingComponent>, D] = await alchemicalCombiner.perform(componentMix);
 
         if (!this.hasCraftingCheck) {
             return this.succeedWith(inventory, componentMix, alchemyResult);
@@ -121,8 +121,11 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
     private async succeedWith(inventory: Inventory<D, A>,
                           consumedComponents: Combination<CraftingComponent>,
-                          alchemyResult: D,
+                          alchemyResult: [Unit<CraftingComponent>, Item.Data<D>],
                           checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
+
+        const addition: FabricationAction<D> = this.asFabricationAction(alchemyResult[0], ActionType.ADD, alchemyResult[1]);
+        const removals: FabricationAction<D>[] = consumedComponents.members.map((member) => );
 
         const removals: FabricationAction[] = await inventory.removeAll(consumedComponents);
         const additions: FabricationAction[] = await inventory.createAll([alchemyResult]);
@@ -131,6 +134,18 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             .withOutcome(OutcomeType.SUCCESS)
             .withActions(removals.concat(additions))
             .withCheckResult(checkResult)
+            .build();
+    }
+
+    private asFrabricationActions(components: Combination<CraftingComponent>, actionType: ActionType): FabricationAction<D>[] {
+        components.units.map()
+    }
+
+    private asFabricationAction(componentUnit: Unit<CraftingComponent>, actionType: ActionType, itemData?: Item.Data<D>): FabricationAction<D> {
+        return FabricationAction.builder<D>()
+            .withActionType(actionType)
+            .withComponent(componentUnit)
+            .withItemData(itemData)
             .build();
     }
 

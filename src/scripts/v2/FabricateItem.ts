@@ -2,15 +2,7 @@ interface Identifiable {
     id: string;
 }
 
-interface FabricateItem extends Identifiable {
-    systemId: string;
-    partId: string;
-    imageUrl: string;
-    name: string;
-    equals(other: FabricateItem): boolean;
-}
-
-abstract class AbstractFabricateItem implements FabricateItem {
+abstract class FabricateItem {
     protected readonly _systemId: string;
     protected readonly _partId: string;
     protected readonly _id: string;
@@ -20,7 +12,7 @@ abstract class AbstractFabricateItem implements FabricateItem {
     protected constructor(builder: FabricateItem.Builder) {
         this._systemId = builder.systemId;
         this._partId = builder.partId;
-        this._id = `${builder.partId}:${builder.systemId}`;
+        this._id = FabricateItem.globalIdentifier(builder.partId, builder.systemId);
         this._imageUrl = builder.imageUrl;
         this._name = builder.name;
     }
@@ -55,6 +47,10 @@ abstract class AbstractFabricateItem implements FabricateItem {
             && this.name === other.name;
     }
 
+    public static globalIdentifier(partId: string, systemId: string): string {
+        return `${partId}:${systemId}`;
+    }
+
 }
 
 namespace FabricateItem {
@@ -66,8 +62,28 @@ namespace FabricateItem {
         public imageUrl: string;
         public name: string;
 
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
+            return this;
+        }
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
+
+        public withImageUrl(value: string): Builder {
+            this.imageUrl = value;
+            return this;
+        }
+
+        public withName(value: string): Builder {
+            this.name = value;
+            return this;
+        }
+
     }
 
 }
 
-export {Identifiable, FabricateItem, AbstractFabricateItem}
+export {Identifiable, FabricateItem}

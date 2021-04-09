@@ -17,7 +17,16 @@
     "noErrorTruncation": true,
     "target": "ES6",
     "lib": ["DOM", "ES6", "ES2017", "ES2018", "ES2019"],
-    "types": ["node", "mocha", "chai", "sinon", "jest", "handlebars", "@league-of-foundry-developers/foundry-vtt-types"],
+    "types": [
+      "node",
+      "mocha",
+      "chai",
+      "sinon",
+      "jest",
+      "handlebars",
+      "@league-of-foundry-developers/foundry-vtt-types",
+      "@league-of-foundry-developers/foundry-vtt-dnd5e-types"
+    ],
     "typeRoots": [
       "./typings"
     ],
@@ -26,7 +35,7 @@
   "include": ["./src/**/*.ts", "./typings/**/*.ts"],
   "exclude": ["node_modules", "./gulpfile.ts"],
   "files": [
-    "./typings/dnd5e.d.ts"
+    "./typings/global.d.ts"
   ],
   "ts-node": {
     "files": true,
