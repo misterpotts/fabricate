@@ -22,7 +22,7 @@ test('Should create an empty Combination',() => {
         .withName('Test Component 2')
         .build())).toBe(false);
 
-    const underTestAsUnits: Unit<CraftingComponent>[] = underTest.asUnits();
+    const underTestAsUnits: Unit<CraftingComponent>[] = underTest.units;
     expect(underTestAsUnits.length).toBe(0);
 });
 
@@ -89,7 +89,7 @@ test('Should convert a combination to Units',() => {
         new Unit(testComponentThree, 3)
     ]);
 
-    const underTestAsUnits: Unit<CraftingComponent>[] = underTest.asUnits();
+    const underTestAsUnits: Unit<CraftingComponent>[] = underTest.units;
 
     expect(underTestAsUnits.length).toBe(3);
 });

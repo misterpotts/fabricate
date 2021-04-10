@@ -1,4 +1,4 @@
-import {FabricateItem, FabricateItem} from "./FabricateItem";
+import {FabricateItem} from "./FabricateItem";
 import {Combination} from "./Combination";
 import {CraftingComponent} from "./CraftingComponent";
 import {EssenceDefinition} from "./EssenceDefinition";
@@ -89,6 +89,26 @@ namespace Recipe {
 
         public withResults(value: Combination<CraftingComponent>): Builder {
             this.results = value;
+            return this;
+        }
+
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
+            return this;
+        }
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
+
+        public withImageUrl(value: string): Builder {
+            this.imageUrl = value;
+            return this;
+        }
+
+        public withName(value: string): Builder {
+            this.name = value;
             return this;
         }
 

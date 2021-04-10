@@ -55,12 +55,14 @@ abstract class FabricateItem {
 
 namespace FabricateItem {
 
-    export class Builder {
+    export abstract class Builder {
 
         public systemId: string;
         public partId: string;
         public imageUrl: string;
         public name: string;
+
+        abstract build(): FabricateItem;
 
         public withSystemId(value: string): Builder {
             this.systemId = value;

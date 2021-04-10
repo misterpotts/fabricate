@@ -1,39 +1,60 @@
 import {expect, jest, test} from "@jest/globals";
-import {BaseCraftingInventory, Inventory} from "../../src/scripts/v2/Inventory";
+
+import {Inventory5e} from "../../src/scripts/v2/Inventory5e";
+import {PartDictionary} from "../../src/scripts/v2/PartDictionary";
+import {Inventory} from "../../src/scripts/v2/Inventory";
 import {Combination, Unit} from "../../src/scripts/v2/Combination";
 import {CraftingComponent} from "../../src/scripts/v2/CraftingComponent";
 import {EssenceDefinition} from "../../src/scripts/v2/EssenceDefinition";
-// @ts-ignore
+
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
-// @ts-ignore
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 
 beforeEach(() => {
     jest.resetAllMocks();
 });
 
-test('Should create a Base Crafting Inventory',() => {
-   const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
-       new Unit<CraftingComponent>(testComponentOne, 5),
-       new Unit<CraftingComponent>(testComponentThree, 4),
-       new Unit<CraftingComponent>(testComponentFive, 3)
-   ]);
+test('Should create an Inventory5e and index an Actor5e',() => {
+    const mockActor: Actor5e = <Actor5e><unknown>{
 
-   const mockActorId: string = 'iyeHYRbSts0ij23V';
-   const mockActor: Actor = <Actor><unknown>{
-       id: mockActorId
-   };
+    };
+    const mockPartDictionary: PartDictionary = <PartDictionary><unknown>{};
 
-   const underTest: Inventory<Item, Actor> = BaseCraftingInventory.builder<Item, Actor>()
-       .withOwnedComponents(testCombination)
-       .withActor(mockActor)
-       .build();
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+        .withActor(mockActor)
+        .withPartDictionary(mockPartDictionary)
+        .build();
 
-   expect(underTest).not.toBeNull();
-   expect(underTest.actor.id).toEqual(mockActorId);
-   expect(underTest.ownedComponents.amountFor(testComponentOne)).toBe(5);
-   expect(underTest.ownedComponents.amountFor(testComponentThree)).toBe(4);
-   expect(underTest.ownedComponents.amountFor(testComponentFive)).toBe(3);
+    expect(underTest).not.toBeNull();
+    expect(underTest.ownedComponents.isEmpty()).toBe(true);
+
+    underTest.index();
+
+    expect(underTest.ownedComponents.isEmpty()).toBe(false);
+});
+
+test('Should create an Inventory5e',() => {
+    const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
+        new Unit<CraftingComponent>(testComponentOne, 5),
+        new Unit<CraftingComponent>(testComponentThree, 4),
+        new Unit<CraftingComponent>(testComponentFive, 3)
+    ]);
+
+    const mockActorId: string = 'iyeHYRbSts0ij23V';
+    const mockActor: Actor5e = <Actor5e><unknown>{
+        id: mockActorId
+    };
+
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+        .withOwnedComponents(testCombination)
+        .withActor(mockActor)
+        .build();
+
+    expect(underTest).not.toBeNull();
+    expect(underTest.actor.id).toEqual(mockActorId);
+    expect(underTest.ownedComponents.amountFor(testComponentOne)).toBe(5);
+    expect(underTest.ownedComponents.amountFor(testComponentThree)).toBe(4);
+    expect(underTest.ownedComponents.amountFor(testComponentFive)).toBe(3);
 });
 
 test('Should identify when Essences are and are not present in contained Components',() => {
@@ -43,7 +64,7 @@ test('Should identify when Essences are and are not present in contained Compone
         new Unit<CraftingComponent>(testComponentFive, 1) // 1 Fire, 3 Earth x 1
     ]);
 
-    const underTest: Inventory<Item, Actor> = BaseCraftingInventory.builder<Item, Actor>()
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
         .withOwnedComponents(testCombination)
         .build();
 
@@ -113,7 +134,7 @@ test('Should select individual Components for essences',() => {
         new Unit<CraftingComponent>(testComponentFive, 1) // 1 Fire, 3 Earth x 1
     ]);
 
-    const underTest: Inventory<Item, Actor> = BaseCraftingInventory.builder<Item, Actor>()
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
         .withOwnedComponents(testCombination)
         .build();
 
@@ -136,7 +157,7 @@ test('Should select multiple Components for essences',() => {
         new Unit<CraftingComponent>(testComponentFive, 1) // 1 Fire, 3 Earth x 1
     ]);
 
-    const underTest: Inventory<Item, Actor> = BaseCraftingInventory.builder<Item, Actor>()
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
         .withOwnedComponents(testCombination)
         .build();
 
@@ -156,7 +177,7 @@ test('Should select favourable outcomes reducing essence waste',() => {
         new Unit<CraftingComponent>(testComponentFive, 1) // 1 Fire, 3 Earth x 1
     ]);
 
-    const underTest: Inventory<Item, Actor> = BaseCraftingInventory.builder<Item, Actor>()
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
         .withOwnedComponents(testCombination)
         .build();
 
@@ -175,7 +196,7 @@ test('Should select from arbitrarily large inventories',() => {
         new Unit<CraftingComponent>(testComponentFive, 1000) // 1 Fire, 3 Earth x 1
     ]);
 
-    const underTest: Inventory<Item, Actor> = BaseCraftingInventory.builder<Item, Actor>()
+    const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
         .withOwnedComponents(testCombination)
         .build();
 

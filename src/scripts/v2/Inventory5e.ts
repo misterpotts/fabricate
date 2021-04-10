@@ -2,6 +2,7 @@ import {BaseCraftingInventory, Inventory} from "./Inventory";
 import {Combination} from "./Combination";
 import {CraftingComponent} from "./CraftingComponent";
 
+// @ts-ignore todo: figure out how to correctly restrict this type
 class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
 
     constructor(builder: Inventory5e.Builder) {
@@ -24,12 +25,15 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
     }
 
     getQuantityFor(item: Item5e): number {
-        return item.data.data.quantity;
+        return 'quantity' in item.data.data ? item.data.data.quantity : 1;
     }
 
     setQuantityFor(itemData: Item5e.Data, quantity: number): Item.Data<Item5e.Data.Data> {
-        itemData.data.quantity = quantity;
-        return itemData;
+        if ('quantity' in itemData.data) {
+            itemData.data.quantity = quantity;
+            return itemData;
+        }
+        throw new Error(`Type '${typeof itemData}' does not include the required 'quantity' property`)
     }
 
 }

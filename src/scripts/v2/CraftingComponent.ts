@@ -1,4 +1,4 @@
-import {FabricateItem, FabricateItem} from "./FabricateItem";
+import {FabricateItem} from "./FabricateItem";
 import {Combination} from "./Combination";
 import {EssenceDefinition} from "./EssenceDefinition";
 
@@ -21,7 +21,7 @@ class CraftingComponent extends FabricateItem {
         return this._essences;
     }
 
-    get salvage(): CraftingComponent[] {
+    get salvage(): Combination<CraftingComponent> {
         return this._salvage;
     }
 }
@@ -44,6 +44,25 @@ namespace CraftingComponent {
 
         public withSalvage(value: Combination<CraftingComponent>) {
             this.salvage = value;
+            return this;
+        }
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
+            return this;
+        }
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
+
+        public withImageUrl(value: string): Builder {
+            this.imageUrl = value;
+            return this;
+        }
+
+        public withName(value: string): Builder {
+            this.name = value;
             return this;
         }
 

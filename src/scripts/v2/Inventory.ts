@@ -13,7 +13,7 @@ interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent>;
     excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A>;
     perform(actions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]>;
-    index(actor:A): Combination<CraftingComponent>;
+    index(): Combination<CraftingComponent>;
 }
 
 interface InventorySearch {
@@ -206,7 +206,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
     protected constructor(builder: BaseCraftingInventory.Builder<D, A>) {
         this._actor = builder.actor;
         this._ownedComponents = builder.ownedComponents;
-        this._partDictionary = builder.componentDictionary;
+        this._partDictionary = builder.partDictionary;
         this._managedItems = builder.managedItems;
     }
 
@@ -239,7 +239,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
     }
 
     async perform(actions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]> {
-        this._ownedComponents = this.index(this._actor);
+        this._ownedComponents = this.index();
         const removals: FabricationAction<Item.Data<D>>[] = [];
         const additions: FabricationAction<Item.Data<D>>[] = [];
         for (const action of actions) {
@@ -254,7 +254,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
             }
         }
         const results: Item<Item.Data<D>>[] = await this.takeActions(this.actor, removals, additions);
-        this._ownedComponents = this.index(this._actor);
+        this._ownedComponents = this.index();
         return results;
     }
 
@@ -265,6 +265,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         const component: CraftingComponent = action.unit.part;
         const compendium: Compendium = game.packs.get(component.systemId);
         const entity: Entity<Item.Data<D>> = <Entity<Item.Data<D>>> await compendium.getEntity(component.partId);
+        // @ts-ignore todo: figure out what I've done wrong here
         return action.withItemData(entity.data);
     }
 
@@ -309,7 +310,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         for (const addition of additions) {
             const craftingComponent: CraftingComponent = addition.unit.part;
             if (!this.itemQuantityAware || !this.ownedComponents.contains(craftingComponent)) {
-                creates.push(addition.itemData);
+                creates.push(addition.itemData.data);
                 break;
             }
             const records: [Item<Item.Data<D>>, number][] = this._managedItems.get(craftingComponent)
@@ -371,7 +372,8 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         return results;
     }
 
-    index(actor: A): Combination<CraftingComponent> {
+    index(): Combination<CraftingComponent> {
+        const actor: A = this.actor;
         const ownedItems: Item<Item.Data<D>>[] = this.getOwnedItems(actor);
         const itemsByComponentType: Map<CraftingComponent, [Item<Item.Data<D>>, number][]> = new Map();
         const ownedComponents: Combination<CraftingComponent> = ownedItems.filter((item: Item<Item.Data<D>>) => PartDictionary.typeOf(item) === FabricateItemType.COMPONENT)
@@ -413,7 +415,7 @@ namespace BaseCraftingInventory {
 
         public actor: A;
         public ownedComponents: Combination<CraftingComponent> = Combination.EMPTY();
-        public componentDictionary: PartDictionary;
+        public partDictionary: PartDictionary;
         public managedItems: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
 
         public withActor(value: A): Builder<D, A> {
@@ -426,8 +428,8 @@ namespace BaseCraftingInventory {
             return this;
         }
 
-        public withComponentDictionary(value: PartDictionary): Builder<D, A> {
-            this.componentDictionary = value;
+        public withPartDictionary(value: PartDictionary): Builder<D, A> {
+            this.partDictionary = value;
             return this;
         }
 
