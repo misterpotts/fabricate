@@ -13,7 +13,7 @@ interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent>;
     excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A>;
     perform(actions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]>;
-    index(): Combination<CraftingComponent>;
+    prepare(): boolean;
 }
 
 interface InventorySearch {
@@ -203,6 +203,8 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
     private readonly _partDictionary: PartDictionary;
     private _managedItems: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
 
+    private _prepared: boolean = false;
+
     protected constructor(builder: BaseCraftingInventory.Builder<D, A>) {
         this._actor = builder.actor;
         this._ownedComponents = builder.ownedComponents;
@@ -236,6 +238,13 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
 
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent> {
         return new EssenceSelection(essences).perform(this.ownedComponents);
+    }
+
+    public prepare(): boolean {
+        if (this._prepared) {
+            return true;
+        }
+        this._ownedComponents = this.index();
     }
 
     async perform(actions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]> {

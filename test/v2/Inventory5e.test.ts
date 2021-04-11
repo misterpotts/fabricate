@@ -1,4 +1,5 @@
-import {expect, jest, test} from "@jest/globals";
+import {afterAll, beforeAll, beforeEach, expect, jest, test} from "@jest/globals";
+import * as Sinon from "sinon";
 
 import {Inventory5e} from "../../src/scripts/v2/Inventory5e";
 import {PartDictionary} from "../../src/scripts/v2/PartDictionary";
@@ -6,19 +7,60 @@ import {Inventory} from "../../src/scripts/v2/Inventory";
 import {Combination, Unit} from "../../src/scripts/v2/Combination";
 import {CraftingComponent} from "../../src/scripts/v2/CraftingComponent";
 import {EssenceDefinition} from "../../src/scripts/v2/EssenceDefinition";
+import {FabricateCompendiumData} from "../../src/scripts/game/CompendiumData";
+
+import Properties from "../../src/scripts/Properties";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
+
+const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
+
+let mockInventoryContents: Item5e[] = [];
+let mockPartDictionary: PartDictionary = <PartDictionary>{};
+
+beforeAll(() => {
+    const rawTestData = require('../resources/inventory-5e-actor-items-values.json');
+    mockInventoryContents = rawTestData.map((item: any) => {
+        item.getFlag = Sandbox.stub();
+        if (item.data.flags.fabricate) {
+            const flags: FabricateCompendiumData = item.data.flags.fabricate;
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(flags.identity);
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.partId).returns(flags.identity.partId);
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.systemId).returns(flags.identity.systemId);
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(flags.type);
+        } else {
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(undefined);
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.partId).returns(undefined);
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.systemId).returns(undefined);
+            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(undefined);
+        }
+        return item;
+    });
+    const mockComponentFrom: any = Sandbox.stub();
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentOne.partId, systemId: testComponentOne.systemId})).returns(testComponentOne);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentTwo.partId, systemId: testComponentTwo.systemId})).returns(testComponentTwo);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentThree.partId, systemId: testComponentThree.systemId})).returns(testComponentThree);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentFour.partId, systemId: testComponentFour.systemId})).returns(testComponentFour);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentFive.partId, systemId: testComponentFive.systemId})).returns(testComponentFive);
+    mockPartDictionary.componentFrom = mockComponentFrom;
+});
 
 beforeEach(() => {
     jest.resetAllMocks();
 });
 
-test('Should create an Inventory5e and index an Actor5e',() => {
-    const mockActor: Actor5e = <Actor5e><unknown>{
+afterAll(() => {
+    Sandbox.restore();
+});
 
+test('Should create an Inventory5e and index an Actor5e',() => {
+
+    const mockActor: Actor5e = <Actor5e><unknown>{
+        items: {
+            entries: () => mockInventoryContents
+        }
     };
-    const mockPartDictionary: PartDictionary = <PartDictionary><unknown>{};
 
     const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
         .withActor(mockActor)
@@ -28,9 +70,18 @@ test('Should create an Inventory5e and index an Actor5e',() => {
     expect(underTest).not.toBeNull();
     expect(underTest.ownedComponents.isEmpty()).toBe(true);
 
-    underTest.index();
+    underTest.prepare();
 
     expect(underTest.ownedComponents.isEmpty()).toBe(false);
+    expect(underTest.containsIngredients(Combination.of(testComponentOne, 1))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentOne, 2))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentThree, 1))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentThree, 2))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentFive, 1))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentFive, 2))).toBe(false);
+    expect(underTest.containsIngredients(Combination.of(testComponentFour, 9))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentFour, 10))).toBe(true);
+    expect(underTest.containsIngredients(Combination.of(testComponentFour, 11))).toBe(false);
 });
 
 test('Should create an Inventory5e',() => {
@@ -68,24 +119,24 @@ test('Should identify when Essences are and are not present in contained Compone
         .withOwnedComponents(testCombination)
         .build();
 
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 2)]))).toBe(false);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 1)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 2)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 3)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 4)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 5)]))).toBe(false);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 1)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 2)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 3)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 4)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 5)]))).toBe(false);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 1)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 2)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 3)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 4)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 5)]))).toBe(true);
-    expect(underTest.containsEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 6)]))).toBe(false);
+    expect(underTest.containsEssences(Combination.of(elementalFire, 1))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalFire, 2))).toBe(false);
+    expect(underTest.containsEssences(Combination.of(elementalAir, 1))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalAir, 2))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalAir, 3))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalAir, 4))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalAir, 5))).toBe(false);
+    expect(underTest.containsEssences(Combination.of(elementalWater, 1))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalWater, 2))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalWater, 3))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalWater, 4))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalWater, 5))).toBe(false);
+    expect(underTest.containsEssences(Combination.of(elementalEarth, 1))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalEarth, 2))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalEarth, 3))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalEarth, 4))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalEarth, 5))).toBe(true);
+    expect(underTest.containsEssences(Combination.of(elementalEarth, 6))).toBe(false);
     expect(underTest.containsEssences(Combination.ofUnits([
         new Unit<EssenceDefinition>(elementalEarth, 5),
         new Unit<EssenceDefinition>(elementalWater, 4),
@@ -138,12 +189,12 @@ test('Should select individual Components for essences',() => {
         .withOwnedComponents(testCombination)
         .build();
 
-    const selectForOneFire: Combination<CraftingComponent> = underTest.selectFor(Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1)]));
+    const selectForOneFire: Combination<CraftingComponent> = underTest.selectFor(Combination.of(elementalFire, 1));
     expect(selectForOneFire.isEmpty()).toBe(false);
     expect(selectForOneFire.size()).toBe(1);
     expect(selectForOneFire.amountFor(testComponentFive)).toBe(1);
 
-    const selectForTwoWater: Combination<CraftingComponent> = underTest.selectFor(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 2)]));
+    const selectForTwoWater: Combination<CraftingComponent> = underTest.selectFor(Combination.of(elementalWater, 2));
     expect(selectForTwoWater.isEmpty()).toBe(false);
     expect(selectForTwoWater.size()).toBe(1);
     expect(selectForTwoWater.amountFor(testComponentThree)).toBe(1);
@@ -161,7 +212,7 @@ test('Should select multiple Components for essences',() => {
         .withOwnedComponents(testCombination)
         .build();
 
-    const selectForFiveEarth: Combination<CraftingComponent> = underTest.selectFor(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 5)]));
+    const selectForFiveEarth: Combination<CraftingComponent> = underTest.selectFor(Combination.of(elementalEarth, 5));
     expect(selectForFiveEarth.isEmpty()).toBe(false);
     expect(selectForFiveEarth.size()).toBe(2);
     expect(selectForFiveEarth.amountFor(testComponentOne)).toBe(1);
@@ -181,7 +232,7 @@ test('Should select favourable outcomes reducing essence waste',() => {
         .withOwnedComponents(testCombination)
         .build();
 
-    const selectForFourAir: Combination<CraftingComponent> = underTest.selectFor(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 4)]));
+    const selectForFourAir: Combination<CraftingComponent> = underTest.selectFor(Combination.of(elementalAir, 4));
     expect(selectForFourAir.isEmpty()).toBe(false);
     expect(selectForFourAir.size()).toBe(2);
     expect(selectForFourAir.amountFor(testComponentFour)).toBe(2);
@@ -200,7 +251,7 @@ test('Should select from arbitrarily large inventories',() => {
         .withOwnedComponents(testCombination)
         .build();
 
-    const selectForFourAir: Combination<CraftingComponent> = underTest.selectFor(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 4)]));
+    const selectForFourAir: Combination<CraftingComponent> = underTest.selectFor(Combination.of(elementalAir, 4));
     expect(selectForFourAir.isEmpty()).toBe(false);
     expect(selectForFourAir.size()).toBe(2);
     expect(selectForFourAir.amountFor(testComponentFour)).toBe(2);
