@@ -2,8 +2,9 @@ import {CraftingComponent} from "./CraftingComponent";
 import {EssenceDefinition} from "./EssenceDefinition";
 import {Combination, Unit} from "./Combination";
 import {ActionType, FabricationAction} from "./FabricationAction";
-import {PartDictionary} from "./PartDictionary";
 import {FabricateItemType} from "./CompendiumData";
+import {PartDictionary} from "./PartDictionary";
+import FoundryProxy from "./FoundryProxy";
 
 interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     actor: A;
@@ -272,7 +273,8 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
             return action;
         }
         const component: CraftingComponent = action.unit.part;
-        const compendium: Compendium = game.packs.get(component.systemId);
+        // @ts-ignore
+        const compendium: Compendium = FoundryProxy.game.packs.get(component.systemId);
         const entity: Entity<Item.Data<D>> = <Entity<Item.Data<D>>> await compendium.getEntity(component.partId);
         // @ts-ignore todo: figure out what I've done wrong here
         return action.withItemData(entity.data);
