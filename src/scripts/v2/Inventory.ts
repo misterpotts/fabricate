@@ -4,7 +4,7 @@ import {Combination, Unit} from "./Combination";
 import {ActionType, FabricationAction} from "./FabricationAction";
 import {FabricateItemType} from "./CompendiumData";
 import {PartDictionary} from "./PartDictionary";
-import FoundryProxy from "./FoundryProxy";
+import {GameUtils} from "./foundry/GameUtils";
 
 interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     actor: A;
@@ -136,15 +136,15 @@ class ComponentCombinationGenerator {
             if (!suitableCombinationsBySize.has(node.componentCombination.size())) {
                 suitableCombinationsBySize.set(node.componentCombination.size(), [[node.componentCombination, node.essenceCombination]]);
             } else {
-                let duplicate: boolean = false;
+                let isDuplicate: boolean = false;
                 const existing: [Combination<CraftingComponent>, Combination<EssenceDefinition>][] = suitableCombinationsBySize.get(node.componentCombination.size());
                 for (const existingCombination of existing) {
                     if (existingCombination[0].equals(node.componentCombination)) {
-                        duplicate = true;
+                        isDuplicate = true;
                         break;
                     }
                 }
-                if (!duplicate) {
+                if (!isDuplicate) {
                     existing.push([node.componentCombination, node.essenceCombination]);
                 }
             }
@@ -199,6 +199,9 @@ class EssenceSelection {
 
 abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
 
+    private readonly _game: Game;
+    private readonly _gameUtils: GameUtils;
+
     private readonly _actor: A;
     private _ownedComponents: Combination<CraftingComponent>;
     private readonly _partDictionary: PartDictionary;
@@ -211,6 +214,8 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         this._ownedComponents = builder.ownedComponents;
         this._partDictionary = builder.partDictionary;
         this._managedItems = builder.managedItems;
+        this._game = builder.game;
+        this._gameUtils = builder.gameUtils;
     }
 
     get actor(): A {
@@ -274,7 +279,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         }
         const component: CraftingComponent = action.unit.part;
         // @ts-ignore
-        const compendium: Compendium = FoundryProxy.game.packs.get(component.systemId);
+        const compendium: Compendium = this._game.packs.get(component.systemId);
         const entity: Entity<Item.Data<D>> = <Entity<Item.Data<D>>> await compendium.getEntity(component.partId);
         // @ts-ignore todo: figure out what I've done wrong here
         return action.withItemData(entity.data);
@@ -327,8 +332,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
             const records: [Item<Item.Data<D>>, number][] = this._managedItems.get(craftingComponent)
                 .sort((left: [Item<Item.Data<D>>, number], right: [Item<Item.Data<D>>, number]) => right[1] - left[1]);
             const itemToUpdate: [Item<Item.Data<D>>, number] = records[0];
-            // @ts-ignore
-            const newItemData: Item.Data<D> = this.setQuantityFor(duplicate(itemToUpdate[0].data), addition.unit.quantity + itemToUpdate[1]);
+            const newItemData: Item.Data<D> = this.setQuantityFor(this._gameUtils.duplicate(itemToUpdate[0].data), addition.unit.quantity + itemToUpdate[1]);
             updates.push(newItemData);
         }
 
@@ -349,12 +353,11 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
                 const currentRecord: [Item<Item.Data<D>>, number] = records[currentRecordIndex];
                 const quantity: number = currentRecord[1];
                 const itemData: Item.Data<D> = currentRecord[0].data;
-                if (quantity < outstandingRemovalAmount) {
+                if (quantity <= outstandingRemovalAmount) {
                     deletes.push(itemData);
                     outstandingRemovalAmount -= quantity;
                 } else {
-                    // @ts-ignore
-                    const newItemData: Item.Data<D> = this.setQuantityFor(duplicate(itemData), quantity - outstandingRemovalAmount);
+                    const newItemData: Item.Data<D> = this.setQuantityFor(this._gameUtils.duplicate(itemData), quantity - outstandingRemovalAmount);
                     updates.push(newItemData);
                     outstandingRemovalAmount = 0;
                 }
@@ -428,6 +431,10 @@ namespace BaseCraftingInventory {
         public ownedComponents: Combination<CraftingComponent> = Combination.EMPTY();
         public partDictionary: PartDictionary;
         public managedItems: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
+        public game: Game;
+        public gameUtils: GameUtils;
+
+        abstract build(): Inventory<D, A>;
 
         public withActor(value: A): Builder<D, A> {
             this.actor = value;
@@ -449,7 +456,15 @@ namespace BaseCraftingInventory {
             return this;
         }
 
-        abstract build(): Inventory<D, A>;
+        public withGame(value: Game): Builder<D, A> {
+            this.game = value;
+            return this;
+        }
+
+        public withGameUtils(value: GameUtils): Builder<D, A> {
+            this.gameUtils = value;
+            return this;
+        }
 
     }
 

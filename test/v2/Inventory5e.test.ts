@@ -8,52 +8,90 @@ import {Combination, Unit} from "../../src/scripts/v2/Combination";
 import {CraftingComponent} from "../../src/scripts/v2/CraftingComponent";
 import {EssenceDefinition} from "../../src/scripts/v2/EssenceDefinition";
 import {ActionType, FabricationAction} from "../../src/scripts/v2/FabricationAction";
-import FoundryProxy from "../../src/scripts/v2/FoundryProxy";
 
 import Properties from "../../src/scripts/Properties";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
-
-jest.mock('../../src/scripts/v2/FoundryProxy');
+import {GameUtils} from "../../src/scripts/v2/foundry/GameUtils";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
 let mockInventoryContents: Item5e[] = [];
-let mockPartDictionary: PartDictionary = <PartDictionary>{};
+let mockPartDictionary: PartDictionary = <PartDictionary><unknown>{
+    componentFrom: () => {}
+};
 
 beforeAll(() => {
-
     const rawTestData = require('../resources/inventory-5e-actor-items-values.json');
-    mockInventoryContents = rawTestData.map((item: any) => {
-        item.getFlag = Sandbox.stub();
-        if (item.data.flags.fabricate) {
-            const flags = item.data.flags.fabricate;
+    mockInventoryContents = rawTestData.map((itemData: any) => {
+        const item = {
+            getFlag: Sandbox.stub(),
+            _data: itemData,
+            data: itemData,
+            options: {},
+            apps: {},
+            effects: new Map(),
+            labels: {}
+        };
+        if (itemData.data.flags.fabricate) {
+            const flags = itemData.data.flags.fabricate;
             item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(flags.identity);
             item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.partId).returns(flags.identity.partId);
             item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.systemId).returns(flags.identity.systemId);
             item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(flags.type);
-        } else {
-            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(undefined);
-            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.partId).returns(undefined);
-            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.systemId).returns(undefined);
-            item.getFlag.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(undefined);
         }
         return item;
     });
 
-    const mockComponentFrom: any = Sandbox.stub();
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentOne.partId, systemId: testComponentOne.systemId})).returns(testComponentOne);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentTwo.partId, systemId: testComponentTwo.systemId})).returns(testComponentTwo);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentThree.partId, systemId: testComponentThree.systemId})).returns(testComponentThree);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentFour.partId, systemId: testComponentFour.systemId})).returns(testComponentFour);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.flags.fabricate.identity', {partId: testComponentFive.partId, systemId: testComponentFive.systemId})).returns(testComponentFive);
-    mockPartDictionary.componentFrom = mockComponentFrom;
-
+    const mockComponentFrom = Sandbox.stub(mockPartDictionary, 'componentFrom');
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentOne.partId, systemId: testComponentOne.systemId})).returns(testComponentOne);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentTwo.partId, systemId: testComponentTwo.systemId})).returns(testComponentTwo);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentThree.partId, systemId: testComponentThree.systemId})).returns(testComponentThree);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFour.partId, systemId: testComponentFour.systemId})).returns(testComponentFour);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFive.partId, systemId: testComponentFive.systemId})).returns(testComponentFive);
 });
+
+const mockCompendium: Compendium = <Compendium><unknown>{
+    getEntity: () => {}
+};
+
+const mockGame: Game = <Game><unknown>{
+    packs: {
+        get: () => {}
+    }
+};
+
+const stubGetEntity = Sandbox.stub(mockCompendium, 'getEntity');
+stubGetEntity.withArgs(testComponentOne.partId).resolves(<Entity>{});
+stubGetEntity.withArgs(testComponentTwo.partId).resolves(<Entity>{});
+stubGetEntity.withArgs(testComponentThree.partId).resolves(<Entity>{});
+stubGetEntity.withArgs(testComponentFour.partId).resolves(<Entity>{});
+stubGetEntity.withArgs(testComponentFive.partId).resolves(<Entity>{});
+
+Sandbox.stub(mockGame.packs, 'get').withArgs('fabricate.test-system').returns(mockCompendium);
+
+const mockActorId: string = 'iyeHYRbSts0ij23V';
+const mockActor: Actor5e = <Actor5e><unknown>{
+    id: mockActorId,
+    items: {
+        entries: () => mockInventoryContents
+    },
+    createEmbeddedEntity: () => {},
+    updateEmbeddedEntity: () => {},
+    deleteEmbeddedEntity: () => {}
+};
+
+const mockCreateEmbeddedEntity = Sandbox.stub(mockActor, 'createEmbeddedEntity');
+const mockUpdateEmbeddedEntity = Sandbox.stub(mockActor, 'updateEmbeddedEntity');
+const mockDeleteEmbeddedEntity = Sandbox.stub(mockActor, 'deleteEmbeddedEntity');
 
 beforeEach(() => {
     jest.resetAllMocks();
+    Sandbox.resetHistory();
+    mockCreateEmbeddedEntity.reset()
+    mockUpdateEmbeddedEntity.reset()
+    mockDeleteEmbeddedEntity.reset()
 });
 
 afterAll(() => {
@@ -61,18 +99,13 @@ afterAll(() => {
 });
 
 describe('Create and index', () => {
-    
+
     it('Should create an Inventory5e with owned components',() => {
         const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
             new Unit<CraftingComponent>(testComponentOne, 5),
             new Unit<CraftingComponent>(testComponentThree, 4),
             new Unit<CraftingComponent>(testComponentFive, 3)
         ]);
-
-        const mockActorId: string = 'iyeHYRbSts0ij23V';
-        const mockActor: Actor5e = <Actor5e><unknown>{
-            id: mockActorId
-        };
 
         const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
             .withOwnedComponents(testCombination)
@@ -87,12 +120,6 @@ describe('Create and index', () => {
     });
 
     it('Should create an Inventory5e and index an Actor5e',() => {
-
-        const mockActor: Actor5e = <Actor5e><unknown>{
-            items: {
-                entries: () => mockInventoryContents
-            }
-        };
 
         const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
             .withActor(mockActor)
@@ -121,7 +148,7 @@ describe('Create and index', () => {
         expect(underTest.containsIngredients(Combination.of(testComponentFour, 10))).toBe(true);
         expect(underTest.containsIngredients(Combination.of(testComponentFour, 11))).toBe(false);
     });
-    
+
 });
 
 describe('Essence identification in Components', () => {
@@ -278,24 +305,33 @@ describe('Component Selection for Essences', () => {
         expect(selectForFourAir.size()).toBe(2);
         expect(selectForFourAir.amountFor(testComponentFour)).toBe(2);
     });
-    
+
 });
 
 describe('Take Actions', () => {
 
     it('Should perform deletes where owned Item quantity is equal to removal quantity', async () => {
 
-        const mockActorId: string = 'iyeHYRbSts0ij23V';
-        const mockActor: Actor5e = <Actor5e><unknown>{
-            id: mockActorId,
-            items: {
-                entries: () => mockInventoryContents
-            }
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
         };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockCreateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}, {}]);
 
         const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
             .withActor(mockActor)
             .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
             .build();
 
         const removeTwoOfTestComponentOne: FabricationAction<Item.Data> = FabricationAction.builder<Item5e.Data>()
@@ -303,13 +339,14 @@ describe('Take Actions', () => {
             .withActionType(ActionType.REMOVE)
             .build();
 
-        // @ts-ignore
-        FoundryProxy.__mockCompendiumEntry('fabricate.test-system', 'iyeUGBbSts0ij92X', {});
-
         const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([removeTwoOfTestComponentOne]);
 
         expect(result).not.toBeNull();
-
+        Sandbox.assert.notCalled(mockCreateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockUpdateEmbeddedEntity);
+        Sandbox.assert.calledOnce(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockDeleteEmbeddedEntity, 'OwnedItem', Sandbox.match.array.contains(['z9y2U9ZfVEBN0rW6', '4cPRZO3bm9E3ngA9']));
     });
 
 });

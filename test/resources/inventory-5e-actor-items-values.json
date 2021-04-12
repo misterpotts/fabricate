@@ -279,9 +279,7 @@
         "unidentified": ""
       },
       "source": "",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 3,
       "price": 20,
       "attuned": false,
@@ -308,9 +306,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 151",
-      "data": {
-        "quantity": 5
-      },
+      "quantity": 5,
       "weight": 0,
       "price": 0.2,
       "attuned": false,
@@ -341,9 +337,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 150",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 7,
       "price": 1,
       "attuned": false,
@@ -382,9 +376,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 10,
       "price": 1,
       "attuned": false,
@@ -468,9 +460,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 1,
       "price": 0.5,
       "attuned": false,
@@ -501,9 +491,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 152",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 1,
       "price": 0.2,
       "attuned": false,
@@ -542,9 +530,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 5,
       "price": 0.2,
       "attuned": false,
@@ -620,9 +606,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 5,
       "price": 2,
       "attuned": false,
@@ -665,9 +649,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 1,
       "price": 0.5,
       "attuned": false,
@@ -710,9 +692,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 1,
       "price": 1,
       "attuned": false,
@@ -755,9 +735,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 144",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 45,
       "price": 50,
       "attuned": false,
@@ -848,9 +826,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 150",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 3,
       "price": 0.5,
       "attuned": false,
@@ -941,9 +917,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 151",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 4,
       "price": 1,
       "attuned": false,
@@ -1034,9 +1008,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 144",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 6,
       "price": "10",
       "attuned": false,
@@ -1127,9 +1099,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 149",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 4,
       "price": 5,
       "attuned": false,
@@ -1234,9 +1204,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 150",
-      "data": {
-        "quantity": 19
-      },
+      "quantity": 19,
       "weight": 0.075,
       "price": 0.02,
       "attuned": false,
@@ -1319,9 +1287,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 149",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 5,
       "price": 25,
       "attuned": false,
@@ -3074,9 +3040,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 10
-      },
+      "quantity": 10,
       "weight": 2,
       "price": 0.5,
       "attuned": false,
@@ -3152,9 +3116,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 153",
-      "data": {
-        "quantity": 10
-      },
+      "quantity": 10,
       "weight": 1,
       "price": 0.01,
       "attuned": false,
@@ -3242,9 +3204,7 @@
         "unidentified": ""
       },
       "source": "PHB pg. 151",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 5,
       "price": 25,
       "attuned": false,
@@ -3632,9 +3592,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 0,
       "price": 0,
       "attuned": false,
@@ -3719,9 +3677,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 0,
       "price": 0,
       "attuned": false,
@@ -3806,9 +3762,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 2
-      },
+      "quantity": 2,
       "weight": 0,
       "price": 0,
       "attuned": false,
@@ -3915,9 +3869,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 0,
       "price": 0,
       "attuned": false,
@@ -3999,9 +3951,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 1
-      },
+      "quantity": 1,
       "weight": 0,
       "price": 0,
       "attuned": false,
@@ -4086,9 +4036,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 4
-      },
+      "quantity": 4,
       "weight": 0,
       "price": 0,
       "attuned": false,
@@ -4173,9 +4121,7 @@
         "unidentified": ""
       },
       "source": "Fabricate: Test",
-      "data": {
-        "quantity": 6
-      },
+      "quantity": 6,
       "weight": 0,
       "price": 0,
       "attuned": false,
