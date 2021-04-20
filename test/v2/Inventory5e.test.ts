@@ -63,11 +63,11 @@ const mockGame: Game = <Game><unknown>{
 };
 
 const stubGetEntity = Sandbox.stub(mockCompendium, 'getEntity');
-stubGetEntity.withArgs(testComponentOne.partId).resolves(<Entity>{});
-stubGetEntity.withArgs(testComponentTwo.partId).resolves(<Entity>{});
-stubGetEntity.withArgs(testComponentThree.partId).resolves(<Entity>{});
-stubGetEntity.withArgs(testComponentFour.partId).resolves(<Entity>{});
-stubGetEntity.withArgs(testComponentFive.partId).resolves(<Entity>{});
+stubGetEntity.withArgs(testComponentOne.partId).resolves(<Item5e><unknown>{data:{data:{quantity:1},flags:{fabricate:{identity:{partId:testComponentOne.partId}}}}});
+stubGetEntity.withArgs(testComponentTwo.partId).resolves(<Item5e><unknown>{data:{data:{quantity:1},flags:{fabricate:{identity:{partId:testComponentTwo.partId}}}}});
+stubGetEntity.withArgs(testComponentThree.partId).resolves(<Item5e><unknown>{data:{data:{quantity:1},flags:{fabricate:{identity:{partId:testComponentThree.partId}}}}});
+stubGetEntity.withArgs(testComponentFour.partId).resolves(<Item5e><unknown>{data:{data:{quantity:1},flags:{fabricate:{identity:{partId:testComponentFour.partId}}}}});
+stubGetEntity.withArgs(testComponentFive.partId).resolves(<Item5e><unknown>{data:{data:{quantity:1},flags:{fabricate:{identity:{partId:testComponentFive.partId}}}}});
 
 Sandbox.stub(mockGame.packs, 'get').withArgs('fabricate.test-system').returns(mockCompendium);
 
@@ -311,7 +311,6 @@ describe('Component Selection for Essences', () => {
 describe('Take Actions', () => {
 
     it('Should perform deletes where owned Item quantity is equal to removal quantity', async () => {
-
         const mockGameUtils: GameUtils = <GameUtils><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
@@ -334,7 +333,7 @@ describe('Take Actions', () => {
             .withGameUtils(mockGameUtils)
             .build();
 
-        const removeTwoOfTestComponentOne: FabricationAction<Item.Data> = FabricationAction.builder<Item5e.Data>()
+        const removeTwoOfTestComponentOne: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
             .withComponent(new Unit<CraftingComponent>(testComponentOne, 2))
             .withActionType(ActionType.REMOVE)
             .build();
@@ -347,6 +346,318 @@ describe('Take Actions', () => {
         Sandbox.assert.calledOnce(mockDeleteEmbeddedEntity);
         // @ts-ignore
         Sandbox.assert.calledWith(mockDeleteEmbeddedEntity, 'OwnedItem', Sandbox.match.array.contains(['z9y2U9ZfVEBN0rW6', '4cPRZO3bm9E3ngA9']));
+    });
+
+    it('Should perform delete one Item and update quantity of other where removal quantity spans two Items', async () => {
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
+        };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}]);
+
+        const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+            .withActor(mockActor)
+            .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
+            .build();
+
+        const removeFiveOfTestComponentFour: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentFour, 5))
+            .withActionType(ActionType.REMOVE)
+            .build();
+
+        const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([removeFiveOfTestComponentFour]);
+
+        expect(result).not.toBeNull();
+        Sandbox.assert.notCalled(mockCreateEmbeddedEntity);
+        Sandbox.assert.calledOnce(mockUpdateEmbeddedEntity);
+        Sandbox.assert.calledOnce(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockDeleteEmbeddedEntity, 'OwnedItem', Sandbox.match.array.contains(['z9y2U9ZfVEBN0rW6']));
+        Sandbox.assert.calledWith(mockUpdateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 1) {
+                return false;
+            }
+            return value[0]._id === 'z9y2U9ZfVEBN0rW6' && value[0].data.quantity === 5;
+        }));
+    });
+
+    it('Should add new Item where not present in Inventory', async () => {
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
+        };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}]);
+        // @ts-ignore
+        mockCreateEmbeddedEntity.resolves([{}]);
+
+        const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+            .withActor(mockActor)
+            .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
+            .build();
+
+        const addThreeOfTestComponentTwo: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentTwo, 3))
+            .withActionType(ActionType.ADD)
+            .build();
+
+        const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([addThreeOfTestComponentTwo]);
+
+        expect(result).not.toBeNull();
+        Sandbox.assert.calledOnce(mockCreateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockUpdateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockCreateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 1) {
+                return false;
+            }
+            return value[0].flags.fabricate.identity.partId === testComponentTwo.partId && value[0].data.quantity === 3;
+        }));
+    });
+
+    it('Should update existing Item for addition where already present in Inventory', async () => {
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
+        };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}]);
+        // @ts-ignore
+        mockCreateEmbeddedEntity.resolves([{}]);
+
+        const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+            .withActor(mockActor)
+            .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
+            .build();
+
+        const addOneOfTestComponentThree: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentThree, 1))
+            .withActionType(ActionType.ADD)
+            .build();
+
+        const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([addOneOfTestComponentThree]);
+
+        expect(result).not.toBeNull();
+        Sandbox.assert.calledOnce(mockUpdateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockCreateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockUpdateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 1) {
+                return false;
+            }
+            return value[0].data.quantity === 3
+                && value[0]._id === 'WLcACWjSLJZOYckk';
+        }));
+    });
+
+    it('Should update, delete and create together for additions and removals', async () => {
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
+        };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}]);
+        // @ts-ignore
+        mockCreateEmbeddedEntity.resolves([{}]);
+
+        const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+            .withActor(mockActor)
+            .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
+            .build();
+
+        const addTwoOfTestComponentThree: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentThree, 2))
+            .withActionType(ActionType.ADD)
+            .build();
+        const addThreeOfTestComponentTwo: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentTwo, 3))
+            .withActionType(ActionType.ADD)
+            .build();
+        const removeFiveOfTestComponentFour: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentFour, 5))
+            .withActionType(ActionType.REMOVE)
+            .build();
+
+        const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([
+            addTwoOfTestComponentThree,
+            addThreeOfTestComponentTwo,
+            removeFiveOfTestComponentFour
+        ]);
+
+        expect(result).not.toBeNull();
+        Sandbox.assert.calledOnce(mockCreateEmbeddedEntity);
+        Sandbox.assert.calledOnce(mockUpdateEmbeddedEntity);
+        Sandbox.assert.calledOnce(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockCreateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 1) {
+                return false;
+            }
+            return value[0].flags.fabricate.identity.partId === testComponentTwo.partId && value[0].data.quantity === 3;
+        }));
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockUpdateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 2) {
+                return false;
+            }
+            const updateTestComponentThreeToQuantityOfFour = value.find(update => update._id === 'WLcACWjSLJZOYckk' && update.data.quantity === 4);
+            const updateTestComponentFourToQuantityOfFive = value.find(update => update._id === 'z9y2U9ZfVEBN0rW6' && update.data.quantity === 5);
+            return updateTestComponentThreeToQuantityOfFour && updateTestComponentFourToQuantityOfFive;
+        }));
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockDeleteEmbeddedEntity, 'OwnedItem', Sandbox.match.array.contains(['z9y2U9ZfVEBN0rW6']));
+    });
+
+    it('Should create an item with custom data when none are present', async () => {
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
+        };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}]);
+        // @ts-ignore
+        mockCreateEmbeddedEntity.resolves([{}]);
+
+        const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+            .withActor(mockActor)
+            .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
+            .build();
+
+        const addOneCustomTestComponentTwo: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentTwo, 1))
+            .withActionType(ActionType.ADD)
+            .withItemData(<Item5e.Data><unknown>{
+                data: {
+                    customProp: 'customValue',
+                    quantity: 1
+                },
+                flags: {
+                    fabricate: {
+                        identity: {
+                            partId: testComponentTwo.partId
+                        }
+                    }
+                }
+            })
+            .build();
+
+        const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([addOneCustomTestComponentTwo]);
+
+        expect(result).not.toBeNull();
+        Sandbox.assert.calledOnce(mockCreateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockUpdateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockCreateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 1) {
+                return false;
+            }
+            return value[0].flags.fabricate.identity.partId === testComponentTwo.partId
+                && value[0].data.quantity === 1
+                && value[0].data.customProp === 'customValue';
+        }));
+    });
+
+    it('Should create an item with custom data when one already exists', async () => {
+        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+            duplicate: jest.fn().mockImplementation((source) => {
+                return JSON.parse(JSON.stringify(source));
+            }),
+            merge: jest.fn().mockImplementation((target, source) => {
+                return {...<object>target, ...<object>source};
+            }),
+        };
+
+        mockUpdateEmbeddedEntity.resolves([]);
+        // @ts-ignore
+        mockDeleteEmbeddedEntity.resolves([{}]);
+        // @ts-ignore
+        mockCreateEmbeddedEntity.resolves([{}]);
+
+        const underTest: Inventory<Item5e.Data.Data, Actor5e> = Inventory5e.builder()
+            .withActor(mockActor)
+            .withPartDictionary(mockPartDictionary)
+            .withGame(mockGame)
+            .withGameUtils(mockGameUtils)
+            .build();
+
+        const addOneCustomTestComponentFour: FabricationAction<Item5e.Data.Data> = FabricationAction.builder<Item5e.Data.Data>()
+            .withComponent(new Unit<CraftingComponent>(testComponentFour, 1))
+            .withActionType(ActionType.ADD)
+            .withItemData(<Item5e.Data><unknown>{
+                data: {
+                    customProp: 'customValue',
+                    quantity: 1
+                },
+                flags: {
+                    fabricate: {
+                        identity: {
+                            partId: testComponentFour.partId
+                        }
+                    }
+                }
+            })
+            .withHasCustomData(true)
+            .build();
+
+        const result: Item<Item.Data<Item5e.Data.Data>>[] = await underTest.perform([addOneCustomTestComponentFour]);
+
+        expect(result).not.toBeNull();
+        Sandbox.assert.calledOnce(mockCreateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockUpdateEmbeddedEntity);
+        Sandbox.assert.notCalled(mockDeleteEmbeddedEntity);
+        // @ts-ignore
+        Sandbox.assert.calledWith(mockCreateEmbeddedEntity, 'OwnedItem', Sandbox.match((value: any[]) => {
+            if (value.length !== 1) {
+                return false;
+            }
+            return value[0].flags.fabricate.identity.partId === testComponentFour.partId
+                && value[0].data.quantity === 1
+                && value[0].data.customProp === 'customValue';
+        }));
     });
 
 });

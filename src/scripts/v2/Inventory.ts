@@ -13,7 +13,7 @@ interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     containsEssences(essences: Combination<EssenceDefinition>): boolean;
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent>;
     excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A>;
-    perform(actions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]>;
+    perform(actions: FabricationAction<D>[]): Promise<Item<Item.Data<D>>[]>;
     prepare(): boolean;
 }
 
@@ -253,12 +253,12 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         this._ownedComponents = this.index();
     }
 
-    async perform(actions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]> {
+    async perform(actions: FabricationAction<D>[]): Promise<Item<Item.Data<D>>[]> {
         this._ownedComponents = this.index();
-        const removals: FabricationAction<Item.Data<D>>[] = [];
-        const additions: FabricationAction<Item.Data<D>>[] = [];
+        const removals: FabricationAction<D>[] = [];
+        const additions: FabricationAction<D>[] = [];
         for (const action of actions) {
-            const preparedAction: FabricationAction<Item.Data<D>> = await this.prepareItemData(action);
+            const preparedAction: FabricationAction<D> = await this.prepareItemData(action);
             switch (preparedAction.actionType) {
                 case ActionType.REMOVE:
                     removals.push(preparedAction);
@@ -273,7 +273,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         return results;
     }
 
-    private async prepareItemData(action: FabricationAction<Item.Data<D>>): Promise<FabricationAction<Item.Data<D>>> {
+    private async prepareItemData(action: FabricationAction<D>): Promise<FabricationAction<D>> {
         if (action.hasItemData()) {
             return action;
         }
@@ -314,7 +314,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
     }
 
 
-    async takeActions(actor: A, removals: FabricationAction<Item.Data<D>>[], additions: FabricationAction<Item.Data<D>>[]): Promise<Item<Item.Data<D>>[]> {
+    async takeActions(actor: A, removals: FabricationAction<D>[], additions: FabricationAction<D>[]): Promise<Item<Item.Data<D>>[]> {
         const updates: Item.Data<D>[] = [];
         const deletes: Item.Data<D>[] = [];
         const creates: Item.Data<D>[] = [];
@@ -325,8 +325,14 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
 
         for (const addition of additions) {
             const craftingComponent: CraftingComponent = addition.unit.part;
-            if (!this.itemQuantityAware || !this.ownedComponents.contains(craftingComponent)) {
-                creates.push(addition.itemData.data);
+            if (!this.itemQuantityAware || addition.customData) {
+                creates.push(addition.itemData);
+                break;
+            }
+            if (!this.ownedComponents.contains(craftingComponent)) {
+                const data: Item.Data<D> = this._gameUtils.duplicate(addition.itemData);
+                const newItemData: Item.Data<D> = this.setQuantityFor(data, addition.unit.quantity);
+                creates.push(newItemData);
                 break;
             }
             const records: [Item<Item.Data<D>>, number][] = this._managedItems.get(craftingComponent)
