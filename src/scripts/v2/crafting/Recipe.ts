@@ -63,10 +63,10 @@ namespace Recipe {
 
     export class Builder extends FabricateItem.Builder {
 
-        public ingredients: Combination<CraftingComponent>;
-        public catalysts: Combination<CraftingComponent>;
-        public essences: Combination<EssenceDefinition>;
-        public results: Combination<CraftingComponent>;
+        public ingredients: Combination<CraftingComponent> = Combination.EMPTY();
+        public catalysts: Combination<CraftingComponent> = Combination.EMPTY();
+        public essences: Combination<EssenceDefinition> = Combination.EMPTY();
+        public results: Combination<CraftingComponent> = Combination.EMPTY();
 
         public build(): Recipe {
             return new Recipe(this);

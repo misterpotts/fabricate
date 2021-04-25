@@ -170,6 +170,9 @@ class EssenceSelection {
     }
 
     perform(contents: Combination<CraftingComponent>): Combination<CraftingComponent> {
+        if (this._essences.isEmpty()) {
+            return Combination.EMPTY();
+        }
         let availableComponents: Combination<CraftingComponent> = contents.clone();
         contents.members.forEach(((thisComponent: CraftingComponent) => {
             if (thisComponent.essences.isEmpty() || !thisComponent.essences.intersects(this._essences)) {

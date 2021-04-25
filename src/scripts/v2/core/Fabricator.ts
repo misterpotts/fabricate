@@ -58,7 +58,8 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
         switch (performedCheck.outcome) {
             case 'FAILURE':
                 const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? preparedComponents : Combination.EMPTY();
-                return await this.fail(inventory, wastedComponents, performedCheck);
+                const failureMessage: string = `Your crafting attempt was unsuccessful! ${this._consumeComponentsOnFailure ? 'The ingredients were wasted. ' : 'No ingredients were consumed. ' }`;
+                return await this.fail(inventory, wastedComponents, performedCheck, failureMessage);
             case 'SUCCESS':
                 return await this.succeed(inventory, preparedComponents, recipe.results, performedCheck);
         }
@@ -84,7 +85,8 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
         switch (performedCheck.outcome) {
             case 'FAILURE':
                 const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? componentMix : Combination.EMPTY();
-                return await this.fail(inventory, wastedComponents, performedCheck);
+                const failureMessage: string = `Your alchemical combination failed! ${this._consumeComponentsOnFailure ? 'The ingredients were wasted. ' : 'No ingredients were consumed. ' }`;
+                return await this.fail(inventory, wastedComponents, performedCheck, failureMessage);
             case 'SUCCESS':
                 return await this.succeedWith(inventory, componentMix, alchemyResult, performedCheck);
         }
@@ -100,16 +102,21 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
     private async fail(inventory: Inventory<D, A>,
                        wastedComponents: Combination<CraftingComponent>,
-                       checkResult: CraftingCheckResult): Promise<FabricationOutcome> {
+                       checkResult: CraftingCheckResult,
+                       message: string): Promise<FabricationOutcome> {
 
-        const removals: FabricationAction<D>[] = this.asFabricationActions(wastedComponents, ActionType.REMOVE);
-
-        await inventory.perform(removals);
+        const removals: FabricationAction<D>[] = [];
+        if (!wastedComponents.isEmpty()) {
+            this.asFabricationActions(wastedComponents, ActionType.REMOVE)
+                .forEach((removal: FabricationAction<D>) => removals.push(removal));
+            await inventory.perform(removals);
+        }
 
         return FabricationOutcome.builder()
             .withOutcome(OutcomeType.FAILURE)
             .withActions(removals)
             .withCheckResult(checkResult)
+            .withMessage(message)
             .build();
     }
 
