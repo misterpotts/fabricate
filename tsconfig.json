@@ -21,7 +21,7 @@
       "node",
       "chai",
       "sinon",
-      "jest",
+      "@jest/globals",
       "handlebars",
       "@league-of-foundry-developers/foundry-vtt-types",
       "@league-of-foundry-developers/foundry-vtt-dnd5e-types"

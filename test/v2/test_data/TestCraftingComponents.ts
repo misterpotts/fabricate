@@ -1,6 +1,6 @@
-import {CraftingComponent} from "../../../src/scripts/v2/CraftingComponent";
-import {Combination, Unit} from "../../../src/scripts/v2/Combination";
-import {EssenceDefinition} from "../../../src/scripts/v2/EssenceDefinition";
+import {CraftingComponent} from "../../../src/scripts/v2/common/CraftingComponent";
+import {Combination, Unit} from "../../../src/scripts/v2/common/Combination";
+import {EssenceDefinition} from "../../../src/scripts/v2/common/EssenceDefinition";
 // @ts-ignore
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
