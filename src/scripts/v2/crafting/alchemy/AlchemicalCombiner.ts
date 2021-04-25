@@ -1,8 +1,8 @@
 import {AlchemicalEffect} from "./AlchemicalEffect";
-import {EssenceDefinition, EssenceIdentityProvider} from "../common/EssenceDefinition";
-import {Combination, Unit} from "../common/Combination";
-import {CraftingComponent} from "../common/CraftingComponent";
-import {AlchemyError} from "../error/AlchemyError";
+import {CraftingComponent} from "../../common/CraftingComponent";
+import {EssenceDefinition, EssenceIdentityProvider} from "../../common/EssenceDefinition";
+import {Combination, Unit} from "../../common/Combination";
+import {AlchemyError} from "../../error/AlchemyError";
 
 interface EssenceCombinerConfiguration {
     maxComponents: number;
@@ -75,7 +75,7 @@ class AlchemicalCombiner<D> {
      * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
      * mixed, or if insufficient effects are matched
      * */
-    async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, D]> {
+    async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, Item.Data<D>]> {
         const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
         this.validate(componentCombination, essenceCombination);
         const effects: [AlchemicalEffect<D>, number][] = this.determineAlchemicalEffectsForComponents(componentCombination);
@@ -83,7 +83,7 @@ class AlchemicalCombiner<D> {
             throw new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of ${this.minimumEffectMatches} was required, but only ${effects ? effects.length : 0} were found. `, componentCombination, true);
         }
         const orderedEffects: [AlchemicalEffect<D>, number][] = this.orderAlchemicalEffects(effects);
-        const alchemyItemData: D = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
+        const alchemyItemData: Item.Data<D> = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
         return [new Unit(this.baseComponent, 1), alchemyItemData];
     }
 
@@ -98,18 +98,18 @@ class AlchemicalCombiner<D> {
         }
     }
 
-    private async applyEffectsToBaseItem(effects: [AlchemicalEffect<D>, number][], baseComponent: CraftingComponent): Promise<D> {
+    private async applyEffectsToBaseItem(effects: [AlchemicalEffect<D>, number][], baseComponent: CraftingComponent): Promise<Item.Data<D>> {
         const compendium: Compendium = game.packs.get(baseComponent.systemId);
         // @ts-ignore todo: Pretty sure this typing is correct. Check with smart folks in League to find out why it errors
         const compendiumEntry: Entity<Item.Data<D>> = await compendium.getEntity(baseComponent.partId);
-        // @ts-ignore todo: Figure out how to type this with Duplicated<D, 'strict'> if possible
-        const itemData: D = duplicate(compendiumEntry.data.data);
+        // @ts-ignore
+        const duplicated: Item.Data<D> = duplicate(compendiumEntry.data);
         effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
             for (let i = 0; i < effectCount[1]; i++) {
-                effectCount[0].applyTo(itemData)
+                effectCount[0].applyTo(duplicated.data)
             }
         });
-        return itemData;
+        return duplicated;
     }
 
     private determineAlchemicalEffectsForComponents(componentCombination: Combination<CraftingComponent>): [AlchemicalEffect<D>, number][] {
