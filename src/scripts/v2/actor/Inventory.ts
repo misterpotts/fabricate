@@ -4,7 +4,7 @@ import {Combination, Unit} from "../common/Combination";
 import {ActionType, FabricationAction} from "../core/FabricationAction";
 import {FabricateItemType} from "../compendium/CompendiumData";
 import {PartDictionary} from "../system/PartDictionary";
-import {GameUtils} from "../foundry/GameUtils";
+import {ObjectUtility} from "../foundry/ObjectUtility";
 
 interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     actor: A;
@@ -203,7 +203,7 @@ class EssenceSelection {
 abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
 
     private readonly _game: Game;
-    private readonly _gameUtils: GameUtils;
+    private readonly _gameUtils: ObjectUtility;
 
     private readonly _actor: A;
     private _ownedComponents: Combination<CraftingComponent>;
@@ -441,7 +441,7 @@ namespace BaseCraftingInventory {
         public partDictionary: PartDictionary;
         public managedItems: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
         public game: Game;
-        public gameUtils: GameUtils;
+        public gameUtils: ObjectUtility;
 
         abstract build(): Inventory<D, A>;
 
@@ -470,7 +470,7 @@ namespace BaseCraftingInventory {
             return this;
         }
 
-        public withGameUtils(value: GameUtils): Builder<D, A> {
+        public withGameUtils(value: ObjectUtility): Builder<D, A> {
             this.gameUtils = value;
             return this;
         }

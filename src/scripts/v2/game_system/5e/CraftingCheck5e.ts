@@ -2,7 +2,7 @@ import {Tool} from "../../crafting/Tool";
 import {CraftingCheck} from "../../crafting/CraftingCheck";
 import AbilityType = DND5e.AbilityType;
 import Character = Actor5e.Data.Character;
-import {DiceRoller} from "../../foundry/DiceRoller";
+import {DiceUtility} from "../../foundry/DiceUtility";
 
 interface PatchAbility5e {
     value: number;
@@ -89,7 +89,7 @@ namespace CraftingCheck5e {
         public ingredientDCModifier: number;
         public essenceDCModifier: number;
         public tool: Tool;
-        public diceRoller: DiceRoller = new DiceRoller();
+        public diceRoller: DiceUtility = new DiceUtility();
 
         public build(): CraftingCheck5e {
             return new CraftingCheck5e(this);
@@ -120,7 +120,7 @@ namespace CraftingCheck5e {
             return this;
         }
 
-        public withDiceRoller(value: DiceRoller): Builder {
+        public withDiceRoller(value: DiceUtility): Builder {
             this.diceRoller = value;
             return this;
         }

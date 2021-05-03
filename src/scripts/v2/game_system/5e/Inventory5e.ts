@@ -33,7 +33,7 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
             itemData.data.quantity = quantity;
             return itemData;
         }
-        throw new Error(`Type '${typeof itemData}' does not include the required 'quantity' property`)
+        throw new Error(`Type '${typeof itemData}' does not include the required 'quantity' property`);
     }
 
 }

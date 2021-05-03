@@ -17,7 +17,7 @@ class RollResult {
 
 }
 
-class DiceRoller {
+class DiceUtility {
 
     public roll(termData: DiceTerm.TermData): RollResult {
         const die: Die = new Die(termData);
@@ -25,6 +25,12 @@ class DiceRoller {
         return new RollResult(roll.result, die.expression);
     }
 
+    public multiply(expression: string, factor: number): string {
+        const parsed: DiceTerm = DiceTerm.fromExpression(expression, {});
+        parsed.number = parsed.number * factor;
+        return parsed.expression;
+    }
+
 }
 
-export {DiceRoller, RollResult}
+export {DiceUtility, RollResult}

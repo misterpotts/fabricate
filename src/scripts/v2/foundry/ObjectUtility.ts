@@ -1,4 +1,4 @@
-class GameUtils {
+class ObjectUtility {
 
     public duplicate<T = {}>(source: T): T {
         // @ts-ignore
@@ -11,4 +11,4 @@ class GameUtils {
 
 }
 
-export {GameUtils}
+export {ObjectUtility}

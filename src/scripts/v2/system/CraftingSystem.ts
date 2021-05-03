@@ -262,4 +262,4 @@ namespace CraftingSystem {
     }
 }
 
-export {CraftingSystem, EssenceDefinition};
+export {CraftingSystem};

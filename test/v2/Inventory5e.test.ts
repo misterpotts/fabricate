@@ -13,7 +13,7 @@ import Properties from "../../src/scripts/Properties";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
-import {GameUtils} from "../../src/scripts/v2/foundry/GameUtils";
+import {ObjectUtility} from "../../src/scripts/v2/foundry/ObjectUtility";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -311,7 +311,7 @@ describe('Component Selection for Essences', () => {
 describe('Take Actions', () => {
 
     it('Should perform deletes where owned Item quantity is equal to removal quantity', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),
@@ -349,7 +349,7 @@ describe('Take Actions', () => {
     });
 
     it('Should perform delete one Item and update quantity of other where removal quantity spans two Items', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),
@@ -391,7 +391,7 @@ describe('Take Actions', () => {
     });
 
     it('Should add new Item where not present in Inventory', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),
@@ -434,7 +434,7 @@ describe('Take Actions', () => {
     });
 
     it('Should update existing Item for addition where already present in Inventory', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),
@@ -478,7 +478,7 @@ describe('Take Actions', () => {
     });
 
     it('Should update, delete and create together for additions and removals', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),
@@ -544,7 +544,7 @@ describe('Take Actions', () => {
     });
 
     it('Should create an item with custom data when none are present', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),
@@ -602,7 +602,7 @@ describe('Take Actions', () => {
     });
 
     it('Should create an item with custom data when one already exists', async () => {
-        const mockGameUtils: GameUtils = <GameUtils><unknown>{
+        const mockGameUtils: ObjectUtility = <ObjectUtility><unknown>{
             duplicate: jest.fn().mockImplementation((source) => {
                 return JSON.parse(JSON.stringify(source));
             }),

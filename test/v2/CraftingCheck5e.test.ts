@@ -3,7 +3,7 @@ import * as Sinon from "sinon";
 
 import {CraftingCheck5e} from "../../src/scripts/v2/game_system/5e/CraftingCheck5e";
 import {Tool} from "../../src/scripts/v2/crafting/Tool";
-import {DiceRoller, RollResult} from "../../src/scripts/v2/foundry/DiceRoller";
+import {DiceUtility, RollResult} from "../../src/scripts/v2/foundry/DiceUtility";
 import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
 import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
 import {testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
@@ -12,7 +12,7 @@ import {OutcomeType} from "../../src/scripts/v2/core/OutcomeType";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-const mockDiceRoller: DiceRoller = <DiceRoller><unknown>{
+const mockDiceRoller: DiceUtility = <DiceUtility><unknown>{
     roll: () => {}
 };
 const stubRollMethod = Sandbox.stub(mockDiceRoller, 'roll');

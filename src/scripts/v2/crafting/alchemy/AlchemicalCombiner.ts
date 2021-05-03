@@ -3,6 +3,8 @@ import {CraftingComponent} from "../../common/CraftingComponent";
 import {EssenceDefinition, EssenceIdentityProvider} from "../../common/EssenceDefinition";
 import {Combination, Unit} from "../../common/Combination";
 import {AlchemyError} from "../../error/AlchemyError";
+import {CompendiumProvider} from "../../foundry/CompendiumProvider";
+import {ObjectUtility} from "../../foundry/ObjectUtility";
 
 interface EssenceCombinerConfiguration {
     maxComponents: number;
@@ -26,6 +28,8 @@ class AlchemicalCombiner<D> {
     private readonly _baseComponent: CraftingComponent;
     private readonly _essenceIdentityProvider: EssenceIdentityProvider;
     private readonly _effectsByEssenceCombinationIdentity: Map<number, AlchemicalEffect<D>> = new Map();
+    private readonly _compendiumProvider: CompendiumProvider;
+    private readonly _objectUtility: ObjectUtility;
 
     public constructor(builder: AlchemicalCombiner.Builder<D>) {
         this._config = builder.config;
@@ -34,6 +38,8 @@ class AlchemicalCombiner<D> {
         const essenceIdentityProvider = EssenceIdentityProvider.for(builder.systemEssences);;
         this._essenceIdentityProvider = essenceIdentityProvider;
         builder.effects.forEach((effect: AlchemicalEffect<D>) => this._effectsByEssenceCombinationIdentity.set(essenceIdentityProvider.getForEssenceCombination(effect.essenceCombination), effect));
+        this._compendiumProvider = builder.compendiumProvider;
+        this._objectUtility = builder.objectUtility;
     }
 
     public static builder<D>(): AlchemicalCombiner.Builder<D> {
@@ -99,14 +105,11 @@ class AlchemicalCombiner<D> {
     }
 
     private async applyEffectsToBaseItem(effects: [AlchemicalEffect<D>, number][], baseComponent: CraftingComponent): Promise<Item.Data<D>> {
-        const compendium: Compendium = game.packs.get(baseComponent.systemId);
-        // @ts-ignore todo: Pretty sure this typing is correct. Check with smart folks in League to find out why it errors
-        const compendiumEntry: Entity<Item.Data<D>> = await compendium.getEntity(baseComponent.partId);
-        // @ts-ignore
-        const duplicated: Item.Data<D> = duplicate(compendiumEntry.data);
+        const compendiumEntry: Entity<Item.Data<D>> = await this._compendiumProvider.getEntity(baseComponent.systemId, baseComponent.partId);
+        const duplicated: Item.Data<D> = this._objectUtility.duplicate(compendiumEntry.data);
         effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
             for (let i = 0; i < effectCount[1]; i++) {
-                effectCount[0].applyTo(duplicated.data)
+                effectCount[0].applyTo(duplicated.data);
             }
         });
         return duplicated;
@@ -146,6 +149,12 @@ namespace AlchemicalCombiner {
         public effects: AlchemicalEffect<D>[] = [];
         public baseComponent: CraftingComponent;
         public systemEssences: EssenceDefinition[] = [];
+        public compendiumProvider: CompendiumProvider = new CompendiumProvider();
+        public objectUtility: ObjectUtility = new ObjectUtility();
+
+        public build(): AlchemicalCombiner<D> {
+            return new AlchemicalCombiner<D>(this);
+        }
 
         public withMaxComponents(value: number): Builder<D> {
             this.config.maxComponents = value;
@@ -177,7 +186,7 @@ namespace AlchemicalCombiner {
             return this;
         }
 
-        public withBaseItem(value:CraftingComponent): Builder<D> {
+        public withBaseComponent(value:CraftingComponent): Builder<D> {
             this.baseComponent = value;
             return this;
         }
@@ -192,8 +201,14 @@ namespace AlchemicalCombiner {
             return this;
         }
 
-        public build(): AlchemicalCombiner<D> {
-            return new AlchemicalCombiner<D>(this);
+        public withCompendiumProvider(value: CompendiumProvider): Builder<D> {
+            this.compendiumProvider = value;
+            return this;
+        }
+
+        public withObjectUtility(value: ObjectUtility): Builder<D> {
+            this.objectUtility = value;
+            return this;
         }
 
     }

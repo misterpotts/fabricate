@@ -1,5 +1,6 @@
-import {Combination} from "../common/Combination";
-import {EssenceDefinition} from "../common/EssenceDefinition";
+import {Combination} from "../../common/Combination";
+import {EssenceDefinition} from "../../common/EssenceDefinition";
+import {DiceUtility} from "../../foundry/DiceUtility";
 
 enum AlchemicalEffectType {
     MODIFIER = 1,
@@ -9,23 +10,23 @@ enum AlchemicalEffectType {
 /**
  * @type D The System-Specific, concrete Item Data type to modify when applying  an Alchemical Effect
  * */
-interface AlchemicalEffect<D> {
-    essenceCombination: Combination<EssenceDefinition>;
-    description: string;
-    type: AlchemicalEffectType;
-    applyTo(itemData: D): D;
-}
-
-abstract class BaseAlchemicalEffect<D> implements AlchemicalEffect<D>{
+abstract class AlchemicalEffect<D>{
     private readonly _essenceCombination: Combination<EssenceDefinition>;
     private readonly _description: string;
     private readonly _type: AlchemicalEffectType;
+    protected readonly _diceUtility: DiceUtility;
+
     abstract applyTo(itemData: D): D;
 
-    protected constructor(essenceCombination: Combination<EssenceDefinition>, description: string, type: AlchemicalEffectType) {
-        this._essenceCombination = essenceCombination;
-        this._description = description;
-        this._type = type;
+    protected constructor(builder: AlchemicalEffect.Builder<D>) {
+        this._essenceCombination = builder.essenceCombination;
+        this._description = builder.description;
+        this._type = builder.type;
+        this._diceUtility = builder.diceUtility;
+    }
+
+    public static builder<D>(): AlchemicalEffect.Builder<D> {
+        return new AlchemicalEffect.Builder<D>();
     }
 
     get essenceCombination(): Combination<EssenceDefinition> {
@@ -40,6 +41,43 @@ abstract class BaseAlchemicalEffect<D> implements AlchemicalEffect<D>{
         return this._type;
     }
 
+    protected get diceUtility(): DiceUtility {
+        return this._diceUtility;
+    }
+
 }
 
-export {AlchemicalEffect, BaseAlchemicalEffect, AlchemicalEffectType}
+namespace AlchemicalEffect {
+
+    export class Builder<D> {
+
+        public essenceCombination: Combination<EssenceDefinition>;
+        public description: string;
+        public type: AlchemicalEffectType;
+        public diceUtility: DiceUtility;
+
+        public withEssenceCombination(value: Combination<EssenceDefinition>): Builder<D> {
+            this.essenceCombination = value;
+            return this;
+        }
+
+        public withDescription(value: string): Builder<D> {
+            this.description = value;
+            return this;
+        }
+
+        public withType(value: AlchemicalEffectType): Builder<D> {
+            this.type = value;
+            return this;
+        }
+
+        public withDiceUtility(value: DiceUtility): Builder<D> {
+            this.diceUtility = value;
+            return this;
+        }
+
+
+    }
+}
+
+export {AlchemicalEffect, AlchemicalEffectType}

@@ -1,7 +1,7 @@
 import {Combination, Unit} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {OutcomeType} from "../core/OutcomeType";
-import {DiceRoller, RollResult} from "../foundry/DiceRoller";
+import {DiceUtility, RollResult} from "../foundry/DiceUtility";
 import {CraftingCheckResult} from "./CraftingCheckResult";
 
 /**
@@ -178,7 +178,7 @@ class ContributionCounterFactory {
 
 abstract class CraftingCheck<A extends Actor> {
     private readonly _rollMustExceedThreshold: boolean;
-    private readonly _diceRoller: DiceRoller;
+    private readonly _diceRoller: DiceUtility;
     private readonly _baseThreshold: number;
     private readonly _ingredientCountModifier: number;
     private readonly _essenceTypeCountModifier: number;
@@ -188,7 +188,7 @@ abstract class CraftingCheck<A extends Actor> {
                           baseThreshold: number,
                           ingredientCountModifier: number,
                           essenceTypeCountModifier: number,
-                          diceRoller: DiceRoller = new DiceRoller()) {
+                          diceRoller: DiceUtility = new DiceUtility()) {
         this._rollMustExceedThreshold = exceedThreshold;
         this._diceRoller = diceRoller;
         this._baseThreshold = baseThreshold;
