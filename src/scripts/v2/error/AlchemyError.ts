@@ -7,8 +7,8 @@ class AlchemyError extends CraftingError {
 
     private readonly _components: Combination<CraftingComponent>;
 
-    constructor(message: string, components: Combination<CraftingComponent>, isWastage: boolean) {
-        super(message, isWastage);
+    constructor(message: string, components: Combination<CraftingComponent>, causesWastage: boolean) {
+        super(message, causesWastage);
         this._components = components;
     }
 

@@ -1,24 +1,22 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import * as Sinon from "sinon";
+
 import {Inventory} from "../../src/scripts/v2/actor/Inventory";
 import {Fabricator} from "../../src/scripts/v2/core/Fabricator";
 import {AlchemicalCombiner} from "../../src/scripts/v2/crafting/alchemy/AlchemicalCombiner";
 import {CraftingCheck} from "../../src/scripts/v2/crafting/CraftingCheck";
 import {Recipe} from "../../src/scripts/v2/crafting/Recipe";
 import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
-import {
-    testComponentFour,
-    testComponentOne,
-    testComponentThree,
-    testComponentTwo
-} from "./test_data/TestCraftingComponents";
 import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
 import {FabricationOutcome} from "../../src/scripts/v2/core/FabricationOutcome";
 import {EssenceDefinition} from "../../src/scripts/v2/common/EssenceDefinition";
 import {CraftingCheckResult} from "../../src/scripts/v2/crafting/CraftingCheckResult";
 import {OutcomeType} from "../../src/scripts/v2/core/OutcomeType";
 import {ActionType, FabricationAction} from "../../src/scripts/v2/core/FabricationAction";
+import {AlchemyError} from "../../src/scripts/v2/error/AlchemyError";
+
 import {elementalAir, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
+import { testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive} from "./test_data/TestCraftingComponents";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -37,12 +35,13 @@ const stubInventoryExcludingMethod = Sandbox.stub(mockInventory, 'excluding');
 const stubInventoryContainsIngredientsMethod = Sandbox.stub(mockInventory, 'containsIngredients');
 const stubInventorySelectForMethod = Sandbox.stub(mockInventory, 'selectFor');
 const stubInventoryPerformMethod = Sandbox.stub(mockInventory, 'perform');
-// const stubInventoryContainsEssencesMethod = Sandbox.stub(mockInventory, 'containsEssences');
+const stubInventoryContainsEssencesMethod = Sandbox.stub(mockInventory, 'containsEssences');
 
 const mockAlchemicalCombiner: AlchemicalCombiner<any> = <AlchemicalCombiner<any>><unknown>{
-    perform: () => {}
+    perform: () => {},
+    baseComponent: testComponentFive
 }
-//const stubPerformAlchemyMethod = Sandbox.stub(mockAlchemicalCombiner, 'perform');
+const stubAlchemicalCombinerPerformMethod = Sandbox.stub(mockAlchemicalCombiner, 'perform');
 
 const mockCraftingCheck: CraftingCheck<any> = <CraftingCheck<any>><unknown>{
     perform: () => {}
@@ -103,7 +102,11 @@ describe('Create and configure', () => {
 
 });
 
-describe('Fabricate Recipes', () => {
+describe('Fabricate', () => {
+
+    /* =================================================================================================================================================
+     * ALL FABRICATION SCENARIOS
+     * ================================================================================================================================================= */
 
     const testIngredientBasedRecipe: Recipe = Recipe.builder()
         .withName('Test Ingredient-Based Recipe')
@@ -143,244 +146,505 @@ describe('Fabricate Recipes', () => {
         .withResults(Combination.of(testComponentFour, 1))
         .build();
 
-    test('Should fail on unsuccessful check and consume components if configured to', async () => {
+    /* =================================================================================================================================================
+     * ALL FABRICATION SCENARIOS
+     * ================================================================================================================================================= */
 
-        const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
-            .withAlchemicalCombiner(mockAlchemicalCombiner)
-            .withConsumeComponentsOnFailure(true)
-            .withCraftingCheck(mockCraftingCheck)
-            .build();
+    describe('Recipes', () => {
 
-        stubInventoryContainsIngredientsMethod.returns(true);
-        stubInventorySelectForMethod.returns(Combination.EMPTY());
+        /* =================================================================================================================================================
+         * RECIPE CRAFTING SCENARIOS
+         * ================================================================================================================================================= */
 
-        const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.FAILURE, '1d20+1', 13, 14);
-        stubPerformCraftingCheckMethod.returns(mockCheckResult);
+        describe('Success', () => {
 
-        const mockModifiedItems: Item<Item.Data>[] = [
-            <Item<Item.Data>><unknown>{id: '1'},
-            <Item<Item.Data>><unknown>{id: '2'}
-        ];
-        stubInventoryPerformMethod.resolves(mockModifiedItems);
+            /* =================================================================================================================================================
+             * RECIPE CRAFTING SUCCESS SCENARIOS
+             * ================================================================================================================================================= */
 
-        const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+            test('Should add and remove components through Inventory with no Crafting Check', async () => {
 
-        Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-        Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
-            return value.size() === 3
-                && value.amountFor(testComponentThree) === 1
-                && value.amountFor(testComponentFour) === 2;
-        }));
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .build();
 
-        Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-        Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                stubInventoryContainsIngredientsMethod.returns(true);
+                stubInventoryContainsEssencesMethod.returns(true);
+                stubInventorySelectForMethod.returns(Combination.EMPTY());
 
-        Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-        Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
-            const twoActions: boolean = value.length === 2;
-            const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentFour.id
-                && action.unit.quantity === 2);
-            const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentThree.id
-                && action.unit.quantity === 1);
-            return twoActions && removeTwoTestComponentFour && removeOneTestComponentThree;
-        }));
+                const mockModifiedItems: Item<Item.Data>[] = [
+                    <Item<Item.Data>><unknown>{id: '1'},
+                    <Item<Item.Data>><unknown>{id: '2'},
+                    <Item<Item.Data>><unknown>{id: '3'}
+                ];
+                stubInventoryPerformMethod.resolves(mockModifiedItems);
 
-        expect(result).not.toBeNull();
-        expect(result.actions.length).toBe(2);
-        expect(result.outcome).toEqual(OutcomeType.FAILURE);
-        expect(result.message).toEqual('Your crafting attempt was unsuccessful! The ingredients were wasted. ');
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+
+                Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                    return value.size() === 3
+                        && value.amountFor(testComponentThree) === 1
+                        && value.amountFor(testComponentFour) === 2;
+                }));
+
+                Sandbox.assert.calledOnce(stubInventorySelectForMethod);
+                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const threeActions: boolean = value.length === 3;
+                    const addOneTestComponentTwo: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
+                        && action.unit.part.id === testComponentTwo.id
+                        && action.unit.quantity === 1);
+                    const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentFour.id
+                        && action.unit.quantity === 2);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    return threeActions && addOneTestComponentTwo && removeTwoTestComponentFour && removeOneTestComponentThree;
+                }));
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(3);
+                expect(result.outcome).toEqual(OutcomeType.SUCCESS);
+            });
+
+            test('Should add and remove Ingredients (but not catalysts) through Inventory with successful Crafting Check', async () => {
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
+
+                stubInventoryContainsIngredientsMethod.returns(true);
+                stubInventoryContainsEssencesMethod.returns(true);
+                stubInventorySelectForMethod.returns(Combination.EMPTY());
+
+                const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.SUCCESS, '1d20+1', 11, 10);
+                stubPerformCraftingCheckMethod.returns(mockCheckResult);
+
+                const mockModifiedItems: Item<Item.Data>[] = [
+                    <Item<Item.Data>><unknown>{id: '1'},
+                    <Item<Item.Data>><unknown>{id: '2'},
+                    <Item<Item.Data>><unknown>{id: '3'}
+                ];
+                stubInventoryPerformMethod.resolves(mockModifiedItems);
+
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipeWithCatalyst);
+
+                Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                    return value.size() === 4
+                        && value.amountFor(testComponentOne) === 1
+                        && value.amountFor(testComponentThree) === 1
+                        && value.amountFor(testComponentFour) === 2;
+                }));
+
+                Sandbox.assert.calledOnce(stubInventorySelectForMethod);
+                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const threeActions: boolean = value.length === 3;
+                    const addOneTestComponentTwo: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
+                        && action.unit.part.id === testComponentTwo.id
+                        && action.unit.quantity === 1);
+                    const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentFour.id
+                        && action.unit.quantity === 2);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    return threeActions && addOneTestComponentTwo && removeTwoTestComponentFour && removeOneTestComponentThree;
+                }));
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(3);
+                expect(result.checkResult).toEqual(mockCheckResult);
+                expect(result.outcome).toEqual(OutcomeType.SUCCESS);
+            });
+
+            test('Should add and remove Ingredients through Inventory with successful Crafting Check for Recipe requiring Essences', async () => {
+
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .build();
+
+                stubInventoryContainsIngredientsMethod.returns(true);
+                stubInventoryContainsEssencesMethod.returns(true);
+                stubInventorySelectForMethod.returns(Combination.ofUnits([
+                    new Unit<CraftingComponent>(testComponentOne, 3),
+                    new Unit<CraftingComponent>(testComponentThree, 1)
+                ]));
+
+                const mockModifiedItems: Item<Item.Data>[] = [
+                    <Item<Item.Data>><unknown>{id: '1'},
+                    <Item<Item.Data>><unknown>{id: '2'},
+                    <Item<Item.Data>><unknown>{id: '3'}
+                ];
+                stubInventoryPerformMethod.resolves(mockModifiedItems);
+
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testEssenceBasedRecipe);
+
+                Sandbox.assert.notCalled(stubInventoryContainsIngredientsMethod);
+
+                Sandbox.assert.calledOnce(stubInventorySelectForMethod);
+                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => {
+                    return value.size() === 5
+                        && value.amountFor(elementalWater) === 2
+                        && value.amountFor(elementalFire) === 2
+                        && value.amountFor(elementalAir) === 1;
+                }));
+
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const threeActions: boolean = value.length === 3;
+                    const addOneTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
+                        && action.unit.part.id === testComponentFour.id
+                        && action.unit.quantity === 1);
+                    const removeThreeTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentOne.id
+                        && action.unit.quantity === 3);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    return threeActions && addOneTestComponentFour && removeThreeTestComponentOne && removeOneTestComponentThree;
+                }));
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(3);
+                expect(result.outcome).toEqual(OutcomeType.SUCCESS);
+            });
+
+        });
+
+        /* =================================================================================================================================================
+         * RECIPE CRAFTING FAILURE SCENARIOS
+         * ================================================================================================================================================= */
+
+        describe('Failure', () => {
+
+            test('Should abort when Inventory does not contain components', async () => {
+
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
+
+                stubInventoryContainsIngredientsMethod.returns(false);
+                stubInventoryContainsEssencesMethod.returns(true);
+
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+
+                Sandbox.assert.notCalled(stubInventoryExcludingMethod);
+                Sandbox.assert.notCalled(stubInventorySelectForMethod);
+                Sandbox.assert.notCalled(stubInventoryPerformMethod);
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(0);
+                expect(result.outcome).toEqual(OutcomeType.NOT_ATTEMPTED);
+                expect(result.message).toEqual(`You don't have all of the ingredients for ${testIngredientBasedRecipe.name}. `);
+
+            });
+
+            test('Should abort when Inventory does not contain essences across owned components', async () => {
+
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
+
+                stubInventoryContainsIngredientsMethod.returns(true);
+                stubInventoryContainsEssencesMethod.returns(false);
+
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testEssenceBasedRecipe);
+
+                Sandbox.assert.notCalled(stubInventorySelectForMethod);
+                Sandbox.assert.notCalled(stubInventoryPerformMethod);
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(0);
+                expect(result.outcome).toEqual(OutcomeType.NOT_ATTEMPTED);
+                expect(result.message).toEqual(`There aren't enough essences amongst components in your inventory to craft ${testEssenceBasedRecipe.name}. `);
+
+            });
+
+            test('Should remove, but not add components when set to consume components on failure', async () => {
+
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
+
+                stubInventoryContainsIngredientsMethod.returns(true);
+                stubInventoryContainsEssencesMethod.returns(true);
+                stubInventorySelectForMethod.returns(Combination.EMPTY());
+
+                const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.FAILURE, '1d20+1', 13, 14);
+                stubPerformCraftingCheckMethod.returns(mockCheckResult);
+
+                const mockModifiedItems: Item<Item.Data>[] = [
+                    <Item<Item.Data>><unknown>{id: '1'},
+                    <Item<Item.Data>><unknown>{id: '2'}
+                ];
+                stubInventoryPerformMethod.resolves(mockModifiedItems);
+
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+
+                Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                    return value.size() === 3
+                        && value.amountFor(testComponentThree) === 1
+                        && value.amountFor(testComponentFour) === 2;
+                }));
+
+                Sandbox.assert.calledOnce(stubInventorySelectForMethod);
+                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const twoActions: boolean = value.length === 2;
+                    const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentFour.id
+                        && action.unit.quantity === 2);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    return twoActions && removeTwoTestComponentFour && removeOneTestComponentThree;
+                }));
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(2);
+                expect(result.outcome).toEqual(OutcomeType.FAILURE);
+                expect(result.message).toEqual('Your crafting attempt was unsuccessful! The ingredients were wasted. ');
+            });
+
+            test('Should not add or remove components when not set to consume components on failure', async () => {
+
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(false)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
+
+                stubInventoryContainsIngredientsMethod.returns(true);
+                stubInventoryContainsEssencesMethod.returns(true);
+                stubInventorySelectForMethod.returns(Combination.EMPTY());
+
+                const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.FAILURE, '1d20+1', 13, 14);
+                stubPerformCraftingCheckMethod.returns(mockCheckResult);
+
+                const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+
+                Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                    return value.size() === 3
+                        && value.amountFor(testComponentThree) === 1
+                        && value.amountFor(testComponentFour) === 2;
+                }));
+
+                Sandbox.assert.calledOnce(stubInventorySelectForMethod);
+                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+
+                Sandbox.assert.notCalled(stubInventoryPerformMethod);
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(0);
+                expect(result.outcome).toEqual(OutcomeType.FAILURE);
+                expect(result.message).toEqual('Your crafting attempt was unsuccessful! No ingredients were consumed. ');
+
+            });
+
+        });
+
     });
 
-    test('Should fail on unsuccessful check and not consume components if not configured to', async () => {
+    describe('Alchemy', () => {
 
-        const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
-            .withAlchemicalCombiner(mockAlchemicalCombiner)
-            .withConsumeComponentsOnFailure(false)
-            .withCraftingCheck(mockCraftingCheck)
-            .build();
+        /* =================================================================================================================================================
+         * ALCHEMY CRAFTING SCENARIOS
+         * ================================================================================================================================================= */
 
-        stubInventoryContainsIngredientsMethod.returns(true);
-        stubInventorySelectForMethod.returns(Combination.EMPTY());
+        describe('Success', () => {
 
-        const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.FAILURE, '1d20+1', 13, 14);
-        stubPerformCraftingCheckMethod.returns(mockCheckResult);
+            /* =================================================================================================================================================
+             * ALCHEMY CRAFTING SUCCESS SCENARIOS
+             * ================================================================================================================================================= */
 
-        const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+            test('Should add and remove components through Inventory', async () => {
 
-        Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-        Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
-            return value.size() === 3
-                && value.amountFor(testComponentThree) === 1
-                && value.amountFor(testComponentFour) === 2;
-        }));
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(false)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
 
-        Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-        Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.SUCCESS, '1d20+1', 15, 14);
+                stubPerformCraftingCheckMethod.returns(mockCheckResult);
 
-        Sandbox.assert.notCalled(stubInventoryPerformMethod);
+                stubAlchemicalCombinerPerformMethod.resolves([new Unit<CraftingComponent>(testComponentTwo, 1), <Item.Data><unknown>{
+                    data: {
+                        specialProperty: 'specialValue'
+                    }
+                }])
 
-        expect(result).not.toBeNull();
-        expect(result.actions.length).toBe(0);
-        expect(result.outcome).toEqual(OutcomeType.FAILURE);
-        expect(result.message).toEqual('Your crafting attempt was unsuccessful! No ingredients were consumed. ');
-    });
+                const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
+                    new Unit<CraftingComponent>(testComponentOne, 2),
+                    new Unit<CraftingComponent>(testComponentThree, 1)
+                ]);
+                const result: FabricationOutcome = await underTest.performAlchemy(testComponentFive, testCombination, mockActor, mockInventory);
 
-    test('Should delegate correct removal and addition actions to Inventory on recipe crafting with no check', async () => {
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const threeActions: boolean = value.length === 3;
+                    const removeTwoTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentOne.id
+                        && action.unit.quantity === 2);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    const addOneTestComponentTwoWithCustomData: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
+                        && action.unit.part.id === testComponentTwo.id
+                        && action.unit.quantity === 1
+                        && action.itemData.data.specialProperty === 'specialValue');
+                    return threeActions && removeTwoTestComponentOne && removeOneTestComponentThree && addOneTestComponentTwoWithCustomData;
+                }));
 
-        const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
-            .withAlchemicalCombiner(mockAlchemicalCombiner)
-            .withConsumeComponentsOnFailure(true)
-            .build();
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(3);
+                expect(result.outcome).toEqual(OutcomeType.SUCCESS);
 
-        stubInventoryContainsIngredientsMethod.returns(true);
-        stubInventorySelectForMethod.returns(Combination.EMPTY());
+            });
 
-        const mockModifiedItems: Item<Item.Data>[] = [
-            <Item<Item.Data>><unknown>{id: '1'},
-            <Item<Item.Data>><unknown>{id: '2'},
-            <Item<Item.Data>><unknown>{id: '3'}
-        ];
-        stubInventoryPerformMethod.resolves(mockModifiedItems);
+        })
 
-        const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
+        describe('Failure', () => {
 
-        Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-        Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
-            return value.size() === 3
-                && value.amountFor(testComponentThree) === 1
-                && value.amountFor(testComponentFour) === 2;
-        }));
+            /* =================================================================================================================================================
+             * ALCHEMY CRAFTING FAILURE SCENARIOS
+             * ================================================================================================================================================= */
 
-        Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-        Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+            test('Should fail when Alchemical Combiner finds too few essence matches', async () => {
 
-        Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-        Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
-            const threeActions: boolean = value.length === 3;
-            const addOneTestComponentTwo: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
-                && action.unit.part.id === testComponentTwo.id
-                && action.unit.quantity === 1);
-            const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentFour.id
-                && action.unit.quantity === 2);
-            const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentThree.id
-                && action.unit.quantity === 1);
-            return threeActions && addOneTestComponentTwo && removeTwoTestComponentFour && removeOneTestComponentThree;
-        }));
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
 
-        expect(result).not.toBeNull();
-        expect(result.actions.length).toBe(3);
-        expect(result.outcome).toEqual(OutcomeType.SUCCESS);
-    });
+                const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
+                    new Unit<CraftingComponent>(testComponentOne, 2),
+                    new Unit<CraftingComponent>(testComponentThree, 1)
+                ]);
 
-    test('Should delegate correct removal and addition actions to Inventory for successful check on recipe crafting with catalyst', async () => {
+                const alchemyError = new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was required, but only 0 were found. `, testCombination, true);
+                stubAlchemicalCombinerPerformMethod.throws(() => {
+                    return alchemyError;
+                });
 
-        const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
-            .withAlchemicalCombiner(mockAlchemicalCombiner)
-            .withConsumeComponentsOnFailure(true)
-            .withCraftingCheck(mockCraftingCheck)
-            .build();
+                const result: FabricationOutcome = await underTest.performAlchemy(testComponentFive, testCombination, mockActor, mockInventory);
 
-        stubInventoryContainsIngredientsMethod.returns(true);
-        stubInventorySelectForMethod.returns(Combination.EMPTY());
+                Sandbox.assert.notCalled(stubPerformCraftingCheckMethod);
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const twoActions: boolean = value.length === 2;
+                    const removeTwoTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentOne.id
+                        && action.unit.quantity === 2);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    return twoActions && removeTwoTestComponentOne && removeOneTestComponentThree;
+                }));
 
-        const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.SUCCESS, '1d20+1', 11, 10);
-        stubPerformCraftingCheckMethod.returns(mockCheckResult);
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(2);
+                expect(result.outcome).toEqual(OutcomeType.FAILURE);
+                expect(result.message).toEqual(alchemyError.message);
+                expect(result.checkResult).toBeUndefined();
 
-        const mockModifiedItems: Item<Item.Data>[] = [
-            <Item<Item.Data>><unknown>{id: '1'},
-            <Item<Item.Data>><unknown>{id: '2'},
-            <Item<Item.Data>><unknown>{id: '3'}
-        ];
-        stubInventoryPerformMethod.resolves(mockModifiedItems);
+            });
 
-        const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipeWithCatalyst);
+            test('Should fail without removing components when set not to when Alchemical Combiner finds too few essence matches', async () => {
 
-        Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-        Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
-            return value.size() === 4
-                && value.amountFor(testComponentOne) === 1
-                && value.amountFor(testComponentThree) === 1
-                && value.amountFor(testComponentFour) === 2;
-        }));
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(false)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
 
-        Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-        Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
+                    new Unit<CraftingComponent>(testComponentOne, 2),
+                    new Unit<CraftingComponent>(testComponentThree, 1)
+                ]);
 
-        Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-        Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
-            const threeActions: boolean = value.length === 3;
-            const addOneTestComponentTwo: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
-                && action.unit.part.id === testComponentTwo.id
-                && action.unit.quantity === 1);
-            const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentFour.id
-                && action.unit.quantity === 2);
-            const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentThree.id
-                && action.unit.quantity === 1);
-            return threeActions && addOneTestComponentTwo && removeTwoTestComponentFour && removeOneTestComponentThree;
-        }));
+                const alchemyError = new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was required, but only 0 were found. `, testCombination, true);
+                stubAlchemicalCombinerPerformMethod.throws(() => {
+                    return alchemyError;
+                });
 
-        expect(result).not.toBeNull();
-        expect(result.actions.length).toBe(3);
-        expect(result.checkResult).toEqual(mockCheckResult);
-        expect(result.outcome).toEqual(OutcomeType.SUCCESS);
-    });
+                const result: FabricationOutcome = await underTest.performAlchemy(testComponentFive, testCombination, mockActor, mockInventory);
 
-    test('Should delegate correct removal and addition actions to Inventory for successful check on recipe crafting for essences', async () => {
+                Sandbox.assert.notCalled(stubPerformCraftingCheckMethod);
+                Sandbox.assert.notCalled(stubInventoryPerformMethod);
 
-        const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
-            .withAlchemicalCombiner(mockAlchemicalCombiner)
-            .withConsumeComponentsOnFailure(true)
-            .build();
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(0);
+                expect(result.outcome).toEqual(OutcomeType.FAILURE);
+                expect(result.message).toEqual(alchemyError.message);
+                expect(result.checkResult).toBeUndefined();
 
-        stubInventoryContainsIngredientsMethod.returns(true);
-        stubInventorySelectForMethod.returns(Combination.ofUnits([
-            new Unit<CraftingComponent>(testComponentOne, 3),
-            new Unit<CraftingComponent>(testComponentThree, 1)
-        ]));
+            });
 
-        const mockModifiedItems: Item<Item.Data>[] = [
-            <Item<Item.Data>><unknown>{id: '1'},
-            <Item<Item.Data>><unknown>{id: '2'},
-            <Item<Item.Data>><unknown>{id: '3'}
-        ];
-        stubInventoryPerformMethod.resolves(mockModifiedItems);
+            test('Should fail and removing components when set to when Crafting Check Fails', async () => {
 
-        const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testEssenceBasedRecipe);
+                const underTest: Fabricator<any, Actor<Actor.Data, Item<Item.Data>>> = Fabricator.builder()
+                    .withAlchemicalCombiner(mockAlchemicalCombiner)
+                    .withConsumeComponentsOnFailure(true)
+                    .withCraftingCheck(mockCraftingCheck)
+                    .build();
 
-        Sandbox.assert.notCalled(stubInventoryContainsIngredientsMethod);
+                const mockCheckResult: CraftingCheckResult = new CraftingCheckResult(OutcomeType.FAILURE, '1d20+1', 13, 16);
+                stubPerformCraftingCheckMethod.returns(mockCheckResult);
 
-        Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-        Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => {
-            return value.size() === 5
-                && value.amountFor(elementalWater) === 2
-                && value.amountFor(elementalFire) === 2
-                && value.amountFor(elementalAir) === 1;
-        }));
+                const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
+                    new Unit<CraftingComponent>(testComponentOne, 2),
+                    new Unit<CraftingComponent>(testComponentThree, 1)
+                ]);
 
-        Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-        Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
-            const threeActions: boolean = value.length === 3;
-            const addOneTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
-                && action.unit.part.id === testComponentFour.id
-                && action.unit.quantity === 1);
-            const removeThreeTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentOne.id
-                && action.unit.quantity === 3);
-            const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
-                && action.unit.part.id === testComponentThree.id
-                && action.unit.quantity === 1);
-            return threeActions && addOneTestComponentFour && removeThreeTestComponentOne && removeOneTestComponentThree;
-        }));
+                const result: FabricationOutcome = await underTest.performAlchemy(testComponentFive, testCombination, mockActor, mockInventory);
 
-        expect(result).not.toBeNull();
-        expect(result.actions.length).toBe(3);
-        expect(result.outcome).toEqual(OutcomeType.SUCCESS);
+                Sandbox.assert.calledOnce(stubPerformCraftingCheckMethod);
+                Sandbox.assert.calledOnce(stubAlchemicalCombinerPerformMethod);
+                Sandbox.assert.calledOnce(stubInventoryPerformMethod);
+                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                    const twoActions: boolean = value.length === 2;
+                    const removeTwoTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentOne.id
+                        && action.unit.quantity === 2);
+                    const removeOneTestComponentThree: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
+                        && action.unit.part.id === testComponentThree.id
+                        && action.unit.quantity === 1);
+                    return twoActions && removeTwoTestComponentOne && removeOneTestComponentThree;
+                }));
+
+                expect(result).not.toBeNull();
+                expect(result.actions.length).toBe(2);
+                expect(result.outcome).toEqual(OutcomeType.FAILURE);
+                expect(result.message).toEqual('Your alchemical combination failed! The ingredients were wasted. ');
+                expect(result.checkResult).toEqual(mockCheckResult);
+
+            });
+
+        });
+
     });
 
 });

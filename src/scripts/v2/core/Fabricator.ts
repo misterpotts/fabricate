@@ -8,6 +8,7 @@ import {OutcomeType} from "./OutcomeType";
 import {FabricationOutcome} from "./FabricationOutcome";
 import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
 import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
+import {AlchemyError} from "../error/AlchemyError";
 
 class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
@@ -43,7 +44,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
         }
 
         const remainingComponents: Inventory<D, A> = inventory.excluding(recipe.namedComponents);
-        if (recipe.requiresEssences && remainingComponents.containsEssences(recipe.essences)) {
+        if (recipe.requiresEssences && !remainingComponents.containsEssences(recipe.essences)) {
             return this.abort(`There aren't enough essences amongst components in your inventory to craft ${recipe.name}. `);
         }
 
@@ -59,7 +60,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             case 'FAILURE':
                 const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? preparedComponents : Combination.EMPTY();
                 const failureMessage: string = `Your crafting attempt was unsuccessful! ${this._consumeComponentsOnFailure ? 'The ingredients were wasted. ' : 'No ingredients were consumed. ' }`;
-                return await this.fail(inventory, wastedComponents, performedCheck, failureMessage);
+                return await this.fail(inventory, wastedComponents, failureMessage, performedCheck);
             case 'SUCCESS':
                 return await this.succeed(inventory, preparedComponents, recipe.results, performedCheck);
         }
@@ -70,12 +71,22 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
                                 componentMix: Combination<CraftingComponent>,
                                 actor: A,
                                 inventory: Inventory<D, A>): Promise<FabricationOutcome> {
+
         if (!this._alchemicalCombinersByBaseComponent.has(baseComponent)) {
             return this.abort(`No Alchemy Specification exists for '${baseComponent.name}' (${baseComponent.id}). `);
         }
 
         const alchemicalCombiner: AlchemicalCombiner<D> = this._alchemicalCombinersByBaseComponent.get(baseComponent);
-        const alchemyResult: [Unit<CraftingComponent>, Item.Data<D>] = await alchemicalCombiner.perform(componentMix);
+        let alchemyResult: [Unit<CraftingComponent>, Item.Data<D>];
+        try {
+            alchemyResult = await alchemicalCombiner.perform(componentMix);
+        } catch (error) {
+            if (error instanceof AlchemyError) {
+                const alchemyError: AlchemyError = <AlchemyError>error;
+                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure && alchemyError.causesWastage ? componentMix : Combination.EMPTY();
+                return this.fail(inventory, wastedComponents, alchemyError.message)
+            }
+        }
 
         if (!this.hasCraftingCheck) {
             return this.succeedWith(inventory, componentMix, alchemyResult);
@@ -86,7 +97,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             case 'FAILURE':
                 const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? componentMix : Combination.EMPTY();
                 const failureMessage: string = `Your alchemical combination failed! ${this._consumeComponentsOnFailure ? 'The ingredients were wasted. ' : 'No ingredients were consumed. ' }`;
-                return await this.fail(inventory, wastedComponents, performedCheck, failureMessage);
+                return await this.fail(inventory, wastedComponents, failureMessage, performedCheck);
             case 'SUCCESS':
                 return await this.succeedWith(inventory, componentMix, alchemyResult, performedCheck);
         }
@@ -102,8 +113,8 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
     private async fail(inventory: Inventory<D, A>,
                        wastedComponents: Combination<CraftingComponent>,
-                       checkResult: CraftingCheckResult,
-                       message: string): Promise<FabricationOutcome> {
+                       message: string,
+                       checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
 
         const removals: FabricationAction<D>[] = [];
         if (!wastedComponents.isEmpty()) {

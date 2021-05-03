@@ -71,7 +71,11 @@ class PartDictionary {
         if (this._components.has(globalIdentifier)) {
             return this._components.get(globalIdentifier);
         }
-        throw new Error(`No Recipe was found with the identifier ${globalIdentifier}. `);
+        throw new Error(`No Component was found with the identifier ${globalIdentifier}. `);
+    }
+
+    public size(): number {
+        return this._recipes.size + this._components.size;
     }
 
 }
