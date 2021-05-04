@@ -22,6 +22,18 @@ class Recipe extends FabricateItem {
         return new Recipe.Builder();
     }
 
+    public toBuilder(): Recipe.Builder {
+        return new Recipe.Builder()
+            .withPartId(this._partId)
+            .withCompendiumId(this._compendiumId)
+            .withImageUrl(this._imageUrl)
+            .withName(this._name)
+            .withEssences(this._essences)
+            .withIngredients(this._ingredients)
+            .withCatalysts(this._catalysts)
+            .withResults(this._results);
+    }
+
     get hasSpecificIngredients() {
         return this._ingredients && !this._ingredients.isEmpty();
     }
@@ -92,8 +104,8 @@ namespace Recipe {
             return this;
         }
 
-        public withSystemId(value: string): Builder {
-            this.systemId = value;
+        public withCompendiumId(value: string): Builder {
+            this.compendiumId = value;
             return this;
         }
 

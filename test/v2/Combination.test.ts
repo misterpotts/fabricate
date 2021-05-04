@@ -17,7 +17,7 @@ test('Should create an empty Combination',() => {
     expect(underTest.contains(testComponentOne)).toBe(false);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId('XYZ345')
-        .withSystemId('system-two')
+        .withCompendiumId('system-two')
         .withImageUrl('/img/picture.png')
         .withName('Test Component 2')
         .build())).toBe(false);
@@ -34,14 +34,14 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.contains(testComponentOne)).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId(testComponentOne.partId)
-        .withSystemId(testComponentOne.systemId)
+        .withCompendiumId(testComponentOne.compendiumId)
         .withImageUrl(testComponentOne.imageUrl)
         .withName(testComponentOne.name)
         .withEssences(testComponentOne.essences)
         .build())).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId('XYZ345')
-        .withSystemId('system-two')
+        .withCompendiumId('system-two')
         .withImageUrl('/img/picture.png')
         .withName('Test Component 2')
         .build())).toBe(false);
@@ -67,14 +67,14 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.contains(testComponentThree)).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId(testComponentOne.partId)
-        .withSystemId(testComponentOne.systemId)
+        .withCompendiumId(testComponentOne.compendiumId)
         .withImageUrl(testComponentOne.imageUrl)
         .withName(testComponentOne.name)
         .withEssences(testComponentOne.essences)
         .build())).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId('XYZ345')
-        .withSystemId('system-two')
+        .withCompendiumId('system-two')
         .withImageUrl('/img/picture.png')
         .withName('Test Component 2')
         .build())).toBe(false);

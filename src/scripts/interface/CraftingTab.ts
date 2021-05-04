@@ -5,7 +5,7 @@ import {CraftingTabData} from "./CraftingTabData";
 import {CraftingComponent} from "../core/CraftingComponent";
 import {CraftingSystem} from "../core/CraftingSystem";
 import {InventoryRecordData} from "./InterfaceDataTypes";
-import FabricateApplication from "../application/FabricateApplication";
+import FabricateApplication from "../v2/application/FabricateApplication";
 
 class CraftingTab {
     private static readonly tabs: Map<string, CraftingTab> = new Map();

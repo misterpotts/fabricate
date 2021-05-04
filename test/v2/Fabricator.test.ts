@@ -111,7 +111,7 @@ describe('Fabricate', () => {
     const testIngredientBasedRecipe: Recipe = Recipe.builder()
         .withName('Test Ingredient-Based Recipe')
         .withPartId('abc123')
-        .withSystemId('fabricate.test-system')
+        .withCompendiumId('fabricate.test-system')
         .withImageUrl('/img/img.png')
         .withIngredients(Combination.ofUnits([
             new Unit<CraftingComponent>(testComponentThree, 1),
@@ -123,7 +123,7 @@ describe('Fabricate', () => {
     const testIngredientBasedRecipeWithCatalyst: Recipe = Recipe.builder()
         .withName('Test Ingredient-Based Recipe with Catalyst')
         .withPartId('abc234')
-        .withSystemId('fabricate.test-system')
+        .withCompendiumId('fabricate.test-system')
         .withImageUrl('/img/img.png')
         .withIngredients(Combination.ofUnits([
             new Unit<CraftingComponent>(testComponentThree, 1),
@@ -136,7 +136,7 @@ describe('Fabricate', () => {
     const testEssenceBasedRecipe: Recipe = Recipe.builder()
         .withName('Test Essence-Based Recipe ')
         .withPartId('abc345')
-        .withSystemId('fabricate.test-system')
+        .withCompendiumId('fabricate.test-system')
         .withImageUrl('/img/img.png')
         .withEssences(Combination.ofUnits([
             new Unit<EssenceDefinition>(elementalWater, 2),

@@ -1,7 +1,7 @@
 import Properties from "../Properties";
 import {Recipe} from "../core/Recipe";
 import {CraftingSystem} from "../core/CraftingSystem";
-import FabricateApplication from "../application/FabricateApplication";
+import FabricateApplication from "../v2/application/FabricateApplication";
 import {Inventory} from "../game/Inventory";
 import {FabricateCompendiumData} from "../game/CompendiumData";
 

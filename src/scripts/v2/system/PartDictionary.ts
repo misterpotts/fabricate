@@ -8,6 +8,11 @@ class PartDictionary {
     private readonly _components: Map<string, CraftingComponent> = new Map();
     private readonly _recipes: Map<string, Recipe> = new Map();
 
+    constructor(components: Map<string, CraftingComponent> = new Map(), recipes: Map<string, Recipe> = new Map()) {
+        this._components = components;
+        this._recipes = recipes;
+    }
+
     public static typeOf(item: Item): FabricateItemType | 'NONE' {
         const itemType: FabricateItemType = <FabricateItemType>item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
         if (itemType) {
@@ -49,12 +54,12 @@ class PartDictionary {
     }
 
     public addRecipe(recipe: Recipe): void {
-        const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partId, recipe.systemId);
+        const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partId, recipe.compendiumId);
         this._recipes.set(globalIdentifier, recipe);
     }
 
     public addComponent(component: CraftingComponent): void {
-        const globalIdentifier: string = FabricateItem.globalIdentifier(component.partId, component.systemId);
+        const globalIdentifier: string = FabricateItem.globalIdentifier(component.partId, component.compendiumId);
         this._components.set(globalIdentifier, component);
     }
 
@@ -76,6 +81,22 @@ class PartDictionary {
 
     public size(): number {
         return this._recipes.size + this._components.size;
+    }
+
+    public getComponents(): CraftingComponent[] {
+        const components: CraftingComponent[] = [];
+        for (const component of this._components.values()) {
+            components.push(component);
+        }
+        return components;
+    }
+
+    public getRecipes(): Recipe[] {
+        const recipes: Recipe[] = [];
+        for (const recipe of this._recipes.values()) {
+            recipes.push(recipe);
+        }
+        return recipes;
     }
 
 }

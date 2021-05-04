@@ -17,6 +17,16 @@ class CraftingComponent extends FabricateItem {
         return new CraftingComponent.Builder();
     }
 
+    public toBuilder(): CraftingComponent.Builder {
+        return new CraftingComponent.Builder()
+            .withPartId(this._partId)
+            .withCompendiumId(this._compendiumId)
+            .withImageUrl(this._imageUrl)
+            .withName(this._name)
+            .withEssences(this._essences)
+            .withSalvage(this._salvage);
+    }
+
     get essences(): Combination<EssenceDefinition> {
         return this._essences;
     }
@@ -46,8 +56,8 @@ namespace CraftingComponent {
             this.salvage = value;
             return this;
         }
-        public withSystemId(value: string): Builder {
-            this.systemId = value;
+        public withCompendiumId(value: string): Builder {
+            this.compendiumId = value;
             return this;
         }
 

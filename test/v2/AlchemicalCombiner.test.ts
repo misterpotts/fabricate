@@ -157,7 +157,7 @@ describe('Perform Alchemy', () => {
             ]);
 
             // @ts-ignore
-            stubGetEntityMethod.withArgs(testComponentFour.systemId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
+            stubGetEntityMethod.withArgs(testComponentFour.compendiumId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
             stubDuplicateObjectMethod.returns({data: new TestItemDataType()});
 
             const result: [Unit<CraftingComponent>, Item.Data<TestItemDataType>] = await underTest.perform(testCombination);
@@ -197,7 +197,7 @@ describe('Perform Alchemy', () => {
             ]);
 
             // @ts-ignore
-            stubGetEntityMethod.withArgs(testComponentFour.systemId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
+            stubGetEntityMethod.withArgs(testComponentFour.compendiumId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
             stubDuplicateObjectMethod.returns({data: new TestItemDataType()});
 
             const result: [Unit<CraftingComponent>, Item.Data<TestItemDataType>] = await underTest.perform(testCombination);

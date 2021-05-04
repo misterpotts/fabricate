@@ -44,16 +44,16 @@ describe('Index and Retrieve', () => {
         expect(underTest).not.toBeNull();
         expect(underTest.size()).toBe(9);
 
-        expect(underTest.getComponent(testComponentOne.partId, testComponentOne.systemId)).toBe(testComponentOne);
-        expect(underTest.getComponent(testComponentTwo.partId, testComponentTwo.systemId)).toBe(testComponentTwo);
-        expect(underTest.getComponent(testComponentThree.partId, testComponentThree.systemId)).toBe(testComponentThree);
-        expect(underTest.getComponent(testComponentFour.partId, testComponentFour.systemId)).toBe(testComponentFour);
-        expect(underTest.getComponent(testComponentFive.partId, testComponentFive.systemId)).toBe(testComponentFive);
+        expect(underTest.getComponent(testComponentOne.partId, testComponentOne.compendiumId)).toBe(testComponentOne);
+        expect(underTest.getComponent(testComponentTwo.partId, testComponentTwo.compendiumId)).toBe(testComponentTwo);
+        expect(underTest.getComponent(testComponentThree.partId, testComponentThree.compendiumId)).toBe(testComponentThree);
+        expect(underTest.getComponent(testComponentFour.partId, testComponentFour.compendiumId)).toBe(testComponentFour);
+        expect(underTest.getComponent(testComponentFive.partId, testComponentFive.compendiumId)).toBe(testComponentFive);
 
-        expect(underTest.getRecipe(testRecipeOne.partId, testRecipeOne.systemId)).toBe(testRecipeOne);
-        expect(underTest.getRecipe(testRecipeTwo.partId, testRecipeTwo.systemId)).toBe(testRecipeTwo);
-        expect(underTest.getRecipe(testRecipeThree.partId, testRecipeThree.systemId)).toBe(testRecipeThree);
-        expect(underTest.getRecipe(testRecipeFour.partId, testRecipeFour.systemId)).toBe(testRecipeFour);
+        expect(underTest.getRecipe(testRecipeOne.partId, testRecipeOne.compendiumId)).toBe(testRecipeOne);
+        expect(underTest.getRecipe(testRecipeTwo.partId, testRecipeTwo.compendiumId)).toBe(testRecipeTwo);
+        expect(underTest.getRecipe(testRecipeThree.partId, testRecipeThree.compendiumId)).toBe(testRecipeThree);
+        expect(underTest.getRecipe(testRecipeFour.partId, testRecipeFour.compendiumId)).toBe(testRecipeFour);
     });
 
     test('Should get parts from Item flags', () => {
@@ -75,12 +75,12 @@ describe('Index and Retrieve', () => {
 
         const mockOwnedRecipeOneItem: Item<Item.Data<{}>> = mockOwnedItem(FabricateItemType.RECIPE,
             testRecipeOne.partId,
-            testRecipeOne.systemId);
+            testRecipeOne.compendiumId);
         expect(underTest.recipeFrom(mockOwnedRecipeOneItem)).toBe(testRecipeOne);
 
         const mockOwnedComponentFourOneItem: Item<Item.Data<{}>> = mockOwnedItem(FabricateItemType.COMPONENT,
             testComponentFour.partId,
-            testComponentFour.systemId);
+            testComponentFour.compendiumId);
         expect(underTest.componentFrom(mockOwnedComponentFourOneItem)).toBe(testComponentFour);
 
     });

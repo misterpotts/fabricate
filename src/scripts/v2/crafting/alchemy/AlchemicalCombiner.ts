@@ -105,7 +105,7 @@ class AlchemicalCombiner<D> {
     }
 
     private async applyEffectsToBaseItem(effects: [AlchemicalEffect<D>, number][], baseComponent: CraftingComponent): Promise<Item.Data<D>> {
-        const compendiumEntry: Entity<Item.Data<D>> = await this._compendiumProvider.getEntity(baseComponent.systemId, baseComponent.partId);
+        const compendiumEntry: Entity<Item.Data<D>> = await this._compendiumProvider.getEntity(baseComponent.compendiumId, baseComponent.partId);
         const duplicated: Item.Data<D> = this._objectUtility.duplicate(compendiumEntry.data);
         effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
             for (let i = 0; i < effectCount[1]; i++) {

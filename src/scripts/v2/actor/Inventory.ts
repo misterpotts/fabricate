@@ -282,7 +282,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         }
         const component: CraftingComponent = action.unit.part;
         // @ts-ignore
-        const compendium: Compendium = this._game.packs.get(component.systemId);
+        const compendium: Compendium = this._game.packs.get(component.compendiumId);
         const entity: Entity<Item.Data<D>> = <Entity<Item.Data<D>>> await compendium.getEntity(component.partId);
         // @ts-ignore todo: figure out what I've done wrong here
         return action.withItemData(entity.data);

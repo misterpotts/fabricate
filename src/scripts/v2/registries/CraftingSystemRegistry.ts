@@ -1,10 +1,9 @@
-import {CraftingSystem} from "../core/CraftingSystem";
-import {Recipe} from "../core/Recipe";
-import {GameSystemType} from "../core/GameSystemType";
-import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
+import {CraftingSystem} from "../system/CraftingSystem";
+import {Recipe} from "../crafting/Recipe";
+import {CraftingComponent} from "../common/CraftingComponent";
+import {CraftingSystemSpecification} from "../system/CraftingSystemSpecification";
 import {AlchemistsSuppliesSystemSpec} from "./system_definitions/AlchemistsSuppliesV16";
-import {CraftingComponent} from "../core/CraftingComponent";
-import {Fabricator} from "../core/Fabricator";
+
 
 class CraftingSystemRegistry {
 
@@ -63,11 +62,10 @@ class CraftingSystemRegistry {
 
         const testSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
             .withName('Child\'s Play')
-            .withEnableHint('Enable the test Crafting System for Fabricate?')
+            .withSummary('The test Crafting System for Fabricate')
             .withDescription('A simple tech demo used for the early development of Fabricate. ')
-            .withCompendiumPackKey('fabricate.fabricate-test')
-            .withSupportedGameSystem(GameSystemType.DND5E)
-            .withFabricator(Fabricator.builder().build())
+            .withCompendiumPack('fabricate.fabricate-test')
+            .withSupportedGameSystem(GameSystem.DND5E)
             .build();
         systemSpecifications.push(testSystemSpec);
 
