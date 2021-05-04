@@ -21,6 +21,7 @@ class TestItemDataType {
     public alchemicalEffectOneApplied: number = 0;
     public alchemicalEffectTwoApplied: number = 0;
     public alchemicalEffectThreeApplied: number = 0;
+    public multipliedValue: number = 0;
 }
 
 const mockDiceUtility: DiceUtility = <DiceUtility><unknown>{};
@@ -82,6 +83,8 @@ class TestAlchemicalEffectThree extends AlchemicalEffect<TestItemDataType> {
 
     applyTo(itemData: TestItemDataType): TestItemDataType {
         itemData.alchemicalEffectThreeApplied += 1;
+        itemData.alchemicalEffectOneApplied = itemData.alchemicalEffectOneApplied * 2;
+        itemData.alchemicalEffectTwoApplied = itemData.alchemicalEffectTwoApplied * 2;
         return itemData;
     }
 
@@ -135,7 +138,46 @@ describe('Perform Alchemy', () => {
             const underTest: AlchemicalCombiner<TestItemDataType> = AlchemicalCombiner.builder<TestItemDataType>()
                 .withBaseComponent(testComponentFour)
                 .withMaxComponents(6)
-                .withMaxEssences(6)
+                .withMaxEssences(8)
+                .withSystemEssences([elementalAir, elementalWater, elementalFire, elementalEarth])
+                .withMinimumEffectMatches(1)
+                .withAlchemicalEffects([
+                    new TestAlchemicalEffectOne(),
+                    new TestAlchemicalEffectTwo(),
+                    new TestAlchemicalEffectThree()
+                ])
+                .withWastage(true)
+                .withObjectUtility(mockObjectUtility)
+                .withCompendiumProvider(mockCompendiumProvider)
+                .build();
+
+            const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
+                new Unit<CraftingComponent>(testComponentOne, 2),
+                new Unit<CraftingComponent>(testComponentTwo, 3)
+            ]);
+
+            // @ts-ignore
+            stubGetEntityMethod.withArgs(testComponentFour.systemId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
+            stubDuplicateObjectMethod.returns({data: new TestItemDataType()});
+
+            const result: [Unit<CraftingComponent>, Item.Data<TestItemDataType>] = await underTest.perform(testCombination);
+
+            expect(result).not.toBeNull();
+            const baseComponent: Unit<CraftingComponent> = result[0];
+            expect(baseComponent.quantity).toEqual(1);
+            expect(baseComponent.part).toEqual(testComponentFour);
+            const resultData: Item.Data<TestItemDataType> = result[1];
+            expect(resultData.data.alchemicalEffectOneApplied).toEqual(2);
+            expect(resultData.data.alchemicalEffectTwoApplied).toEqual(3);
+
+        });
+
+        test('Should apply multipliers after base effects', async () => {
+
+            const underTest: AlchemicalCombiner<TestItemDataType> = AlchemicalCombiner.builder<TestItemDataType>()
+                .withBaseComponent(testComponentFour)
+                .withMaxComponents(6)
+                .withMaxEssences(8)
                 .withSystemEssences([elementalAir, elementalWater, elementalFire, elementalEarth])
                 .withMinimumEffectMatches(1)
                 .withAlchemicalEffects([
@@ -150,7 +192,8 @@ describe('Perform Alchemy', () => {
 
             const testCombination: Combination<CraftingComponent> = Combination.ofUnits([
                 new Unit<CraftingComponent>(testComponentOne, 1),
-                new Unit<CraftingComponent>(testComponentTwo, 2)
+                new Unit<CraftingComponent>(testComponentTwo, 2),
+                new Unit<CraftingComponent>(testComponentThree, 1)
             ]);
 
             // @ts-ignore
@@ -164,8 +207,9 @@ describe('Perform Alchemy', () => {
             expect(baseComponent.quantity).toEqual(1);
             expect(baseComponent.part).toEqual(testComponentFour);
             const resultData: Item.Data<TestItemDataType> = result[1];
-            expect(resultData.data.alchemicalEffectOneApplied).toEqual(1);
-            expect(resultData.data.alchemicalEffectTwoApplied).toEqual(2);
+            expect(resultData.data.alchemicalEffectOneApplied).toEqual(2);
+            expect(resultData.data.alchemicalEffectTwoApplied).toEqual(4);
+            expect(resultData.data.alchemicalEffectThreeApplied).toEqual(1);
 
         });
 
@@ -239,7 +283,7 @@ describe('Perform Alchemy', () => {
                 new Unit<CraftingComponent>(testComponentFive, 2)
             ]);
 
-            expect(underTest.perform(testCombination)).rejects.toThrow(new Error('The Essence Combiner for this system supports a maximum of 6 essences. '));
+            expect(underTest.perform(testCombination)).rejects.toThrow(new Error('The Essence Combiner for this system supports a maximum of 6 essences. The provided Component mix contains 14 essences. '));
 
         });
 
@@ -265,7 +309,7 @@ describe('Perform Alchemy', () => {
                 new Unit<CraftingComponent>(testComponentFive, 4)
             ]);
 
-            expect(underTest.perform(testCombination)).rejects.toThrow(new Error('The Essence Combiner for this system supports a maximum of 6 components. '));
+            expect(underTest.perform(testCombination)).rejects.toThrow(new Error('The Essence Combiner for this system supports a maximum of 6 components. 10 Components were provided. '));
 
         });
 

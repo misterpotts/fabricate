@@ -95,11 +95,11 @@ class AlchemicalCombiner<D> {
 
     private validate(components: Combination<CraftingComponent>, essences: Combination<EssenceDefinition>) {
         if ((this.maxComponents > 0) && (this.maxComponents < components.size())) {
-            throw new AlchemyError(`The Essence Combiner for this system supports a maximum of ${this.maxComponents} components. `, components, this.wastageEnabled);
+            throw new AlchemyError(`The Essence Combiner for this system supports a maximum of ${this.maxComponents} components. ${components.size()} Components were provided. `, components, this.wastageEnabled);
         }
         if (this.maxEssences > 0) {
             if (essences.size() > this.maxEssences) {
-                throw new AlchemyError(`The Essence Combiner for this system supports a maximum of ${this.maxEssences} essences. `, components, this.wastageEnabled);
+                throw new AlchemyError(`The Essence Combiner for this system supports a maximum of ${this.maxEssences} essences. The provided Component mix contains ${essences.size()} essences. `, components, this.wastageEnabled);
             }
         }
     }
