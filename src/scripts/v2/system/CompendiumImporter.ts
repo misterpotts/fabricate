@@ -6,6 +6,7 @@ import Properties from "../../Properties";
 import {Recipe} from "../crafting/Recipe";
 import {FabricateCompendiumData, FabricateItemType} from "../compendium/CompendiumData";
 import {Combination, Unit} from "../common/Combination";
+import {CraftingSystemSpecification} from "./CraftingSystemSpecification";
 
 class CompendiumImporter {
     private readonly _compendiumProvider: CompendiumProvider;
@@ -14,18 +15,20 @@ class CompendiumImporter {
         this._compendiumProvider = compendiumProvider;
     }
 
-    public async import(compendiumPackKeys: string[], essenceDefinitions?: EssenceDefinition[]): Promise<PartDictionary> {
+    public async import(craftingSystemSpecification: CraftingSystemSpecification): Promise<PartDictionary> {
+        const compendiumPackKeys: string[] = craftingSystemSpecification.compendiumPacks;
+        const essenceDefinitions: EssenceDefinition[] = craftingSystemSpecification.essences;
         const compendiums: Compendium[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
         const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: EssenceDefinition) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
-            const partDictionary: PartDictionary = await this.importCompendiumContents(compendium, essencesBySlug);
+            const partDictionary: PartDictionary = await this.importCompendiumContents(craftingSystemSpecification.id, compendium, essencesBySlug);
             partialPartDictionaries.push(partDictionary);
         }
         return this.rationaliseAndPopulateReferences(partialPartDictionaries);
     }
 
-    private async importCompendiumContents(compendium: Compendium, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
+    private async importCompendiumContents(systemId: string, compendium: Compendium, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
         if (!Properties.module.compendiums.supportedTypes.includes(compendium.entity)) {
             throw new Error(`Compendium ${compendium.collection} has an unsupported Entity type: ${compendium.entity}. Supported Compendium Entity types are: ${Properties.module.compendiums.supportedTypes}. `);
         }
@@ -42,8 +45,9 @@ class CompendiumImporter {
                         .withName(item.name)
                         .withImageUrl(item.img)
                         .withPartId(itemConfig.identity.partId)
-                        .withCompendiumId(itemConfig.identity.systemId)
-                        .withSalvage(this.partialComponentsFromCompendiumData(itemConfig.component.salvage, compendium.collection))
+                        .withCompendiumId(compendium.collection)
+                        .withSystemId(systemId)
+                        .withSalvage(this.partialComponentsFromCompendiumData(itemConfig.component.salvage, compendium.collection, systemId))
                         .withEssences(this.essencesFromCompendiumData(itemConfig.component.essences, essencesBySlug))
                         .build();
                     partDictionary.addComponent(component);
@@ -53,10 +57,11 @@ class CompendiumImporter {
                         .withName(item.name)
                         .withImageUrl(item.img)
                         .withPartId(itemConfig.identity.partId)
-                        .withCompendiumId(itemConfig.identity.systemId)
-                        .withIngredients(this.partialComponentsFromCompendiumData(itemConfig.recipe.ingredients, compendium.collection))
-                        .withCatalysts(this.partialComponentsFromCompendiumData(itemConfig.recipe.catalysts, compendium.collection))
-                        .withResults(this.partialComponentsFromCompendiumData(itemConfig.recipe.results, compendium.collection))
+                        .withCompendiumId(compendium.collection)
+                        .withSystemId(systemId)
+                        .withIngredients(this.partialComponentsFromCompendiumData(itemConfig.recipe.ingredients, compendium.collection, systemId))
+                        .withCatalysts(this.partialComponentsFromCompendiumData(itemConfig.recipe.catalysts, compendium.collection, systemId))
+                        .withResults(this.partialComponentsFromCompendiumData(itemConfig.recipe.results, compendium.collection, systemId))
                         .withEssences(this.essencesFromCompendiumData(itemConfig.recipe.essences, essencesBySlug))
                         .build();
                     partDictionary.addRecipe(recipe);
@@ -102,7 +107,7 @@ class CompendiumImporter {
     private async loadCompendiumContent<T extends Entity>(compendium: Compendium, maxAttempts: number): Promise<T[]> {
         let content: Entity[] = await compendium.getContent();
         let attempts: number = 0;
-        while ((!content || (content.length === 0)) && (attempts <= maxAttempts)) {
+        while (!content && (attempts <= maxAttempts)) {
             console.log(`${Properties.module.label} | Waiting for content in Compendium Pack ${compendium.collection} (Attempt ${attempts} of ${maxAttempts}. `);
             await this.wait(1000);
             attempts++;
@@ -137,7 +142,7 @@ class CompendiumImporter {
         return Combination.ofUnits(essenceUnits);
     }
 
-    private partialComponentsFromCompendiumData(componentRecord: Record<string, number>, packKey: string): Combination<CraftingComponent> {
+    private partialComponentsFromCompendiumData(componentRecord: Record<string, number>, packKey: string, systemId: string): Combination<CraftingComponent> {
         if (!componentRecord) {
             return Combination.EMPTY();
         }
@@ -149,6 +154,7 @@ class CompendiumImporter {
             const component: CraftingComponent = CraftingComponent.builder()
                 .withPartId(partId)
                 .withCompendiumId(packKey)
+                .withSystemId(systemId)
                 .build();
             const amount: number = componentRecord[partId];
             return new Unit<CraftingComponent>(component, amount);

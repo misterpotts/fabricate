@@ -45,11 +45,11 @@ beforeAll(() => {
     });
 
     const mockComponentFrom = Sandbox.stub(mockPartDictionary, 'componentFrom');
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentOne.partId, systemId: testComponentOne.compendiumId})).returns(testComponentOne);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentTwo.partId, systemId: testComponentTwo.compendiumId})).returns(testComponentTwo);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentThree.partId, systemId: testComponentThree.compendiumId})).returns(testComponentThree);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFour.partId, systemId: testComponentFour.compendiumId})).returns(testComponentFour);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFive.partId, systemId: testComponentFive.compendiumId})).returns(testComponentFive);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentOne.partId, systemId: testComponentOne.systemId})).returns(testComponentOne);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentTwo.partId, systemId: testComponentTwo.systemId})).returns(testComponentTwo);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentThree.partId, systemId: testComponentThree.systemId})).returns(testComponentThree);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFour.partId, systemId: testComponentFour.systemId})).returns(testComponentFour);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFive.partId, systemId: testComponentFive.systemId})).returns(testComponentFive);
 });
 
 const mockCompendium: Compendium = <Compendium><unknown>{

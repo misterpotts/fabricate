@@ -26,6 +26,7 @@ class Recipe extends FabricateItem {
         return new Recipe.Builder()
             .withPartId(this._partId)
             .withCompendiumId(this._compendiumId)
+            .withSystemId(this._systemId)
             .withImageUrl(this._imageUrl)
             .withName(this._name)
             .withEssences(this._essences)
@@ -104,13 +105,18 @@ namespace Recipe {
             return this;
         }
 
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
+
         public withCompendiumId(value: string): Builder {
             this.compendiumId = value;
             return this;
         }
 
-        public withPartId(value: string): Builder {
-            this.partId = value;
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
             return this;
         }
 

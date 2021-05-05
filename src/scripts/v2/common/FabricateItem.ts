@@ -17,16 +17,18 @@ interface Identifiable {
 }
 
 abstract class FabricateItem {
-    protected readonly _compendiumId: string;
+    protected readonly _systemId: string;
     protected readonly _partId: string;
+    protected readonly _compendiumId: string;
     protected readonly _id: string;
     protected readonly _imageUrl: string;
     protected readonly _name: string;
 
     protected constructor(builder: FabricateItem.Builder) {
+        this._systemId = builder.systemId;
         this._compendiumId = builder.compendiumId;
         this._partId = builder.partId;
-        this._id = FabricateItem.globalIdentifier(builder.partId, builder.compendiumId);
+        this._id = FabricateItem.globalIdentifier(builder.partId, builder.systemId);
         this._imageUrl = builder.imageUrl;
         this._name = builder.name;
     }
@@ -43,6 +45,10 @@ abstract class FabricateItem {
         return this._compendiumId;
     }
 
+    get systemId(): string {
+        return this._systemId;
+    }
+
     get imageUrl(): string {
         return this._imageUrl;
     }
@@ -57,6 +63,7 @@ abstract class FabricateItem {
         }
         return this.partId === other.partId
             && this.compendiumId === other.compendiumId
+            && this.systemId === other.systemId
             && this.imageUrl === other.imageUrl
             && this.name === other.name;
     }
@@ -71,20 +78,26 @@ namespace FabricateItem {
 
     export abstract class Builder {
 
-        public compendiumId: string;
         public partId: string;
+        public compendiumId: string;
+        public systemId: string;
         public imageUrl: string;
         public name: string;
 
         abstract build(): FabricateItem;
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
 
         public withCompendiumId(value: string): Builder {
             this.compendiumId = value;
             return this;
         }
 
-        public withPartId(value: string): Builder {
-            this.partId = value;
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
             return this;
         }
 

@@ -34,7 +34,7 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.contains(testComponentOne)).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId(testComponentOne.partId)
-        .withCompendiumId(testComponentOne.compendiumId)
+        .withCompendiumId(testComponentOne.systemId)
         .withImageUrl(testComponentOne.imageUrl)
         .withName(testComponentOne.name)
         .withEssences(testComponentOne.essences)
@@ -67,7 +67,7 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.contains(testComponentThree)).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId(testComponentOne.partId)
-        .withCompendiumId(testComponentOne.compendiumId)
+        .withCompendiumId(testComponentOne.systemId)
         .withImageUrl(testComponentOne.imageUrl)
         .withName(testComponentOne.name)
         .withEssences(testComponentOne.essences)

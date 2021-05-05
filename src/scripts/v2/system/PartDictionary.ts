@@ -54,12 +54,12 @@ class PartDictionary {
     }
 
     public addRecipe(recipe: Recipe): void {
-        const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partId, recipe.compendiumId);
+        const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partId, recipe.systemId);
         this._recipes.set(globalIdentifier, recipe);
     }
 
     public addComponent(component: CraftingComponent): void {
-        const globalIdentifier: string = FabricateItem.globalIdentifier(component.partId, component.compendiumId);
+        const globalIdentifier: string = FabricateItem.globalIdentifier(component.partId, component.systemId);
         this._components.set(globalIdentifier, component);
     }
 

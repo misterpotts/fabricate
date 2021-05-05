@@ -1,5 +1,6 @@
 import {EssenceDefinition} from "../common/EssenceDefinition";
 import {CraftingCheck} from "../crafting/CraftingCheck";
+import {GameSystem} from "./GameSystem";
 
 class CraftingSystemSpecification {
     private readonly _name: string;
@@ -14,7 +15,7 @@ class CraftingSystemSpecification {
 
     constructor(builder: CraftingSystemSpecification.Builder) {
         this._name = builder.name;
-        this._id = builder.name.toLowerCase().replace(' ', '-');
+        this._id = builder.id;
         this._summary = builder.summary;
         this._description = builder.description;
         this._compendiumPacks = builder.compendiumPacks;
@@ -70,9 +71,10 @@ namespace CraftingSystemSpecification {
     export class Builder {
 
         public name: string;
+        public id: string;
         public summary: string;
         public description: string;
-        public compendiumPacks: string[];
+        public compendiumPacks: string[] = [];
         public supportedGameSystems: GameSystem[] = [];
         public essences: EssenceDefinition[] = [];
         public craftingCheck: CraftingCheck<Actor>;
@@ -84,6 +86,11 @@ namespace CraftingSystemSpecification {
 
         withName(value: string): Builder {
             this.name = value;
+            return this;
+        }
+
+        withId(value: string): Builder {
+            this.id = value;
             return this;
         }
 
@@ -109,6 +116,11 @@ namespace CraftingSystemSpecification {
 
         withEssences(value: EssenceDefinition[]): Builder {
             this.essences = value;
+            return this;
+        }
+
+        withEssence(value: EssenceDefinition): Builder {
+            this.essences.push(value);
             return this;
         }
 

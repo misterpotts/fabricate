@@ -20,7 +20,7 @@ class CraftingComponent extends FabricateItem {
     public toBuilder(): CraftingComponent.Builder {
         return new CraftingComponent.Builder()
             .withPartId(this._partId)
-            .withCompendiumId(this._compendiumId)
+            .withCompendiumId(this._systemId)
             .withImageUrl(this._imageUrl)
             .withName(this._name)
             .withEssences(this._essences)
@@ -38,10 +38,10 @@ class CraftingComponent extends FabricateItem {
 
 namespace CraftingComponent {
 
-    export class Builder extends FabricateItem.Builder{
+    export class Builder extends FabricateItem.Builder {
 
-        public essences: Combination<EssenceDefinition>;
-        public salvage: Combination<CraftingComponent>;
+        public essences: Combination<EssenceDefinition> = Combination.EMPTY();
+        public salvage: Combination<CraftingComponent> = Combination.EMPTY();
 
         public build(): CraftingComponent {
             return new CraftingComponent(this);
@@ -56,13 +56,19 @@ namespace CraftingComponent {
             this.salvage = value;
             return this;
         }
+
+        public withPartId(value: string): Builder {
+            this.partId = value;
+            return this;
+        }
+
         public withCompendiumId(value: string): Builder {
             this.compendiumId = value;
             return this;
         }
 
-        public withPartId(value: string): Builder {
-            this.partId = value;
+        public withSystemId(value: string): Builder {
+            this.systemId = value;
             return this;
         }
 
