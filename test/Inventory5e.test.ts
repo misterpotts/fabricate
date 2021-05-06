@@ -1,19 +1,19 @@
 import {afterAll, beforeAll, beforeEach, describe, expect, it, jest} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {Inventory5e} from "../../src/scripts/v2/game_system/5e/Inventory5e";
-import {PartDictionary} from "../../src/scripts/v2/system/PartDictionary";
-import {Inventory} from "../../src/scripts/v2/actor/Inventory";
-import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
-import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
-import {EssenceDefinition} from "../../src/scripts/v2/common/EssenceDefinition";
-import {ActionType, FabricationAction} from "../../src/scripts/v2/core/FabricationAction";
+import {Inventory5e} from "../src/scripts/5e/Inventory5e";
+import {PartDictionary} from "../src/scripts/system/PartDictionary";
+import {Inventory} from "../src/scripts/actor/Inventory";
+import {Combination, Unit} from "../src/scripts/common/Combination";
+import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {EssenceDefinition} from "../src/scripts/common/EssenceDefinition";
+import {ActionType, FabricationAction} from "../src/scripts/core/FabricationAction";
 
-import Properties from "../../src/scripts/Properties";
+import Properties from "../src/scripts/Properties";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
-import {ObjectUtility} from "../../src/scripts/v2/foundry/ObjectUtility";
+import {ObjectUtility} from "../src/scripts/foundry/ObjectUtility";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -23,7 +23,7 @@ let mockPartDictionary: PartDictionary = <PartDictionary><unknown>{
 };
 
 beforeAll(() => {
-    const rawTestData = require('../resources/inventory-5e-actor-items-values.json');
+    const rawTestData = require('./resources/inventory-5e-actor-items-values.json');
     mockInventoryContents = rawTestData.map((itemData: any) => {
         const item = {
             getFlag: Sandbox.stub(),

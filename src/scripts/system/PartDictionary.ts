@@ -1,5 +1,5 @@
 import {CraftingComponent} from "../common/CraftingComponent";
-import Properties from "../../Properties";
+import Properties from "../Properties";
 import {FabricateItem} from "../common/FabricateItem";
 import {Recipe} from "../crafting/Recipe";
 import {CompendiumEntry, FabricateItemType} from "../compendium/CompendiumData";

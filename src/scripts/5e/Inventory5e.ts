@@ -1,6 +1,6 @@
-import {BaseCraftingInventory, Inventory} from "../../actor/Inventory";
-import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {BaseCraftingInventory, Inventory} from "../actor/Inventory";
+import {Combination} from "../common/Combination";
+import {CraftingComponent} from "../common/CraftingComponent";
 
 // @ts-ignore todo: figure out how to correctly restrict this type
 class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {

@@ -1,7 +1,7 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
 
-import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
-import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
+import {Combination, Unit} from "../src/scripts/common/Combination";
+import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 // @ts-ignore
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 

@@ -1,14 +1,14 @@
 import {expect, jest, test, beforeEach, describe} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {CraftingCheck5e} from "../../src/scripts/v2/game_system/5e/CraftingCheck5e";
-import {Tool} from "../../src/scripts/v2/crafting/Tool";
-import {DiceUtility, RollResult} from "../../src/scripts/v2/foundry/DiceUtility";
-import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
-import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
+import {CraftingCheck5e} from "../src/scripts/5e/CraftingCheck5e";
+import {Tool} from "../src/scripts/crafting/Tool";
+import {DiceUtility, RollResult} from "../src/scripts/foundry/DiceUtility";
+import {Combination, Unit} from "../src/scripts/common/Combination";
+import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
-import {CraftingCheckResult} from "../../src/scripts/v2/crafting/CraftingCheckResult";
-import {OutcomeType} from "../../src/scripts/v2/core/OutcomeType";
+import {CraftingCheckResult} from "../src/scripts/crafting/CraftingCheckResult";
+import {OutcomeType} from "../src/scripts/core/OutcomeType";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 

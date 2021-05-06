@@ -1,8 +1,8 @@
-import {Recipe} from "../../../src/scripts/v2/crafting/Recipe";
-import {Combination, Unit} from "../../../src/scripts/v2/common/Combination";
-import {CraftingComponent} from "../../../src/scripts/v2/common/CraftingComponent";
+import {Recipe} from "../../src/scripts/crafting/Recipe";
+import {Combination, Unit} from "../../src/scripts/common/Combination";
+import {CraftingComponent} from "../../src/scripts/common/CraftingComponent";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
-import {EssenceDefinition} from "../../../src/scripts/v2/common/EssenceDefinition";
+import {EssenceDefinition} from "../../src/scripts/common/EssenceDefinition";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
 const testRecipeOne: Recipe = Recipe.builder()

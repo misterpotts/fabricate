@@ -1,19 +1,19 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {Inventory} from "../../src/scripts/v2/actor/Inventory";
-import {Fabricator} from "../../src/scripts/v2/core/Fabricator";
-import {AlchemicalCombiner} from "../../src/scripts/v2/crafting/alchemy/AlchemicalCombiner";
-import {CraftingCheck} from "../../src/scripts/v2/crafting/CraftingCheck";
-import {Recipe} from "../../src/scripts/v2/crafting/Recipe";
-import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
-import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
-import {FabricationOutcome} from "../../src/scripts/v2/core/FabricationOutcome";
-import {EssenceDefinition} from "../../src/scripts/v2/common/EssenceDefinition";
-import {CraftingCheckResult} from "../../src/scripts/v2/crafting/CraftingCheckResult";
-import {OutcomeType} from "../../src/scripts/v2/core/OutcomeType";
-import {ActionType, FabricationAction} from "../../src/scripts/v2/core/FabricationAction";
-import {AlchemyError} from "../../src/scripts/v2/error/AlchemyError";
+import {Inventory} from "../src/scripts/actor/Inventory";
+import {Fabricator} from "../src/scripts/core/Fabricator";
+import {AlchemicalCombiner} from "../src/scripts/crafting/alchemy/AlchemicalCombiner";
+import {CraftingCheck} from "../src/scripts/crafting/CraftingCheck";
+import {Recipe} from "../src/scripts/crafting/Recipe";
+import {Combination, Unit} from "../src/scripts/common/Combination";
+import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {FabricationOutcome} from "../src/scripts/core/FabricationOutcome";
+import {EssenceDefinition} from "../src/scripts/common/EssenceDefinition";
+import {CraftingCheckResult} from "../src/scripts/crafting/CraftingCheckResult";
+import {OutcomeType} from "../src/scripts/core/OutcomeType";
+import {ActionType, FabricationAction} from "../src/scripts/core/FabricationAction";
+import {AlchemyError} from "../src/scripts/error/AlchemyError";
 
 import {elementalAir, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 import { testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive} from "./test_data/TestCraftingComponents";

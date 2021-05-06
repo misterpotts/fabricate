@@ -1,12 +1,12 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {PartDictionary} from "../../src/scripts/v2/system/PartDictionary";
+import {PartDictionary} from "../src/scripts/system/PartDictionary";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
-import {FabricateItem} from "../../src/scripts/v2/common/FabricateItem";
-import {FabricateItemType} from "../../src/scripts/v2/compendium/CompendiumData";
-import Properties from "../../src/scripts/Properties";
+import {FabricateItem} from "../src/scripts/common/FabricateItem";
+import {FabricateItemType} from "../src/scripts/compendium/CompendiumData";
+import Properties from "../src/scripts/Properties";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -57,6 +57,7 @@ describe('Index and Retrieve', () => {
     });
 
     test('Should get parts from Item flags', () => {
+
         const underTest: PartDictionary = new PartDictionary();
 
         underTest.addComponent(testComponentOne);
@@ -86,6 +87,7 @@ describe('Index and Retrieve', () => {
     });
 
     test('Should throw errors when parts are not found', () => {
+
         const underTest: PartDictionary = new PartDictionary();
 
         underTest.addComponent(testComponentOne);
@@ -102,6 +104,7 @@ describe('Index and Retrieve', () => {
         const globalIdentifier: string = FabricateItem.globalIdentifier(partId, systemId);
         expect(() => underTest.getComponent(partId, systemId)).toThrow(new Error(`No Component was found with the identifier ${globalIdentifier}. `));
         expect(() => underTest.getRecipe(partId, systemId)).toThrow(new Error(`No Recipe was found with the identifier ${globalIdentifier}. `));
+
     });
 
 });

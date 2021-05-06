@@ -1,4 +1,4 @@
-import {AlchemicalEffect} from "../../crafting/alchemy/AlchemicalEffect";
+import {AlchemicalEffect} from "../crafting/alchemy/AlchemicalEffect";
 
 interface AoeExtension {
     units: DND5e.TargetUnitType;

@@ -1,4 +1,4 @@
-import {EssenceDefinition} from "../../../src/scripts/v2/common/EssenceDefinition";
+import {EssenceDefinition} from "../../src/scripts/common/EssenceDefinition";
 
 const elementalEarth = EssenceDefinition.builder()
     .withDescription('One of the four fundamental forces, Elemental Earth.')

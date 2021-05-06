@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import {expect} from 'chai';
 import {Done} from "mocha";
 import ErrnoException = NodeJS.ErrnoException;
-import {CraftingSystemRegistry} from "../../src/scripts/v2/registries/CraftingSystemRegistry";
+import {CraftingSystemRegistry} from "../../src/scripts/registries/CraftingSystemRegistry";
 import {CraftingSystemSpecification} from "../../src/scripts/core/CraftingSystemSpecification";
 import {CraftingSystemFactory, FileReadingCraftingSystemFactory} from "../../src/scripts/core/CraftingSystemFactory";
 import {CraftingSystem} from "../../src/scripts/core/CraftingSystem";

@@ -1,4 +1,4 @@
-import {FabricateItemType} from "./v2/compendium/CompendiumData";
+import {FabricateItemType} from "./compendium/CompendiumData";
 
 const Properties = {
     module: {

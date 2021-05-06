@@ -1,8 +1,8 @@
 import Properties from "./Properties";
-import {FabricateLifecycle} from "./v2/application/FabricateLifecycle";
+import {FabricateLifecycle} from "./application/FabricateLifecycle";
 import {CraftingSystemSpecification} from "./core/CraftingSystemSpecification";
 import {CompendiumImportingCraftingSystemFactory, CraftingSystemFactory} from "./core/CraftingSystemFactory";
-import FabricateApplication from "./v2/application/FabricateApplication";
+import FabricateApplication from "./application/FabricateApplication";
 
 
 Hooks.once('ready', loadCraftingSystems);

@@ -1,14 +1,14 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import * as Sinon from "sinon";
-import {AlchemicalCombiner} from "../../src/scripts/v2/crafting/alchemy/AlchemicalCombiner";
+import {AlchemicalCombiner} from "../src/scripts/crafting/alchemy/AlchemicalCombiner";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
-import {AlchemicalEffect, AlchemicalEffectType} from "../../src/scripts/v2/crafting/alchemy/AlchemicalEffect";
-import {Combination, Unit} from "../../src/scripts/v2/common/Combination";
-import {CraftingComponent} from "../../src/scripts/v2/common/CraftingComponent";
-import {DiceUtility} from "../../src/scripts/v2/foundry/DiceUtility";
-import {CompendiumProvider} from "../../src/scripts/v2/foundry/CompendiumProvider";
-import {ObjectUtility} from "../../src/scripts/v2/foundry/ObjectUtility";
+import {AlchemicalEffect, AlchemicalEffectType} from "../src/scripts/crafting/alchemy/AlchemicalEffect";
+import {Combination, Unit} from "../src/scripts/common/Combination";
+import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {DiceUtility} from "../src/scripts/foundry/DiceUtility";
+import {CompendiumProvider} from "../src/scripts/foundry/CompendiumProvider";
+import {ObjectUtility} from "../src/scripts/foundry/ObjectUtility";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 

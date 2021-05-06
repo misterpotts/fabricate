@@ -1,8 +1,8 @@
-import {Tool} from "../../crafting/Tool";
-import {CraftingCheck} from "../../crafting/CraftingCheck";
+import {Tool} from "../crafting/Tool";
+import {CraftingCheck} from "../crafting/CraftingCheck";
 import AbilityType = DND5e.AbilityType;
 import Character = Actor5e.Data.Character;
-import {DiceUtility} from "../../foundry/DiceUtility";
+import {DiceUtility} from "../foundry/DiceUtility";
 
 interface PatchAbility5e {
     value: number;
