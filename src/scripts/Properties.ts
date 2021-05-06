@@ -1,4 +1,4 @@
-import {FabricateItemType} from "./game/CompendiumData";
+import {FabricateItemType} from "./compendium/CompendiumData";
 
 const Properties = {
     module: {
@@ -8,6 +8,9 @@ const Properties = {
             recipeTab: 'modules/fabricate/templates/recipe-tab.html',
             craftingTab: 'modules/fabricate/templates/crafting-tab.html',
             craftingMessage: 'modules/fabricate/templates/chat-message.html'
+        },
+        compendiums: {
+            supportedTypes: ['Item']
         }
     },
     types: {

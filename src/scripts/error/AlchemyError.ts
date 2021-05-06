@@ -1,17 +1,19 @@
 import {CraftingError} from "./CraftingError";
-import {CraftingComponent} from "../core/CraftingComponent";
+import {Combination} from "../common/Combination";
+import {CraftingComponent} from "../common/CraftingComponent";
+
 
 class AlchemyError extends CraftingError {
 
-    private readonly _componentMix: CraftingComponent[];
+    private readonly _components: Combination<CraftingComponent>;
 
-    constructor(message: string, componentMix: CraftingComponent[], componentsConsumed: boolean) {
-        super(message, componentsConsumed);
-        this._componentMix = componentMix;
+    constructor(message: string, components: Combination<CraftingComponent>, causesWastage: boolean) {
+        super(message, causesWastage);
+        this._components = components;
     }
 
-    get componentMix(): CraftingComponent[] {
-        return this._componentMix;
+    get components(): Combination<CraftingComponent> {
+        return this._components;
     }
 
 }

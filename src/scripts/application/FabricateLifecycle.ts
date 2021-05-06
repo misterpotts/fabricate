@@ -1,10 +1,11 @@
-import {ItemRecipeTab} from "../interface/ItemRecipeTab";
-import {CraftingTab} from "../interface/CraftingTab";
-import {Inventory} from "../game/Inventory";
-import {CraftingSystemSpecification} from "../core/CraftingSystemSpecification";
-import Properties from "../Properties";
+import {CraftingSystem} from "../system/CraftingSystem";
 import FabricateApplication from "./FabricateApplication";
-import {CraftingSystem, EssenceDefinition} from "../core/CraftingSystem";
+import {EssenceDefinition} from "../common/EssenceDefinition";
+import {CraftingTab} from "../../interface/CraftingTab";
+import {ItemRecipeTab} from "../../interface/ItemRecipeTab";
+import Properties from "../../Properties";
+import {CraftingSystemSpecification} from "../system/CraftingSystemSpecification";
+
 
 class FabricateLifecycle {
 
@@ -23,7 +24,7 @@ class FabricateLifecycle {
         });
 
         const convertEssenceSlugToIconMarkup = (essenceSlug: string, systemId: string) => {
-            const system: CraftingSystem<{}> = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
+            const system: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
             const essenceDefinition: EssenceDefinition = system.getEssenceBySlug(essenceSlug);
             if (essenceDefinition) {
                 return essenceDefinition.icon;
@@ -60,40 +61,17 @@ class FabricateLifecycle {
 
     private static registerApplicationListeners() {
 
-        Hooks.on('createOwnedItem', (actor: any) => {
-            const inventory = FabricateApplication.inventories.getFor(actor.id);
-            if (inventory) {
-                inventory.update();
-            }
-        });
-
-        Hooks.on('deleteOwnedItem', (actor: any) => {
-            const inventory = FabricateApplication.inventories.getFor(actor.id);
-            if (inventory) {
-                inventory.update();
-            }
-        });
-
-        Hooks.on('updateOwnedItem', async (actor: any, item: any, update: any) => {
-            const inventory: Inventory = FabricateApplication.inventories.getFor(actor.id);
-            if (inventory) {
-                if (typeof update.data !== 'undefined') {
-                    await inventory.updateQuantityFor(item);
-                }
-            }
-        });
-
     }
 
-    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification<{}>) {
-        game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey), {
+    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification) {
+        game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
             name: systemSpec.name,
-            hint: systemSpec.enableHint,
+            hint: systemSpec.summary,
             scope: "world",
             type: Boolean,
             default: true,
             config: true,
-            onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemByCompendiumPackKey(systemSpec.compendiumPackKey).enabled = enabled; }
+            onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemByCompendiumPackKey(systemSpec.id).enabled = enabled; }
         });
     }
 }
