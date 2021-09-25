@@ -24,6 +24,26 @@ Crafting from components containing essences without a recipe.
 
 ![](/screens/fabricate-preview-5.gif)
 
+# Fabricate is on pause
+
+You may notice that I haven't made changes to the module since May 2021, and it will likely be several more months before I can reliably continue work on it. 
+
+Earlier this year I was diagnosed with a case of "Bilateral Ulnar Neuropathy", perhaps more commonly referred to as "Cubital Tunnel Syndrome in both arms". What this results in is pain and discomfort when bending and using my arms, as well as a great deal of imposition on and accommodations in my personal and professional life. 
+
+As I work as a software engineer, I already spend a great deal of time at the computer, performing activities that stress the nerves in my arms. That leaves me with a limited tolerance for further computer usage in my own time, and what time I do have I want to use preparing for and running the D&D campaign for my group, where I am the game's DM. 
+
+I hope to be booking corrective surgery soon. There will be some waiting period of weeks or months, followed by a period of recovery of 4-6 weeks. At that point (perhaps just before Christmas), I hope for a great deal of positive change, including a return to working on (and finally releasing) Fabricate. 
+
+In the meantime, there are several ways that anyone who wants to help move things along faster can pitch in:
+
+1. Fork the repository and do your own thing, without involving me
+1. Contribute to the repository
+1. Commission an experienced developer (perhaps from the League) to contribute to the repository 
+
+I am very happy to give guidance on how to best contribute to move things forward and deliveron the vision for Fabricate, as well as to give feedback on proposed changes. There's not much work left to improve the internals of Fabricate for Foundry `0.7.9`. After that, it should be a simple enough case of uplifting the Inventory to work with `0.8.x` and newer versions of DND 5E to have the core changes in a good place to extend with new features. I expect Compendium Import to be quite easy following my recent changes, would like some further tidy up to make some implementations more concise and want to improve the build and test pipeline. However, most of the volume of work is probably in the UI changes to make it possible to create and manage your own recipies and alchemical combinations.
+
+I'd really appreciate the help, particularly from more experienced Typescript Developers. 
+
 # Changelog
 
 The most recent changes to Fabricate are documented here.
