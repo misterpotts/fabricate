@@ -1,14 +1,14 @@
 class CraftingError extends Error {
 
-    private readonly _componentsConsumed: boolean;
+    private readonly _causesWastage: boolean;
 
-    constructor(message: string, componentsConsumed: boolean) {
+    constructor(message: string, wastage: boolean) {
         super(message);
-        this._componentsConsumed = componentsConsumed;
+        this._causesWastage = wastage;
     }
 
-    get componentsConsumed(): boolean {
-        return this._componentsConsumed;
+    get causesWastage(): boolean {
+        return this._causesWastage;
     }
 
 }

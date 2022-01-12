@@ -1,74 +1,43 @@
-import {FabricationAction, FabricationActionType} from "./FabricationAction";
-import {Recipe} from "./Recipe";
-
-enum OutcomeType {
-    SUCCESS = 'SUCCESS',
-    FAILURE = 'FAILURE'
-}
+import {OutcomeType} from "./OutcomeType";
+import {FabricationAction} from "./FabricationAction";
+import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 
 class FabricationOutcome {
 
-    private readonly _type: OutcomeType;
-    private readonly _recipe: Recipe;
-    private readonly _actions: FabricationAction<Item.Data>[];
-    private readonly _failureDetails: string;
+    private readonly _outcome: OutcomeType;
+    private readonly _actions: FabricationAction<any>[];
+    private readonly _message: string;
+    private readonly _checkResult: CraftingCheckResult;
 
     constructor(builder: FabricationOutcome.Builder) {
-        this._type = builder.type;
-        this._recipe = builder.recipe;
+        this._outcome = builder.outcome;
         this._actions = builder.actions;
-        this._failureDetails = builder.failureDetails;
+        this._message = builder.message;
+        this._checkResult = builder.checkResult;
     }
 
     public static builder(): FabricationOutcome.Builder {
         return new FabricationOutcome.Builder();
     }
 
-    get type(): OutcomeType {
-        return this._type;
+    get outcome(): OutcomeType {
+        return this._outcome;
     }
 
-    get title(): string {
-        switch (this.type) {
-            case OutcomeType.SUCCESS:
-                return 'Crafting success ';
-            case OutcomeType.FAILURE:
-                return 'Crafting failure ';
-        }
-    }
-
-    get description(): string {
-        switch (this.type) {
-            case OutcomeType.SUCCESS:
-                if (this._recipe) {
-                    return `Successfully crafted "${this._recipe.name}". `;
-                } else {
-                    return 'Your alchemical combination worked. ';
-                }
-            case OutcomeType.FAILURE:
-                if (this._recipe) {
-                    return `Failed to craft ${this._recipe.name}. `;
-                } else {
-                    return 'Your alchemical combination failed to produce any results. ';
-                }
-        }
-    }
-
-    get failureDetails(): string {
-        return this._failureDetails;
-    }
-
-    get actions(): FabricationAction<Item.Data>[] {
+    get actions(): FabricationAction<any>[] {
         return this._actions;
     }
 
-    get removedComponents(): string[] {
-        return this._actions.filter((action: FabricationAction<Item.Data>) => action.actionType === FabricationActionType.REMOVE)
-            .map((action: FabricationAction<Item.Data>) => `${action.quantity} ${action.itemType.name}` );
+    get message(): string {
+        return this._message;
     }
 
-    get addedItems(): FabricationAction<Item.Data>[] {
-        return this._actions.filter((action: FabricationAction<Item.Data>) => action.actionType === FabricationActionType.ADD);
+    get checkResult(): CraftingCheckResult {
+        return this._checkResult;
+    }
+
+    public checkPerformed() {
+        return !!this._checkResult;
     }
 
 }
@@ -77,36 +46,37 @@ namespace FabricationOutcome {
 
     export class Builder {
 
-        public type: OutcomeType;
-        public recipe: Recipe;
-        public actions: FabricationAction<Item.Data>[];
-        public failureDetails: string;
+        public outcome: OutcomeType;
+        public actions: FabricationAction<any>[];
+        public message: string;
+        public checkResult: CraftingCheckResult;
 
         public build(): FabricationOutcome {
             return new FabricationOutcome(this);
         }
 
-        public withOutcomeType(value: OutcomeType): Builder {
-            this.type = value;
+        public withOutcome(value: OutcomeType): Builder {
+            this.outcome = value;
             return this;
         }
 
-        public withRecipe(value: Recipe): Builder {
-            this.recipe = value;
-            return this;
-        }
-
-        public withActions(value: FabricationAction<Item.Data>[]): Builder {
+        public withActions(value: FabricationAction<any>[]): Builder {
             this.actions = value;
             return this;
         }
 
-        public withFailureDetails(value: string): Builder {
-            this.failureDetails = value;
+        public withMessage(value: string): Builder {
+            this.message = value;
             return this;
         }
+
+        public withCheckResult(value: CraftingCheckResult): Builder {
+            this.checkResult = value;
+            return this;
+        }
+
     }
 
 }
 
-export {FabricationOutcome, OutcomeType}
+export {FabricationOutcome}

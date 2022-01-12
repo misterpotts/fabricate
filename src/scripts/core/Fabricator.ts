@@ -1,273 +1,231 @@
-import {Recipe} from "./Recipe";
-import {FabricationAction, FabricationActionType} from "./FabricationAction";
-import {CraftingComponent} from "./CraftingComponent";
-import {FabricationHelper} from "./FabricationHelper";
-import {EssenceCombiner} from "./EssenceCombiner";
-import {FabricationOutcome, OutcomeType} from "./FabricationOutcome";
-import {Inventory} from "../game/Inventory";
-import {InventoryRecord} from "../game/InventoryRecord";
-import {Ingredient} from "./Ingredient";
+import {Inventory} from '../actor/Inventory';
+import {Recipe} from "../crafting/Recipe";
+import {CraftingCheck} from "../crafting/CraftingCheck";
+import {Combination, Unit} from "../common/Combination";
+import {CraftingComponent} from "../common/CraftingComponent";
+import {ActionType, FabricationAction} from "./FabricationAction";
+import {OutcomeType} from "./OutcomeType";
+import {FabricationOutcome} from "./FabricationOutcome";
+import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
+import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 import {AlchemyError} from "../error/AlchemyError";
-import {CraftingError} from "../error/CraftingError";
 
-enum EssenceMatchType {
-    EXACT = 'EXACT',
-    SUPERSET = 'SUPERSET',
-    NONE = 'NONE'
-}
+class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
-class CraftingComponentCombination {
+    private readonly _craftingCheck: CraftingCheck<A>;
+    private readonly _consumeComponentsOnFailure: boolean;
+    private readonly _alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>>;
 
-    private readonly _essenceIdentities: Map<string, number> = new Map();
-    private readonly _components: CraftingComponent[] = [];
-    private readonly _combinationIdentity: number;
-
-    constructor(components: CraftingComponent[], essenceIdentities: Map<string, number>) {
-        this._components = components;
-        this._essenceIdentities = essenceIdentities;
-        this._combinationIdentity = components.map((component: CraftingComponent) => FabricationHelper.essenceCombinationIdentity(component.essences, essenceIdentities))
-            .reduce((left: number, right: number) => left * right, 1);
+    constructor(builder: Fabricator.Builder<D, A>) {
+        this._craftingCheck = builder.craftingCheck;
+        this._consumeComponentsOnFailure = builder.consumeComponentsOnFailure;
+        this._alchemicalCombinersByBaseComponent = builder.alchemicalCombinersByBaseComponent;
     }
 
-    get components(): CraftingComponent[] {
-        return this._components;
+    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>>(): Fabricator.Builder<D, A> {
+        return new Fabricator.Builder<D, A>();
     }
 
-    get combinationIdentity(): number {
-        return this._combinationIdentity;
+    get craftingCheck(): CraftingCheck<A> {
+        return this._craftingCheck;
     }
 
-    public essenceMatchType(requiredEssences: string[]): EssenceMatchType {
-        const requiredEssenceCombinationIdentity = FabricationHelper.essenceCombinationIdentity(requiredEssences, this._essenceIdentities);
-        if (requiredEssenceCombinationIdentity === this._combinationIdentity) {
-            return EssenceMatchType.EXACT;
-        }
-        if (requiredEssenceCombinationIdentity > this._combinationIdentity) {
-            return EssenceMatchType.NONE;
-        }
-        const testResult = this._combinationIdentity % requiredEssenceCombinationIdentity;
-        if (testResult === 0) {
-            return EssenceMatchType.SUPERSET;
-        }
-        return EssenceMatchType.NONE;
+    get hasCraftingCheck(): boolean {
+        return !!this._craftingCheck;
     }
 
-}
-
-class AlchemySpecification<T extends Item.Data> {
-    private readonly _essenceCombiner: EssenceCombiner<T>;
-    private _baseItemData: T;
-    private readonly _baseComponent: CraftingComponent;
-
-    constructor(essenceCombiner: EssenceCombiner<T>, baseComponent: CraftingComponent) {
-        if (!essenceCombiner || !baseComponent) {
-            throw new Error('Alchemy Specifications require an Essence Combiner and a Base Crafting Component. ');
-        }
-        this._essenceCombiner = essenceCombiner;
-        this._baseComponent = baseComponent;
+    get supportsAlchemy(): boolean {
+        return this._alchemicalCombinersByBaseComponent.size > 0
     }
 
-    get essenceCombiner(): EssenceCombiner<T> {
-        return this._essenceCombiner;
-    }
-
-    get baseComponent(): CraftingComponent {
-        return this._baseComponent;
-    }
-
-    async getBaseItemData(): Promise<T> {
-        if (this._baseItemData) {
-            return this._baseItemData;
-        }
-        const compendium: Compendium = game.packs.get(this.baseComponent.systemId);
-        // @ts-ignore
-        const entity: Entity<T> = await compendium.getEntity(this.baseComponent.partId);
-        this._baseItemData = entity.data.data;
-        return this._baseItemData;
-    }
-}
-
-class Fabricator<T extends Item.Data> {
-    private readonly _alchemySpecification: AlchemySpecification<T>;
-
-    constructor(alchemySpecification?: AlchemySpecification<T>) {
-        this._alchemySpecification = alchemySpecification;
-    }
-
-    public async fabricateFromComponents(inventory: Inventory<T>, components: CraftingComponent[]): Promise<FabricationOutcome> {
-        if (!this._alchemySpecification) {
-            throw new Error(`No Alchemy Specification has been provided for this system. You may only craft from Recipes. `);
+    public async followRecipe(actor: A, inventory: Inventory<D, A>, recipe: Recipe): Promise<FabricationOutcome> {
+        if (recipe.hasNamedComponents && !inventory.containsIngredients(recipe.namedComponents)) {
+            return this.abort(`You don't have all of the ingredients for ${recipe.name}. `);
         }
 
-        const removeSuppliedComponents: FabricationAction<T>[] = FabricationHelper.asCraftingResults(components, FabricationActionType.REMOVE);
+        const remainingComponents: Inventory<D, A> = inventory.excluding(recipe.namedComponents);
+        if (recipe.requiresEssences && !remainingComponents.containsEssences(recipe.essences)) {
+            return this.abort(`There aren't enough essences amongst components in your inventory to craft ${recipe.name}. `);
+        }
 
+        const essenceContribution: Combination<CraftingComponent> = remainingComponents.selectFor(recipe.essences);
+        const preparedComponents = recipe.ingredients.combineWith(essenceContribution);
+
+        if (!this.hasCraftingCheck) {
+            return await this.succeed(inventory, preparedComponents, recipe.results);
+        }
+
+        const performedCheck = this.craftingCheck.perform(actor, preparedComponents);
+        switch (performedCheck.outcome) {
+            case 'FAILURE':
+                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? preparedComponents : Combination.EMPTY();
+                const failureMessage: string = `Your crafting attempt was unsuccessful! ${this._consumeComponentsOnFailure ? 'The ingredients were wasted. ' : 'No ingredients were consumed. ' }`;
+                return await this.fail(inventory, wastedComponents, failureMessage, performedCheck);
+            case 'SUCCESS':
+                return await this.succeed(inventory, preparedComponents, recipe.results, performedCheck);
+        }
+
+    }
+
+    public async performAlchemy(baseComponent: CraftingComponent,
+                                componentMix: Combination<CraftingComponent>,
+                                actor: A,
+                                inventory: Inventory<D, A>): Promise<FabricationOutcome> {
+
+        if (!this._alchemicalCombinersByBaseComponent.has(baseComponent)) {
+            return this.abort(`No Alchemy Specification exists for '${baseComponent.name}' (${baseComponent.id}). `);
+        }
+
+        const alchemicalCombiner: AlchemicalCombiner<D> = this._alchemicalCombinersByBaseComponent.get(baseComponent);
+        let alchemyResult: [Unit<CraftingComponent>, Item.Data<D>];
         try {
-            const baseItemData: T = await this._alchemySpecification.getBaseItemData();
-            const alchemicallyModifiedItemData: T = this._alchemySpecification.essenceCombiner.combine(components, duplicate(baseItemData));
-            const resultantComponentType: CraftingComponent = this._alchemySpecification.baseComponent;
-            const addComponent: FabricationAction<T> = FabricationAction.builder<T>()
-                .withActionType(FabricationActionType.ADD)
-                .withQuantity(1)
-                .withCustomItemData(alchemicallyModifiedItemData)
-                .withItemType(resultantComponentType)
-                .build();
-            const actions: FabricationAction<T>[] = removeSuppliedComponents.concat(addComponent);
-            await FabricationHelper.applyResults(actions, inventory);
-            return FabricationOutcome.builder()
-                .withActions(actions)
-                .withOutcomeType(OutcomeType.SUCCESS)
-                .build();
-        } catch (error: any) {
+            alchemyResult = await alchemicalCombiner.perform(componentMix);
+        } catch (error) {
             if (error instanceof AlchemyError) {
                 const alchemyError: AlchemyError = <AlchemyError>error;
-                const actions: FabricationAction<T>[] = [];
-                if (alchemyError.componentsConsumed) {
-                    actions.push(...removeSuppliedComponents);
-                    await FabricationHelper.applyResults(removeSuppliedComponents, inventory);
-                }
-                return FabricationOutcome.builder()
-                    .withOutcomeType(OutcomeType.FAILURE)
-                    .withFailureDetails(alchemyError.message)
-                    .withActions(actions)
-                    .build();
+                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure && alchemyError.causesWastage ? componentMix : Combination.EMPTY();
+                return this.fail(inventory, wastedComponents, alchemyError.message)
             }
-            throw error;
+        }
+
+        if (!this.hasCraftingCheck) {
+            return this.succeedWith(inventory, componentMix, alchemyResult);
+        }
+
+        const performedCheck = this.craftingCheck.perform(actor, componentMix);
+        switch (performedCheck.outcome) {
+            case 'FAILURE':
+                const wastedComponents: Combination<CraftingComponent> = this._consumeComponentsOnFailure ? componentMix : Combination.EMPTY();
+                const failureMessage: string = `Your alchemical combination failed! ${this._consumeComponentsOnFailure ? 'The ingredients were wasted. ' : 'No ingredients were consumed. ' }`;
+                return await this.fail(inventory, wastedComponents, failureMessage, performedCheck);
+            case 'SUCCESS':
+                return await this.succeedWith(inventory, componentMix, alchemyResult, performedCheck);
         }
     }
 
-    public async fabricateFromRecipe(inventory: Inventory<T>, recipe: Recipe): Promise<FabricationOutcome> {
-        const ownedComponents: InventoryRecord<CraftingComponent>[] = inventory.components.filter((record: InventoryRecord<CraftingComponent>) => record.fabricateItem.systemId === recipe.systemId);
-
-        const input: FabricationAction<T>[] = [];
-        const namedIngredientsByPartId: Map<string, Ingredient> = new Map();
-        if (recipe.ingredients && recipe.ingredients.length > 0) {
-            recipe.ingredients.forEach((ingredient: Ingredient) => {
-                namedIngredientsByPartId.set(ingredient.partId, ingredient);
-                if (ingredient.consumed) {
-                    input.push(FabricationAction.builder<T>()
-                        .withQuantity(ingredient.quantity)
-                        .withItemType(ingredient.component)
-                        .withActionType(FabricationActionType.REMOVE)
-                        .build());
-                }
-            });
-        }
-
-        if (recipe.essences && recipe.essences.length > 0) {
-            const availableIngredients: Ingredient[] = ownedComponents.map((componentRecord: InventoryRecord<CraftingComponent>) => {
-                if (namedIngredientsByPartId.has(componentRecord.fabricateItem.partId)) {
-                    const namedIngredient: Ingredient = namedIngredientsByPartId.get(componentRecord.fabricateItem.partId);
-                    const availableQuantityForEssenceExtraction: number = componentRecord.totalQuantity > namedIngredient.quantity ? componentRecord.totalQuantity - namedIngredient.quantity : 0;
-                    return Ingredient.builder()
-                        .isConsumed(namedIngredient.consumed)
-                        .withComponent(componentRecord.fabricateItem)
-                        .withQuantity(availableQuantityForEssenceExtraction)
-                        .build();
-                }
-                return Ingredient.builder()
-                    .isConsumed(true)
-                    .withComponent(componentRecord.fabricateItem)
-                    .withQuantity(componentRecord.totalQuantity)
-                    .build();
-            });
-            if (!this.isCraftableFromEssencesInIngredients(recipe, availableIngredients)) {
-                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or even just asking your GM nicely. `, false);
-            }
-            const craftingComponentCombinations = this.analyzeCombinationsForEssences(availableIngredients, recipe.essences);
-            const selectedCombination: CraftingComponent[] = this.selectBestCombinationFrom(recipe, craftingComponentCombinations);
-            if (!selectedCombination || selectedCombination.length === 0) {
-                throw new CraftingError(`You don't have enough ingredients available to craft ${recipe.name}. Go shopping, try foraging or even just asking your GM nicely. `, false)
-            }
-            const consumedComponents = FabricationHelper.asCraftingResults(selectedCombination, FabricationActionType.REMOVE);
-            input.push(...consumedComponents);
-        }
-
-        const output: FabricationAction<T>[] = recipe.results;
-        const actions: FabricationAction<T>[] = output.concat(input);
-
-        await FabricationHelper.applyResults(actions, inventory);
+    private abort(message: string): FabricationOutcome {
         return FabricationOutcome.builder()
-            .withRecipe(recipe)
-            .withActions(actions)
-            .withOutcomeType(OutcomeType.SUCCESS)
+            .withOutcome(OutcomeType.NOT_ATTEMPTED)
+            .withActions([])
+            .withMessage(message)
             .build();
     }
 
-    private analyzeCombinationsForEssences(availableIngredients: Ingredient[], requiredEssences: string[]): CraftingComponentCombination[] {
-        const usableIngredients: Ingredient[] = availableIngredients.filter((ingredient: Ingredient) => ingredient.component.essences.filter((essence: string) => requiredEssences.includes(essence)).length > 0);
-        const uniqueEssencesInUsableComponents: string[] = usableIngredients.map((ingredient: Ingredient) => ingredient.component.essences)
-            .reduce((left: string[],right:string[]) => left.concat(right), [])
-            .filter(((essence, index, essences) => essences.indexOf(essence) === index));
-        const essenceIdentities: Map<string, number> = FabricationHelper.assignEssenceIdentities(uniqueEssencesInUsableComponents);
-        return FabricationHelper.asComponentCombinations(usableIngredients, requiredEssences.length)
-            .map((combination: CraftingComponent[]) => {
-            return new CraftingComponentCombination(combination, essenceIdentities);
+    private async fail(inventory: Inventory<D, A>,
+                       wastedComponents: Combination<CraftingComponent>,
+                       message: string,
+                       checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
+
+        const removals: FabricationAction<D>[] = [];
+        if (!wastedComponents.isEmpty()) {
+            this.asFabricationActions(wastedComponents, ActionType.REMOVE)
+                .forEach((removal: FabricationAction<D>) => removals.push(removal));
+            await inventory.perform(removals);
+        }
+
+        return FabricationOutcome.builder()
+            .withOutcome(OutcomeType.FAILURE)
+            .withActions(removals)
+            .withCheckResult(checkResult)
+            .withMessage(message)
+            .build();
+    }
+
+    private async succeed(inventory: Inventory<D, A>,
+                          consumedComponents: Combination<CraftingComponent>,
+                          addedComponents: Combination<CraftingComponent>,
+                          checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
+
+        const removals: FabricationAction<D>[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
+        const additions: FabricationAction<D>[] = this.asFabricationActions(addedComponents, ActionType.ADD);
+        const allActions: FabricationAction<D>[] = additions.concat(removals);
+
+        await inventory.perform(allActions);
+
+        return FabricationOutcome.builder()
+            .withOutcome(OutcomeType.SUCCESS)
+            .withActions(allActions)
+            .withCheckResult(checkResult)
+            .build();
+    }
+
+    private async succeedWith(inventory: Inventory<D, A>,
+                          consumedComponents: Combination<CraftingComponent>,
+                          alchemyResult: [Unit<CraftingComponent>, Item.Data<D>],
+                          checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
+
+        const removals: FabricationAction<D>[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
+        const addition: FabricationAction<D> = this.asFabricationAction(alchemyResult[0], ActionType.ADD, alchemyResult[1]);
+        const allActions: FabricationAction<D>[] = [addition].concat(removals);
+
+        await inventory.perform(allActions);
+
+        return FabricationOutcome.builder()
+            .withOutcome(OutcomeType.SUCCESS)
+            .withActions(allActions)
+            .withCheckResult(checkResult)
+            .build();
+    }
+
+    private asFabricationActions(components: Combination<CraftingComponent>, actionType: ActionType): FabricationAction<D>[] {
+        return components.units.map((unit: Unit<CraftingComponent>) => {
+            return FabricationAction.builder<D>()
+                .withActionType(actionType)
+                .withComponent(unit)
+                .withHasCustomData(false)
+                .build();
         });
     }
 
-    private selectBestCombinationFrom(recipe: Recipe, combinations: CraftingComponentCombination[]): CraftingComponent[] {
-        const exactMatches: CraftingComponentCombination[] = [];
-        const supersets: CraftingComponentCombination[] = [];
-        combinations.forEach((combination: CraftingComponentCombination) => {
-            const essenceMatchType: EssenceMatchType = combination.essenceMatchType(recipe.essences);
-            switch (essenceMatchType) {
-                case EssenceMatchType.EXACT:
-                    exactMatches.push(combination);
-                    break;
-                case EssenceMatchType.SUPERSET:
-                    supersets.push(combination);
-                    break;
-            }
-        });
-        const selectFewestComponents = (combinations: CraftingComponentCombination[]) => {
-            return combinations.sort((left, right) => left.components.length - right.components.length)
-                .find(() => true)
-                .components;
-        };
-        if (exactMatches.length === 0 && supersets.length === 0) {
-            return [];
-        }
-        return exactMatches.length > 0 ? selectFewestComponents(exactMatches) : selectFewestComponents(supersets);
-    }
-
-    public filterCraftableRecipesFor(craftingComponents: CraftingComponent[], recipes: Recipe[]) {
-        return recipes.filter((recipe: Recipe) => this.isCraftableFromEssencesInComponents(recipe, craftingComponents));
-    }
-
-    private isCraftableFromEssencesInComponents(recipe: Recipe, components: CraftingComponent[]): boolean {
-        const essences = components.map((component: CraftingComponent) => component.essences)
-            .reduce((left: string[], right: string[]) => left.concat(right), []);
-        return essences.every((essence: string) => recipe.essences.includes(essence)
-            &&  (essences.filter((essence:string) => essence === essence).length >= recipe.essences.filter((essence:string) => essence === essence).length));
-    }
-
-    private isCraftableFromEssencesInIngredients(recipe: Recipe, ingredients: Ingredient[]): boolean {
-        const essenceCount: Map<string, number> = ingredients.filter((ingredient: Ingredient) => ingredient.component.essences.some((essence: string) => recipe.essences.includes(essence)))
-            .map((ingredient: Ingredient) => new Map(ingredient.component.essences.map((essence: string) => [essence, ingredient.quantity])))
-            .reduce((left: Map<string, number>, right: Map<string, number>) => {
-                const allEssenceKeys: string[] = Array.from(left.keys()).concat(Array.from(right.keys()))
-                    .filter(((essence: string, index: number, mergedKeys: string[]) => mergedKeys.indexOf(essence) === index));
-                const merged: Map<string, number> = new Map();
-                allEssenceKeys.forEach((essence: string) => {
-                    const leftCount: number = left.has(essence) ? left.get(essence) : 0;
-                    const rightCount: number = right.has(essence) ? right.get(essence) : 0;
-                    merged.set(essence, leftCount + rightCount);
-                });
-                return merged;
-            }, new Map<string, number>());
-        for (let i = 0; i < recipe.essences.length; i++) {
-            const essence: string = recipe.essences[i];
-            if (!essenceCount.has(essence)) {
-                return false;
-            }
-            const count: number = essenceCount.get(essence);
-            if (count <= 0) {
-                return false;
-            }
-        }
-        return true;
+    private asFabricationAction(componentUnit: Unit<CraftingComponent>, actionType: ActionType, itemData?: Item.Data<D>): FabricationAction<D> {
+        return FabricationAction.builder<D>()
+            .withActionType(actionType)
+            .withComponent(componentUnit)
+            .withItemData(itemData)
+            .build();
     }
 
 }
 
-export {Fabricator, AlchemySpecification};
+namespace Fabricator {
+
+    export class Builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+
+        public craftingCheck: CraftingCheck<A>;
+        public consumeComponentsOnFailure: boolean;
+        public alchemicalCombiners: AlchemicalCombiner<D>[] = [];
+
+        public alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>> = new Map();
+
+        public build(): Fabricator<D, A> {
+            if (this.alchemicalCombiners && this.alchemicalCombiners.length > 0) {
+                this.alchemicalCombinersByBaseComponent = new Map(this.alchemicalCombiners.map(combiner => [combiner.baseComponent, combiner]));
+            }
+            return new Fabricator<D, A>(this);
+        }
+
+        public withAlchemicalCombiner(value: AlchemicalCombiner<D>): Builder<D, A> {
+            this.alchemicalCombiners.push(value);
+            return this;
+        }
+
+        public withAlchemicalCombiners(value: AlchemicalCombiner<D>[]): Builder<D, A> {
+            this.alchemicalCombiners = value;
+            return this;
+        }
+
+        public withCraftingCheck(value: CraftingCheck<A>): Builder<D, A> {
+            this.craftingCheck = value;
+            return this;
+        }
+
+        public withConsumeComponentsOnFailure(value: boolean): Builder<D, A> {
+            this.consumeComponentsOnFailure = value;
+            return this;
+        }
+
+    }
+
+}
+
+export {Fabricator}

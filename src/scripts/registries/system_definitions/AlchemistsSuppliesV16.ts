@@ -11,6 +11,7 @@ import {
 } from "../../dnd5e/AlchemicalEffect5E";
 import {AlchemySpecification, Fabricator} from "../../core/Fabricator";
 import {EssenceDefinition} from "../../core/CraftingSystem";
+import {CraftingCheck5e, Tool} from "../../core/CraftingCheck";
 
 const blinded = new Condition5e(['earth', 'earth'],
     'Release a burst of stinging dust. Affected targets are blinded for the next round. ');
@@ -75,7 +76,17 @@ const alchemySpecification = new AlchemySpecification(essenceCombiner, CraftingC
     .withEssences([])
     .build());
 
-const fabricator: Fabricator<ItemData5e> = new Fabricator<ItemData5e>(alchemySpecification);
+const craftingCheck: CraftingCheck5e = CraftingCheck5e.builder()
+    .withAbility('int')
+    .withBaseDC(6)
+    .withTool(new Tool('Alchemist\'s Supplies', 'Alchemy'))
+    .withIngredientDCModifier(2)
+    .build();
+
+const fabricator: Fabricator<ItemData5e, ActorData5e> = Fabricator.builder<ItemData5e, ActorData5e>()
+    .withCraftingCheck(craftingCheck)
+    .withAlchemySpecification(alchemySpecification)
+    .build();
 
 const AlchemistsSuppliesSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
     .withName('Alchemist\'s Supplies v1.6')
