@@ -149,7 +149,7 @@ class CraftingSystem implements Identifiable {
     }
 
     public getComponentByPartId(entryId: string): CraftingComponent {
-        return this._componentsById.get(entryId);
+        return <CraftingComponent>this._componentsById.get(entryId);
     }
 
     public supports(gameSystem: string): boolean {
@@ -160,7 +160,7 @@ class CraftingSystem implements Identifiable {
     }
 
     getRecipeByPartId(partId: string): Recipe {
-        return this._recipesById.get(partId);
+        return <Recipe>this._recipesById.get(partId);
     }
 
 }

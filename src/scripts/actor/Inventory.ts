@@ -5,15 +5,16 @@ import {ActionType, FabricationAction} from "../core/FabricationAction";
 import {FabricateItemType} from "../compendium/CompendiumData";
 import {PartDictionary} from "../system/PartDictionary";
 import {ObjectUtility} from "../foundry/ObjectUtility";
+import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 
-interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+interface Inventory<D, A extends Actor> {
     actor: A;
     ownedComponents: Combination<CraftingComponent>;
     containsIngredients(ingredients: Combination<CraftingComponent>): boolean;
     containsEssences(essences: Combination<EssenceDefinition>): boolean;
     selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent>;
     excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A>;
-    perform(actions: FabricationAction<D>[]): Promise<Item<Item.Data<D>>[]>;
+    perform(actions: FabricationAction<D>[]): Promise<Item[]>;
     prepare(): boolean;
 }
 
@@ -136,8 +137,8 @@ class ComponentCombinationGenerator {
             if (!suitableCombinationsBySize.has(node.componentCombination.size())) {
                 suitableCombinationsBySize.set(node.componentCombination.size(), [[node.componentCombination, node.essenceCombination]]);
             } else {
-                let isDuplicate: boolean = false;
-                const existing: [Combination<CraftingComponent>, Combination<EssenceDefinition>][] = suitableCombinationsBySize.get(node.componentCombination.size());
+                let isDuplicate = false;
+                const existing = <[Combination<CraftingComponent>, Combination<EssenceDefinition>][]>suitableCombinationsBySize.get(node.componentCombination.size());
                 for (const existingCombination of existing) {
                     if (existingCombination[0].equals(node.componentCombination)) {
                         isDuplicate = true;
@@ -200,7 +201,7 @@ class EssenceSelection {
 
 }
 
-abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
+abstract class BaseCraftingInventory<D, A extends Actor, Item> implements Inventory<D, A> {
 
     private readonly _game: Game;
     private readonly _gameUtils: ObjectUtility;
@@ -208,9 +209,9 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
     private readonly _actor: A;
     private _ownedComponents: Combination<CraftingComponent>;
     private readonly _partDictionary: PartDictionary;
-    private _managedItems: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
+    private _managedItems: Map<CraftingComponent, [Item, number][]>;
 
-    private _prepared: boolean = false;
+    private _prepared = false;
 
     protected constructor(builder: BaseCraftingInventory.Builder<D, A>) {
         this._actor = builder.actor;
@@ -254,9 +255,10 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
             return true;
         }
         this._ownedComponents = this.index();
+        return false;
     }
 
-    async perform(actions: FabricationAction<D>[]): Promise<Item<Item.Data<D>>[]> {
+    async perform(actions: FabricationAction<D>[]): Promise<Item[]> {
         this._ownedComponents = this.index();
         const removals: FabricationAction<D>[] = [];
         const additions: FabricationAction<D>[] = [];
@@ -271,7 +273,7 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
                     break;
             }
         }
-        const results: Item<Item.Data<D>>[] = await this.takeActions(this.actor, removals, additions);
+        const results: Item[] = await this.takeActions(this.actor, removals, additions);
         this._ownedComponents = this.index();
         return results;
     }
@@ -280,47 +282,50 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
         if (action.hasItemData()) {
             return action;
         }
-        const component: CraftingComponent = action.unit.part;
+        const component = <CraftingComponent>action.unit.part;
         // @ts-ignore
-        const compendium: Compendium = this._game.packs.get(component.systemId);
-        const entity: Entity<Item.Data<D>> = <Entity<Item.Data<D>>> await compendium.getEntity(component.partId);
+        const compendium = <CompendiumCollection<any>>this._game.packs.get(component.systemId);
+        const entity = await compendium.getDocument(component.partId); //compendium.getEntity(component.partId);
         // @ts-ignore todo: figure out what I've done wrong here
         return action.withItemData(entity.data);
     }
 
     abstract createFrom(actor: A, ownedComponents: Combination<CraftingComponent>): Inventory<D, A>;
 
-    abstract getOwnedItems(actor: A): Item<Item.Data<D>>[];
+    abstract getOwnedItems(actor: A): Item[];
 
-    abstract getQuantityFor(item: Item<Item.Data<D>>): number;
+    abstract getQuantityFor(item: Item): number;
 
-    abstract setQuantityFor(itemData: Item.Data<D>, quantity: number): Item.Data<D>;
+    abstract setQuantityFor(itemData: ItemData, quantity: number): ItemData;
 
     protected get itemQuantityAware(): boolean {
         return true;
     }
 
-    async deleteOwnedItems(actor: A, itemsData: Item.Data<D>[]): Promise<Item<Item.Data<D>>[]> {
-        const ids: string[] = itemsData.map((itemData: Item.Data<D>) => itemData._id);
+    async deleteOwnedItems(actor: A, itemsData: ItemData[]): Promise<ItemData[]> {
+        const ids = <string[]>itemsData.map((itemData: ItemData) => itemData._id);
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.deleteEmbeddedEntity('OwnedItem', ids);
+        //return actor.deleteEmbeddedEntity('OwnedItem', ids);
+        return actor.deleteEmbeddedDocuments('Item', ids);
     }
 
-    async createOwnedItems(actor: A, itemsData: Item.Data<D>[]): Promise<Item<Item.Data<D>>[]> {
+    async createOwnedItems(actor: A, itemsData: ItemData[]): Promise<ItemData[]> {
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.createEmbeddedEntity('OwnedItem', itemsData);
+        //return actor.createEmbeddedEntity('OwnedItem', itemsData);
+        return actor.createEmbeddedDocuments('Item', itemsData);
     }
 
-    async updateOwnedItems(actor: A, itemsData: Item.Data<D>[]): Promise<Item<Item.Data<D>>[]> {
+    async updateOwnedItems(actor: A, itemsData: ItemData[]): Promise<ItemData[]> {
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.updateEmbeddedEntity('OwnedItem', itemsData);
+        //return actor.updateEmbeddedEntity('OwnedItem', itemsData);
+        return actor.updateEmbeddedDocuments('Item', itemsData);
     }
 
 
-    async takeActions(actor: A, removals: FabricationAction<D>[], additions: FabricationAction<D>[]): Promise<Item<Item.Data<D>>[]> {
-        const updates: Item.Data<D>[] = [];
-        const deletes: Item.Data<D>[] = [];
-        const creates: Item.Data<D>[] = [];
+    async takeActions(actor: A, removals: FabricationAction<D>[], additions: FabricationAction<D>[]): Promise<Item[]> {
+        const updates: ItemData[] = [];
+        const deletes: ItemData[] = [];
+        const creates: ItemData[] = [];
 
         /* =============================================================================================================
          * Determine which Items to Update and Which Items to Create to take all Addition Actions
@@ -333,15 +338,15 @@ abstract class BaseCraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Da
                 break;
             }
             if (!this.ownedComponents.contains(craftingComponent)) {
-                const data: Item.Data<D> = this._gameUtils.duplicate(addition.itemData);
+                const data: ItemData = this._gameUtils.duplicate(addition.itemData);
                 const newItemData: Item.Data<D> = this.setQuantityFor(data, addition.unit.quantity);
                 creates.push(newItemData);
                 break;
             }
-            const records: [Item<Item.Data<D>>, number][] = this._managedItems.get(craftingComponent)
-                .sort((left: [Item<Item.Data<D>>, number], right: [Item<Item.Data<D>>, number]) => right[1] - left[1]);
-            const itemToUpdate: [Item<Item.Data<D>>, number] = records[0];
-            const newItemData: Item.Data<D> = this.setQuantityFor(this._gameUtils.duplicate(itemToUpdate[0].data), addition.unit.quantity + itemToUpdate[1]);
+            const records: [ItemData, number][] = this._managedItems.get(craftingComponent)
+                .sort((left: [ItemData, number], right: [Item<Item.Data<D>>, number]) => right[1] - left[1]);
+            const itemToUpdate: [ItemData, number] = records[0];
+            const newItemData: ItemData = this.setQuantityFor(this._gameUtils.duplicate(itemToUpdate[0].data), addition.unit.quantity + itemToUpdate[1]);
             updates.push(newItemData);
         }
 

@@ -1,6 +1,7 @@
 import {FabricationOutcome, OutcomeType} from "../core/FabricationOutcome";
 import {FabricationAction} from "../core/FabricationAction";
 import {CraftingError} from "../error/CraftingError";
+import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs";
 
 class CraftingChatMessage {
 
@@ -20,22 +21,22 @@ class CraftingChatMessage {
     private readonly _cardTitle: string;
     private readonly _cardContent: string;
     private readonly _cardFooterParts: string[];
-    private readonly _addedItems: FabricationAction<Item.Data>[];
+    private readonly _addedItems: FabricationAction<ItemData>[];
     private readonly _cardImageUrl: string;
     private readonly _cardImageTitle: string;
 
     constructor(cardTitle: string,
                 cardContent: string,
                 cardFooterParts: string[],
-                addedItems?: FabricationAction<Item.Data>[],
+                addedItems?: FabricationAction<ItemData>[],
                 cardImageUrl?: string,
                 cardImageTitle?: string) {
         this._cardTitle = cardTitle;
         this._cardContent = cardContent;
-        this._addedItems = addedItems;
+        this._addedItems = <FabricationAction<ItemData>[]>addedItems;
         this._cardFooterParts = cardFooterParts;
-        this._cardImageUrl = cardImageUrl;
-        this._cardImageTitle = cardImageTitle;
+        this._cardImageUrl = <string>cardImageUrl;
+        this._cardImageTitle = <string>cardImageTitle;
     }
 
     public static fromFabricationError(error: CraftingError) {

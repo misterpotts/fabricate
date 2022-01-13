@@ -2,6 +2,7 @@
   "name": "fabricate",
   "title": "Fabricate",
   "description": "A system-agnostic, flexible crafting module for FoundryVTT",
+  "version": "0.5.6",
   "authors": [
     {
       "name": "misterpotts",
@@ -9,10 +10,9 @@
       "discord": "ComicXero#0255"
     }
   ],
-  "version": "0.5.6",
-  "minimumCoreVersion": "0.7.9",
-  "compatibleCoreVersion": "0.7.9",
-  "manifestPlusVersion": "1.0.0",
+  "minimumCoreVersion": "0.8.9",
+  "compatibleCoreVersion": "9",
+  "manifestPlusVersion": "1.2.1",
   "url": "https://github.com/misterpotts/fabricate",
   "manifest": "",
   "download": "",

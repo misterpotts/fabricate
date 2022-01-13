@@ -9,6 +9,7 @@ import {CraftingSystemSpecification} from "./CraftingSystemSpecification";
 import Properties from "../Properties";
 import {CompendiumEntryImportError} from "../error/CompendiumEntryImportError";
 import {CompendiumEntryReferencePopulationError} from "../error/CompendiumEntryReferencePopulationError";
+import { DocumentMetadata } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/document.mjs";
 
 class CompendiumImporter {
     private readonly _compendiumProvider: CompendiumProvider;
@@ -20,7 +21,7 @@ class CompendiumImporter {
     public async import(craftingSystemSpecification: CraftingSystemSpecification): Promise<PartDictionary> {
         const compendiumPackKeys: string[] = craftingSystemSpecification.compendiumPacks;
         const essenceDefinitions: EssenceDefinition[] = craftingSystemSpecification.essences;
-        const compendiums: Compendium[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
+        const compendiums: CompendiumCollection<any>[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
         const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: EssenceDefinition) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
@@ -30,65 +31,68 @@ class CompendiumImporter {
         return this.rationaliseAndPopulateReferences(partialPartDictionaries);
     }
 
-    private async importCompendiumContents(systemId: string, compendium: Compendium, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
-        if (!Properties.module.compendiums.supportedTypes.includes(compendium.entity)) {
-            throw new Error(`Compendium ${compendium.collection} has an unsupported Entity type: ${compendium.entity}. Supported Compendium Entity types are: ${Properties.module.compendiums.supportedTypes}. `);
+    private async importCompendiumContents(systemId: string, compendium: CompendiumCollection<any>, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
+        if (!Properties.module.compendiums.supportedTypes.includes(compendium.documentName)) { // old entity
+            throw new Error(`Compendium ${compendium.collection} has an unsupported Entity type: ${compendium.documentName}. Supported Compendium Entity types are: ${Properties.module.compendiums.supportedTypes}. `);
         }
         const partDictionary: PartDictionary = new PartDictionary();
-        const content: Item[] = await this.loadCompendiumContent<Item>(compendium, 10);
+        const content: Item[] = await this.loadCompendiumContent<any>(compendium, 10);
         content.forEach((item: Item) => {
             if (!('fabricate' in item.data.flags)) {
                 return;
             }
             const fabricateCompendiumData: FabricateCompendiumData = <FabricateCompendiumData>item.data.flags.fabricate;
             switch (fabricateCompendiumData.type) {
-                case FabricateItemType.COMPONENT:
+                case FabricateItemType.COMPONENT:{
                     const component: CraftingComponent = this.getComponent(item, fabricateCompendiumData, compendium, systemId, essencesBySlug);
                     partDictionary.addComponent(component);
                     break;
-                case FabricateItemType.RECIPE:
+                }
+                case FabricateItemType.RECIPE: {
                     const recipe: Recipe = this.getRecipe(item, fabricateCompendiumData, compendium, systemId, essencesBySlug);
                     partDictionary.addRecipe(recipe);
                     break;
-                default:
+                }
+                default:{
                     throw new Error(`${Properties.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `);
+                }
             }
         });
         return partDictionary;
     }
 
-    private getRecipe(item: Item, fabricateCompendiumData: FabricateCompendiumData, compendium: Compendium, systemId: string, essencesBySlug: Map<string, EssenceDefinition>) {
+    private getRecipe(item: Item, fabricateCompendiumData: FabricateCompendiumData, compendium: CompendiumCollection<any>, systemId: string, essencesBySlug: Map<string, EssenceDefinition>) {
         try {
             return Recipe.builder()
-                .withName(item.name)
-                .withImageUrl(item.img)
+                .withName(<string>item.name)
+                .withImageUrl(<string>item.img)
                 .withPartId(fabricateCompendiumData.identity.partId)
                 .withCompendiumId(compendium.collection)
                 .withSystemId(systemId)
-                .withIngredients(this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.ingredients, compendium.collection, systemId))
-                .withCatalysts(this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.catalysts, compendium.collection, systemId))
-                .withResults(this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.results, compendium.collection, systemId))
-                .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.recipe.essences, essencesBySlug))
+                .withIngredients(this.partialComponentsFromCompendiumData(<Record<string, number>>fabricateCompendiumData.recipe?.ingredients, compendium.collection, systemId))
+                .withCatalysts(this.partialComponentsFromCompendiumData(<Record<string, number>>fabricateCompendiumData.recipe?.catalysts, compendium.collection, systemId))
+                .withResults(this.partialComponentsFromCompendiumData(<Record<string, number>>fabricateCompendiumData.recipe?.results, compendium.collection, systemId))
+                .withEssences(this.essencesFromCompendiumData(<Record<string, number>>fabricateCompendiumData.recipe?.essences, essencesBySlug))
                 .build();
         } catch (error) {
-            throw new CompendiumEntryImportError(compendium.collection, item.id, fabricateCompendiumData, systemId, error);
+            throw new CompendiumEntryImportError(compendium.collection, <string>item.id, fabricateCompendiumData, systemId, error);
         }
 
     }
 
-    private getComponent(item: Item, fabricateCompendiumData: FabricateCompendiumData, compendium: Compendium, systemId: string, essencesBySlug: Map<string, EssenceDefinition>) {
+    private getComponent(item: Item, fabricateCompendiumData: FabricateCompendiumData, compendium: CompendiumCollection<any>, systemId: string, essencesBySlug: Map<string, EssenceDefinition>) {
         try {
             return CraftingComponent.builder()
-                .withName(item.name)
-                .withImageUrl(item.img)
+                .withName(<string>item.name)
+                .withImageUrl(<string>item.img)
                 .withPartId(fabricateCompendiumData.identity.partId)
                 .withCompendiumId(compendium.collection)
                 .withSystemId(systemId)
-                .withSalvage(this.partialComponentsFromCompendiumData(fabricateCompendiumData.component.salvage, compendium.collection, systemId))
-                .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.component.essences, essencesBySlug))
+                .withSalvage(this.partialComponentsFromCompendiumData(<Record<string, number>>fabricateCompendiumData.component?.salvage, compendium.collection, systemId))
+                .withEssences(this.essencesFromCompendiumData(<Record<string, number>>fabricateCompendiumData.component?.essences, essencesBySlug))
                 .build();
         } catch (error) {
-            throw new CompendiumEntryImportError(compendium.collection, item.id, fabricateCompendiumData, systemId, error);
+            throw new CompendiumEntryImportError(compendium.collection, <string>item.id, fabricateCompendiumData, systemId, error);
         }
     }
 
@@ -123,14 +127,14 @@ class CompendiumImporter {
      * @param compendium The Compendium from which to reliably load the Content
      * @param maxAttempts The maximum number of times to attempt loading Compendium Content
      * */
-    private async loadCompendiumContent<T extends Entity>(compendium: Compendium, maxAttempts: number): Promise<T[]> {
-        let content: Entity[] = await compendium.getContent();
-        let attempts: number = 0;
+    private async loadCompendiumContent<T extends DocumentMetadata>(compendium: CompendiumCollection<any>, maxAttempts: number): Promise<T[]> {
+        let content: T[] = await compendium.getDocuments(); // old getContent
+        let attempts = 0;
         while (!content && (attempts <= maxAttempts)) {
             console.log(`${Properties.module.label} | Waiting for content in Compendium Pack ${compendium.collection} (Attempt ${attempts} of ${maxAttempts}. `);
             await this.wait(1000);
             attempts++;
-            content = await compendium.getContent();
+            content = await compendium.getDocuments(); // old getContent();
         }
         return <T[]>content;
     }
@@ -157,7 +161,7 @@ class CompendiumImporter {
             if (!essenceDefinitions.has(slug)) {
                 throw new Error(`Essence '${slug}' does not exist in the Crafting System Specification. The available Essences are ${Array.from(essenceDefinitions.values()).map(essence => `'${essence.slug}'`).join(', ')}`);
             }
-            const essence: EssenceDefinition = essenceDefinitions.get(slug);
+            const essence = <EssenceDefinition>essenceDefinitions.get(slug);
             const amount: number = essenceRecord[slug];
             return new Unit<EssenceDefinition>(essence, amount);
         });
@@ -212,10 +216,10 @@ class CompendiumImporter {
         if (combination.isEmpty()) {
             return Combination.EMPTY();
         }
-        const populatedUnits: Unit<CraftingComponent>[] = combination.units
+        const populatedUnits = <Unit<CraftingComponent>[]>combination.units
             .map((unit: Unit<CraftingComponent>) => {
                 if (componentsById.has(unit.part.id)) {
-                    return new Unit(componentsById.get(unit.part.id), unit.quantity);
+                    return new Unit(<CraftingComponent>componentsById.get(unit.part.id), unit.quantity);
                 }
                 throw new Error(`Crafting Component '${unit.part.id}' does not exist. `);
             });
