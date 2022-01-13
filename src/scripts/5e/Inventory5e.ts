@@ -1,9 +1,10 @@
+import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {BaseCraftingInventory, Inventory} from "../actor/Inventory";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 
 // @ts-ignore todo: figure out how to correctly restrict this type
-class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
+class Inventory5e extends BaseCraftingInventory<ItemData, Actor> {
 
     constructor(builder: Inventory5e.Builder) {
         super(builder);
@@ -13,22 +14,22 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
         return new Inventory5e.Builder();
     }
 
-    createFrom(actor: Actor5e, ownedComponents: Combination<CraftingComponent>): Inventory<Item5e.Data.Data, Actor5e> {
+    createFrom(actor: Actor, ownedComponents: Combination<CraftingComponent>): Inventory<ItemData, Actor> {
         return Inventory5e.builder()
             .withActor(actor)
             .withOwnedComponents(ownedComponents)
             .build();
     }
 
-    getOwnedItems(actor: Actor5e): Item<Item.Data<Item5e.Data.Data>>[] {
-        return actor.items.entries();
+    getOwnedItems(actor: Actor): Item[] {
+        return actor.items.contents; //.entries();
     }
 
-    getQuantityFor(item: Item5e): number {
+    getQuantityFor(item: Item): number {
         return 'quantity' in item.data.data ? item.data.data.quantity : 1;
     }
 
-    setQuantityFor(itemData: Item5e.Data, quantity: number): Item.Data<Item5e.Data.Data> {
+    setQuantityFor(itemData: ItemData, quantity: number): ItemData {
         if ('quantity' in itemData.data) {
             itemData.data.quantity = quantity;
             return itemData;
@@ -40,13 +41,13 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
 
 namespace Inventory5e {
 
-    export class Builder extends BaseCraftingInventory.Builder<Item5e.Data.Data, Actor5e> {
+export class Inventory5eBuilder extends BaseCraftingInventory.Builder<ItemData, Actor> {
 
-        public build(): Inventory5e {
-            return new Inventory5e(this);
-        }
-
+    public build(): Inventory5e {
+        return new Inventory5e(this);
     }
+
+}
 
 }
 

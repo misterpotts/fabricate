@@ -10,11 +10,11 @@ import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
 import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 import {AlchemyError} from "../error/AlchemyError";
 
-class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
 
     private readonly _craftingCheck: CraftingCheck<A>;
     private readonly _consumeComponentsOnFailure: boolean;
-    private readonly _alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>>;
+    private readonly _alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner>;
 
     constructor(builder: Fabricator.Builder<D, A>) {
         this._craftingCheck = builder.craftingCheck;
@@ -22,7 +22,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
         this._alchemicalCombinersByBaseComponent = builder.alchemicalCombinersByBaseComponent;
     }
 
-    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>>(): Fabricator.Builder<D, A> {
+    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data>>>(): Fabricator.Builder<D, A> {
         return new Fabricator.Builder<D, A>();
     }
 
@@ -76,8 +76,8 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             return this.abort(`No Alchemy Specification exists for '${baseComponent.name}' (${baseComponent.id}). `);
         }
 
-        const alchemicalCombiner: AlchemicalCombiner<D> = this._alchemicalCombinersByBaseComponent.get(baseComponent);
-        let alchemyResult: [Unit<CraftingComponent>, Item.Data<D>];
+        const alchemicalCombiner: AlchemicalCombiner = this._alchemicalCombinersByBaseComponent.get(baseComponent);
+        let alchemyResult: [Unit<CraftingComponent>, Item.Data];
         try {
             alchemyResult = await alchemicalCombiner.perform(componentMix);
         } catch (error) {
@@ -116,10 +116,10 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
                        message: string,
                        checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
 
-        const removals: FabricationAction<D>[] = [];
+        const removals: FabricationAction[] = [];
         if (!wastedComponents.isEmpty()) {
             this.asFabricationActions(wastedComponents, ActionType.REMOVE)
-                .forEach((removal: FabricationAction<D>) => removals.push(removal));
+                .forEach((removal: FabricationAction) => removals.push(removal));
             await inventory.perform(removals);
         }
 
@@ -136,9 +136,9 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
                           addedComponents: Combination<CraftingComponent>,
                           checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
 
-        const removals: FabricationAction<D>[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
-        const additions: FabricationAction<D>[] = this.asFabricationActions(addedComponents, ActionType.ADD);
-        const allActions: FabricationAction<D>[] = additions.concat(removals);
+        const removals: FabricationAction[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
+        const additions: FabricationAction[] = this.asFabricationActions(addedComponents, ActionType.ADD);
+        const allActions: FabricationAction[] = additions.concat(removals);
 
         await inventory.perform(allActions);
 
@@ -149,14 +149,14 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             .build();
     }
 
-    private async succeedWith(inventory: Inventory<D, A>,
+    private async succeedWith(inventory: Inventory<Document, Actor>,
                           consumedComponents: Combination<CraftingComponent>,
-                          alchemyResult: [Unit<CraftingComponent>, Item.Data<D>],
+                          alchemyResult: [Unit<CraftingComponent>, Item.Data],
                           checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
 
-        const removals: FabricationAction<D>[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
-        const addition: FabricationAction<D> = this.asFabricationAction(alchemyResult[0], ActionType.ADD, alchemyResult[1]);
-        const allActions: FabricationAction<D>[] = [addition].concat(removals);
+        const removals: FabricationAction[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
+        const addition: FabricationAction = this.asFabricationAction(alchemyResult[0], ActionType.ADD, alchemyResult[1]);
+        const allActions: FabricationAction[] = [addition].concat(removals);
 
         await inventory.perform(allActions);
 
@@ -167,9 +167,9 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             .build();
     }
 
-    private asFabricationActions(components: Combination<CraftingComponent>, actionType: ActionType): FabricationAction<D>[] {
+    private asFabricationActions(components: Combination<CraftingComponent>, actionType: ActionType): FabricationAction[] {
         return components.units.map((unit: Unit<CraftingComponent>) => {
-            return FabricationAction.builder<D>()
+            return FabricationAction.builder()
                 .withActionType(actionType)
                 .withComponent(unit)
                 .withHasCustomData(false)
@@ -177,8 +177,8 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
         });
     }
 
-    private asFabricationAction(componentUnit: Unit<CraftingComponent>, actionType: ActionType, itemData?: Item.Data<D>): FabricationAction<D> {
-        return FabricationAction.builder<D>()
+    private asFabricationAction(componentUnit: Unit<CraftingComponent>, actionType: ActionType, itemData?: Item.Data): FabricationAction {
+        return FabricationAction.builder()
             .withActionType(actionType)
             .withComponent(componentUnit)
             .withItemData(itemData)
@@ -189,13 +189,13 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
 namespace Fabricator {
 
-    export class Builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+    export class Builder<D, A extends Actor> {
 
         public craftingCheck: CraftingCheck<A>;
         public consumeComponentsOnFailure: boolean;
-        public alchemicalCombiners: AlchemicalCombiner<D>[] = [];
+        public alchemicalCombiners: AlchemicalCombiner[] = [];
 
-        public alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>> = new Map();
+        public alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner> = new Map();
 
         public build(): Fabricator<D, A> {
             if (this.alchemicalCombiners && this.alchemicalCombiners.length > 0) {
@@ -204,12 +204,12 @@ namespace Fabricator {
             return new Fabricator<D, A>(this);
         }
 
-        public withAlchemicalCombiner(value: AlchemicalCombiner<D>): Builder<D, A> {
+        public withAlchemicalCombiner(value: AlchemicalCombiner): Builder<D, A> {
             this.alchemicalCombiners.push(value);
             return this;
         }
 
-        public withAlchemicalCombiners(value: AlchemicalCombiner<D>[]): Builder<D, A> {
+        public withAlchemicalCombiners(value: AlchemicalCombiner[]): Builder<D, A> {
             this.alchemicalCombiners = value;
             return this;
         }

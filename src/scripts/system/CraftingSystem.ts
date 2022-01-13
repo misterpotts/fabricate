@@ -10,6 +10,7 @@ import {CraftingChatMessage} from "../interface/CraftingChatMessage";
 import Properties from "../../Properties";
 import {Combination} from "../common/Combination";
 import {CraftingError} from "../error/CraftingError";
+import { getGame } from "../settings";
 
 class CraftingSystem implements Identifiable {
     private readonly _name: string;
@@ -96,7 +97,7 @@ class CraftingSystem implements Identifiable {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.followRecipe(actor, inventory, recipe);
             const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
             const messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
-            await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
+            await ChatMessage.create({user: <string>getGame().user?.id, speaker: {actor: actor.id}, content: messageTemplate});
             return fabricationOutcome;
         } catch (error) {
             await this.handleCraftingError(error, actor);
@@ -108,7 +109,7 @@ class CraftingSystem implements Identifiable {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.performAlchemy(baseComponent, components, actor, inventory);
             const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
             const messageTemplate: string = await renderTemplate(Properties.module.templates.craftingMessage, message);
-            await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
+            await ChatMessage.create({user: <string>getGame().user?.id, speaker: {actor: actor.id}, content: messageTemplate});
             return fabricationOutcome;
         } catch (error) {
             await this.handleCraftingError(error, actor);
@@ -125,7 +126,7 @@ class CraftingSystem implements Identifiable {
             messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
             console.error(error);
         }
-        await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
+        await ChatMessage.create({user: <string>getGame().user?.id, speaker: {actor: actor.id}, content: messageTemplate});
     }
 
     get compendiumPackKey(): string {
@@ -165,101 +166,96 @@ class CraftingSystem implements Identifiable {
 
 }
 
-namespace CraftingSystem {
+export class CraftingSystemBuilder {
 
-    export class Builder {
+    public name!: string;
+    public compendiumPackKey!: string;
+    public fabricator!: Fabricator<{}, Actor>;
+    public supportedGameSystems: string[] = [];
+    public recipes: Map<string, Recipe> = new Map();
+    public components: Map<string, CraftingComponent> = new Map();
+    public enabled: boolean;
+    public enableHint!: string;
+    public description!: string;
+    public essences: EssenceDefinition[] = [];
+    public craftingCheck: CraftingCheck<Actor>;
 
-        public name!: string;
-        public compendiumPackKey!: string;
-        public fabricator!: Fabricator<{}, Actor>;
-        public supportedGameSystems: string[] = [];
-        public recipes: Map<string, Recipe> = new Map();
-        public components: Map<string, CraftingComponent> = new Map();
-        public enabled: boolean;
-        public enableHint!: string;
-        public description!: string;
-        public essences: EssenceDefinition[] = [];
-        public craftingCheck: CraftingCheck<Actor>;
+    public build() : CraftingSystem{
+        return new CraftingSystem(this);
+    }
 
-        public build() : CraftingSystem{
-            return new CraftingSystem(this);
-        }
+    public withName(value: string): Builder {
+        this.name = value;
+        return this;
+    }
 
-        public withName(value: string): Builder {
-            this.name = value;
-            return this;
-        }
+    public withCompendiumPackKey(value: string): Builder {
+        this.compendiumPackKey = value;
+        return this;
+    }
 
-        public withCompendiumPackKey(value: string): Builder {
-            this.compendiumPackKey = value;
-            return this;
-        }
+    public withFabricator(value: Fabricator<{}, Actor>): Builder {
+        this.fabricator = value;
+        return this;
+    }
 
-        public withFabricator(value: Fabricator<{}, Actor>): Builder {
-            this.fabricator = value;
-            return this;
-        }
+    public withSupportedGameSystems(value: string[]): Builder {
+        this.supportedGameSystems = value;
+        return this;
+    }
 
-        public withSupportedGameSystems(value: string[]): Builder {
-            this.supportedGameSystems = value;
-            return this;
-        }
+    public withSupportedGameSystem(value: string): Builder {
+        this.supportedGameSystems.push(value);
+        return this;
+    }                             
 
-        public withSupportedGameSystem(value: string): Builder {
-            this.supportedGameSystems.push(value);
-            return this;
-        }
+    public withRecipes(value: Map<string, Recipe>): Builder {
+        this.recipes = value;
+        return this;
+    }
 
-        public withRecipes(value: Map<string, Recipe>): Builder {
-            this.recipes = value;
-            return this;
-        }
+    public withRecipe(value: Recipe): Builder {
+        this.recipes.set(value.partId, value);
+        return this;
+    }
 
-        public withRecipe(value: Recipe): Builder {
-            this.recipes.set(value.partId, value);
-            return this;
-        }
+    public withComponent(value: CraftingComponent): Builder {
+        this.components.set(value.partId, value);
+        return this;
+    }
 
-        public withComponent(value: CraftingComponent): Builder {
-            this.components.set(value.partId, value);
-            return this;
-        }
+    public withComponents(value: Map<string, CraftingComponent>): Builder {
+        this.components = value;
+        return this;
+    }
 
-        public withComponents(value: Map<string, CraftingComponent>): Builder {
-            this.components = value;
-            return this;
-        }
+    public isEnabled(value: boolean): Builder {
+        this.enabled = value;
+        return this;
+    }
 
-        public isEnabled(value: boolean): Builder {
-            this.enabled = value;
-            return this;
-        }
+    public withEnableHint(value: string): Builder {
+        this.enableHint = value;
+        return this;
+    }
 
-        public withEnableHint(value: string): Builder {
-            this.enableHint = value;
-            return this;
-        }
+    public withDescription(value: string): Builder {
+        this.description = value;
+        return this;
+    }
 
-        public withDescription(value: string): Builder {
-            this.description = value;
-            return this;
-        }
+    public withEssence(value: EssenceDefinition): Builder {
+        this.essences.push(value);
+        return this;
+    }
 
-        public withEssence(value: EssenceDefinition): Builder {
-            this.essences.push(value);
-            return this;
-        }
+    public withEssences(value: EssenceDefinition[]): Builder {
+        this.essences = value;
+        return this;
+    }
 
-        public withEssences(value: EssenceDefinition[]): Builder {
-            this.essences = value;
-            return this;
-        }
-
-        withCraftingCheck(value: CraftingCheck<Actor>) {
-            this.craftingCheck = value;
-            return this;
-        }
+    withCraftingCheck(value: CraftingCheck<Actor>) {
+        this.craftingCheck = value;
+        return this;
     }
 }
-
-export {CraftingSystem};

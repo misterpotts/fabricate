@@ -12,7 +12,7 @@ class InventoryRegistry {
     }
 
     public getFor(actorId: string): Inventory<{}, Actor> {
-        return this._managedInventories.get(actorId);
+        return <any>this._managedInventories.get(actorId);
     }
 
 }

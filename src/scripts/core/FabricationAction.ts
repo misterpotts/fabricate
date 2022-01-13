@@ -1,26 +1,27 @@
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Unit} from "../common/Combination";
+import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs";
 
 enum ActionType {
     ADD = 'ADD',
     REMOVE = 'REMOVE'
 }
 
-class FabricationAction<D> {
+class FabricationAction {
     private readonly _actionType: ActionType;
     private readonly _unit: Unit<CraftingComponent>;
-    private readonly _itemData: Item.Data<D>;
+    private readonly _itemData: ItemData;
     private readonly _customData: boolean;
 
-    constructor(builder: FabricationAction.Builder<D>) {
+    constructor(builder: FabricationAction.Builder) {
         this._actionType = builder.actionType;
         this._unit = builder.component;
         this._itemData = builder.itemData;
         this._customData = builder.customData;
     }
 
-    public static builder<D>() {
-        return new FabricationAction.Builder<D>();
+    public static builder() {
+        return new FabricationAction.Builder();
     }
 
     get actionType(): ActionType {
@@ -31,7 +32,7 @@ class FabricationAction<D> {
         return this._unit;
     }
 
-    get itemData(): Item.Data<D> {
+    get itemData(): ItemData {
         return this._itemData;
     }
 
@@ -43,9 +44,9 @@ class FabricationAction<D> {
         return this._customData;
     }
 
-    public withItemData(data: Item.Data<D>, isCustomized?: boolean): FabricationAction<D> {
+    public withItemData(data: ItemData, isCustomized?: boolean): FabricationAction {
         const hasCustomData: boolean = typeof isCustomized === 'undefined' ? this.customData : isCustomized;
-        return FabricationAction.builder<D>()
+        return FabricationAction.builder()
             .withItemData(data)
             .withHasCustomData(hasCustomData)
             .withComponent(this._unit)
@@ -56,14 +57,14 @@ class FabricationAction<D> {
 
 namespace FabricationAction {
 
-    export class Builder<D> {
+    export class Builder {
         public actionType: ActionType;
         public component: Unit<CraftingComponent>;
-        public itemData: Item.Data<D>;
+        public itemData: ItemData;
         public customData: boolean = false;
 
-        public build(): FabricationAction<D> {
-            return new FabricationAction<D>(this);
+        public build(): FabricationAction {
+            return new FabricationAction(this);
         }
 
         public withActionType(value: ActionType) {
@@ -76,7 +77,7 @@ namespace FabricationAction {
             return this;
         }
 
-        public withItemData(value: Item.Data<D>) {
+        public withItemData(value: ItemData) {
             this.itemData = value;
             return this;
         }

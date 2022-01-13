@@ -1,9 +1,9 @@
 import Properties from "./Properties";
 import {FabricateLifecycle} from "./application/FabricateLifecycle";
-import {CraftingSystemSpecification} from "./core/CraftingSystemSpecification";
-import {CompendiumImportingCraftingSystemFactory, CraftingSystemFactory} from "./core/CraftingSystemFactory";
 import FabricateApplication from "./application/FabricateApplication";
-
+import { getGame } from "./settings";
+import { CraftingSystemSpecification } from "./system/CraftingSystemSpecification";
+import { GameSystem } from "./system/GameSystem";
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -32,13 +32,13 @@ async function loadCraftingSystems(): Promise<void> {
  * */
 async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
     console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `);
-    if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
-        console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
+    if (systemSpec.supportedGameSystems.indexOf(<GameSystem>getGame().system) < 0) {
+        console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${getGame().system.id}! `);
         return;
     }
     const craftingSystemFactory: CraftingSystemFactory = new CompendiumImportingCraftingSystemFactory(systemSpec);
     const craftingSystem = await craftingSystemFactory.make();
-    craftingSystem.enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
+    craftingSystem.enabled = getGame().settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
     FabricateApplication.systems.register(craftingSystem);
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
 }
