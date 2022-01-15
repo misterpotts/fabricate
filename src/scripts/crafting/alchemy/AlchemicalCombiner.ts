@@ -5,6 +5,7 @@ import {Combination, Unit} from "../../common/Combination";
 import {AlchemyError} from "../../error/AlchemyError";
 import {CompendiumProvider} from "../../foundry/CompendiumProvider";
 import {ObjectUtility} from "../../foundry/ObjectUtility";
+import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 
 interface EssenceCombinerConfiguration {
     maxComponents: number;
@@ -81,15 +82,15 @@ class AlchemicalCombiner<D> {
      * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
      * mixed, or if insufficient effects are matched
      * */
-    async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, Item.Data<D>]> {
+    async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, ItemData]> {
         const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
         this.validate(componentCombination, essenceCombination);
         const effects: [AlchemicalEffect<D>, number][] = this.determineAlchemicalEffectsForComponents(componentCombination);
         if (this.minimumEffectMatches > 0 && (!effects || effects.length < this.minimumEffectMatches)) {
             throw new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of ${this.minimumEffectMatches} was required, but only ${effects ? effects.length : 0} were found. `, componentCombination, true);
         }
-        const orderedEffects: [AlchemicalEffect<D>, number][] = this.orderAlchemicalEffects(effects);
-        const alchemyItemData: Item.Data<D> = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
+        const orderedEffects = <[AlchemicalEffect<ItemData>, number][]>this.orderAlchemicalEffects(effects);
+        const alchemyItemData: ItemData = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
         return [new Unit(this.baseComponent, 1), alchemyItemData];
     }
 
@@ -104,10 +105,10 @@ class AlchemicalCombiner<D> {
         }
     }
 
-    private async applyEffectsToBaseItem(effects: [AlchemicalEffect<D>, number][], baseComponent: CraftingComponent): Promise<Item.Data<D>> {
-        const compendiumEntry: Entity<Item.Data<D>> = await this._compendiumProvider.getEntity(baseComponent.systemId, baseComponent.partId);
-        const duplicated: Item.Data<D> = this._objectUtility.duplicate(compendiumEntry.data);
-        effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
+    private async applyEffectsToBaseItem(effects: [AlchemicalEffect<ItemData>, number][], baseComponent: CraftingComponent): Promise<ItemData> {
+        const compendiumEntry = await this._compendiumProvider.getEntity(baseComponent.systemId, baseComponent.partId);
+        const duplicated: ItemData = this._objectUtility.duplicate(compendiumEntry.data);
+        effects.forEach((effectCount: [AlchemicalEffect<ItemData>, number]) => {
             for (let i = 0; i < effectCount[1]; i++) {
                 effectCount[0].applyTo(duplicated.data);
             }

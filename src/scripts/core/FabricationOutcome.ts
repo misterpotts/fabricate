@@ -5,7 +5,7 @@ import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 class FabricationOutcome {
 
     private readonly _outcome: OutcomeType;
-    private readonly _actions: FabricationAction<any>[];
+    private readonly _actions: FabricationAction[];
     private readonly _message: string;
     private readonly _checkResult: CraftingCheckResult;
 
@@ -24,7 +24,7 @@ class FabricationOutcome {
         return this._outcome;
     }
 
-    get actions(): FabricationAction<any>[] {
+    get actions(): FabricationAction[] {
         return this._actions;
     }
 
@@ -47,7 +47,7 @@ namespace FabricationOutcome {
     export class Builder {
 
         public outcome: OutcomeType;
-        public actions: FabricationAction<any>[];
+        public actions: FabricationAction[];
         public message: string;
         public checkResult: CraftingCheckResult;
 
@@ -60,7 +60,7 @@ namespace FabricationOutcome {
             return this;
         }
 
-        public withActions(value: FabricationAction<any>[]): Builder {
+        public withActions(value: FabricationAction[]): Builder {
             this.actions = value;
             return this;
         }

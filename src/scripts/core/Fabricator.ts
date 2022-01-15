@@ -9,24 +9,25 @@ import {FabricationOutcome} from "./FabricationOutcome";
 import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
 import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 import {AlchemyError} from "../error/AlchemyError";
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 
-class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
+class Fabricator<ItemData, Actor> {
 
-    private readonly _craftingCheck: CraftingCheck<A>;
+    private readonly _craftingCheck: CraftingCheck<Actor>;
     private readonly _consumeComponentsOnFailure: boolean;
     private readonly _alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner>;
 
-    constructor(builder: Fabricator.Builder<D, A>) {
+    constructor(builder: Fabricator.Builder<ItemData, Actor>) {
         this._craftingCheck = builder.craftingCheck;
         this._consumeComponentsOnFailure = builder.consumeComponentsOnFailure;
         this._alchemicalCombinersByBaseComponent = builder.alchemicalCombinersByBaseComponent;
     }
 
-    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data>>>(): Fabricator.Builder<D, A> {
-        return new Fabricator.Builder<D, A>();
+    public static builder<ItemData, Actor>(): Fabricator.Builder<ItemData, Actor> {
+        return new Fabricator.Builder<ItemData, Actor>();
     }
 
-    get craftingCheck(): CraftingCheck<A> {
+    get craftingCheck(): CraftingCheck<Actor> {
         return this._craftingCheck;
     }
 
@@ -38,12 +39,12 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
         return this._alchemicalCombinersByBaseComponent.size > 0
     }
 
-    public async followRecipe(actor: A, inventory: Inventory<D, A>, recipe: Recipe): Promise<FabricationOutcome> {
+    public async followRecipe(actor: Actor, inventory: Inventory<ItemData, Actor>, recipe: Recipe): Promise<FabricationOutcome> {
         if (recipe.hasNamedComponents && !inventory.containsIngredients(recipe.namedComponents)) {
             return this.abort(`You don't have all of the ingredients for ${recipe.name}. `);
         }
 
-        const remainingComponents: Inventory<D, A> = inventory.excluding(recipe.namedComponents);
+        const remainingComponents: Inventory<D, Actor> = inventory.excluding(recipe.namedComponents);
         if (recipe.requiresEssences && !remainingComponents.containsEssences(recipe.essences)) {
             return this.abort(`There aren't enough essences amongst components in your inventory to craft ${recipe.name}. `);
         }
@@ -69,15 +70,15 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
 
     public async performAlchemy(baseComponent: CraftingComponent,
                                 componentMix: Combination<CraftingComponent>,
-                                actor: A,
-                                inventory: Inventory<D, A>): Promise<FabricationOutcome> {
+                                actor: Actor,
+                                inventory: Inventory<ItemData, Actor>): Promise<FabricationOutcome> {
 
         if (!this._alchemicalCombinersByBaseComponent.has(baseComponent)) {
             return this.abort(`No Alchemy Specification exists for '${baseComponent.name}' (${baseComponent.id}). `);
         }
 
-        const alchemicalCombiner: AlchemicalCombiner = this._alchemicalCombinersByBaseComponent.get(baseComponent);
-        let alchemyResult: [Unit<CraftingComponent>, Item.Data];
+        const alchemicalCombiner = <AlchemicalCombiner>this._alchemicalCombinersByBaseComponent.get(baseComponent);
+        let alchemyResult: [Unit<CraftingComponent>, ItemData];
         try {
             alchemyResult = await alchemicalCombiner.perform(componentMix);
         } catch (error) {
@@ -111,7 +112,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
             .build();
     }
 
-    private async fail(inventory: Inventory<D, A>,
+    private async fail(inventory: Inventory<ItemData, Actor>,
                        wastedComponents: Combination<CraftingComponent>,
                        message: string,
                        checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
@@ -131,7 +132,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
             .build();
     }
 
-    private async succeed(inventory: Inventory<D, A>,
+    private async succeed(inventory: Inventory<ItemData, Actor>,
                           consumedComponents: Combination<CraftingComponent>,
                           addedComponents: Combination<CraftingComponent>,
                           checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
@@ -151,7 +152,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data>>> {
 
     private async succeedWith(inventory: Inventory<Document, Actor>,
                           consumedComponents: Combination<CraftingComponent>,
-                          alchemyResult: [Unit<CraftingComponent>, Item.Data],
+                          alchemyResult: [Unit<CraftingComponent>, ItemData],
                           checkResult?: CraftingCheckResult): Promise<FabricationOutcome> {
 
         const removals: FabricationAction[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
