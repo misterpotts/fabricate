@@ -1,17 +1,30 @@
-import { EssenceCombiner } from '../../core/EssenceCombiner';
-import { GameSystemType } from '../../core/GameSystemType';
-import { CraftingComponent } from '../../core/CraftingComponent';
-import { CraftingSystemSpecification } from '../../core/CraftingSystemSpecification';
+// import { EssenceCombiner } from '../../core/EssenceCombiner';
+// import { GameSystemType } from '../../core/GameSystemType';
+// import { CraftingComponent } from '../../core/CraftingComponent';
+// import { CraftingSystemSpecification } from '../../core/CraftingSystemSpecification';
+// import {
+//   AoeExtension5e,
+//   Condition5e,
+//   Damage5e,
+//   DiceMultiplier5e,
+//   SavingThrowModifier5e,
+// } from '../../dnd5e/AlchemicalEffect5E';
+// import { AlchemySpecification, Fabricator } from '../../core/Fabricator';
+// import { EssenceDefinition } from '../../core/CraftingSystem';
+// import { CraftingCheck5e, Tool } from '../../core/CraftingCheck';
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import {
   AoeExtension5e,
   Condition5e,
   Damage5e,
   DiceMultiplier5e,
   SavingThrowModifier5e,
-} from '../../dnd5e/AlchemicalEffect5E';
-import { AlchemySpecification, Fabricator } from '../../core/Fabricator';
-import { EssenceDefinition } from '../../core/CraftingSystem';
-import { CraftingCheck5e, Tool } from '../../core/CraftingCheck';
+} from '../../5e/AlchemicalEffect5E';
+import { CraftingCheck5e } from '../../5e/CraftingCheck5e';
+import { EssenceDefinition } from '../../common/EssenceDefinition';
+import { Fabricator } from '../../core/Fabricator';
+import { Tool } from '../../crafting/Tool';
+import { CraftingSystemSpecification } from '../../system/CraftingSystemSpecification';
 
 const blinded = new Condition5e(
   ['earth', 'earth'],
@@ -37,7 +50,7 @@ const fireDamage = new Damage5e(
 
 const persistentDamage = new Condition5e(
   ['earth', 'water'],
-  'Release gel that sticks to targets. Each rounD extends Item, any damage-dealing effects continue to ' +
+  'Release gel that sticks to targets. Each round any damage-dealing effects continue to ' +
     'deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .',
 );
 
@@ -66,7 +79,7 @@ const savingThrowModifier = new SavingThrowModifier5e(
   2,
 );
 
-const essenceCombiner: EssenceCombiner<ItemData5e> = EssenceCombiner.builder<ItemData5e>()
+const essenceCombiner: EssenceCombiner<ItemData> = EssenceCombiner.builder<ItemData>()
   .withMaxComponents(6)
   .withMaxEssences(6)
   .withAlchemicalEffect(blinded)
@@ -101,7 +114,7 @@ const craftingCheck: CraftingCheck5e = CraftingCheck5e.builder()
   .withIngredientDCModifier(2)
   .build();
 
-const fabricator: Fabricator<ItemData5e, ActorData5e> = Fabricator.builder<ItemData5e, ActorData5e>()
+const fabricator: Fabricator<ItemData, Actor> = Fabricator.builder<ItemData, Actor>()
   .withCraftingCheck(craftingCheck)
   .withAlchemySpecification(alchemySpecification)
   .build();

@@ -77,15 +77,15 @@ class AlchemicalCombiner<D extends ItemData> {
   }
 
   /**
-   * Perform Alchemy using the provided Component Combination. The Component combination is validateD extends Item, before Essences
+   * Perform Alchemy using the provided Component Combination. The Component combination is validated before Essences
    * are matched to Alchemical Effects (exact matches are required). The resultant Alchemical Effects are then
-   * validateD extends Item, before being applied to the Base Crafting Component for the Alchemical Combiner to produce custom Item
+   * validated before being applied to the Base Crafting Component for the Alchemical Combiner to produce custom Item
    * data that can be used by the Crafting System to produce a customised instance of the Base Component.
    *
    * @param componentCombination The combination of Crafting Components to use in the alchemy process.
    * @return The custom Item data resulting from the alchemy process
    * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
-   * mixeD extends Item, or if insufficient effects are matched
+   * mixed or if insufficient effects are matched
    * */
   async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, ItemData]> {
     const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
@@ -95,7 +95,7 @@ class AlchemicalCombiner<D extends ItemData> {
       throw new AlchemyError(
         `Too few Alchemical Effects were produced by mixing the provided Components. A minimum of ${
           this.minimumEffectMatches
-        } was requireD extends Item, but only ${effects ? effects.length : 0} were found. `,
+        } was required but only ${effects ? effects.length : 0} were found. `,
         componentCombination,
         true,
       );

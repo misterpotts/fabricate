@@ -11,6 +11,7 @@ import {
   RecipeCraftingData,
   RecipeData,
 } from './InterfaceDataTypes';
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 
 interface InventoryContents {
   ownedComponents: InventoryRecordData[];
@@ -19,14 +20,14 @@ interface InventoryContents {
 
 class CraftingTabData {
   private readonly _craftingSystems: CraftingSystem[];
-  private readonly _inventory: Inventory<Item.Data>;
+  private readonly _inventory: Inventory<ItemData,Actor>;
   private readonly _actor: Actor;
 
   private _craftingSystemData: CraftingSystemData;
   private _recipeData: RecipeCraftingData;
   private _inventoryContents: InventoryContents;
 
-  constructor(craftingSystems: CraftingSystem[], inventory: Inventory<Item.Data>, actor: Actor) {
+  constructor(craftingSystems: CraftingSystem[], inventory: Inventory<ItemData,Actor>, actor: Actor) {
     this._craftingSystems = craftingSystems;
     this._inventory = inventory;
     this._actor = actor;
@@ -53,7 +54,7 @@ class CraftingTabData {
 
     if (this._craftingSystemData.hasEnabledSystems) {
       const selectedCraftingSystem = this._craftingSystems.find(
-        (system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemID extends Item,
+        (system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId
       );
 
       this._recipeData = await this.prepareRecipeDataForSystem(selectedCraftingSystem, this._actor, this._inventory);
@@ -75,10 +76,10 @@ class CraftingTabData {
         enabledSystems++;
       }
       craftingSystemsInfo.push({
-        disabled: !system.enableD extends Item,
+        disabled: !system.enabled
         compendiumPackKey: system.compendiumPackKey,
         name: system.name,
-        selected: system.compendiumPackKey === storedSystemID extends Item,
+        selected: system.compendiumPackKey === storedSystemId
       });
     });
     const hasEnabledSystems: boolean = enabledSystems > 0;
@@ -86,7 +87,7 @@ class CraftingTabData {
       return {
         systems: craftingSystemsInfo,
         hasEnabledSystems: hasEnabledSystems,
-        selectedSystemId: storedSystemID extends Item,
+        selectedSystemId: storedSystemId
       };
     } else if (hasEnabledSystems) {
       const firstEnabledSystem = craftingSystemsInfo.find((systemInfo: CraftingSystemInfo) => !systemInfo.disabled);
@@ -121,20 +122,20 @@ class CraftingTabData {
       const isOwned: boolean = inventory.containsPart(recipe.partId);
       const isCraftable: boolean = isKnown || isOwned ? inventory.hasAllIngredientsFor(recipe) : false;
       if (isCraftable) {
-        enabledRecipes.set(recipe.partID extends Item, {
+        enabledRecipes.set(recipe.partId {
           name: recipe.name,
-          partId: recipe.partID extends Item,
+          partId: recipe.partId
           known: isKnown,
-          owned: isOwneD extends Item,
+          owned: isOwned
           craftable: isCraftable,
           selected: false,
         });
       } else {
         disabledRecipes.push({
           name: recipe.name,
-          partId: recipe.partID extends Item,
+          partId: recipe.partId
           known: isKnown,
-          owned: isOwneD extends Item,
+          owned: isOwned
           craftable: isCraftable,
           selected: false,
         });
@@ -188,7 +189,7 @@ class CraftingTabData {
       .forEach((inventoryRecord: InventoryRecord<CraftingComponent>) => {
         inventoryContents.ownedComponents.push({
           name: inventoryRecord.fabricateItem.name,
-          entryId: inventoryRecord.fabricateItem.partID extends Item,
+          entryId: inventoryRecord.fabricateItem.partId
           quantity: inventoryRecord.totalQuantity,
           imageUrl: inventoryRecord.fabricateItem.imageUrl,
         });
@@ -201,7 +202,7 @@ class CraftingTabData {
       inventoryContents.preparedComponents = savedHopperContents;
       savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
         const inventoryItem = inventoryContents.ownedComponents.find(
-          (inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryID extends Item,
+          (inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId
         );
         if (inventoryItem) {
           inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;

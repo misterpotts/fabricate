@@ -1,5 +1,4 @@
 import { Identifiable } from '../common/FabricateItem';
-import { Fabricator } from '../core/Fabricator';
 import { Recipe } from '../crafting/Recipe';
 import { CraftingComponent } from '../common/CraftingComponent';
 import { EssenceDefinition } from '../common/EssenceDefinition';
@@ -12,6 +11,7 @@ import { Combination } from '../common/Combination';
 import { CraftingError } from '../error/CraftingError';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 import { game } from '../settings';
+import { Fabricator } from '../core/Fabricator';
 
 class CraftingSystem implements Identifiable {
   private readonly _name: string;
@@ -178,6 +178,58 @@ class CraftingSystem implements Identifiable {
 
   getRecipeByPartId(partId: string): Recipe {
     return <Recipe>this._recipesById.get(partId);
+  }
+
+  // public async craft(actor: Actor, inventory: Inventory<ItemData,Actor>, recipe: Recipe): Promise<FabricationOutcome> {
+  //   let chatMessage: string;
+  //   try {
+  //     const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromRecipe(inventory, recipe);
+  //     const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
+  //     chatMessage = <string>await renderTemplate(Properties.module.templates.craftingMessage, message);
+  //     ChatMessage.create({ speaker: actor, content: chatMessage }); // user: game.user,
+  //     return fabricationOutcome;
+  //   } catch (err) {
+  //     if (err instanceof CraftingError) {
+  //       const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(err);
+  //       chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+  //     } else {
+  //       const message: CraftingChatMessage = CraftingChatMessage.fromUnexpectedError(err);
+  //       chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+  //       console.error(err);
+  //     }
+  //     ChatMessage.create({ speaker: actor, content: chatMessage }); // user: game.user,
+  //   }
+  // }
+
+  public async craftWithComponents(
+    actor: Actor,
+    inventory: Inventory<ItemData, Actor>,
+    components: CraftingComponent[],
+  ): Promise<FabricationOutcome | undefined> {
+    let chatMessage: string;
+    try {
+      const fabricationOutcome: FabricationOutcome = await this.fabricator.fabricateFromComponents(
+        inventory,
+        components,
+      );
+      const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
+      chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+      ChatMessage.create({ actor: actor.id, alias: game.user?.id, content: chatMessage });
+      // ChatMessage.create({ user: game.user, speaker: actor, content: chatMessage });
+      return fabricationOutcome;
+    } catch (err) {
+      if (err instanceof CraftingError) {
+        const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(err);
+        chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+      } else {
+        const message: CraftingChatMessage = CraftingChatMessage.fromUnexpectedError(err);
+        chatMessage = await renderTemplate(Properties.module.templates.craftingMessage, message);
+        console.error(err);
+      }
+      ChatMessage.create({ actor: actor.id, alias: game.user?.id, content: chatMessage });
+      //ChatMessage.create({ user: game.user, speaker: actor.id, content: chatMessage });
+      return undefined;
+    }
   }
 }
 

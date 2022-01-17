@@ -1,12 +1,12 @@
 import { CraftingComponent } from '../common/CraftingComponent';
 import { EssenceDefinition } from '../common/EssenceDefinition';
 import { Combination, Unit } from '../common/Combination';
-import { ActionType, FabricationAction } from '../core/FabricationAction';
 import { FabricateItemType } from '../compendium/CompendiumData';
 import { PartDictionary } from '../system/PartDictionary';
 import { ObjectUtility } from '../foundry/ObjectUtility';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 import Document from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/document.mjs';
+import { ActionType, FabricationAction } from '../core/FabricationAction';
 
 interface Inventory<D extends ItemData, A extends Actor> {
   actor: A;

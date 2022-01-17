@@ -4,6 +4,7 @@ import { CraftingSystem } from '../core/CraftingSystem';
 import FabricateApplication from '../application/FabricateApplication';
 import { Inventory } from '../game/Inventory';
 import { FabricateCompendiumData } from '../game/CompendiumData';
+import { game } from '../settings';
 
 class ItemRecipeTab {
   private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
@@ -15,7 +16,7 @@ class ItemRecipeTab {
   private readonly _owned: boolean;
   private readonly _recipe: Recipe;
   private readonly _craftingSystem: CraftingSystem;
-  private readonly _inventory: Inventory<Item.Data>;
+  private readonly _inventory: Inventory<ItemData>;
   private readonly _actor: Actor;
   private _suppressedInNav: boolean = false;
   private static tabKey: string = 'fabricate-recipe';
@@ -29,7 +30,7 @@ class ItemRecipeTab {
       let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
       if (!tab) {
         tab = new ItemRecipeTab(itemApplication);
-        ItemRecipeTab.tabs.set(itemApplication.iD extends Item, tab);
+        ItemRecipeTab.tabs.set(itemApplication.id, tab);
       }
       tab.init(sheetHtml);
     }
@@ -40,7 +41,7 @@ class ItemRecipeTab {
     ) {
       const essences: string[] = fabricateFlags.component.essences;
       const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(
-        fabricateFlags.identity.systemID extends Item,
+        fabricateFlags.identity.systemId
       );
       const essenceDescription = essences
         .map((essence: string) => craftingSystem.getEssenceBySlug(essence).icon)

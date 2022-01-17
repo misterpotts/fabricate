@@ -28,7 +28,7 @@ abstract class FabricateItem {
     this._systemId = builder.systemId;
     this._compendiumId = builder.compendiumId;
     this._partId = builder.partId;
-    this._id = FabricateItem.globalIdentifier(builder.partID extends Item, builder.systemId);
+    this._id = FabricateItem.globalIdentifier(builder.partId, builder.systemId);
     this._imageUrl = builder.imageUrl;
     this._name = builder.name;
   }
@@ -56,6 +56,20 @@ abstract class FabricateItem {
   get name(): string {
     return this._name;
   }
+
+  sharesType(other: FabricateItem): boolean {
+    if (!other) {
+      return false;
+    }
+    return this.partId === other.partId && this.systemId === other.systemId;
+  }
+
+  // isValid(): boolean {
+  //   return this.partId && this.partId.length > 0
+  //       && this.systemId && this.systemId.length > 0
+  //       && this.imageUrl != null && this.imageUrl.length > 0
+  //       && this.name != null && this.name.length > 0;
+  // }
 
   equals(other: FabricateItem): boolean {
     if (!other) {
