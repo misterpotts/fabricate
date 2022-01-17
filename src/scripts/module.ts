@@ -1,8 +1,12 @@
 import Properties from './Properties';
 import { FabricateLifecycle } from './application/FabricateLifecycle';
-import { CraftingSystemSpecification } from './core/CraftingSystemSpecification';
-import { CompendiumImportingCraftingSystemFactory, CraftingSystemFactory } from './core/CraftingSystemFactory';
+import { CraftingSystemSpecification } from './system/CraftingSystemSpecification';
+// import { CompendiumImportingCraftingSystemFactory, CraftingSystemFactory } from './core/CraftingSystemFactory';
+
 import FabricateApplication from './application/FabricateApplication';
+import { game } from './settings';
+import { GameSystem } from './system/GameSystem';
+import { log } from 'console';
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -14,11 +18,11 @@ Hooks.once('ready', () => {
  * */
 async function loadCraftingSystems(): Promise<void> {
   const systemSpecifications = FabricateApplication.systems.systemSpecifications;
-  console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
+  log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
   systemSpecifications.forEach(FabricateLifecycle.registerCraftingSystemSettings);
   systemSpecifications.forEach(loadCraftingSystem);
   const systemNames = systemSpecifications.map((systemSpec: CraftingSystemSpecification) => systemSpec.name);
-  console.log(
+  log(
     `${Properties.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `,
   );
 }
@@ -32,19 +36,22 @@ async function loadCraftingSystems(): Promise<void> {
  * for the system should be loaded from.
  * */
 async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
-  console.log(
-    `${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `,
-  );
-  if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
-    console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
+  log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.id}. `);
+  if (
+    systemSpec.supportedGameSystems.some((gameSystem: GameSystem) => {
+      Object.keys(gameSystem).includes(game.system.id);
+    })
+  ) {
+    //if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
+    log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
     return;
   }
-  const craftingSystemFactory: CraftingSystemFactory = new CompendiumImportingCraftingSystemFactory(systemSpec);
+  const craftingSystemFactory = <CraftingSystemFactory>new CompendiumImportingCraftingSystemFactory(systemSpec);
   const craftingSystem = await craftingSystemFactory.make();
   craftingSystem.enabled = game.settings.get(
     Properties.module.name,
-    Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey),
+    Properties.settingsKeys.craftingSystem.enabled(systemSpec.id),
   );
   FabricateApplication.systems.register(craftingSystem);
-  console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
+  log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
 }

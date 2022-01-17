@@ -7,14 +7,16 @@ import { CraftingCheck } from '../crafting/CraftingCheck';
 import { Inventory } from '../actor/Inventory';
 import { FabricationOutcome } from '../core/FabricationOutcome';
 import { CraftingChatMessage } from '../interface/CraftingChatMessage';
-import Properties from '../../Properties';
+import Properties from '../Properties';
 import { Combination } from '../common/Combination';
 import { CraftingError } from '../error/CraftingError';
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import { game } from '../settings';
 
 class CraftingSystem implements Identifiable {
   private readonly _name: string;
   private readonly _compendiumPackKey: string;
-  private readonly _fabricator: Fabricator<{}, Actor>;
+  private readonly _fabricator: Fabricator<ItemData, Actor>;
   private readonly _recipesById: Map<string, Recipe> = new Map();
   private readonly _componentsById: Map<string, CraftingComponent> = new Map();
   private readonly _supportedGameSystems: string[] = [];
@@ -91,37 +93,42 @@ class CraftingSystem implements Identifiable {
     return this.compendiumPackKey;
   }
 
-  public async craft(actor: Actor, inventory: Inventory<{}, Actor>, recipe: Recipe): Promise<FabricationOutcome> {
+  public async craft(
+    actor: Actor,
+    inventory: Inventory<ItemData, Actor>,
+    recipe: Recipe,
+  ): Promise<FabricationOutcome | undefined> {
     try {
-      const fabricationOutcome: FabricationOutcome = await this.fabricator.followRecipe(actor, inventory, recipe);
+      const fabricationOutcome: FabricationOutcome = <FabricationOutcome>(
+        await this.fabricator.followRecipe(actor, inventory, recipe)
+      );
       const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
       const messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
-      await ChatMessage.create({ user: game.user, speaker: { actor: actor._id }, content: messageTemplate });
+      await ChatMessage.create({ speaker: { actor: actor.id }, content: messageTemplate }); //  user: <User>game.user,
       return fabricationOutcome;
     } catch (error) {
       await this.handleCraftingError(error, actor);
+      return undefined;
     }
   }
 
   public async doAlchemy(
     actor: Actor,
-    inventory: Inventory<{}, Actor>,
+    inventory: Inventory<ItemData, Actor>,
     baseComponent: CraftingComponent,
     components: Combination<CraftingComponent>,
-  ): Promise<FabricationOutcome> {
+  ): Promise<FabricationOutcome | undefined> {
     try {
-      const fabricationOutcome: FabricationOutcome = await this.fabricator.performAlchemy(
-        baseComponent,
-        components,
-        actor,
-        inventory,
+      const fabricationOutcome: FabricationOutcome = <FabricationOutcome>(
+        await this.fabricator.performAlchemy(baseComponent, components, actor, inventory)
       );
       const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
       const messageTemplate: string = await renderTemplate(Properties.module.templates.craftingMessage, message);
-      await ChatMessage.create({ user: game.user, speaker: { actor: actor._id }, content: messageTemplate });
+      await ChatMessage.create({ speaker: { actor: actor._id }, content: messageTemplate }); // user: game.user,
       return fabricationOutcome;
     } catch (error) {
       await this.handleCraftingError(error, actor);
+      return undefined;
     }
   }
 
@@ -135,14 +142,14 @@ class CraftingSystem implements Identifiable {
       messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
       console.error(error);
     }
-    await ChatMessage.create({ user: game.user, speaker: { actor: actor._id }, content: messageTemplate });
+    await ChatMessage.create({ speaker: { actor: actor._id }, content: messageTemplate }); //  user: game.user,
   }
 
   get compendiumPackKey(): string {
     return this._compendiumPackKey;
   }
 
-  get fabricator(): Fabricator<{}, Actor> {
+  get fabricator(): Fabricator<ItemData, Actor> {
     return this._fabricator;
   }
 
@@ -159,7 +166,7 @@ class CraftingSystem implements Identifiable {
   }
 
   public getComponentByPartId(entryId: string): CraftingComponent {
-    return this._componentsById.get(entryId);
+    return <CraftingComponent>this._componentsById.get(entryId);
   }
 
   public supports(gameSystem: string): boolean {
@@ -170,7 +177,7 @@ class CraftingSystem implements Identifiable {
   }
 
   getRecipeByPartId(partId: string): Recipe {
-    return this._recipesById.get(partId);
+    return <Recipe>this._recipesById.get(partId);
   }
 }
 
@@ -178,7 +185,7 @@ namespace CraftingSystem {
   export class Builder {
     public name!: string;
     public compendiumPackKey!: string;
-    public fabricator!: Fabricator<{}, Actor>;
+    public fabricator!: Fabricator<ItemData, Actor>;
     public supportedGameSystems: string[] = [];
     public recipes: Map<string, Recipe> = new Map();
     public components: Map<string, CraftingComponent> = new Map();
@@ -202,7 +209,7 @@ namespace CraftingSystem {
       return this;
     }
 
-    public withFabricator(value: Fabricator<{}, Actor>): Builder {
+    public withFabricator(value: Fabricator<ItemData, Actor>): Builder {
       this.fabricator = value;
       return this;
     }
@@ -223,12 +230,12 @@ namespace CraftingSystem {
     }
 
     public withRecipe(value: Recipe): Builder {
-      this.recipes.set(value.partID extends Item, value);
+      this.recipes.set(value.partId, value);
       return this;
     }
 
     public withComponent(value: CraftingComponent): Builder {
-      this.components.set(value.partID extends Item, value);
+      this.components.set(value.partId, value);
       return this;
     }
 

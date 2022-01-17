@@ -5,6 +5,7 @@ import { Combination, Unit } from '../../common/Combination';
 import { AlchemyError } from '../../error/AlchemyError';
 import { CompendiumProvider } from '../../foundry/CompendiumProvider';
 import { ObjectUtility } from '../../foundry/ObjectUtility';
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 
 interface EssenceCombinerConfiguration {
   maxComponents: number;
@@ -22,7 +23,7 @@ interface EssenceCombinerConfiguration {
  * ensure that, for example, only an AlchemicalEffect<ItemDataValue5e> is applied to Item5e when customising Item data
  * through alchemy
  * */
-class AlchemicalCombiner<D> {
+class AlchemicalCombiner<D extends ItemData> {
   private readonly _effects: AlchemicalEffect<D>[];
   private readonly _config: EssenceCombinerConfiguration;
   private readonly _baseComponent: CraftingComponent;
@@ -47,7 +48,7 @@ class AlchemicalCombiner<D> {
     this._objectUtility = builder.objectUtility;
   }
 
-  public static builder<D>(): AlchemicalCombiner.Builder<D> {
+  public static builder<D extends ItemData>(): AlchemicalCombiner.Builder<D> {
     return new AlchemicalCombiner.Builder<D>();
   }
 
@@ -86,9 +87,7 @@ class AlchemicalCombiner<D> {
    * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
    * mixeD extends Item, or if insufficient effects are matched
    * */
-  async perform(
-    componentCombination: Combination<CraftingComponent>,
-  ): Promise<[Unit<CraftingComponent>, ItemData]> {
+  async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, ItemData]> {
     const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
     this.validate(componentCombination, essenceCombination);
     const effects: [AlchemicalEffect<D>, number][] = this.determineAlchemicalEffectsForComponents(componentCombination);
@@ -113,7 +112,7 @@ class AlchemicalCombiner<D> {
           this.maxComponents
         } components. ${components.size()} Components were provided. `,
         components,
-        this.wastageEnableD extends Item,
+        this.wastageEnabled,
       );
     }
     if (this.maxEssences > 0) {
@@ -123,7 +122,7 @@ class AlchemicalCombiner<D> {
             this.maxEssences
           } essences. The provided Component mix contains ${essences.size()} essences. `,
           components,
-          this.wastageEnableD extends Item,
+          this.wastageEnabled,
         );
       }
     }
@@ -133,14 +132,14 @@ class AlchemicalCombiner<D> {
     effects: [AlchemicalEffect<D>, number][],
     baseComponent: CraftingComponent,
   ): Promise<ItemData> {
-    const compendiumEntry: Document<ItemData> = await this._compendiumProvider.getEntity(
-      baseComponent.systemID extends Item,
-      baseComponent.partID extends Item,
+    const compendiumEntry: Item = await this._compendiumProvider.getDocument(
+      baseComponent.systemId,
+      baseComponent.partId,
     );
-    const duplicated: ItemData = this._objectUtility.duplicate(compendiumEntry.data);
+    const duplicated: ItemData = <ItemData>this._objectUtility.duplicate(compendiumEntry.data);
     effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
       for (let i = 0; i < effectCount[1]; i++) {
-        effectCount[0].applyTo(duplicated.data);
+        effectCount[0].applyTo(<any>duplicated.data);
       }
     });
     return duplicated;
@@ -152,18 +151,20 @@ class AlchemicalCombiner<D> {
     if (componentCombination.isEmpty()) {
       return [];
     }
-    return componentCombination.units
-      .map((componentUnit) => {
-        const essenceCombinationIdentity: number = this._essenceIdentityProvider.getForEssenceCombination(
-          componentUnit.part.essences,
+    return <[AlchemicalEffect<D>, number][]>componentCombination?.units
+      .map((componentUnit: Unit<CraftingComponent>) => {
+        const essenceCombinationIdentity = <number>(
+          this._essenceIdentityProvider.getForEssenceCombination(
+            <Combination<EssenceDefinition>>componentUnit?.part.essences,
+          )
         );
         const effectQuantity: number = this._effectsByEssenceCombinationIdentity.has(essenceCombinationIdentity)
-          ? componentUnit.quantity
+          ? <number>componentUnit?.quantity
           : 0;
         return { identity: essenceCombinationIdentity, quantity: effectQuantity };
       })
-      .filter((componentEffects) => componentEffects.quantity > 0)
-      .map((value) => [this._effectsByEssenceCombinationIdentity.get(value.identity), value.quantity]);
+      .filter((componentEffects: any) => <number>componentEffects?.quantity > 0)
+      .map((value: any) => [this._effectsByEssenceCombinationIdentity.get(value.identity), value.quantity]);
   }
 
   private orderAlchemicalEffects(effects: [AlchemicalEffect<D>, number][]): [AlchemicalEffect<D>, number][] {
@@ -174,7 +175,7 @@ class AlchemicalCombiner<D> {
 }
 
 namespace AlchemicalCombiner {
-  export class Builder<D> {
+  export class Builder<D extends ItemData> {
     public config: EssenceCombinerConfiguration = {
       maxComponents: 6,
       maxEssences: 6,

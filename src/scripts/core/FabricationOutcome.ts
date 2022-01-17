@@ -7,12 +7,14 @@ class FabricationOutcome {
   private readonly _actions: FabricationAction<any>[];
   private readonly _message: string;
   private readonly _checkResult: CraftingCheckResult;
+  private readonly _removedComponents: [];
 
   constructor(builder: FabricationOutcome.Builder) {
     this._outcome = builder.outcome;
     this._actions = builder.actions;
     this._message = builder.message;
     this._checkResult = builder.checkResult;
+    this._removedComponents = builder.removedComponents;
   }
 
   public static builder(): FabricationOutcome.Builder {
@@ -35,6 +37,10 @@ class FabricationOutcome {
     return this._checkResult;
   }
 
+  get removedComponents(): any[] {
+    return this._removedComponents;
+  }
+
   public checkPerformed() {
     return !!this._checkResult;
   }
@@ -46,6 +52,7 @@ namespace FabricationOutcome {
     public actions: FabricationAction<any>[];
     public message: string;
     public checkResult: CraftingCheckResult;
+    public removedComponents: [];
 
     public build(): FabricationOutcome {
       return new FabricationOutcome(this);

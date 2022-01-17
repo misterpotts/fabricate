@@ -1,3 +1,4 @@
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 import { Combination } from '../../common/Combination';
 import { EssenceDefinition } from '../../common/EssenceDefinition';
 import { DiceUtility } from '../../foundry/DiceUtility';
@@ -10,7 +11,7 @@ enum AlchemicalEffectType {
 /**
  * @type D The System-Specific, concrete Item Data type to modify when applying  an Alchemical Effect
  * */
-abstract class AlchemicalEffect<D> {
+abstract class AlchemicalEffect<D extends ItemData> {
   private readonly _essenceCombination: Combination<EssenceDefinition>;
   private readonly _description: string;
   private readonly _type: AlchemicalEffectType;

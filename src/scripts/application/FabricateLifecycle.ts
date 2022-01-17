@@ -1,10 +1,11 @@
 import { CraftingSystem } from '../system/CraftingSystem';
 import FabricateApplication from './FabricateApplication';
 import { EssenceDefinition } from '../common/EssenceDefinition';
-import { CraftingTab } from '../../interface/CraftingTab';
-import { ItemRecipeTab } from '../../interface/ItemRecipeTab';
-import Properties from '../../Properties';
+import { CraftingTab } from '../interface/CraftingTab';
+import { ItemRecipeTab } from '../interface/ItemRecipeTab';
+import Properties from '../Properties';
 import { CraftingSystemSpecification } from '../system/CraftingSystemSpecification';
+import { game } from '../settings';
 
 class FabricateLifecycle {
   public static init() {

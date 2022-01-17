@@ -64,7 +64,7 @@ class EssenceIdentityProvider {
   }
 
   public getForEssence(essence: EssenceDefinition): number {
-    return this._essenceIdentities.get(essence);
+    return <number>this._essenceIdentities.get(essence);
   }
 
   public getForEssenceCombination(combination: Combination<EssenceDefinition>): number {

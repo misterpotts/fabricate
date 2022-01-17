@@ -34,14 +34,14 @@ class PartDictionary {
     const identity: CompendiumEntry = <CompendiumEntry>(
       item.getFlag(Properties.module.name, Properties.flagKeys.item.identity)
     );
-    return FabricateItem.globalIdentifier(identity.partID extends Item, identity.systemId);
+    return FabricateItem.globalIdentifier(identity.partId, identity.systemId);
   }
 
   public componentFrom(item: Item): CraftingComponent {
     PartDictionary.validateType(item, FabricateItemType.COMPONENT);
     const identifier: string = PartDictionary.getIdentifier(item);
     if (this._components.has(identifier)) {
-      return this._components.get(identifier);
+      return <CraftingComponent>this._components.get(identifier);
     }
     const ownershipDescription: string = item.actor ? `owned by Actor '${item.actor.name}` : 'with no owning Actor';
     throw new Error(
@@ -53,7 +53,7 @@ class PartDictionary {
     PartDictionary.validateType(item, FabricateItemType.RECIPE);
     const identifier: string = PartDictionary.getIdentifier(item);
     if (this._recipes.has(identifier)) {
-      return this._recipes.get(identifier);
+      return <Recipe>this._recipes.get(identifier);
     }
     const ownershipDescription: string = item.actor ? `owned by Actor '${item.actor.name}` : 'with no owning Actor';
     throw new Error(
@@ -62,27 +62,27 @@ class PartDictionary {
   }
 
   public addRecipe(recipe: Recipe): void {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partID extends Item, recipe.systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partId, recipe.systemId);
     this._recipes.set(globalIdentifier, recipe);
   }
 
   public addComponent(component: CraftingComponent): void {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(component.partID extends Item, component.systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(component.partId, component.systemId);
     this._components.set(globalIdentifier, component);
   }
 
   public getRecipe(partId: string, systemId: string): Recipe {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(partID extends Item, systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(partId, systemId);
     if (this._recipes.has(globalIdentifier)) {
-      return this._recipes.get(globalIdentifier);
+      return <Recipe>this._recipes.get(globalIdentifier);
     }
     throw new Error(`No Recipe was found with the identifier ${globalIdentifier}. `);
   }
 
   public getComponent(partId: string, systemId: string): CraftingComponent {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(partID extends Item, systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(partId, systemId);
     if (this._components.has(globalIdentifier)) {
-      return this._components.get(globalIdentifier);
+      return <CraftingComponent>this._components.get(globalIdentifier);
     }
     throw new Error(`No Component was found with the identifier ${globalIdentifier}. `);
   }

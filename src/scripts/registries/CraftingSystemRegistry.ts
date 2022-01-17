@@ -3,6 +3,7 @@ import { Recipe } from '../crafting/Recipe';
 import { CraftingComponent } from '../common/CraftingComponent';
 import { CraftingSystemSpecification } from '../system/CraftingSystemSpecification';
 import { AlchemistsSuppliesSystemSpec } from './system_definitions/AlchemistsSuppliesV16';
+import { GameSystem } from '../system/GameSystem';
 
 class CraftingSystemRegistry {
   private _craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
@@ -19,10 +20,10 @@ class CraftingSystemRegistry {
     parts: Map<string, CraftingSystem>,
   ): Map<string, CraftingSystem> {
     const recipeLinks: Map<string, CraftingSystem> = new Map(
-      system.recipes.map((recipe: Recipe) => [recipe.partID extends Item, system]),
+      system.recipes.map((recipe: Recipe) => [recipe.partId, system]),
     );
     const componentLinks: Map<string, CraftingSystem> = new Map(
-      system.components.map((component: CraftingComponent) => [component.partID extends Item, system]),
+      system.components.map((component: CraftingComponent) => [component.partId, system]),
     );
     const systemParts: Map<string, CraftingSystem> = new Map([...recipeLinks, ...componentLinks]);
     if (systemParts.size !== recipeLinks.size + componentLinks.size) {
@@ -41,14 +42,14 @@ class CraftingSystemRegistry {
 
   public getSystemByCompendiumPackKey(id: string): CraftingSystem {
     if (this._craftingSystemsByCompendiumKey.has(id)) {
-      return this._craftingSystemsByCompendiumKey.get(id);
+      return <CraftingSystem>this._craftingSystemsByCompendiumKey.get(id);
     }
     throw new Error(`No Crafting system is registered with Fabricate for the Compendium Pack Key ${id}. `);
   }
 
   public getSystemByPartId(id: string): CraftingSystem {
     if (this._craftingSystemsByPartId.has(id)) {
-      return this._craftingSystemsByPartId.get(id);
+      return <CraftingSystem>this._craftingSystemsByPartId.get(id);
     }
     throw new Error(`No Crafting system is registered with Fabricate for the Recipe ${id}. `);
   }

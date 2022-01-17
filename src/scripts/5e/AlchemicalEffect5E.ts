@@ -1,3 +1,4 @@
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { AlchemicalEffect } from '../crafting/alchemy/AlchemicalEffect';
 
 interface AoeExtension {
@@ -10,13 +11,13 @@ interface Damage {
   type: DND5e.DamageType;
 }
 
-abstract class AlchemicalEffect5e extends AlchemicalEffect<Item5e.Data.Data> {
+abstract class AlchemicalEffect5e extends AlchemicalEffect<ItemData> {
   protected constructor(builder: AlchemicalEffect5e.Builder) {
     super(builder);
   }
 
-  applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-    itemData.description.value += `<p>${this.description}</p>`;
+  applyTo(itemData: ItemData): ItemData {
+    itemData.data.description.value += `<p>${this.description}</p>`;
     return itemData;
   }
 }
@@ -37,10 +38,11 @@ class Damage5e extends AlchemicalEffect5e {
     return this._damage;
   }
 
-  applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
+  applyTo(itemData: ItemData): ItemData {
     itemData = super.applyTo(itemData);
     if ('damage' in itemData) {
-      itemData.damage.parts.push([this._damage.expression, this._damage.type]);
+      //@ts-ignore
+      itemData.data.damage.parts.push([this._damage.expression, this._damage.type]);
       return itemData;
     }
     throw new Error(`Type '${typeof itemData}' does not include the required 'damage' property`);
@@ -56,7 +58,7 @@ class Condition5e extends AlchemicalEffect5e {
     return new AlchemicalEffect5e.ConditionBuilder();
   }
 
-  applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
+  applyTo(itemData: ItemData): ItemData {
     itemData = super.applyTo(itemData);
     return itemData;
   }
@@ -74,15 +76,18 @@ class AoeExtension5e extends AlchemicalEffect5e {
     return new AlchemicalEffect5e.AoeExtensionBuilder();
   }
 
-  applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
+  applyTo(itemData: ItemData): ItemData {
     itemData = super.applyTo(itemData);
     if ('target' in itemData) {
-      if (itemData.target.units !== this._aoeExtension.units) {
+      //@ts-ignore
+      if (itemData.data.target.units !== this._aoeExtension.units) {
         throw new Error(
-          `You may not mix units in Alchemical Effects AoE Extensions. Found ${itemData.target.units}, expected ${this._aoeExtension.units}`,
+          //@ts-ignore
+          `You may not mix units in Alchemical Effects AoE Extensions. Found ${itemData.data.target.units}, expected ${this._aoeExtension.units}`,
         );
       }
-      itemData.target.value += this._aoeExtension.value;
+      //@ts-ignore
+      itemData.data.target.value += this._aoeExtension.value;
       return itemData;
     }
     throw new Error(`Type '${typeof itemData}' does not include the required 'target' property`);
@@ -101,10 +106,11 @@ class SavingThrowModifier5e extends AlchemicalEffect5e {
     return new AlchemicalEffect5e.SavingThrowModifierBuilder();
   }
 
-  applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
+  applyTo(itemData: ItemData): ItemData {
     itemData = super.applyTo(itemData);
     if ('save' in itemData) {
-      itemData.save.dc += this._savingThrowModifier;
+      //@ts-ignore
+      itemData.data.save.dc += this._savingThrowModifier;
       return itemData;
     }
     throw new Error(`Type '${typeof itemData}' does not include the required 'save' property`);
@@ -123,10 +129,11 @@ class DiceMultiplier5e extends AlchemicalEffect5e {
     return new AlchemicalEffect5e.DiceMultiplierBuilder();
   }
 
-  applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
+  applyTo(itemData: ItemData): ItemData {
     itemData = super.applyTo(itemData);
     if ('damage' in itemData) {
-      itemData.damage.parts = itemData.damage.parts.map((damagePart: [string, DND5e.DamageType | 'none']) => {
+      //@ts-ignore
+      itemData.data.damage.parts = itemData.data.damage.parts.map((damagePart: [string, DND5e.DamageType | 'none']) => {
         const multipliedExpression: string = this.diceUtility.multiply(damagePart[0], this._diceMultiplier);
         return [multipliedExpression, damagePart[1]];
       });
@@ -137,7 +144,7 @@ class DiceMultiplier5e extends AlchemicalEffect5e {
 }
 
 namespace AlchemicalEffect5e {
-  export class Builder extends AlchemicalEffect.Builder<Item5e.Data.Data> {}
+  export class Builder extends AlchemicalEffect.Builder<ItemData> {}
 
   export class DamageBuilder extends Builder {
     public damage: Damage;

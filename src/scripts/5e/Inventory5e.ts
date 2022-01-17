@@ -1,3 +1,4 @@
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { BaseCraftingInventory, Inventory } from '../actor/Inventory';
 import { Combination } from '../common/Combination';
 import { CraftingComponent } from '../common/CraftingComponent';
@@ -12,7 +13,7 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
     return new Inventory5e.Builder();
   }
 
-  createFrom(actor: Actor5e, ownedComponents: Combination<CraftingComponent>): Inventory<Item5e, Actor5e> {
+  createFrom(actor: Actor5e, ownedComponents: Combination<CraftingComponent>): Inventory<ItemData, Actor5e> {
     return Inventory5e.builder().withActor(actor).withOwnedComponents(ownedComponents).build();
   }
 
@@ -24,7 +25,7 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
     return 'quantity' in item.data.data ? item.data.data.quantity : 1;
   }
 
-  setQuantityFor(itemData: Item5e.Data, quantity: number): Item5e {
+  setQuantityFor(itemData: ItemData, quantity: number): ItemData {
     if ('quantity' in itemData.data) {
       itemData.data.quantity = quantity;
       return itemData;
@@ -34,7 +35,7 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
 }
 
 namespace Inventory5e {
-  export class Builder extends BaseCraftingInventory.Builder<Item5e.Data.Data, Actor5e> {
+  export class Builder extends BaseCraftingInventory.Builder<ItemData, Actor5e> {
     public build(): Inventory5e {
       return new Inventory5e(this);
     }

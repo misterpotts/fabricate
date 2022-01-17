@@ -1,5 +1,6 @@
 import { CraftingComponent } from '../common/CraftingComponent';
 import { Unit } from '../common/Combination';
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 
 enum ActionType {
   ADD = 'ADD',

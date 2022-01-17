@@ -5,7 +5,7 @@ class ValidationFailures {
 
   public recordError(propertyName: string, errorDescription: string): boolean {
     if (this._propertyValidationFailures.has(propertyName)) {
-      this._propertyValidationFailures.get(propertyName).push(errorDescription);
+      (<string[]>this._propertyValidationFailures.get(propertyName)).push(errorDescription);
       return true;
     }
     this._propertyValidationFailures.set(propertyName, [errorDescription]);

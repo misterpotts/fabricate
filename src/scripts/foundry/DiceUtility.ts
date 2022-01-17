@@ -17,14 +17,14 @@ class RollResult {
 }
 
 class DiceUtility {
-  public roll(termData: DiceTerm.TermData): RollResult {
+  public roll(termData: Die.TermData): RollResult {
     const die: Die = new Die(termData);
     const roll: DiceTerm.Result = die.roll();
     return new RollResult(roll.result, die.expression);
   }
 
   public multiply(expression: string, factor: number): string {
-    const parsed: DiceTerm = DiceTerm.fromExpression(expression, {});
+    const parsed: DiceTerm = <DiceTerm>DiceTerm.fromExpression(expression, {});
     parsed.number = parsed.number * factor;
     return parsed.expression;
   }

@@ -166,6 +166,7 @@ class ContributionCounterFactory {
     if (essenceCountContributes) {
       return new EssenceContributionCounter(this._essenceContribution);
     }
+    return new NoContributionCounter();
   }
 }
 
@@ -202,10 +203,10 @@ abstract class CraftingCheck<A extends Actor> {
       throw new Error(`The only Actor types that can perform Crafting Checks are
             "${this.getSupportedActorTypes().join(', ')}". ${actor.name} is a ${actor.data.type}`);
     }
-    const dieData: DiceTerm.TermData = this.getRollTermData(actor);
+    const dieData = <Die.TermData>this.getRollTermData(actor);
     const rolledResult: RollResult = this._diceRoller.roll(dieData);
     const successThreshold = this.getSuccessThreshold(components);
-    const outcome: OutcomeType = this.compare(rolledResult.value, successThresholD extends Item, this._rollMustExceedThreshold);
+    const outcome: OutcomeType = this.compare(rolledResult.value, successThreshold, this._rollMustExceedThreshold);
     return new CraftingCheckResult(outcome, rolledResult.expression, rolledResult.value, successThreshold);
   }
 
