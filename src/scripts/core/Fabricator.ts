@@ -10,19 +10,19 @@ import { AlchemicalCombiner } from '../crafting/alchemy/AlchemicalCombiner';
 import { CraftingCheckResult } from '../crafting/CraftingCheckResult';
 import { AlchemyError } from '../error/AlchemyError';
 
-class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+class Fabricator<D extends Item, A extends Actor> {
   private readonly _craftingCheck: CraftingCheck<A>;
   private readonly _consumeComponentsOnFailure: boolean;
   private readonly _alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>>;
 
-  constructor(builder: Fabricator.Builder<D, A>) {
+  constructor(builder: Fabricator.Builder<D extends Item, A>) {
     this._craftingCheck = builder.craftingCheck;
     this._consumeComponentsOnFailure = builder.consumeComponentsOnFailure;
     this._alchemicalCombinersByBaseComponent = builder.alchemicalCombinersByBaseComponent;
   }
 
-  public static builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>>(): Fabricator.Builder<D, A> {
-    return new Fabricator.Builder<D, A>();
+  public static builder<D extends Item, A extends Actor>(): Fabricator.Builder<D extends Item, A> {
+    return new Fabricator.Builder<D extends Item, A>();
   }
 
   get craftingCheck(): CraftingCheck<A> {
@@ -37,12 +37,12 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     return this._alchemicalCombinersByBaseComponent.size > 0;
   }
 
-  public async followRecipe(actor: A, inventory: Inventory<D, A>, recipe: Recipe): Promise<FabricationOutcome> {
+  public async followRecipe(actor: A, inventory: Inventory<D extends Item, A>, recipe: Recipe): Promise<FabricationOutcome> {
     if (recipe.hasNamedComponents && !inventory.containsIngredients(recipe.namedComponents)) {
       return this.abort(`You don't have all of the ingredients for ${recipe.name}. `);
     }
 
-    const remainingComponents: Inventory<D, A> = inventory.excluding(recipe.namedComponents);
+    const remainingComponents: Inventory<D extends Item, A> = inventory.excluding(recipe.namedComponents);
     if (recipe.requiresEssences && !remainingComponents.containsEssences(recipe.essences)) {
       return this.abort(`There aren't enough essences amongst components in your inventory to craft ${recipe.name}. `);
     }
@@ -73,14 +73,14 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     baseComponent: CraftingComponent,
     componentMix: Combination<CraftingComponent>,
     actor: A,
-    inventory: Inventory<D, A>,
+    inventory: Inventory<D extends Item, A>,
   ): Promise<FabricationOutcome> {
     if (!this._alchemicalCombinersByBaseComponent.has(baseComponent)) {
       return this.abort(`No Alchemy Specification exists for '${baseComponent.name}' (${baseComponent.id}). `);
     }
 
     const alchemicalCombiner: AlchemicalCombiner<D> = this._alchemicalCombinersByBaseComponent.get(baseComponent);
-    let alchemyResult: [Unit<CraftingComponent>, Item.Data<D>];
+    let alchemyResult: [Unit<CraftingComponent>, ItemData];
     try {
       alchemyResult = await alchemicalCombiner.perform(componentMix);
     } catch (error) {
@@ -120,7 +120,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
   }
 
   private async fail(
-    inventory: Inventory<D, A>,
+    inventory: Inventory<D extends Item, A>,
     wastedComponents: Combination<CraftingComponent>,
     message: string,
     checkResult?: CraftingCheckResult,
@@ -142,7 +142,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
   }
 
   private async succeed(
-    inventory: Inventory<D, A>,
+    inventory: Inventory<D extends Item, A>,
     consumedComponents: Combination<CraftingComponent>,
     addedComponents: Combination<CraftingComponent>,
     checkResult?: CraftingCheckResult,
@@ -161,13 +161,13 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
   }
 
   private async succeedWith(
-    inventory: Inventory<D, A>,
+    inventory: Inventory<D extends Item, A>,
     consumedComponents: Combination<CraftingComponent>,
-    alchemyResult: [Unit<CraftingComponent>, Item.Data<D>],
+    alchemyResult: [Unit<CraftingComponent>, ItemData],
     checkResult?: CraftingCheckResult,
   ): Promise<FabricationOutcome> {
     const removals: FabricationAction<D>[] = this.asFabricationActions(consumedComponents, ActionType.REMOVE);
-    const addition: FabricationAction<D> = this.asFabricationAction(alchemyResult[0], ActionType.ADD, alchemyResult[1]);
+    const addition: FabricationAction<D> = this.asFabricationAction(alchemyResult[0], ActionType.ADD extends Item, alchemyResult[1]);
     const allActions: FabricationAction<D>[] = [addition].concat(removals);
 
     await inventory.perform(allActions);
@@ -195,7 +195,7 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
   private asFabricationAction(
     componentUnit: Unit<CraftingComponent>,
     actionType: ActionType,
-    itemData?: Item.Data<D>,
+    itemData?: ItemData,
   ): FabricationAction<D> {
     return FabricationAction.builder<D>()
       .withActionType(actionType)
@@ -206,38 +206,38 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 }
 
 namespace Fabricator {
-  export class Builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+  export class Builder<D extends Item, A extends Actor> {
     public craftingCheck: CraftingCheck<A>;
     public consumeComponentsOnFailure: boolean;
     public alchemicalCombiners: AlchemicalCombiner<D>[] = [];
 
     public alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>> = new Map();
 
-    public build(): Fabricator<D, A> {
+    public build(): Fabricator<D extends Item, A> {
       if (this.alchemicalCombiners && this.alchemicalCombiners.length > 0) {
         this.alchemicalCombinersByBaseComponent = new Map(
           this.alchemicalCombiners.map((combiner) => [combiner.baseComponent, combiner]),
         );
       }
-      return new Fabricator<D, A>(this);
+      return new Fabricator<D extends Item, A>(this);
     }
 
-    public withAlchemicalCombiner(value: AlchemicalCombiner<D>): Builder<D, A> {
+    public withAlchemicalCombiner(value: AlchemicalCombiner<D>): Builder<D extends Item, A> {
       this.alchemicalCombiners.push(value);
       return this;
     }
 
-    public withAlchemicalCombiners(value: AlchemicalCombiner<D>[]): Builder<D, A> {
+    public withAlchemicalCombiners(value: AlchemicalCombiner<D>[]): Builder<D extends Item, A> {
       this.alchemicalCombiners = value;
       return this;
     }
 
-    public withCraftingCheck(value: CraftingCheck<A>): Builder<D, A> {
+    public withCraftingCheck(value: CraftingCheck<A>): Builder<D extends Item, A> {
       this.craftingCheck = value;
       return this;
     }
 
-    public withConsumeComponentsOnFailure(value: boolean): Builder<D, A> {
+    public withConsumeComponentsOnFailure(value: boolean): Builder<D extends Item, A> {
       this.consumeComponentsOnFailure = value;
       return this;
     }

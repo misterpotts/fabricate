@@ -28,7 +28,7 @@ abstract class FabricateItem {
     this._systemId = builder.systemId;
     this._compendiumId = builder.compendiumId;
     this._partId = builder.partId;
-    this._id = FabricateItem.globalIdentifier(builder.partId, builder.systemId);
+    this._id = FabricateItem.globalIdentifier(builder.partID extends Item, builder.systemId);
     this._imageUrl = builder.imageUrl;
     this._name = builder.name;
   }

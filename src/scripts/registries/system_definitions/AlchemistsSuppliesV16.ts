@@ -37,7 +37,7 @@ const fireDamage = new Damage5e(
 
 const persistentDamage = new Condition5e(
   ['earth', 'water'],
-  'Release gel that sticks to targets. Each round, any damage-dealing effects continue to ' +
+  'Release gel that sticks to targets. Each rounD extends Item, any damage-dealing effects continue to ' +
     'deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .',
 );
 

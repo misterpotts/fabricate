@@ -331,7 +331,7 @@ async function linkUserData() {
     let linkDir;
     if (config.dataPath) {
       if (!fs.existsSync(path.join(config.dataPath, 'Data')))
-        throw Error('User Data path invalid, no Data directory found');
+        throw Error('User Data path invaliD extends Item, no Data directory found');
 
       linkDir = path.join(config.dataPath, 'Data', destDir, name);
     } else {
@@ -504,14 +504,14 @@ function gitTag() {
   });
 }
 
-const execGit = gulp.series(gitAdd, gitCommit, gitTag);
+const execGit = gulp.series(gitAdD extends Item, gitCommit, gitTag);
 
 const execBuild = gulp.parallel(buildTS, buildJS, buildMJS, buildCSS, buildLess, buildSASS, copyFiles);
 
-exports.build = gulp.series(clean, execBuild, buildReplace);
+exports.build = gulp.series(clean, execBuilD extends Item, buildReplace);
 exports.watch = buildWatch;
 exports.clean = clean;
 exports.link = linkUserData;
 exports.package = packageBuild;
 exports.update = updateManifest;
-exports.publish = gulp.series(clean, updateManifest, execBuild, packageBuild, execGit);
+exports.publish = gulp.series(clean, updateManifest, execBuilD extends Item, packageBuilD extends Item, execGit);

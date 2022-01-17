@@ -1,7 +1,7 @@
 import { AlchemicalEffect } from '../crafting/alchemy/AlchemicalEffect';
 
 interface AoeExtension {
-  units: DND5e.TargetUnitType;
+  units: DND5e.TargetType;
   value: number;
 }
 

@@ -34,7 +34,7 @@ class PartDictionary {
     const identity: CompendiumEntry = <CompendiumEntry>(
       item.getFlag(Properties.module.name, Properties.flagKeys.item.identity)
     );
-    return FabricateItem.globalIdentifier(identity.partId, identity.systemId);
+    return FabricateItem.globalIdentifier(identity.partID extends Item, identity.systemId);
   }
 
   public componentFrom(item: Item): CraftingComponent {
@@ -62,17 +62,17 @@ class PartDictionary {
   }
 
   public addRecipe(recipe: Recipe): void {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partId, recipe.systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(recipe.partID extends Item, recipe.systemId);
     this._recipes.set(globalIdentifier, recipe);
   }
 
   public addComponent(component: CraftingComponent): void {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(component.partId, component.systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(component.partID extends Item, component.systemId);
     this._components.set(globalIdentifier, component);
   }
 
   public getRecipe(partId: string, systemId: string): Recipe {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(partId, systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(partID extends Item, systemId);
     if (this._recipes.has(globalIdentifier)) {
       return this._recipes.get(globalIdentifier);
     }
@@ -80,7 +80,7 @@ class PartDictionary {
   }
 
   public getComponent(partId: string, systemId: string): CraftingComponent {
-    const globalIdentifier: string = FabricateItem.globalIdentifier(partId, systemId);
+    const globalIdentifier: string = FabricateItem.globalIdentifier(partID extends Item, systemId);
     if (this._components.has(globalIdentifier)) {
       return this._components.get(globalIdentifier);
     }

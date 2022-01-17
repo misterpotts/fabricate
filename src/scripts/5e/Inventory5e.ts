@@ -12,19 +12,19 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
     return new Inventory5e.Builder();
   }
 
-  createFrom(actor: Actor5e, ownedComponents: Combination<CraftingComponent>): Inventory<Item5e.Data.Data, Actor5e> {
+  createFrom(actor: Actor5e, ownedComponents: Combination<CraftingComponent>): Inventory<Item5e, Actor5e> {
     return Inventory5e.builder().withActor(actor).withOwnedComponents(ownedComponents).build();
   }
 
-  getOwnedItems(actor: Actor5e): Item<Item.Data<Item5e.Data.Data>>[] {
-    return actor.items.entries();
+  getOwnedItems(actor: Actor5e): Item5e[] {
+    return actor.items.contents;
   }
 
   getQuantityFor(item: Item5e): number {
     return 'quantity' in item.data.data ? item.data.data.quantity : 1;
   }
 
-  setQuantityFor(itemData: Item5e.Data, quantity: number): Item.Data<Item5e.Data.Data> {
+  setQuantityFor(itemData: Item5e.Data, quantity: number): Item5e {
     if ('quantity' in itemData.data) {
       itemData.data.quantity = quantity;
       return itemData;

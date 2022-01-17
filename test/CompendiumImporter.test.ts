@@ -85,16 +85,16 @@ describe('Import', () => {
         expect(result.getRecipes().length).toEqual(4);
         expect(result.getComponents().length).toEqual(5);
 
-        expect(result.getComponent(testComponentOne.partId, testComponentOne.systemId).compendiumId).toEqual(mockCompendiumThree.collection);
-        expect(result.getComponent(testComponentTwo.partId, testComponentTwo.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getComponent(testComponentThree.partId, testComponentThree.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getComponent(testComponentFour.partId, testComponentFour.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getComponent(testComponentFive.partId, testComponentFive.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
+        expect(result.getComponent(testComponentOne.partID extends Item, testComponentOne.systemId).compendiumId).toEqual(mockCompendiumThree.collection);
+        expect(result.getComponent(testComponentTwo.partID extends Item, testComponentTwo.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
+        expect(result.getComponent(testComponentThree.partID extends Item, testComponentThree.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
+        expect(result.getComponent(testComponentFour.partID extends Item, testComponentFour.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
+        expect(result.getComponent(testComponentFive.partID extends Item, testComponentFive.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
 
-        expect(result.getRecipe(testRecipeOne.partId, testRecipeOne.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
-        expect(result.getRecipe(testRecipeTwo.partId, testRecipeTwo.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
-        expect(result.getRecipe(testRecipeThree.partId, testRecipeThree.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getRecipe(testRecipeFour.partId, testRecipeFour.systemId).compendiumId).toEqual(mockCompendiumThree.collection);
+        expect(result.getRecipe(testRecipeOne.partID extends Item, testRecipeOne.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
+        expect(result.getRecipe(testRecipeTwo.partID extends Item, testRecipeTwo.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
+        expect(result.getRecipe(testRecipeThree.partID extends Item, testRecipeThree.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
+        expect(result.getRecipe(testRecipeFour.partID extends Item, testRecipeFour.systemId).compendiumId).toEqual(mockCompendiumThree.collection);
 
     });
 
@@ -379,7 +379,7 @@ function componentAsCompendiumItem(component: CraftingComponent): Item {
     const fabricateCompendiumData: FabricateCompendiumData = {
         type:FabricateItemType.COMPONENT,
         identity:{
-            partId: component.partId,
+            partId: component.partID extends Item,
             systemId: component.systemId
         },
         component: {
@@ -388,7 +388,7 @@ function componentAsCompendiumItem(component: CraftingComponent): Item {
         }
     };
     return {
-        id: component.partId,
+        id: component.partID extends Item,
         // @ts-ignore
         data: {
             name: component.name,
@@ -405,7 +405,7 @@ function recipeAsCompendiumItem(recipe: Recipe): Item {
     const fabricateCompendiumData: FabricateCompendiumData = {
         type:FabricateItemType.RECIPE,
         identity:{
-            partId: recipe.partId,
+            partId: recipe.partID extends Item,
             systemId: recipe.systemId
         },
         recipe: {
@@ -416,7 +416,7 @@ function recipeAsCompendiumItem(recipe: Recipe): Item {
         }
     };
     return {
-        id: recipe.partId,
+        id: recipe.partID extends Item,
         // @ts-ignore
         data: {
             name: recipe.name,

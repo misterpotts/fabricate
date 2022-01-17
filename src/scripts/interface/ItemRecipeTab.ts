@@ -29,7 +29,7 @@ class ItemRecipeTab {
       let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
       if (!tab) {
         tab = new ItemRecipeTab(itemApplication);
-        ItemRecipeTab.tabs.set(itemApplication.id, tab);
+        ItemRecipeTab.tabs.set(itemApplication.iD extends Item, tab);
       }
       tab.init(sheetHtml);
     }
@@ -40,7 +40,7 @@ class ItemRecipeTab {
     ) {
       const essences: string[] = fabricateFlags.component.essences;
       const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(
-        fabricateFlags.identity.systemId,
+        fabricateFlags.identity.systemID extends Item,
       );
       const essenceDescription = essences
         .map((essence: string) => craftingSystem.getEssenceBySlug(essence).icon)

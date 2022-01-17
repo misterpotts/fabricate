@@ -22,7 +22,7 @@ class FabricateLifecycle {
 
     const convertEssenceSlugToIconMarkup = (essenceSlug: string, systemId: string) => {
       const system: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
-      const essenceDefinition: EssenceDefinition = system.getEssenceBySlug(essenceSlug);
+      const essenceDefinition: EssenceDefinition = <EssenceDefinition>system.getEssenceBySlug(essenceSlug);
       if (essenceDefinition) {
         return essenceDefinition.icon;
       }

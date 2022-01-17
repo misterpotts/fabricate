@@ -45,11 +45,11 @@ beforeAll(() => {
     });
 
     const mockComponentFrom = Sandbox.stub(mockPartDictionary, 'componentFrom');
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentOne.partId, systemId: testComponentOne.systemId})).returns(testComponentOne);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentTwo.partId, systemId: testComponentTwo.systemId})).returns(testComponentTwo);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentThree.partId, systemId: testComponentThree.systemId})).returns(testComponentThree);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFour.partId, systemId: testComponentFour.systemId})).returns(testComponentFour);
-    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFive.partId, systemId: testComponentFive.systemId})).returns(testComponentFive);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentOne.partID extends Item, systemId: testComponentOne.systemId})).returns(testComponentOne);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentTwo.partID extends Item, systemId: testComponentTwo.systemId})).returns(testComponentTwo);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentThree.partID extends Item, systemId: testComponentThree.systemId})).returns(testComponentThree);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFour.partID extends Item, systemId: testComponentFour.systemId})).returns(testComponentFour);
+    mockComponentFrom.withArgs(Sinon.match.hasNested('data.data.flags.fabricate.identity', {partId: testComponentFive.partID extends Item, systemId: testComponentFive.systemId})).returns(testComponentFive);
 });
 
 const mockCompendium: Compendium = <Compendium><unknown>{
@@ -73,7 +73,7 @@ Sandbox.stub(mockGame.packs, 'get').withArgs('fabricate.test-system').returns(mo
 
 const mockActorId: string = 'iyeHYRbSts0ij23V';
 const mockActor: Actor5e = <Actor5e><unknown>{
-    id: mockActorId,
+    id: mockActorID extends Item,
     items: {
         entries: () => mockInventoryContents
     },

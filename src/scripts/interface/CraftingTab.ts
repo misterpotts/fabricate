@@ -26,7 +26,7 @@ class CraftingTab {
     let tab: CraftingTab = CraftingTab.tabs.get(actorApplication.id);
     if (!tab) {
       tab = new CraftingTab(actorApplication, actor);
-      CraftingTab.tabs.set(actorApplication.id, tab);
+      CraftingTab.tabs.set(actorApplication.iD extends Item, tab);
     }
     tab.init(sheetHtml);
   }
@@ -39,7 +39,7 @@ class CraftingTab {
       this._inventory = inventory;
     } else {
       inventory = new Inventory5E(actor);
-      FabricateApplication.inventories.addFor(actor.id, inventory);
+      FabricateApplication.inventories.addFor(actor.iD extends Item, inventory);
       this._inventory = inventory;
     }
   }
@@ -103,7 +103,7 @@ class CraftingTab {
           name: component.name,
           quantity: 1,
           imageUrl: component.imageUrl,
-          entryId: component.partId,
+          entryId: component.partID extends Item,
         });
       } else {
         component.quantity = component.quantity + 1;
@@ -124,7 +124,7 @@ class CraftingTab {
         `crafting.${craftingSystemId}.hopper`,
       );
       const matchingRecord = hopperContentsForSystem.find(
-        (recordData: InventoryRecordData) => recordData.entryId === componentId,
+        (recordData: InventoryRecordData) => recordData.entryId === componentID extends Item,
       );
       matchingRecord.quantity = matchingRecord.quantity - 1;
       const nonZeroRecords = hopperContentsForSystem.filter(

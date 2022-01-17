@@ -183,17 +183,17 @@ describe('Fabricate', () => {
                 const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
 
                 Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethoD extends Item, Sandbox.match((value: Combination<CraftingComponent>) => {
                     return value.size() === 3
                         && value.amountFor(testComponentThree) === 1
                         && value.amountFor(testComponentFour) === 2;
                 }));
 
                 Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                Sandbox.assert.calledWith(stubInventorySelectForMethoD extends Item, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
 
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const threeActions: boolean = value.length === 3;
                     const addOneTestComponentTwo: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
                         && action.unit.part.id === testComponentTwo.id
@@ -236,7 +236,7 @@ describe('Fabricate', () => {
                 const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipeWithCatalyst);
 
                 Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethoD extends Item, Sandbox.match((value: Combination<CraftingComponent>) => {
                     return value.size() === 4
                         && value.amountFor(testComponentOne) === 1
                         && value.amountFor(testComponentThree) === 1
@@ -244,10 +244,10 @@ describe('Fabricate', () => {
                 }));
 
                 Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                Sandbox.assert.calledWith(stubInventorySelectForMethoD extends Item, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
 
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const threeActions: boolean = value.length === 3;
                     const addOneTestComponentTwo: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
                         && action.unit.part.id === testComponentTwo.id
@@ -293,7 +293,7 @@ describe('Fabricate', () => {
                 Sandbox.assert.notCalled(stubInventoryContainsIngredientsMethod);
 
                 Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => {
+                Sandbox.assert.calledWith(stubInventorySelectForMethoD extends Item, Sandbox.match((value: Combination<EssenceDefinition>) => {
                     return value.size() === 5
                         && value.amountFor(elementalWater) === 2
                         && value.amountFor(elementalFire) === 2
@@ -301,7 +301,7 @@ describe('Fabricate', () => {
                 }));
 
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const threeActions: boolean = value.length === 3;
                     const addOneTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.ADD
                         && action.unit.part.id === testComponentFour.id
@@ -399,17 +399,17 @@ describe('Fabricate', () => {
                 const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
 
                 Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethoD extends Item, Sandbox.match((value: Combination<CraftingComponent>) => {
                     return value.size() === 3
                         && value.amountFor(testComponentThree) === 1
                         && value.amountFor(testComponentFour) === 2;
                 }));
 
                 Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                Sandbox.assert.calledWith(stubInventorySelectForMethoD extends Item, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
 
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const twoActions: boolean = value.length === 2;
                     const removeTwoTestComponentFour: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
                         && action.unit.part.id === testComponentFour.id
@@ -444,14 +444,14 @@ describe('Fabricate', () => {
                 const result: FabricationOutcome = await underTest.followRecipe(mockActor, mockInventory, testIngredientBasedRecipe);
 
                 Sandbox.assert.calledOnce(stubInventoryContainsIngredientsMethod);
-                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethod, Sandbox.match((value: Combination<CraftingComponent>) => {
+                Sandbox.assert.calledWith(stubInventoryContainsIngredientsMethoD extends Item, Sandbox.match((value: Combination<CraftingComponent>) => {
                     return value.size() === 3
                         && value.amountFor(testComponentThree) === 1
                         && value.amountFor(testComponentFour) === 2;
                 }));
 
                 Sandbox.assert.calledOnce(stubInventorySelectForMethod);
-                Sandbox.assert.calledWith(stubInventorySelectForMethod, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
+                Sandbox.assert.calledWith(stubInventorySelectForMethoD extends Item, Sandbox.match((value: Combination<EssenceDefinition>) => value.isEmpty()));
 
                 Sandbox.assert.notCalled(stubInventoryPerformMethod);
 
@@ -502,7 +502,7 @@ describe('Fabricate', () => {
                 const result: FabricationOutcome = await underTest.performAlchemy(testComponentFive, testCombination, mockActor, mockInventory);
 
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const threeActions: boolean = value.length === 3;
                     const removeTwoTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
                         && action.unit.part.id === testComponentOne.id
@@ -544,7 +544,7 @@ describe('Fabricate', () => {
                     new Unit<CraftingComponent>(testComponentThree, 1)
                 ]);
 
-                const alchemyError = new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was required, but only 0 were found. `, testCombination, true);
+                const alchemyError = new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was requireD extends Item, but only 0 were found. `, testCombination, true);
                 stubAlchemicalCombinerPerformMethod.throws(() => {
                     return alchemyError;
                 });
@@ -553,7 +553,7 @@ describe('Fabricate', () => {
 
                 Sandbox.assert.notCalled(stubPerformCraftingCheckMethod);
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const twoActions: boolean = value.length === 2;
                     const removeTwoTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
                         && action.unit.part.id === testComponentOne.id
@@ -585,7 +585,7 @@ describe('Fabricate', () => {
                     new Unit<CraftingComponent>(testComponentThree, 1)
                 ]);
 
-                const alchemyError = new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was required, but only 0 were found. `, testCombination, true);
+                const alchemyError = new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was requireD extends Item, but only 0 were found. `, testCombination, true);
                 stubAlchemicalCombinerPerformMethod.throws(() => {
                     return alchemyError;
                 });
@@ -624,7 +624,7 @@ describe('Fabricate', () => {
                 Sandbox.assert.calledOnce(stubPerformCraftingCheckMethod);
                 Sandbox.assert.calledOnce(stubAlchemicalCombinerPerformMethod);
                 Sandbox.assert.calledOnce(stubInventoryPerformMethod);
-                Sandbox.assert.calledWith(stubInventoryPerformMethod, Sandbox.match((value: FabricationAction<any>[]) => {
+                Sandbox.assert.calledWith(stubInventoryPerformMethoD extends Item, Sandbox.match((value: FabricationAction<any>[]) => {
                     const twoActions: boolean = value.length === 2;
                     const removeTwoTestComponentOne: boolean = !!value.find((action: FabricationAction<any>) => action.actionType === ActionType.REMOVE
                         && action.unit.part.id === testComponentOne.id

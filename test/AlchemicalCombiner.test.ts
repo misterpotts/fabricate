@@ -35,7 +35,7 @@ const mockObjectUtility: ObjectUtility = <ObjectUtility><unknown>{
 const stubDuplicateObjectMethod = Sandbox.stub(mockObjectUtility, 'duplicate');
 
 class TestAlchemicalEffectOne extends AlchemicalEffect<TestItemDataType> {
-    
+
     constructor() {
         const superBuilder: AlchemicalEffect.Builder<TestItemDataType> = new AlchemicalEffect.Builder<TestItemDataType>()
             .withType(AlchemicalEffectType.BASIC)
@@ -49,7 +49,7 @@ class TestAlchemicalEffectOne extends AlchemicalEffect<TestItemDataType> {
         itemData.alchemicalEffectOneApplied += 1;
         return itemData;
     }
-    
+
 }
 
 class TestAlchemicalEffectTwo extends AlchemicalEffect<TestItemDataType> {
@@ -157,7 +157,7 @@ describe('Perform Alchemy', () => {
             ]);
 
             // @ts-ignore
-            stubGetEntityMethod.withArgs(testComponentFour.systemId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
+            stubGetEntityMethod.withArgs(testComponentFour.systemID extends Item, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
             stubDuplicateObjectMethod.returns({data: new TestItemDataType()});
 
             const result: [Unit<CraftingComponent>, Item.Data<TestItemDataType>] = await underTest.perform(testCombination);
@@ -197,7 +197,7 @@ describe('Perform Alchemy', () => {
             ]);
 
             // @ts-ignore
-            stubGetEntityMethod.withArgs(testComponentFour.systemId, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
+            stubGetEntityMethod.withArgs(testComponentFour.systemID extends Item, testComponentFour.partId).resolves({data: {data: new TestItemDataType()}});
             stubDuplicateObjectMethod.returns({data: new TestItemDataType()});
 
             const result: [Unit<CraftingComponent>, Item.Data<TestItemDataType>] = await underTest.perform(testCombination);
@@ -233,7 +233,7 @@ describe('Perform Alchemy', () => {
                 .withWastage(true)
                 .build();
 
-            expect(underTest.perform(Combination.EMPTY())).rejects.toThrow(new Error('Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was required, but only 0 were found. '));
+            expect(underTest.perform(Combination.EMPTY())).rejects.toThrow(new Error('Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was requireD extends Item, but only 0 were found. '));
 
         });
 
@@ -258,7 +258,7 @@ describe('Perform Alchemy', () => {
                 new Unit<CraftingComponent>(testComponentFive, 1)
             ]);
 
-            expect(underTest.perform(testCombination)).rejects.toThrow(new Error('Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was required, but only 0 were found. '));
+            expect(underTest.perform(testCombination)).rejects.toThrow(new Error('Too few Alchemical Effects were produced by mixing the provided Components. A minimum of 1 was requireD extends Item, but only 0 were found. '));
 
         });
 

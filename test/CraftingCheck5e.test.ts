@@ -79,10 +79,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should succeed with ingredient DC contribution when result exceeds threshold without tool proficiency',() => {
@@ -116,10 +116,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should succeed with essence DC contribution when result equals threshold without tool proficiency',() => {
@@ -153,10 +153,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should succeed with essence and ingredient DC contribution when result equals threshold without tool proficiency',() => {
@@ -190,10 +190,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should succeed with ingredient DC contribution when result equals threshold with tool proficiency and tool owned',() => {
@@ -230,10 +230,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2', '+3'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2', '+3'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should succeed with ingredient DC contribution when result equals threshold with custom tool proficiency and tool owned',() => {
@@ -270,10 +270,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2', '+3'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2', '+3'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should succeed with ingredient DC contribution when result equals threshold with tool proficiency and tool not owned',() => {
@@ -310,10 +310,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
     test('Should fail with ingredient DC contribution when result is below threshold without tool proficiency',() => {
@@ -348,10 +348,10 @@ describe('Perform', () => {
         expect(checkResult.expression).toBe(rollExpression);
 
         Sandbox.assert.calledOnce(stubRollMethod);
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('number', 1));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('faces', 20));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
-        Sandbox.assert.calledWith(stubRollMethod, Sandbox.match.has('options', Sandbox.match.object));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('number', 1));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('faces', 20));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('modifiers', Sandbox.match.array.contains(['+2'])));
+        Sandbox.assert.calledWith(stubRollMethoD extends Item, Sandbox.match.has('options', Sandbox.match.object));
     });
 
 });

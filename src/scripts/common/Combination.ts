@@ -54,7 +54,7 @@ class Combination<T extends Identifiable> {
       if (!amounts.has(unit.part.id)) {
         amounts.set(unit.part.id, unit);
       } else {
-        const current: Unit<T> = amounts.get(unit.part.id);
+        const current: Unit<T> = <Unit<T>>amounts.get(unit.part.id);
         amounts.set(unit.part.id, current.add(unit.quantity));
       }
     });
@@ -95,7 +95,7 @@ class Combination<T extends Identifiable> {
   }
 
   public amountFor(member: T): number {
-    return this._amounts.has(member.id) ? this._amounts.get(member.id).quantity : 0;
+    return this._amounts.has(member.id) ? (<Unit<T>>this._amounts.get(member.id)).quantity : 0;
   }
 
   public isEmpty(): boolean {
@@ -143,7 +143,7 @@ class Combination<T extends Identifiable> {
       if (!combination.has(otherUnit.part.id)) {
         combination.set(otherUnit.part.id, otherUnit);
       } else {
-        const current: Unit<T> = combination.get(otherUnit.part.id);
+        const current: Unit<T> = <Unit<T>>combination.get(otherUnit.part.id);
         const updated: Unit<T> = current.add(otherUnit.quantity);
         combination.set(otherUnit.part.id, updated);
       }
@@ -161,7 +161,7 @@ class Combination<T extends Identifiable> {
   accept(other: Combination<T>): Combination<T> {
     other.members.forEach((otherMember: T) => {
       if (this.amounts.has(otherMember.id)) {
-        const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
+        const currentAmount: Unit<T> = <Unit<T>>this.amounts.get(otherMember.id);
         const modifiedAmount: Unit<T> = currentAmount.add(other.amountFor(otherMember));
         this.amounts.set(otherMember.id, modifiedAmount);
       } else {
@@ -181,7 +181,7 @@ class Combination<T extends Identifiable> {
   public add(additionalUnit: Unit<T>): Combination<T> {
     const amounts: Map<string, Unit<T>> = new Map(this.amounts);
     if (amounts.has(additionalUnit.part.id)) {
-      const currentAmount: Unit<T> = amounts.get(additionalUnit.part.id);
+      const currentAmount: Unit<T> = <Unit<T>>amounts.get(additionalUnit.part.id);
       const updatedAmount: Unit<T> = currentAmount.add(additionalUnit.quantity);
       amounts.set(additionalUnit.part.id, updatedAmount);
     } else {
@@ -225,7 +225,7 @@ class Combination<T extends Identifiable> {
   drop(other: Combination<T>): Combination<T> {
     other.members.forEach((otherMember: T) => {
       if (this.amounts.has(otherMember.id)) {
-        const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
+        const currentAmount: Unit<T> = <Unit<T>>this.amounts.get(otherMember.id);
         const deleteUnit: boolean = currentAmount.quantity <= other.amountFor(otherMember);
         switch (deleteUnit) {
           case true:
@@ -246,7 +246,7 @@ class Combination<T extends Identifiable> {
   public multiply(factor: number) {
     const modifiedAmounts: Map<string, Unit<T>> = new Map(this._amounts);
     this.members.forEach((member: T) => {
-      const unit: Unit<T> = modifiedAmounts.get(member.id);
+      const unit: Unit<T> = <Unit<T>>modifiedAmounts.get(member.id);
       modifiedAmounts.set(member.id, unit.multiply(factor));
     });
     return new Combination(modifiedAmounts);

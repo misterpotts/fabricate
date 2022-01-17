@@ -9,7 +9,7 @@ class InventoryRegistry {
         `The Crafting Inventory for Actor ID ${actorId} is already managed by Fabricate and should not be overridden. `,
       );
     }
-    this._managedInventories.set(actorId, inventory);
+    this._managedInventories.set(actorID extends Item, inventory);
   }
 
   public getFor(actorId: string): Inventory<{}, Actor> {

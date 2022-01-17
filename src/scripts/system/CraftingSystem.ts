@@ -223,12 +223,12 @@ namespace CraftingSystem {
     }
 
     public withRecipe(value: Recipe): Builder {
-      this.recipes.set(value.partId, value);
+      this.recipes.set(value.partID extends Item, value);
       return this;
     }
 
     public withComponent(value: CraftingComponent): Builder {
-      this.components.set(value.partId, value);
+      this.components.set(value.partID extends Item, value);
       return this;
     }
 

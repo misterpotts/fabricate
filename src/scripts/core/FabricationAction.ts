@@ -9,7 +9,7 @@ enum ActionType {
 class FabricationAction<D> {
   private readonly _actionType: ActionType;
   private readonly _unit: Unit<CraftingComponent>;
-  private readonly _itemData: Item.Data<D>;
+  private readonly _itemData: ItemData;
   private readonly _customData: boolean;
 
   constructor(builder: FabricationAction.Builder<D>) {
@@ -31,7 +31,7 @@ class FabricationAction<D> {
     return this._unit;
   }
 
-  get itemData(): Item.Data<D> {
+  get itemData(): ItemData {
     return this._itemData;
   }
 
@@ -43,7 +43,7 @@ class FabricationAction<D> {
     return this._customData;
   }
 
-  public withItemData(data: Item.Data<D>, isCustomized?: boolean): FabricationAction<D> {
+  public withItemData(data: ItemData, isCustomized?: boolean): FabricationAction<D> {
     const hasCustomData: boolean = typeof isCustomized === 'undefined' ? this.customData : isCustomized;
     return FabricationAction.builder<D>()
       .withItemData(data)
@@ -58,7 +58,7 @@ namespace FabricationAction {
   export class Builder<D> {
     public actionType: ActionType;
     public component: Unit<CraftingComponent>;
-    public itemData: Item.Data<D>;
+    public itemData: ItemData;
     public customData: boolean = false;
 
     public build(): FabricationAction<D> {
@@ -75,7 +75,7 @@ namespace FabricationAction {
       return this;
     }
 
-    public withItemData(value: Item.Data<D>) {
+    public withItemData(value: ItemData) {
       this.itemData = value;
       return this;
     }

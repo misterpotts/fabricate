@@ -76,19 +76,19 @@ class AlchemicalCombiner<D> {
   }
 
   /**
-   * Perform Alchemy using the provided Component Combination. The Component combination is validated, before Essences
+   * Perform Alchemy using the provided Component Combination. The Component combination is validateD extends Item, before Essences
    * are matched to Alchemical Effects (exact matches are required). The resultant Alchemical Effects are then
-   * validated, before being applied to the Base Crafting Component for the Alchemical Combiner to produce custom Item
+   * validateD extends Item, before being applied to the Base Crafting Component for the Alchemical Combiner to produce custom Item
    * data that can be used by the Crafting System to produce a customised instance of the Base Component.
    *
    * @param componentCombination The combination of Crafting Components to use in the alchemy process.
    * @return The custom Item data resulting from the alchemy process
    * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
-   * mixed, or if insufficient effects are matched
+   * mixeD extends Item, or if insufficient effects are matched
    * */
   async perform(
     componentCombination: Combination<CraftingComponent>,
-  ): Promise<[Unit<CraftingComponent>, Item.Data<D>]> {
+  ): Promise<[Unit<CraftingComponent>, ItemData]> {
     const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
     this.validate(componentCombination, essenceCombination);
     const effects: [AlchemicalEffect<D>, number][] = this.determineAlchemicalEffectsForComponents(componentCombination);
@@ -96,13 +96,13 @@ class AlchemicalCombiner<D> {
       throw new AlchemyError(
         `Too few Alchemical Effects were produced by mixing the provided Components. A minimum of ${
           this.minimumEffectMatches
-        } was required, but only ${effects ? effects.length : 0} were found. `,
+        } was requireD extends Item, but only ${effects ? effects.length : 0} were found. `,
         componentCombination,
         true,
       );
     }
     const orderedEffects: [AlchemicalEffect<D>, number][] = this.orderAlchemicalEffects(effects);
-    const alchemyItemData: Item.Data<D> = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
+    const alchemyItemData: ItemData = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
     return [new Unit(this.baseComponent, 1), alchemyItemData];
   }
 
@@ -113,7 +113,7 @@ class AlchemicalCombiner<D> {
           this.maxComponents
         } components. ${components.size()} Components were provided. `,
         components,
-        this.wastageEnabled,
+        this.wastageEnableD extends Item,
       );
     }
     if (this.maxEssences > 0) {
@@ -123,7 +123,7 @@ class AlchemicalCombiner<D> {
             this.maxEssences
           } essences. The provided Component mix contains ${essences.size()} essences. `,
           components,
-          this.wastageEnabled,
+          this.wastageEnableD extends Item,
         );
       }
     }
@@ -132,12 +132,12 @@ class AlchemicalCombiner<D> {
   private async applyEffectsToBaseItem(
     effects: [AlchemicalEffect<D>, number][],
     baseComponent: CraftingComponent,
-  ): Promise<Item.Data<D>> {
-    const compendiumEntry: Entity<Item.Data<D>> = await this._compendiumProvider.getEntity(
-      baseComponent.systemId,
-      baseComponent.partId,
+  ): Promise<ItemData> {
+    const compendiumEntry: Document<ItemData> = await this._compendiumProvider.getEntity(
+      baseComponent.systemID extends Item,
+      baseComponent.partID extends Item,
     );
-    const duplicated: Item.Data<D> = this._objectUtility.duplicate(compendiumEntry.data);
+    const duplicated: ItemData = this._objectUtility.duplicate(compendiumEntry.data);
     effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
       for (let i = 0; i < effectCount[1]; i++) {
         effectCount[0].applyTo(duplicated.data);

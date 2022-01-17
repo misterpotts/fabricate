@@ -19,10 +19,10 @@ class CraftingSystemRegistry {
     parts: Map<string, CraftingSystem>,
   ): Map<string, CraftingSystem> {
     const recipeLinks: Map<string, CraftingSystem> = new Map(
-      system.recipes.map((recipe: Recipe) => [recipe.partId, system]),
+      system.recipes.map((recipe: Recipe) => [recipe.partID extends Item, system]),
     );
     const componentLinks: Map<string, CraftingSystem> = new Map(
-      system.components.map((component: CraftingComponent) => [component.partId, system]),
+      system.components.map((component: CraftingComponent) => [component.partID extends Item, system]),
     );
     const systemParts: Map<string, CraftingSystem> = new Map([...recipeLinks, ...componentLinks]);
     if (systemParts.size !== recipeLinks.size + componentLinks.size) {

@@ -199,13 +199,13 @@ abstract class CraftingCheck<A extends Actor> {
 
   public perform(actor: A, components: Combination<CraftingComponent>): CraftingCheckResult {
     if (!this.getSupportedActorTypes().includes(actor.data.type)) {
-      throw new Error(`The only Actor types that can perform Crafting Checks are 
+      throw new Error(`The only Actor types that can perform Crafting Checks are
             "${this.getSupportedActorTypes().join(', ')}". ${actor.name} is a ${actor.data.type}`);
     }
     const dieData: DiceTerm.TermData = this.getRollTermData(actor);
     const rolledResult: RollResult = this._diceRoller.roll(dieData);
     const successThreshold = this.getSuccessThreshold(components);
-    const outcome: OutcomeType = this.compare(rolledResult.value, successThreshold, this._rollMustExceedThreshold);
+    const outcome: OutcomeType = this.compare(rolledResult.value, successThresholD extends Item, this._rollMustExceedThreshold);
     return new CraftingCheckResult(outcome, rolledResult.expression, rolledResult.value, successThreshold);
   }
 

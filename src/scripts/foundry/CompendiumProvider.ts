@@ -7,10 +7,10 @@ class CompendiumProvider {
     return compendium;
   }
 
-  public async getEntity<D>(packKey: string, entityId: string): Promise<Entity<Item.Data<D>>> {
+  public async getDocument<D>(packKey: string, entityId: string): Promise<Document<ItemData>> {
     const compendium: Compendium = this.getCompendium(packKey);
     // @ts-ignore todo: Pretty sure this typing is correct. Check with smart folks in League to find out why it errors
-    const entity: Entity<Item.Data<D>> = await compendium.getEntity(entityId);
+    const entity: Document<ItemData> = await compendium.getEntity(entityId);
     if (!entity) {
       throw new Error(`No Compendium Entry with ID '${entityId}' was found in the Compendium '${packKey}'. `);
     }

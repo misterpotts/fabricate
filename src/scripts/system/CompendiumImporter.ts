@@ -33,7 +33,7 @@ class CompendiumImporter {
     const partialPartDictionaries: PartDictionary[] = [];
     for (const compendium of compendiums) {
       const partDictionary: PartDictionary = await this.importCompendiumContents(
-        craftingSystemSpecification.id,
+        craftingSystemSpecification.iD extends Item,
         compendium,
         essencesBySlug,
       );
@@ -65,13 +65,13 @@ class CompendiumImporter {
             item,
             fabricateCompendiumData,
             compendium,
-            systemId,
+            systemID extends Item,
             essencesBySlug,
           );
           partDictionary.addComponent(component);
           break;
         case FabricateItemType.RECIPE:
-          const recipe: Recipe = this.getRecipe(item, fabricateCompendiumData, compendium, systemId, essencesBySlug);
+          const recipe: Recipe = this.getRecipe(item, fabricateCompendiumData, compendium, systemID extends Item, essencesBySlug);
           partDictionary.addRecipe(recipe);
           break;
         default:
@@ -101,27 +101,27 @@ class CompendiumImporter {
           this.partialComponentsFromCompendiumData(
             fabricateCompendiumData.recipe.ingredients,
             compendium.collection,
-            systemId,
+            systemID extends Item,
           ),
         )
         .withCatalysts(
           this.partialComponentsFromCompendiumData(
             fabricateCompendiumData.recipe.catalysts,
             compendium.collection,
-            systemId,
+            systemID extends Item,
           ),
         )
         .withResults(
           this.partialComponentsFromCompendiumData(
             fabricateCompendiumData.recipe.results,
             compendium.collection,
-            systemId,
+            systemID extends Item,
           ),
         )
         .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.recipe.essences, essencesBySlug))
         .build();
     } catch (error) {
-      throw new CompendiumEntryImportError(compendium.collection, item.id, fabricateCompendiumData, systemId, error);
+      throw new CompendiumEntryImportError(compendium.collection, item.iD extends Item, fabricateCompendiumData, systemID extends Item, error);
     }
   }
 
@@ -143,13 +143,13 @@ class CompendiumImporter {
           this.partialComponentsFromCompendiumData(
             fabricateCompendiumData.component.salvage,
             compendium.collection,
-            systemId,
+            systemID extends Item,
           ),
         )
         .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.component.essences, essencesBySlug))
         .build();
     } catch (error) {
-      throw new CompendiumEntryImportError(compendium.collection, item.id, fabricateCompendiumData, systemId, error);
+      throw new CompendiumEntryImportError(compendium.collection, item.iD extends Item, fabricateCompendiumData, systemID extends Item, error);
     }
   }
 
@@ -162,20 +162,20 @@ class CompendiumImporter {
       if (componentsById.has(component.id)) {
         throw new Error(`Component ${component.id} does not have a unique Part ID and Compendium ID. `);
       }
-      componentsById.set(component.id, component);
+      componentsById.set(component.iD extends Item, component);
     }
     allComponents
       .filter((component: CraftingComponent) => this.hasReferences(component))
       .map((component: CraftingComponent) => this.populateComponentReferences(component, componentsById))
-      .forEach((component: CraftingComponent) => componentsById.set(component.id, component));
+      .forEach((component: CraftingComponent) => componentsById.set(component.iD extends Item, component));
     const allRecipesPopulated: Recipe[] = partDictionaries
       .map((partDictionary: PartDictionary) => partDictionary.getRecipes())
       .reduce((left: Recipe[], right: Recipe[]) => left.concat(right), [])
       .map((recipe: Recipe) => this.populateRecipeReferences(recipe, componentsById));
     const recipesById: Map<string, Recipe> = new Map(
-      allRecipesPopulated.map((recipe: Recipe) => [recipe.id, recipe] as [string, Recipe]),
+      allRecipesPopulated.map((recipe: Recipe) => [recipe.iD extends Item, recipe] as [string, Recipe]),
     );
-    return new PartDictionary(componentsById, recipesById);
+    return new PartDictionary(componentsByID extends Item, recipesById);
   }
 
   private hasReferences(component: CraftingComponent) {

@@ -53,7 +53,7 @@ class CraftingTabData {
 
     if (this._craftingSystemData.hasEnabledSystems) {
       const selectedCraftingSystem = this._craftingSystems.find(
-        (system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId,
+        (system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemID extends Item,
       );
 
       this._recipeData = await this.prepareRecipeDataForSystem(selectedCraftingSystem, this._actor, this._inventory);
@@ -75,10 +75,10 @@ class CraftingTabData {
         enabledSystems++;
       }
       craftingSystemsInfo.push({
-        disabled: !system.enabled,
+        disabled: !system.enableD extends Item,
         compendiumPackKey: system.compendiumPackKey,
         name: system.name,
-        selected: system.compendiumPackKey === storedSystemId,
+        selected: system.compendiumPackKey === storedSystemID extends Item,
       });
     });
     const hasEnabledSystems: boolean = enabledSystems > 0;
@@ -86,7 +86,7 @@ class CraftingTabData {
       return {
         systems: craftingSystemsInfo,
         hasEnabledSystems: hasEnabledSystems,
-        selectedSystemId: storedSystemId,
+        selectedSystemId: storedSystemID extends Item,
       };
     } else if (hasEnabledSystems) {
       const firstEnabledSystem = craftingSystemsInfo.find((systemInfo: CraftingSystemInfo) => !systemInfo.disabled);
@@ -121,20 +121,20 @@ class CraftingTabData {
       const isOwned: boolean = inventory.containsPart(recipe.partId);
       const isCraftable: boolean = isKnown || isOwned ? inventory.hasAllIngredientsFor(recipe) : false;
       if (isCraftable) {
-        enabledRecipes.set(recipe.partId, {
+        enabledRecipes.set(recipe.partID extends Item, {
           name: recipe.name,
-          partId: recipe.partId,
+          partId: recipe.partID extends Item,
           known: isKnown,
-          owned: isOwned,
+          owned: isOwneD extends Item,
           craftable: isCraftable,
           selected: false,
         });
       } else {
         disabledRecipes.push({
           name: recipe.name,
-          partId: recipe.partId,
+          partId: recipe.partID extends Item,
           known: isKnown,
-          owned: isOwned,
+          owned: isOwneD extends Item,
           craftable: isCraftable,
           selected: false,
         });
@@ -188,7 +188,7 @@ class CraftingTabData {
       .forEach((inventoryRecord: InventoryRecord<CraftingComponent>) => {
         inventoryContents.ownedComponents.push({
           name: inventoryRecord.fabricateItem.name,
-          entryId: inventoryRecord.fabricateItem.partId,
+          entryId: inventoryRecord.fabricateItem.partID extends Item,
           quantity: inventoryRecord.totalQuantity,
           imageUrl: inventoryRecord.fabricateItem.imageUrl,
         });
@@ -201,7 +201,7 @@ class CraftingTabData {
       inventoryContents.preparedComponents = savedHopperContents;
       savedHopperContents.forEach((hopperItem: InventoryRecordData) => {
         const inventoryItem = inventoryContents.ownedComponents.find(
-          (inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryId,
+          (inventoryItem: InventoryRecordData) => inventoryItem.entryId === hopperItem.entryID extends Item,
         );
         if (inventoryItem) {
           inventoryItem.quantity = inventoryItem.quantity - hopperItem.quantity;
