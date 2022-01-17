@@ -1,20 +1,18 @@
-import {FabricateItem} from "../common/FabricateItem";
+import { FabricateItem } from '../common/FabricateItem';
 
 class CompendiumEntryReferencePopulationError extends Error {
+  private readonly _fabricateItem: FabricateItem;
 
-    private readonly _fabricateItem: FabricateItem;
+  constructor(fabricateItem: FabricateItem, cause: Error) {
+    const message: string = `Unable to resolve Component references for Item '${fabricateItem.id}'. Caused by: ${cause.message}`;
+    super(message);
 
-    constructor(fabricateItem: FabricateItem, cause: Error) {
-        const message: string = `Unable to resolve Component references for Item '${fabricateItem.id}'. Caused by: ${cause.message}`;
-        super(message);
+    this._fabricateItem = fabricateItem;
+  }
 
-        this._fabricateItem = fabricateItem;
-    }
-
-    get fabricateItem(): FabricateItem {
-        return this._fabricateItem;
-    }
-
+  get fabricateItem(): FabricateItem {
+    return this._fabricateItem;
+  }
 }
 
-export {CompendiumEntryReferencePopulationError}
+export { CompendiumEntryReferencePopulationError };
