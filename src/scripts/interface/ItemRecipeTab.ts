@@ -1,10 +1,12 @@
 import Properties from '../Properties';
-import { Recipe } from '../core/Recipe';
-import { CraftingSystem } from '../core/CraftingSystem';
 import FabricateApplication from '../application/FabricateApplication';
-import { Inventory } from '../game/Inventory';
-import { FabricateCompendiumData } from '../game/CompendiumData';
 import { game } from '../settings';
+import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import { Inventory } from '../actor/Inventory';
+import { CraftingSystem } from '../system/CraftingSystem';
+import { Recipe } from '../crafting/Recipe';
+import { FabricateCompendiumData } from '../compendium/CompendiumData';
+import { EssenceDefinition } from '../common/EssenceDefinition';
 
 class ItemRecipeTab {
   private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
@@ -16,7 +18,7 @@ class ItemRecipeTab {
   private readonly _owned: boolean;
   private readonly _recipe: Recipe;
   private readonly _craftingSystem: CraftingSystem;
-  private readonly _inventory: Inventory<ItemData>;
+  private readonly _inventory: Inventory<ItemData,Actor>;
   private readonly _actor: Actor;
   private _suppressedInNav: boolean = false;
   private static tabKey: string = 'fabricate-recipe';
@@ -27,7 +29,7 @@ class ItemRecipeTab {
     }
     const fabricateFlags: FabricateCompendiumData = itemApplication.item.data.flags.fabricate;
     if (fabricateFlags.type === Properties.types.recipe) {
-      let tab: ItemRecipeTab = ItemRecipeTab.tabs.get(itemApplication.id);
+      let tab: ItemRecipeTab = <ItemRecipeTab>ItemRecipeTab.tabs.get(itemApplication.id);
       if (!tab) {
         tab = new ItemRecipeTab(itemApplication);
         ItemRecipeTab.tabs.set(itemApplication.id, tab);
@@ -36,10 +38,10 @@ class ItemRecipeTab {
     }
     if (
       fabricateFlags.type === Properties.types.component &&
-      fabricateFlags.component.essences &&
-      fabricateFlags.component.essences.length > 0
+      fabricateFlags.component?.essences &&
+      fabricateFlags.component?.essences.length > 0
     ) {
-      const essences: string[] = fabricateFlags.component.essences;
+      const essences: Record<string, number> = fabricateFlags.component.essences;
       const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(
         fabricateFlags.identity.systemId
       );
@@ -56,8 +58,8 @@ class ItemRecipeTab {
     if (this._item.isOwned) {
       this._owned = true;
       const actorId: string = this._item.actor.id;
-      this._actor = game.actors.get(actorId);
-      this._inventory = FabricateApplication.inventories.getFor(this._actor.id);
+      this._actor = <Actor>game.actors?.get(actorId);
+      this._inventory = FabricateApplication.inventories.getFor(this._actor?.id);
     } else {
       this._owned = false;
     }
@@ -114,9 +116,9 @@ class ItemRecipeTab {
     this._sheetHtml.find('.open-compendium-item').click(async (event: any) => {
       const partId = event.currentTarget.getAttribute('data-part-id');
       const systemId = event.currentTarget.getAttribute('data-system-id');
-      const compendium: Compendium = game.packs.get(systemId);
-      const entity: Entity = await compendium.getEntity(partId);
-      if (!game.user.isGM && entity.permission === 0) {
+      const compendium: Compendium = <Compendium>game.packs.get(systemId);
+      const entity: Entity = <Entity>await compendium.getEntity(partId);
+      if (!game.user?.isGM && entity.permission === 0) {
         console.warn(
           'You are attempting to view the details of a Crafting Component that you have no ' +
             'access to. Ask your GM oran administrator to grant you access to the items in the compendium for ' +

@@ -11,6 +11,7 @@ import { CraftingCheckResult } from '../crafting/CraftingCheckResult';
 import { AlchemyError } from '../error/AlchemyError';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { game } from '../settings';
+import { FabricationHelper } from './FabricationHelper';
 
 class AlchemySpecification<T extends ItemData, A extends Actor> {
   private readonly _essenceCombiner: EssenceCombiner<T>;
@@ -278,24 +279,24 @@ class Fabricator<D extends ItemData, A extends Actor> {
       const resultantComponentType: CraftingComponent = this._alchemySpecification.baseComponent;
       const addComponent: FabricationAction<D> = FabricationAction.builder<D>()
         .withActionType(ActionType.ADD)
-        .withQuantity(1)
-        .withCustomItemData(alchemicallyModifiedItemData)
-        .withItemType(resultantComponentType)
+        // .withQuantity(1)
+        .withItemData(alchemicallyModifiedItemData)
+        .withComponent(resultantComponentType)
         .build();
       const actions: FabricationAction<T>[] = removeSuppliedComponents.concat(addComponent);
       await FabricationHelper.applyResults(actions, inventory);
-      return FabricationOutcome.builder().withActions(actions).withOutcomeType(OutcomeType.SUCCESS).build();
+      return FabricationOutcome.builder().withActions(actions).withOutcome(OutcomeType.SUCCESS).build();
     } catch (error: any) {
       if (error instanceof AlchemyError) {
         const alchemyError: AlchemyError = <AlchemyError>error;
         const actions: FabricationAction<T>[] = [];
-        if (alchemyError.componentsConsumed) {
+        if (alchemyError.components) {
           actions.push(...removeSuppliedComponents);
           await FabricationHelper.applyResults(removeSuppliedComponents, inventory);
         }
         return FabricationOutcome.builder()
-          .withOutcomeType(OutcomeType.FAILURE)
-          .withFailureDetails(alchemyError.message)
+          .withOutcome(OutcomeType.FAILURE)
+          .withMessage(alchemyError.message)
           .withActions(actions)
           .build();
       }
