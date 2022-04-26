@@ -1,7 +1,7 @@
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
-import { Combination } from '../../common/Combination';
-import { EssenceDefinition } from '../../common/EssenceDefinition';
-import { DiceUtility } from '../../foundry/DiceUtility';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import type { Combination } from '../../common/Combination';
+import type { EssenceDefinition } from '../../common/EssenceDefinition';
+import type { DiceUtility } from '../../foundry/DiceUtility';
 
 enum AlchemicalEffectType {
   MODIFIER = 1,

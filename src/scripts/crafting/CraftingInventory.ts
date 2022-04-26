@@ -1,17 +1,18 @@
-import { Inventory } from './Inventory';
-import { InventoryRecord } from './InventoryRecord';
-import { GameSystemType } from '../core/GameSystemType';
-import { Ingredient } from '../core/Ingredient';
-import { CraftingComponent } from '../core/CraftingComponent';
-import { Recipe } from '../core/Recipe';
-import { FabricateItem } from '../core/FabricateItem';
-import Properties from '../Properties';
+import type { Inventory } from './Inventory';
+import type { InventoryRecord } from './InventoryRecord';
+import type { GameSystemType } from '../core/GameSystemType';
+import type { Ingredient } from '../core/Ingredient';
+import type { CraftingComponent } from '../core/CraftingComponent';
+import type { Recipe } from '../core/Recipe';
+import type { FabricateItem } from '../core/FabricateItem';
 import FabricateApplication from '../application/FabricateApplication';
 import { FabricateItemType } from './CompendiumData';
-import { CraftingSystem } from '../core/CraftingSystem';
-import { FabricationAction } from '../core/FabricationAction';
+import type { CraftingSystem } from '../core/CraftingSystem';
+import type { FabricationAction } from '../core/FabricationAction';
+import CONSTANTS from '../constants';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 
-abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
+abstract class CraftingInventory<T extends ItemData> implements Inventory<T> {
   protected readonly _actor: any;
   protected _supportedGameSystems: GameSystemType[];
 
@@ -71,7 +72,7 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
     const componentCountById: Map<string, number> = new Map<string, number>();
     components.forEach((component: CraftingComponent) => {
       if (componentCountById.has(component.partId)) {
-        const currentCount = componentCountById.get(component.partId);
+        const currentCount = <number>componentCountById.get(component.partId);
         componentCountById.set(component.partId, currentCount + 1);
       } else {
         componentCountById.set(component.partId, 1);
@@ -99,7 +100,7 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
     }
     recipe.essences.forEach((essence: string) => {
       if (outstandingEssencesByType.has(essence)) {
-        outstandingEssencesByType.set(essence, outstandingEssencesByType.get(essence) + 1);
+        outstandingEssencesByType.set(essence, <number>outstandingEssencesByType.get(essence) + 1);
       } else {
         outstandingEssencesByType.set(essence, 1);
       }
@@ -109,7 +110,7 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
       if (thisRecord.fabricateItem.essences) {
         thisRecord.fabricateItem.essences.forEach((essence: string) => {
           if (outstandingEssencesByType.has(essence)) {
-            const remaining: number = outstandingEssencesByType.get(essence);
+            const remaining: number = <number>outstandingEssencesByType.get(essence);
             const contribution = thisRecord.totalQuantity;
             if (remaining <= contribution) {
               outstandingEssencesByType.delete(essence);
@@ -136,7 +137,7 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
         failedToFind = true;
         return;
       }
-      const occurrences = ingredientsByType.get(ingredient.component.partId) + 1;
+      const occurrences = <number>ingredientsByType.get(ingredient.component.partId) + 1;
       ingredientsByType.set(ingredient.component.partId, occurrences);
       if (occurrences > 1) {
         duplicatedIngredient = true;
@@ -151,10 +152,10 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
   }
 
   protected getOwningCraftingSystemForItem(item: Item): CraftingSystem {
-    const systemId = item.getFlag(Properties.module.name, Properties.flagKeys.item.systemId);
+    const systemId = <string>item.getFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.item.systemId);
     const craftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
     if (!craftingSystem) {
-      throw new Error(`Unable to look up crafting System '${systemId}' when indexing Item '${item._id}'. `);
+      throw new Error(`Unable to look up crafting System '${systemId}' when indexing Item '${item.id}'. `);
     }
     return craftingSystem;
   }
@@ -162,10 +163,10 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
   protected lookUp(item: Item): FabricateItem {
     const craftingSystem: CraftingSystem = this.getOwningCraftingSystemForItem(item);
     const itemType: FabricateItemType = item.getFlag(
-      Properties.module.name,
-      Properties.flagKeys.item.fabricateItemType,
+      CONSTANTS.module.name,
+      CONSTANTS.flagKeys.item.fabricateItemType,
     );
-    const partId: string = item.getFlag(Properties.module.name, Properties.flagKeys.item.partId);
+    const partId: string = <string>item.getFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.item.partId);
     switch (itemType) {
       case FabricateItemType.RECIPE:
         const recipe: Recipe = craftingSystem.getRecipeByPartId(partId);
@@ -182,7 +183,7 @@ abstract class CraftingInventory<T extends Item.Data> implements Inventory<T> {
         throw new Error(`Unable to look up Crafting Component with Part ID '${partId}' from Crafting System 
                     '${craftingSystem.compendiumPackKey}. '`);
       default:
-        throw new Error(`Unrecognized Fabricate Item Type of '${itemType}' for Item '${item._id}'. 
+        throw new Error(`Unrecognized Fabricate Item Type of '${itemType}' for Item '${item.id}'. 
                     The allowable values are 'COMPONENT' and 'RECIPE'. `);
     }
   }

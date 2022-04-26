@@ -1,15 +1,14 @@
 import * as fs from 'fs';
 
 import { CraftingSystem } from './CraftingSystem';
-import { CraftingSystemSpecification } from './CraftingSystemSpecification';
+import type { CraftingSystemSpecification } from './CraftingSystemSpecification';
 import { CraftingComponent } from './CraftingComponent';
 import { Recipe } from './Recipe';
 import { Ingredient } from './Ingredient';
 import { FabricationAction } from './FabricationAction';
 import { FabricateCompendiumData, FabricateItemType } from '../game/CompendiumData';
-import Properties from '../Properties';
-import { FabricateItem } from './FabricateItem';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import type { FabricateItem } from './FabricateItem';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 
 interface CraftingSystemFactory {
   systemSpecification: CraftingSystemSpecification<{}>;
@@ -131,7 +130,7 @@ class CompendiumImportingCraftingSystemFactory extends AbstractCraftingSystemFac
           break;
         default:
           throw new Error(
-            `${Properties.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `,
+            `${CONSTANTS.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `,
           );
       }
     });
@@ -150,7 +149,7 @@ class CompendiumImportingCraftingSystemFactory extends AbstractCraftingSystemFac
     let attempts: number = 0;
     while ((!content || content.length === 0) && attempts <= maxAttempts) {
       console.log(
-        `${Properties.module.label} | Waiting for content in Compendium Pack ${compendium.id} (Attempt ${attempts} of ${maxAttempts}. `,
+        `${CONSTANTS.module.label} | Waiting for content in Compendium Pack ${compendium.id} (Attempt ${attempts} of ${maxAttempts}. `,
       );
       await this.wait(1000);
       attempts++;

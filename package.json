@@ -18,6 +18,7 @@
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
+    "@league-of-foundry-developers/foundry-vtt-dnd5e-types": "^1.5.2-2",
     "@league-of-foundry-developers/foundry-vtt-types": "^9.268.0",
     "@types/chai": "^4.2.14",
     "@types/jest": "^26.0.21",

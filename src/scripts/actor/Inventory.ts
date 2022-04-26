@@ -1,11 +1,11 @@
-import { CraftingComponent } from '../common/CraftingComponent';
-import { EssenceDefinition } from '../common/EssenceDefinition';
+import type { CraftingComponent } from '../common/CraftingComponent';
+import type { EssenceDefinition } from '../common/EssenceDefinition';
 import { Combination, Unit } from '../common/Combination';
 import { FabricateItemType } from '../compendium/CompendiumData';
 import { PartDictionary } from '../system/PartDictionary';
-import { ObjectUtility } from '../foundry/ObjectUtility';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
-import Document from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/document.mjs';
+import type { ObjectUtility } from '../foundry/ObjectUtility';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import type Document from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/document.mjs';
 import { ActionType, FabricationAction } from '../core/FabricationAction';
 
 interface Inventory<D extends ItemData, A extends Actor> {
@@ -17,6 +17,7 @@ interface Inventory<D extends ItemData, A extends Actor> {
   excluding(ingredients: Combination<CraftingComponent>): Inventory<D, A>;
   perform(actions: FabricationAction<D>[]): Promise<Item[]>;
   prepare(): boolean;
+  containsPart(partId:string): boolean;
 }
 
 interface InventorySearch {
@@ -232,7 +233,7 @@ class EssenceSelection {
         return left[1].size() - right[1].size();
       },
     );
-    return sortedCombinations[0][0];
+    return (<[Combination<CraftingComponent>, Combination<EssenceDefinition>]>sortedCombinations[0])[0];
   }
 
   private matchingCombinationsFor(
@@ -393,7 +394,7 @@ abstract class BaseCraftingInventory<D extends ItemData, A extends Actor> implem
           ?.get(craftingComponent)
           ?.sort((left: [ItemData, number], right: [ItemData, number]) => right[1] - left[1])
       );
-      const itemToUpdate: [ItemData, number] = records[0];
+      const itemToUpdate: [ItemData, number] = <[ItemData, number]>records[0];
       const newItemData: ItemData = this.setQuantityFor(
         this._gameUtils.duplicate(<any>itemToUpdate[0].data),
         addition.unit.quantity + itemToUpdate[1],
@@ -425,7 +426,7 @@ abstract class BaseCraftingInventory<D extends ItemData, A extends Actor> implem
       let outstandingRemovalAmount: number = removal.unit.quantity;
       let currentRecordIndex: number = 0;
       while (outstandingRemovalAmount > 0) {
-        const currentRecord: [ItemData, number] = records[currentRecordIndex];
+        const currentRecord: [ItemData, number] = <[ItemData, number]>records[currentRecordIndex];
         const quantity: number = currentRecord[1];
         const itemData = currentRecord[0].data;
         if (quantity <= outstandingRemovalAmount) {

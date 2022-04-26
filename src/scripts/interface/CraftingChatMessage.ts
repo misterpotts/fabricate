@@ -1,7 +1,7 @@
-import { FabricationOutcome } from '../core/FabricationOutcome';
-import { FabricationAction } from '../core/FabricationAction';
-import { CraftingError } from '../error/CraftingError';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import type { FabricationOutcome } from '../core/FabricationOutcome';
+import type { FabricationAction } from '../core/FabricationAction';
+import type { CraftingError } from '../error/CraftingError';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { OutcomeType } from '../core/OutcomeType';
 
 class CraftingChatMessage {

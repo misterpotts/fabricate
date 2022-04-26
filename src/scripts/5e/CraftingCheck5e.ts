@@ -1,4 +1,4 @@
-import { Tool } from '../crafting/Tool';
+import type { Tool } from '../crafting/Tool';
 import { CraftingCheck } from '../crafting/CraftingCheck';
 import AbilityType = DND5e.AbilityType;
 // import Character = Actor5e.Data.Character;

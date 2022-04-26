@@ -1,6 +1,6 @@
 import { FabricateItem } from './FabricateItem';
 import { Combination } from './Combination';
-import { EssenceDefinition } from './EssenceDefinition';
+import type { EssenceDefinition } from './EssenceDefinition';
 
 class CraftingComponent extends FabricateItem {
   private readonly _essences: Combination<EssenceDefinition>;

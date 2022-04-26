@@ -1,17 +1,17 @@
-import { CraftingSystem } from '../core/CraftingSystem';
-import { Inventory } from '../game/Inventory';
-import { Recipe } from '../core/Recipe';
-import { InventoryRecord } from '../game/InventoryRecord';
-import Properties from '../Properties';
-import { CraftingComponent } from '../core/CraftingComponent';
-import {
+import type {
   CraftingSystemData,
   CraftingSystemInfo,
   InventoryRecordData,
   RecipeCraftingData,
   RecipeData,
 } from './InterfaceDataTypes';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import CONSTANTS from '../constants';
+import type { CraftingSystem } from '../system/CraftingSystem';
+import type { Inventory } from '../actor/Inventory';
+import type { InventoryRecord } from '../actor/InventoryRecord';
+import type { CraftingComponent } from '../common/CraftingComponent';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import type { Recipe } from '../crafting/Recipe';
 
 interface InventoryContents {
   ownedComponents: InventoryRecordData[];
@@ -50,10 +50,10 @@ class CraftingTabData {
   }
 
   async init(): Promise<void> {
-    this._craftingSystemData = await this.prepareCraftingSystemData(this._craftingSystems, this._actor);
+    this._craftingSystemData = <CraftingSystemData>await this.prepareCraftingSystemData(this._craftingSystems, this._actor);
 
     if (this._craftingSystemData.hasEnabledSystems) {
-      const selectedCraftingSystem = this._craftingSystems.find(
+      const selectedCraftingSystem = <CraftingSystem>this._craftingSystems.find(
         (system: CraftingSystem) => system.compendiumPackKey === this._craftingSystemData.selectedSystemId
       );
 
@@ -67,92 +67,94 @@ class CraftingTabData {
     }
   }
 
-  async prepareCraftingSystemData(craftingSystems: CraftingSystem[], actor: Actor): Promise<CraftingSystemData> {
+  async prepareCraftingSystemData(craftingSystems: CraftingSystem[], actor: Actor): Promise<CraftingSystemData|undefined> {
     let enabledSystems: number = 0;
     const craftingSystemsInfo: CraftingSystemInfo[] = [];
-    const storedSystemId = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedCraftingSystem);
+    const storedSystemId = <string>actor.getFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.actor.selectedCraftingSystem);
     craftingSystems.forEach((system: CraftingSystem) => {
       if (system.enabled) {
         enabledSystems++;
       }
       craftingSystemsInfo.push({
-        disabled: !system.enabled
-        compendiumPackKey: system.compendiumPackKey,
+        disabled: !system.enabled,
+        compendiumPackKey: <string>system.compendiumPackKey,
         name: system.name,
         selected: system.compendiumPackKey === storedSystemId
       });
     });
     const hasEnabledSystems: boolean = enabledSystems > 0;
     if (storedSystemId) {
-      return {
+      return <CraftingSystemData>{
         systems: craftingSystemsInfo,
         hasEnabledSystems: hasEnabledSystems,
         selectedSystemId: storedSystemId
       };
     } else if (hasEnabledSystems) {
-      const firstEnabledSystem = craftingSystemsInfo.find((systemInfo: CraftingSystemInfo) => !systemInfo.disabled);
+      const firstEnabledSystem = <CraftingSystemInfo>craftingSystemsInfo.find((systemInfo: CraftingSystemInfo) => !systemInfo.disabled);
       firstEnabledSystem.selected = true;
       await actor.setFlag(
-        Properties.module.name,
-        Properties.flagKeys.actor.selectedCraftingSystem,
+        CONSTANTS.module.name,
+        CONSTANTS.flagKeys.actor.selectedCraftingSystem,
         firstEnabledSystem.compendiumPackKey,
       );
-      return {
+      return <CraftingSystemData>{
         systems: craftingSystemsInfo,
         hasEnabledSystems: hasEnabledSystems,
         selectedSystemId: firstEnabledSystem.compendiumPackKey,
       };
+    }else {
+      return undefined;
     }
   }
 
   async prepareRecipeDataForSystem(
     craftingSystem: CraftingSystem,
     actor: Actor,
-    inventory: Inventory<Item.Data>,
+    inventory: Inventory<ItemData,Actor>,
   ): Promise<RecipeCraftingData> {
-    const storedKnownRecipes: string[] = actor.getFlag(
-      Properties.module.name,
-      Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.compendiumPackKey),
+    const storedKnownRecipes: string[] = <string[]>actor.getFlag(
+      CONSTANTS.module.name,
+      CONSTANTS.flagKeys.actor.knownRecipesForSystem(craftingSystem.compendiumPackKey),
     );
     const knownRecipes: string[] = storedKnownRecipes ? storedKnownRecipes : [];
-    const enabledRecipes: Map<string, RecipeData> = new Map();
+    const enabledRecipes: Map<string, RecipeData> = new Map<string, RecipeData>();
     const disabledRecipes: RecipeData[] = [];
     craftingSystem.recipes.forEach((recipe: Recipe) => {
       const isKnown: boolean = knownRecipes.includes(recipe.partId);
       const isOwned: boolean = inventory.containsPart(recipe.partId);
       const isCraftable: boolean = isKnown || isOwned ? inventory.hasAllIngredientsFor(recipe) : false;
       if (isCraftable) {
-        enabledRecipes.set(recipe.partId {
+        enabledRecipes.set(recipe.partId, {
           name: recipe.name,
-          partId: recipe.partId
+          partId: recipe.partId,
           known: isKnown,
-          owned: isOwned
+          owned: isOwned,
           craftable: isCraftable,
           selected: false,
         });
       } else {
         disabledRecipes.push({
           name: recipe.name,
-          partId: recipe.partId
+          partId: recipe.partId,
           known: isKnown,
-          owned: isOwned
+          owned: isOwned,
           craftable: isCraftable,
           selected: false,
         });
       }
     });
-    const storedRecipeId: string = await this._actor.getFlag(
-      Properties.module.name,
-      Properties.flagKeys.actor.selectedRecipe,
+    const storedRecipeId: string = <string>await this._actor.getFlag(
+      CONSTANTS.module.name,
+      CONSTANTS.flagKeys.actor.selectedRecipe,
     );
     if (enabledRecipes.has(storedRecipeId)) {
-      enabledRecipes.get(storedRecipeId).selected = true;
+      (<RecipeData>enabledRecipes.get(storedRecipeId)).selected = true;
       return {
         recipes: Array.from(enabledRecipes.values()).concat(disabledRecipes),
         hasCraftableRecipe: true,
       };
     } else {
-      // await this._actor.unsetFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+      // await this._actor.unsetFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.actor.selectedRecipe);
       if (enabledRecipes.size === 0) {
         return {
           recipes: disabledRecipes,
@@ -160,9 +162,9 @@ class CraftingTabData {
         };
       }
       const craftableRecipes: RecipeData[] = Array.from(enabledRecipes.values());
-      const defaultRecipe: RecipeData = craftableRecipes[0];
+      const defaultRecipe: RecipeData = <RecipeData>craftableRecipes[0];
       defaultRecipe.selected = true;
-      //await this._actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe, defaultRecipe.partId);
+      //await this._actor.setFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.actor.selectedRecipe, defaultRecipe.partId);
       return {
         recipes: craftableRecipes.concat(disabledRecipes),
         hasCraftableRecipe: true,
@@ -173,7 +175,7 @@ class CraftingTabData {
   prepareInventoryDataForSystem(
     craftingSystem: CraftingSystem,
     actor: Actor,
-    inventory: Inventory<Item.Data>,
+    inventory: Inventory<ItemData>,
   ): InventoryContents {
     const inventoryContents: InventoryContents = {
       ownedComponents: [],
@@ -189,14 +191,14 @@ class CraftingTabData {
       .forEach((inventoryRecord: InventoryRecord<CraftingComponent>) => {
         inventoryContents.ownedComponents.push({
           name: inventoryRecord.fabricateItem.name,
-          entryId: inventoryRecord.fabricateItem.partId
+          entryId: inventoryRecord.fabricateItem.partId,
           quantity: inventoryRecord.totalQuantity,
           imageUrl: inventoryRecord.fabricateItem.imageUrl,
         });
       });
-    const savedHopperContents: InventoryRecordData[] = actor.getFlag(
-      Properties.module.name,
-      Properties.flagKeys.actor.hopperForSystem(craftingSystem.compendiumPackKey),
+    const savedHopperContents: InventoryRecordData[] = <InventoryRecordData[]>actor.getFlag(
+      CONSTANTS.module.name,
+      CONSTANTS.flagKeys.actor.hopperForSystem(craftingSystem.compendiumPackKey),
     );
     if (savedHopperContents) {
       inventoryContents.preparedComponents = savedHopperContents;

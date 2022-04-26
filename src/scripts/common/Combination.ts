@@ -1,4 +1,4 @@
-import { Identifiable } from './FabricateItem';
+import type { Identifiable } from './FabricateItem';
 
 class Unit<T extends Identifiable> {
   private readonly _part: T;

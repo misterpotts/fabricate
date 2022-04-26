@@ -5,7 +5,7 @@
     "strict": false,
     "target": "ES2021",
     "lib": ["ES2021", "DOM"],
-    "types": ["@league-of-foundry-developers/foundry-vtt-types/index-lenient"],
+    "types": ["@league-of-foundry-developers/foundry-vtt-types/index-lenient", "@league-of-foundry-developers/foundry-vtt-dnd5e-types"],
     "strictNullChecks": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

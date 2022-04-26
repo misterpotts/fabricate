@@ -1,7 +1,7 @@
 import { FabricateItem } from '../common/FabricateItem';
 import { Combination } from '../common/Combination';
-import { CraftingComponent } from '../common/CraftingComponent';
-import { EssenceDefinition } from '../common/EssenceDefinition';
+import type { CraftingComponent } from '../common/CraftingComponent';
+import type { EssenceDefinition } from '../common/EssenceDefinition';
 
 class Recipe extends FabricateItem {
   private readonly _ingredients: Combination<CraftingComponent>;

@@ -1,4 +1,4 @@
-import { FabricateCompendiumData } from '../compendium/CompendiumData';
+import type { FabricateCompendiumData } from '../compendium/CompendiumData';
 
 class CompendiumEntryImportError extends Error {
   private readonly _fabricateCompendiumData: FabricateCompendiumData;

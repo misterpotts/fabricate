@@ -1,10 +1,10 @@
-import { CraftingSystem } from '../system/CraftingSystem';
+import type { CraftingSystem } from '../system/CraftingSystem';
 import FabricateApplication from './FabricateApplication';
-import { EssenceDefinition } from '../common/EssenceDefinition';
+import type { EssenceDefinition } from '../common/EssenceDefinition';
 import { CraftingTab } from '../interface/CraftingTab';
 import { ItemRecipeTab } from '../interface/ItemRecipeTab';
-import Properties from '../Properties';
-import { CraftingSystemSpecification } from '../system/CraftingSystemSpecification';
+import type { CraftingSystemSpecification } from '../system/CraftingSystemSpecification';
+import CONSTANTS from '../constants';
 
 class FabricateLifecycle {
   public static init() {
@@ -54,7 +54,7 @@ class FabricateLifecycle {
   private static registerApplicationListeners() {}
 
   public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification) {
-    game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
+    game.settings.register(CONSTANTS.module.name, CONSTANTS.settingsKeys.craftingSystem.enabled(systemSpec.id), {
       name: systemSpec.name,
       hint: systemSpec.summary,
       scope: 'world',

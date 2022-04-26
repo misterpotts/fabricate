@@ -1,4 +1,4 @@
-import { FabricateItem } from '../common/FabricateItem';
+import type { FabricateItem } from '../common/FabricateItem';
 
 class CompendiumEntryReferencePopulationError extends Error {
   private readonly _fabricateItem: FabricateItem;

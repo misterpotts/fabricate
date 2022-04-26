@@ -1,8 +1,7 @@
-import {CraftingComponent} from "./CraftingComponent";
 import {FabricationAction, ActionType} from "./FabricationAction";
-import {Inventory} from "../game/Inventory";
-import {Ingredient} from "./Ingredient";
-import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import type { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import type { CraftingComponent } from "../common/CraftingComponent";
+import type { Inventory } from "../actor/Inventory";
 
 
 class FabricationHelper {
@@ -41,20 +40,20 @@ class FabricationHelper {
     };
 
     public static essenceCombinationIdentity(essences: string[], essenceIdentities: Map<string, number>): number {
-        return essences.map((essence: string) => {
+        return <number>essences.map((essence: string) => {
             if (!essenceIdentities.has(essence)) {
                 throw new Error(`No known essence is registered for the slug '${essence}'. Known essences are: ${Array.from(essenceIdentities.keys()).join(', ')}`);
             }
             return essenceIdentities.get(essence);
         })
-            .reduce((left, right) => left * right);
+            .reduce((left:number, right:number) => left * right);
     }
 
     public static assignEssenceIdentities(essences: string[]): Map<string, number> {
         const uniqueEssences = essences.filter((essence: string, index: number, collection: string[]) => collection.indexOf(essence) === index);
         const primes = this.generatePrimes(uniqueEssences.length);
         const essenceIdentities: Map<string, number> = new Map();
-        uniqueEssences.forEach((value, index) => essenceIdentities.set(value, primes[index]));
+        uniqueEssences.forEach((value, index) => essenceIdentities.set(value, <number>primes[index]));
         return essenceIdentities;
     }
 
@@ -87,7 +86,7 @@ class FabricationHelper {
             const combination: CraftingComponent[] = [];
             for (let j = 0; j < denormalizedComponents.length; j++) {
                 if (i & Math.pow(2, j)) {
-                    combination.push(denormalizedComponents[j]);
+                    combination.push(<CraftingComponent>denormalizedComponents[j]);
                 }
             }
             if (combination.length > 0) {
@@ -97,7 +96,7 @@ class FabricationHelper {
         return combinations.sort((left, right) => left.length - right.length);
     }
 
-    public static async applyResults(actions: FabricationAction<ItemData>[], inventory: Inventory): Promise<boolean> {
+    public static async applyResults(actions: FabricationAction<ItemData>[], inventory: Inventory<ItemData,Actor>): Promise<boolean> {
         for (const action of actions) {
             switch (action.actionType) {
                 case ActionType.ADD:

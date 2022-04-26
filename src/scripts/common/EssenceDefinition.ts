@@ -1,5 +1,5 @@
-import { Combination } from './Combination';
-import { Identifiable } from './FabricateItem';
+import type { Combination } from './Combination';
+import type { Identifiable } from './FabricateItem';
 
 class EssenceDefinition implements Identifiable {
   private readonly _name: string;
@@ -81,7 +81,7 @@ class EssenceIdentityProvider {
     const primes: number[] = this.generatePrimes(essences.length);
     const essenceIdentities: Map<EssenceDefinition, number> = new Map();
     essences.forEach((definition: EssenceDefinition, index: number) =>
-      essenceIdentities.set(definition, primes[index]),
+      essenceIdentities.set(definition, <number>primes[index]),
     );
     return essenceIdentities;
   }

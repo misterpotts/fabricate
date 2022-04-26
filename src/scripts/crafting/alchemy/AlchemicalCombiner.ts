@@ -1,11 +1,11 @@
-import { AlchemicalEffect } from './AlchemicalEffect';
-import { CraftingComponent } from '../../common/CraftingComponent';
+import type { AlchemicalEffect } from './AlchemicalEffect';
+import type { CraftingComponent } from '../../common/CraftingComponent';
 import { EssenceDefinition, EssenceIdentityProvider } from '../../common/EssenceDefinition';
 import { Combination, Unit } from '../../common/Combination';
 import { AlchemyError } from '../../error/AlchemyError';
 import { CompendiumProvider } from '../../foundry/CompendiumProvider';
 import { ObjectUtility } from '../../foundry/ObjectUtility';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 
 interface EssenceCombinerConfiguration {
   maxComponents: number;

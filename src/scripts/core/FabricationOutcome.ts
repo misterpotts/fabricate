@@ -1,6 +1,6 @@
-import { OutcomeType } from './OutcomeType';
-import { FabricationAction } from './FabricationAction';
-import { CraftingCheckResult } from '../crafting/CraftingCheckResult';
+import type { OutcomeType } from './OutcomeType';
+import type { FabricationAction } from './FabricationAction';
+import type { CraftingCheckResult } from '../crafting/CraftingCheckResult';
 
 class FabricationOutcome {
   private readonly _outcome: OutcomeType;

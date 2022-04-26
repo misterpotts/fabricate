@@ -1,5 +1,5 @@
-import { FabricateItemType } from '../compendium/CompendiumData';
-import { FabricateItem } from '../common/FabricateItem';
+import type { FabricateItemType } from '../compendium/CompendiumData';
+import type { FabricateItem } from '../common/FabricateItem';
 
 class InventoryRecord<T extends FabricateItem> {
   private readonly _actor: Actor;

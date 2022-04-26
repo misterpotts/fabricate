@@ -1,12 +1,12 @@
-import Properties from '../Properties';
-import { Inventory } from '../actor/Inventory';
+import type { Inventory } from '../actor/Inventory';
 import { Inventory5e } from '../5e/Inventory5e';
 import { CraftingTabData } from './CraftingTabData';
-import { CraftingComponent } from '../common/CraftingComponent';
-import { CraftingSystem } from '../system/CraftingSystem';
-import { InventoryRecordData } from './InterfaceDataTypes';
+import type { CraftingComponent } from '../common/CraftingComponent';
+import type { CraftingSystem } from '../system/CraftingSystem';
+import type { InventoryRecordData } from './InterfaceDataTypes';
 import FabricateApplication from '../application/FabricateApplication';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import CONSTANTS from '../constants';
 
 class CraftingTab {
   private static readonly tabs: Map<string, CraftingTab> = new Map();
@@ -59,7 +59,7 @@ class CraftingTab {
       this._actor,
     );
     await craftingTabDTO.init();
-    let template: string = <string>await renderTemplate(Properties.module.templates.craftingTab, craftingTabDTO);
+    let template: string = <string>await renderTemplate(CONSTANTS.module.templates.craftingTab, craftingTabDTO);
     let element = this._sheetHtml.find('.crafting-tab-content');
     if (element && element.length) {
       element.replaceWith(template);
@@ -90,7 +90,7 @@ class CraftingTab {
       const craftingSystemId: string = craftingTabDTO.crafting.selectedSystemId;
 
       let hopperContentsForSystem: InventoryRecordData[] = <InventoryRecordData[]>(
-        this._actor.getFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`)
+        this._actor.getFlag(CONSTANTS.module.name, `crafting.${craftingSystemId}.hopper`)
       );
       if (!hopperContentsForSystem) {
         hopperContentsForSystem = [];
@@ -110,7 +110,7 @@ class CraftingTab {
         component.quantity = component.quantity + 1;
       }
 
-      this._actor.setFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`, hopperContentsForSystem);
+      this._actor.setFlag(CONSTANTS.module.name, `crafting.${craftingSystemId}.hopper`, hopperContentsForSystem);
 
       this._suppressedInNav = true;
       this.render();
@@ -121,7 +121,7 @@ class CraftingTab {
       const craftingSystemId: string = craftingTabDTO.crafting.selectedSystemId;
 
       let hopperContentsForSystem: InventoryRecordData[] = <InventoryRecordData[]>(
-        this._actor.getFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`)
+        this._actor.getFlag(CONSTANTS.module.name, `crafting.${craftingSystemId}.hopper`)
       );
       const matchingRecord = <InventoryRecordData>(
         hopperContentsForSystem.find((recordData: InventoryRecordData) => recordData.entryId === componentId)
@@ -131,7 +131,7 @@ class CraftingTab {
         (recordData: InventoryRecordData) => recordData.quantity > 0,
       );
 
-      this._actor.setFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`, nonZeroRecords);
+      this._actor.setFlag(CONSTANTS.module.name, `crafting.${craftingSystemId}.hopper`, nonZeroRecords);
 
       this._suppressedInNav = true;
       this.render();
@@ -139,7 +139,7 @@ class CraftingTab {
 
     this._sheetHtml.find('.clear-components.craft-button').click(async () => {
       const craftingSystemId: string = craftingTabDTO.crafting.selectedSystemId;
-      await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
+      await this._actor.unsetFlag(CONSTANTS.module.name, `crafting.${craftingSystemId}.hopper`);
 
       this._suppressedInNav = true;
       this.render();
@@ -161,7 +161,7 @@ class CraftingTab {
         craftingSystem.getComponentByPartId(hopperItem.entryId),
       );
 
-      await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);
+      await this._actor.unsetFlag(CONSTANTS.module.name, `crafting.${craftingSystemId}.hopper`);
       await craftingSystem.craftWithComponents(
         this._actor,
         FabricateApplication.inventories.getFor(<string>this._actor.id),
@@ -175,8 +175,8 @@ class CraftingTab {
     this._sheetHtml.find('select[name="fabricate.crafting.selectedSystem"]').change(async (event: any) => {
       const systemIdToActivate: string = event.target.value;
       await this._actor.setFlag(
-        Properties.module.name,
-        Properties.flagKeys.actor.selectedCraftingSystem,
+        CONSTANTS.module.name,
+        CONSTANTS.flagKeys.actor.selectedCraftingSystem,
         systemIdToActivate,
       );
 
@@ -186,7 +186,7 @@ class CraftingTab {
 
     this._sheetHtml.find('select[name="fabricate.crafting.selectedRecipe"]').change(async (event: any) => {
       const selectedRecipeId: string = event.target.value;
-      await this._actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe, selectedRecipeId);
+      await this._actor.setFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.actor.selectedRecipe, selectedRecipeId);
 
       this._suppressedInNav = true;
       this.render();
@@ -194,7 +194,7 @@ class CraftingTab {
 
     this._sheetHtml.find('.actor-recipe-crafting').click(async () => {
       const recipeId = <string>(
-        await this._actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe)
+        await this._actor.getFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.actor.selectedRecipe)
       );
       const craftingSystem: CraftingSystem = FabricateApplication.systems.getSystemByPartId(recipeId);
       const recipe = craftingSystem.getRecipeByPartId(recipeId);

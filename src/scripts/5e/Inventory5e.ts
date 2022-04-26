@@ -1,7 +1,7 @@
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { BaseCraftingInventory, Inventory } from '../actor/Inventory';
-import { Combination } from '../common/Combination';
-import { CraftingComponent } from '../common/CraftingComponent';
+import type { Combination } from '../common/Combination';
+import type { CraftingComponent } from '../common/CraftingComponent';
 
 // @ts-ignore todo: figure out how to correctly restrict this type
 class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {

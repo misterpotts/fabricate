@@ -1,15 +1,15 @@
-import { Inventory } from '../actor/Inventory';
-import { Recipe } from '../crafting/Recipe';
-import { CraftingCheck } from '../crafting/CraftingCheck';
+import type { Inventory } from '../actor/Inventory';
+import type { Recipe } from '../crafting/Recipe';
+import type { CraftingCheck } from '../crafting/CraftingCheck';
 import { Combination, Unit } from '../common/Combination';
-import { CraftingComponent } from '../common/CraftingComponent';
+import type { CraftingComponent } from '../common/CraftingComponent';
 import { ActionType, FabricationAction } from './FabricationAction';
 import { OutcomeType } from './OutcomeType';
 import { FabricationOutcome } from './FabricationOutcome';
-import { AlchemicalCombiner } from '../crafting/alchemy/AlchemicalCombiner';
-import { CraftingCheckResult } from '../crafting/CraftingCheckResult';
+import type { AlchemicalCombiner } from '../crafting/alchemy/AlchemicalCombiner';
+import type { CraftingCheckResult } from '../crafting/CraftingCheckResult';
 import { AlchemyError } from '../error/AlchemyError';
-import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { FabricationHelper } from './FabricationHelper';
 
 class AlchemySpecification<T extends ItemData, A extends Actor> {

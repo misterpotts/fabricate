@@ -1,5 +1,5 @@
-import { Combination, Unit } from '../common/Combination';
-import { CraftingComponent } from '../common/CraftingComponent';
+import type { Combination, Unit } from '../common/Combination';
+import type { CraftingComponent } from '../common/CraftingComponent';
 import { OutcomeType } from '../core/OutcomeType';
 import { DiceUtility, RollResult } from '../foundry/DiceUtility';
 import { CraftingCheckResult } from './CraftingCheckResult';

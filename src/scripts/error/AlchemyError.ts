@@ -1,6 +1,6 @@
 import { CraftingError } from './CraftingError';
-import { Combination } from '../common/Combination';
-import { CraftingComponent } from '../common/CraftingComponent';
+import type { Combination } from '../common/Combination';
+import type { CraftingComponent } from '../common/CraftingComponent';
 
 class AlchemyError extends CraftingError {
   private readonly _components: Combination<CraftingComponent>;

@@ -1,4 +1,4 @@
-import { OutcomeType } from '../core/OutcomeType';
+import type { OutcomeType } from '../core/OutcomeType';
 
 class CraftingCheckResult {
   private readonly _outcome: OutcomeType;
