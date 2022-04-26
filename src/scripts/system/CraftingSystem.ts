@@ -10,7 +10,6 @@ import Properties from '../Properties';
 import { Combination } from '../common/Combination';
 import { CraftingError } from '../error/CraftingError';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
-import { game } from '../settings';
 import { Fabricator } from '../core/Fabricator';
 
 class CraftingSystem implements Identifiable {

@@ -4,7 +4,6 @@ import { CraftingSystemSpecification } from './system/CraftingSystemSpecificatio
 // import { CompendiumImportingCraftingSystemFactory, CraftingSystemFactory } from './core/CraftingSystemFactory';
 
 import FabricateApplication from './application/FabricateApplication';
-import { game } from './settings';
 import { GameSystem } from './system/GameSystem';
 import { log } from 'console';
 

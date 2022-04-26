@@ -5,7 +5,6 @@ import { CraftingTab } from '../interface/CraftingTab';
 import { ItemRecipeTab } from '../interface/ItemRecipeTab';
 import Properties from '../Properties';
 import { CraftingSystemSpecification } from '../system/CraftingSystemSpecification';
-import { game } from '../settings';
 
 class FabricateLifecycle {
   public static init() {

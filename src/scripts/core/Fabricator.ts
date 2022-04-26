@@ -10,7 +10,6 @@ import { AlchemicalCombiner } from '../crafting/alchemy/AlchemicalCombiner';
 import { CraftingCheckResult } from '../crafting/CraftingCheckResult';
 import { AlchemyError } from '../error/AlchemyError';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
-import { game } from '../settings';
 import { FabricationHelper } from './FabricationHelper';
 
 class AlchemySpecification<T extends ItemData, A extends Actor> {

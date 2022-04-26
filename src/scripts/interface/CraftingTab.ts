@@ -7,7 +7,6 @@ import { CraftingSystem } from '../system/CraftingSystem';
 import { InventoryRecordData } from './InterfaceDataTypes';
 import FabricateApplication from '../application/FabricateApplication';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
-import { game } from '../settings';
 
 class CraftingTab {
   private static readonly tabs: Map<string, CraftingTab> = new Map();

@@ -3,13 +3,13 @@
         "jquery": true,
         "node": true,
         "browser": true,
-        "es2020": true,
+        "es2021": true,
         "es6": true
     },
     "root": true,
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 2020,
+        "ecmaVersion": 2021,
         "sourceType": "module"
     },
     "extends": [
@@ -30,7 +30,7 @@
             "off",
             {},
             {
-                "usePrettierrc": true
+              "usePrettierrc": true,
             }
         ],
         "no-underscore-dangle": "off",
@@ -43,7 +43,17 @@
         ],
         "@typescript-eslint/consistent-type-assertions": "off",
         "@typescript-eslint/ban-ts-comment": "off",
-        "no-shadow": ["warn", { "builtinGlobals": true, "hoist": "all", "allow": ["event"] }],
-        "no-namespace": false
+        "no-shadow": ["off", { "builtinGlobals": true, "hoist": "all", "allow": ["event"] }],
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/ban-ts-ignore": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-this-alias": [
+            "error",
+            {
+              "allowDestructuring": false, // Disallow `const { props, state } = this`; true by default
+              "allowedNames": ["self"] // Allow `const self = this`; `[]` by default
+            }
+          ],
+          "no-namespace": false
     }
 }

@@ -131,14 +131,14 @@ function buildTS() {
       .src('src/**/*.ts')
       .pipe(tsConfig())
 
-      // eslint() attaches the lint output to the "eslint" property
-      // of the file object so it can be used by other modules.
+      // // eslint() attaches the lint output to the "eslint" property
+      // // of the file object so it can be used by other modules.
       // .pipe(eslint())
-      // eslint.format() outputs the lint results to the console.
-      // Alternatively use eslint.formatEach() (see Docs).
+      // // eslint.format() outputs the lint results to the console.
+      // // Alternatively use eslint.formatEach() (see Docs).
       // .pipe(eslint.format())
-      // To have the process exit with an error code (1) on
-      // lint error, return the stream and pipe to failAfterError last.
+      // // To have the process exit with an error code (1) on
+      // // lint error, return the stream and pipe to failAfterError last.
       // .pipe(eslint.failAfterError())
 
       .pipe(gulp.dest('dist'))
@@ -153,14 +153,14 @@ function buildJS() {
     gulp
       .src('src/**/*.js')
 
-      // eslint() attaches the lint output to the "eslint" property
-      // of the file object so it can be used by other modules.
+      // // eslint() attaches the lint output to the "eslint" property
+      // // of the file object so it can be used by other modules.
       // .pipe(eslint())
-      // eslint.format() outputs the lint results to the console.
-      // Alternatively use eslint.formatEach() (see Docs).
+      // // eslint.format() outputs the lint results to the console.
+      // // Alternatively use eslint.formatEach() (see Docs).
       // .pipe(eslint.format())
-      // To have the process exit with an error code (1) on
-      // lint error, return the stream and pipe to failAfterError last.
+      // // To have the process exit with an error code (1) on
+      // // lint error, return the stream and pipe to failAfterError last.
       // .pipe(eslint.failAfterError())
 
       .pipe(gulp.dest('dist'))
@@ -175,14 +175,14 @@ function buildMJS() {
     gulp
       .src('src/**/*.mjs')
 
-      // eslint() attaches the lint output to the "eslint" property
-      // of the file object so it can be used by other modules.
+      // // eslint() attaches the lint output to the "eslint" property
+      // // of the file object so it can be used by other modules.
       // .pipe(eslint())
-      // eslint.format() outputs the lint results to the console.
-      // Alternatively use eslint.formatEach() (see Docs).
+      // // eslint.format() outputs the lint results to the console.
+      // // Alternatively use eslint.formatEach() (see Docs).
       // .pipe(eslint.format())
-      // To have the process exit with an error code (1) on
-      // lint error, return the stream and pipe to failAfterError last.
+      // // To have the process exit with an error code (1) on
+      // // lint error, return the stream and pipe to failAfterError last.
       // .pipe(eslint.failAfterError())
 
       .pipe(gulp.dest('dist'))
@@ -210,18 +210,18 @@ function buildSASS() {
   return gulp.src('src/**/*.scss').pipe(sass().on('error', sass.logError)).pipe(gulp.dest('dist'));
 }
 
-/**
- * Build Replace
- */
-function buildReplace() {
-  return gulp.src('dist/**/*.js')
-    .pipe(replace('export const game = getGame();', ''))
-    .pipe(replace('export const canvas = getCanvas();', ''))
-    .pipe(replace('import { canvas, game }', '//import { canvas, game }'))
-    .pipe(replace('import { game }', '//import { game }'))
-    .pipe(replace('import { canvas }', '//import { canvas }'))
-    .pipe(gulp.dest('dist'));
-};
+// /**
+//  * Build Replace
+//  */
+// function buildReplace() {
+//   return gulp.src('dist/**/*.js')
+//     .pipe(replace('export const game = getGame();', ''))
+//     .pipe(replace('export const canvas = getCanvas();', ''))
+//     .pipe(replace('import { canvas, game }', '//import { canvas, game }'))
+//     .pipe(replace('import { game }', '//import { game }'))
+//     .pipe(replace('import { canvas }', '//import { canvas }'))
+//     .pipe(gulp.dest('dist'));
+// };
 
 /**
  * Copy static files
@@ -331,7 +331,7 @@ async function linkUserData() {
     let linkDir;
     if (config.dataPath) {
       if (!fs.existsSync(path.join(config.dataPath, 'Data')))
-        throw Error('User Data path invalid no Data directory found');
+        throw Error('User Data path invalid, no Data directory found');
 
       linkDir = path.join(config.dataPath, 'Data', destDir, name);
     } else {
@@ -375,7 +375,7 @@ async function packageBuild() {
       fs.ensureDirSync('package');
 
       // Initialize the zip file
-      const zipName = 'module.zip';
+      const zipName = 'module.zip'; // `${manifest.file.name}-v${manifest.file.version}.zip`
       const zipFile = fs.createWriteStream(path.join('package', zipName));
       const zip = archiver('zip', { zlib: { level: 9 } });
 
@@ -508,7 +508,7 @@ const execGit = gulp.series(gitAdd, gitCommit, gitTag);
 
 const execBuild = gulp.parallel(buildTS, buildJS, buildMJS, buildCSS, buildLess, buildSASS, copyFiles);
 
-exports.build = gulp.series(clean, execBuild, buildReplace);
+exports.build = gulp.series(clean, execBuild); // , buildReplace
 exports.watch = buildWatch;
 exports.clean = clean;
 exports.link = linkUserData;

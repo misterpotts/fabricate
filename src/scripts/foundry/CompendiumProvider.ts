@@ -3,7 +3,6 @@ import {
   ItemDataSource,
 } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs/itemData';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
-import { game } from '../settings';
 
 class CompendiumProvider {
   public getCompendium(packKey: string): CompendiumCollection<CompendiumCollection.Metadata> {

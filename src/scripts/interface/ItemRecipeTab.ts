@@ -1,6 +1,5 @@
 import Properties from '../Properties';
 import FabricateApplication from '../application/FabricateApplication';
-import { game } from '../settings';
 import { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
 import { Inventory } from '../actor/Inventory';
 import { CraftingSystem } from '../system/CraftingSystem';
