@@ -60,8 +60,8 @@
       "location": ""
     }
   ],
-  "esmodules": ["scripts/module.js"],
-  "styles": ["styles/module.css"],
+  "esmodules": ["scripts/fabricate.js"],
+  "styles": ["styles/fabricate.css"],
   "languages": [
     {
       "lang": "en",

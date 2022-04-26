@@ -1,1 +1,20 @@
-{}
+{
+    "fabricate.setting.reset.name": "Reset settings to default",
+    "fabricate.setting.reset.label": "Reset Settings To Default",
+    "fabricate.setting.reset.hint": "This will reset all of the settings of back to the active game system's default.",
+    "fabricate.setting.debug.name": "Enable debugging",
+    "fabricate.setting.debug.label": "Prints debug messages to the console",
+    "fabricate.setting.debug.hint": " ",
+
+    "fabricate.dialogs.resetsettings.title": "Reset Module Settings",
+    "fabricate.dialogs.resetsettings.content": "Are you sure you want to reset all of the module settings to the current system's defaults? <strong>THIS CANNOT BE UNDONE!</strong>",
+    "fabricate.dialogs.resetsettings.confirm": "Reset Module Settings",
+    "fabricate.dialogs.resetsettings.cancel": "Cancel",
+
+    "fabricate.dialogs.nosystemfound.title": "System Not Recognized",
+    "fabricate.dialogs.nosystemfound.content": "This system is not currently fully supported. This means that the module does not know how to best handle this system's items, but can still operate in a limited fashion.<br><br>You can configure the module's settings yourself, but it requires a bit of technical know-how.<br><br>If you have any questions, ping <strong>Wasp#2005</strong> on the Foundry discord.",
+    "fabricate.dialogs.systemfound.title": "System Recognized",
+    "fabricate.dialogs.systemfound.content": "This system was previously not supported, but in an recent update it was added as a supported system!<br><br>Do you want to load this system's default Item Pile settings?",
+    "fabricate.dialogs.systemfound.confirm": "Apply System Defaults"
+
+}

@@ -1,11 +1,15 @@
-import Properties from './Properties';
 import { FabricateLifecycle } from './application/FabricateLifecycle';
-import { CraftingSystemSpecification } from './system/CraftingSystemSpecification';
-// import { CompendiumImportingCraftingSystemFactory, CraftingSystemFactory } from './core/CraftingSystemFactory';
+import type { CraftingSystemSpecification } from './system/CraftingSystemSpecification';
 
 import FabricateApplication from './application/FabricateApplication';
-import { GameSystem } from './system/GameSystem';
 import { log } from 'console';
+import { checkSystem } from './settings';
+import { debug } from './lib/lib';
+import CONSTANTS from './constants';
+import { registerSocket } from './socket';
+import HOOKS from './hooks';
+import { CompendiumImportingCraftingSystemFactory, CraftingSystemFactory } from './crafting/CraftingSystemFactory';
+import type { GameSystem } from './system/GameSystem';
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -17,12 +21,12 @@ Hooks.once('ready', () => {
  * */
 async function loadCraftingSystems(): Promise<void> {
   const systemSpecifications = FabricateApplication.systems.systemSpecifications;
-  log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
+  log(`${CONSTANTS.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
   systemSpecifications.forEach(FabricateLifecycle.registerCraftingSystemSettings);
   systemSpecifications.forEach(loadCraftingSystem);
   const systemNames = systemSpecifications.map((systemSpec: CraftingSystemSpecification) => systemSpec.name);
   log(
-    `${Properties.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `,
+    `${CONSTANTS.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `,
   );
 }
 
@@ -35,22 +39,56 @@ async function loadCraftingSystems(): Promise<void> {
  * for the system should be loaded from.
  * */
 async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
-  log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.id}. `);
+  log(`${CONSTANTS.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.id}. `);
   if (
     systemSpec.supportedGameSystems.some((gameSystem: GameSystem) => {
       Object.keys(gameSystem).includes(game.system.id);
     })
   ) {
     //if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
-    log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
+    log(`${CONSTANTS.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
     return;
   }
   const craftingSystemFactory = <CraftingSystemFactory>new CompendiumImportingCraftingSystemFactory(systemSpec);
   const craftingSystem = await craftingSystemFactory.make();
   craftingSystem.enabled = game.settings.get(
-    Properties.module.name,
-    Properties.settingsKeys.craftingSystem.enabled(systemSpec.id),
+    CONSTANTS.module.name,
+    CONSTANTS.settingsKeys.craftingSystem.enabled(systemSpec.id),
   );
   FabricateApplication.systems.register(craftingSystem);
-  log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
+  log(`${CONSTANTS.module.label} | Loaded ${systemSpec.name}. `);
 }
+
+export const initHooks = (): void => {
+  // registerSettings();
+  // registerLibwrappers();
+
+  Hooks.once('socketlib.ready', registerSocket);
+
+  if (game.settings.get(CONSTANTS.MODULE_NAME, 'debugHooks')) {
+    for (const hook of Object.values(HOOKS)) {
+      if (typeof hook === 'string') {
+        Hooks.on(hook, (...args) => debug(`Hook called: ${hook}`, ...args));
+        debug(`Registered hook: ${hook}`);
+      } else {
+        for (const innerHook of Object.values(hook)) {
+          Hooks.on(<string>innerHook, (...args) => debug(`Hook called: ${innerHook}`, ...args));
+          debug(`Registered hook: ${innerHook}`);
+        }
+      }
+    }
+  }
+};
+
+export const setupHooks = (): void => {
+  //@ts-ignore
+  setApi(API);
+};
+
+export const readyHooks = (): void => {
+  checkSystem();
+};
+
+const module = {
+  // TODO ADD SOME HOOKS
+};

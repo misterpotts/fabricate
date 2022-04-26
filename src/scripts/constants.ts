@@ -1,6 +1,8 @@
-import { FabricateItemType } from './compendium/CompendiumData';
+import { FabricateItemType } from "./compendium/CompendiumData";
 
-const Properties = {
+const CONSTANTS = {
+  MODULE_NAME: 'fabricate',
+  PATH: `modules/fabricate/`,
   module: {
     name: 'fabricate',
     label: 'Fabricate',
@@ -39,4 +41,6 @@ const Properties = {
   },
 };
 
-export default Properties;
+CONSTANTS.PATH = `modules/${CONSTANTS.MODULE_NAME}/`;
+
+export default CONSTANTS;

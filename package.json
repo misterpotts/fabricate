@@ -10,7 +10,7 @@
     "webpack": "webpack",
     "build:watch": "gulp watch",
     "clean": "gulp clean && gulp link --clean",
-    "update": "npm install --save-dev @league-of-foundry-developers/foundry-vtt-types@fvtt-0.8.9",
+    "update": "npm install --save-dev @league-of-foundry-developers/foundry-vtt-types@9",
     "lint": "eslint --ext .ts,.js,.vue .",
     "lintfix": "eslint --fix --ext .ts,.js,.vue ./src",
     "prettier-format": "prettier --config .prettierrc --write \"./src/**/*.(ts|js|json|scss|css)\""
@@ -18,7 +18,7 @@
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
-    "@league-of-foundry-developers/foundry-vtt-types": "^0.8.9-10",
+    "@league-of-foundry-developers/foundry-vtt-types": "^9.268.0",
     "@types/chai": "^4.2.14",
     "@types/jest": "^26.0.21",
     "@types/jquery": "^3.5.9",
