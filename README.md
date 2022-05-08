@@ -24,12 +24,6 @@ Crafting from components containing essences without a recipe.
 
 ![](/screens/fabricate-preview-5.gif)
 
-# Fabricate is back under development!
-
-I'm returning to working on Fabricate in February 2022 in the hours I can find between my day job, family commitments, running D&D for my amazing group of players and painting tabletop miniatures adequately (hopefully). I have big plans, and hope to release a version of Fabricate for Foundry 0.9.0+ in the coming weeks.
-
-For those of you wondering about my health, firstly, thank you! Secondly, I'm still recovering from the surgery, but am more or less living life like I was before I had the Neuropathy.
-
 # Changelog
 
 The most recent changes to Fabricate are documented here.
@@ -66,6 +60,16 @@ by the League of Extraordinary Foundry Developers and attributed to Spacemandev.
 ## Crafting systems
 
 - "Alchemist's Supplies" belongs to /u/calculusChild and is bundled with Fabricate with their consent 
+
+# Support
+
+[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dmisterpotts%26type%3Dpatrons&style=for-the-badge)](https://patreon.com/misterpotts)
+
+You can support me on Patreon, or just follow me there for progress updates. 
+
+# Keeping in touch
+
+You can join my Discord server if you want to discuss Fabricate in a public forum [![Discord](https://img.shields.io/discord/732325252788387980)](https://discord.gg/QNGn6cznJs), or DM me on Discord at `MisterPotts#0255`.
 
 ## Other Acknowledgements
 
