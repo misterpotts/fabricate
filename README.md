@@ -69,7 +69,7 @@ You can support me on Patreon, or just follow me there for progress updates.
 
 # Keeping in touch
 
-You can join my Discord server if you want to discuss Fabricate in a public forum [![Discord](https://img.shields.io/discord/957689655837458433)](https://discord.gg/QNGn6cznJs), or DM me on Discord at `MisterPotts#0255`.
+You can join my [Discord server](https://discord.gg/QNGn6cznJs) if you want to discuss Fabricate in a public forum, or DM me on Discord at `MisterPotts#0255`.
 
 ## Other Acknowledgements
 
