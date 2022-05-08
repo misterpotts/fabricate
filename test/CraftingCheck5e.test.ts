@@ -1,7 +1,7 @@
 import {expect, jest, test, beforeEach, describe} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {CraftingCheck5e} from "../src/scripts/5e/CraftingCheck5e";
+import {CraftingCheck5e} from "../src/scripts/5e/CraftingCheck5eOld";
 import {Tool} from "../src/scripts/crafting/Tool";
 import {DiceUtility, RollResult} from "../src/scripts/foundry/DiceUtility";
 import {Combination, Unit} from "../src/scripts/common/Combination";

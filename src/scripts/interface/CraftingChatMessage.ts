@@ -1,6 +1,7 @@
-import {FabricationOutcome, OutcomeType} from "../core/FabricationOutcome";
+import {FabricationOutcome} from "../core/FabricationOutcome";
 import {FabricationAction} from "../core/FabricationAction";
 import {CraftingError} from "../error/CraftingError";
+import {OutcomeType} from "../core/OutcomeType";
 
 class CraftingChatMessage {
 

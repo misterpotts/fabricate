@@ -4,7 +4,7 @@ import {EssenceDefinition} from "../common/EssenceDefinition";
 import {CraftingTab} from "../../interface/CraftingTab";
 import {ItemRecipeTab} from "../../interface/ItemRecipeTab";
 import Properties from "../../Properties";
-import {CraftingSystemSpecification} from "../system/CraftingSystemSpecification";
+import {DND5ECraftingSystemSpecification} from "../system/specification/DND5ECraftingSystemSpecification";
 
 
 class FabricateLifecycle {
@@ -63,7 +63,7 @@ class FabricateLifecycle {
 
     }
 
-    public static registerCraftingSystemSettings(systemSpec: CraftingSystemSpecification) {
+    public static registerCraftingSystemSettings(systemSpec: DND5ECraftingSystemSpecification) {
         game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
             name: systemSpec.name,
             hint: systemSpec.summary,

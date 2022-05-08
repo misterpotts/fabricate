@@ -2,7 +2,7 @@ import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import * as Sinon from "sinon";
 import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
 import {CompendiumProvider} from "../src/scripts/foundry/CompendiumProvider";
-import {CraftingSystemSpecification} from "../src/scripts/system/CraftingSystemSpecification";
+import {DND5ECraftingSystemSpecification} from "../src/scripts/system/specification/DND5ECraftingSystemSpecification";
 import {GameSystem} from "../src/scripts/system/GameSystem";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 import {PartDictionary} from "../src/scripts/system/PartDictionary";
@@ -17,10 +17,10 @@ import {testComponentFive, testComponentFour, testComponentOne, testComponentThr
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-const mockCompendiumProvider: CompendiumProvider = <CompendiumProvider><unknown>{
+const stubCompendiumProvider: CompendiumProvider = <CompendiumProvider><unknown>{
     getCompendium: () => {}
 };
-const stubGetCompendiumMethod = Sandbox.stub(mockCompendiumProvider, 'getCompendium');
+const stubGetCompendiumMethod = Sandbox.stub(stubCompendiumProvider, 'getCompendium');
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -30,7 +30,7 @@ beforeEach(() => {
 describe('Create and configure', () => {
 
     test('Should create a Compendium Importer', () => {
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
         expect(underTest).not.toBeNull();
     });
 
@@ -40,31 +40,31 @@ describe('Import', () => {
 
     test('Should Import a complete System Specification across 3 separate Compendiums', async () => {
 
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const stubCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             recipeAsCompendiumItem(testRecipeOne),
             recipeAsCompendiumItem(testRecipeTwo),
             componentAsCompendiumItem(testComponentFive)
         ]);
-        const mockCompendiumTwo: Compendium = mockItemsCompendium('test.pack-2', [
+        const stubCompendiumTwo: Compendium = stubItemsCompendium('test.pack-2', [
             recipeAsCompendiumItem(testRecipeThree),
             componentAsCompendiumItem(testComponentFour),
             componentAsCompendiumItem(testComponentThree),
             componentAsCompendiumItem(testComponentTwo)
         ]);
-        const mockCompendiumThree: Compendium = mockItemsCompendium('test.pack-3', [
+        const stubCompendiumThree: Compendium = stubItemsCompendium('test.pack-3', [
             recipeAsCompendiumItem(testRecipeFour),
             componentAsCompendiumItem(testComponentOne)
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
             .withDescription('This Test System does nothing except serve as a vehicle for importing compendiums')
             .withSupportedGameSystem(GameSystem.DND5E)
-            .withCompendiumPack(mockCompendiumOne.collection)
-            .withCompendiumPack(mockCompendiumTwo.collection)
-            .withCompendiumPack(mockCompendiumThree.collection)
+            .withCompendiumPack(stubCompendiumOne.collection)
+            .withCompendiumPack(stubCompendiumTwo.collection)
+            .withCompendiumPack(stubCompendiumThree.collection)
             .withCraftingCheckEnabled(false)
             .withEssence(elementalFire)
             .withEssence(elementalWater)
@@ -72,11 +72,11 @@ describe('Import', () => {
             .withEssence(elementalEarth)
             .build();
 
-        stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
-        stubGetCompendiumMethod.withArgs(mockCompendiumTwo.collection).returns(mockCompendiumTwo);
-        stubGetCompendiumMethod.withArgs(mockCompendiumThree.collection).returns(mockCompendiumThree);
+        stubGetCompendiumMethod.withArgs(stubCompendiumOne.collection).returns(stubCompendiumOne);
+        stubGetCompendiumMethod.withArgs(stubCompendiumTwo.collection).returns(stubCompendiumTwo);
+        stubGetCompendiumMethod.withArgs(stubCompendiumThree.collection).returns(stubCompendiumThree);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         const result: PartDictionary = await underTest.import(testSpecification);
 
@@ -85,28 +85,28 @@ describe('Import', () => {
         expect(result.getRecipes().length).toEqual(4);
         expect(result.getComponents().length).toEqual(5);
 
-        expect(result.getComponent(testComponentOne.partId, testComponentOne.systemId).compendiumId).toEqual(mockCompendiumThree.collection);
-        expect(result.getComponent(testComponentTwo.partId, testComponentTwo.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getComponent(testComponentThree.partId, testComponentThree.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getComponent(testComponentFour.partId, testComponentFour.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getComponent(testComponentFive.partId, testComponentFive.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
+        expect(result.getComponent(testComponentOne.partId, testComponentOne.systemId).compendiumId).toEqual(stubCompendiumThree.collection);
+        expect(result.getComponent(testComponentTwo.partId, testComponentTwo.systemId).compendiumId).toEqual(stubCompendiumTwo.collection);
+        expect(result.getComponent(testComponentThree.partId, testComponentThree.systemId).compendiumId).toEqual(stubCompendiumTwo.collection);
+        expect(result.getComponent(testComponentFour.partId, testComponentFour.systemId).compendiumId).toEqual(stubCompendiumTwo.collection);
+        expect(result.getComponent(testComponentFive.partId, testComponentFive.systemId).compendiumId).toEqual(stubCompendiumOne.collection);
 
-        expect(result.getRecipe(testRecipeOne.partId, testRecipeOne.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
-        expect(result.getRecipe(testRecipeTwo.partId, testRecipeTwo.systemId).compendiumId).toEqual(mockCompendiumOne.collection);
-        expect(result.getRecipe(testRecipeThree.partId, testRecipeThree.systemId).compendiumId).toEqual(mockCompendiumTwo.collection);
-        expect(result.getRecipe(testRecipeFour.partId, testRecipeFour.systemId).compendiumId).toEqual(mockCompendiumThree.collection);
+        expect(result.getRecipe(testRecipeOne.partId, testRecipeOne.systemId).compendiumId).toEqual(stubCompendiumOne.collection);
+        expect(result.getRecipe(testRecipeTwo.partId, testRecipeTwo.systemId).compendiumId).toEqual(stubCompendiumOne.collection);
+        expect(result.getRecipe(testRecipeThree.partId, testRecipeThree.systemId).compendiumId).toEqual(stubCompendiumTwo.collection);
+        expect(result.getRecipe(testRecipeFour.partId, testRecipeFour.systemId).compendiumId).toEqual(stubCompendiumThree.collection);
 
     });
 
     test('Should throw an Error when a Component includes essences that do not exist in the System Specification', async () => {
 
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const mockCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             recipeAsCompendiumItem(testRecipeOne),
             recipeAsCompendiumItem(testRecipeTwo),
             componentAsCompendiumItem(testComponentFive)
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
@@ -121,7 +121,7 @@ describe('Import', () => {
 
         stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         let error: Error;
         try {
@@ -140,13 +140,13 @@ describe('Import', () => {
 
     test('Should throw an Error when a Recipe specifies essences that do not exist in the System Specification', async () => {
 
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const mockCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             recipeAsCompendiumItem(testRecipeOne),
             recipeAsCompendiumItem(testRecipeThree),
             componentAsCompendiumItem(testComponentFour)
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
@@ -161,7 +161,7 @@ describe('Import', () => {
 
         stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         let error: Error;
         try {
@@ -187,13 +187,13 @@ describe('Import', () => {
             .withCompendiumId(testComponentFour.compendiumId)
             .withPartId(invalidComponentId)
             .build();
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const mockCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             componentAsCompendiumItem(testComponentFour.toBuilder()
                 .withSalvage(Combination.of(invalidComponent, 1))
                 .build())
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
@@ -209,7 +209,7 @@ describe('Import', () => {
 
         stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         let error: Error;
         try {
@@ -233,13 +233,13 @@ describe('Import', () => {
             .withCompendiumId(testComponentFour.compendiumId)
             .withPartId(invalidComponentId)
             .build();
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const mockCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             recipeAsCompendiumItem(testRecipeThree.toBuilder()
                 .withIngredients(Combination.of(invalidComponent, 1))
                 .build())
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
@@ -255,7 +255,7 @@ describe('Import', () => {
 
         stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         let error: Error;
         try {
@@ -279,13 +279,13 @@ describe('Import', () => {
             .withCompendiumId(testComponentFour.compendiumId)
             .withPartId(invalidComponentId)
             .build();
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const mockCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             recipeAsCompendiumItem(testRecipeThree.toBuilder()
                 .withCatalysts(Combination.of(invalidComponent, 1))
                 .build())
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
@@ -301,7 +301,7 @@ describe('Import', () => {
 
         stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         let error: Error;
         try {
@@ -325,13 +325,13 @@ describe('Import', () => {
             .withCompendiumId(testComponentFour.compendiumId)
             .withPartId(invalidComponentId)
             .build();
-        const mockCompendiumOne: Compendium = mockItemsCompendium('test.pack-1', [
+        const mockCompendiumOne: Compendium = stubItemsCompendium('test.pack-1', [
             recipeAsCompendiumItem(testRecipeThree.toBuilder()
                 .withResults(Combination.of(invalidComponent, 1))
                 .build())
         ]);
 
-        const testSpecification: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSpecification: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Test System')
             .withId('fabricate.test-system')
             .withSummary('A test system for Compendium importing')
@@ -347,7 +347,7 @@ describe('Import', () => {
 
         stubGetCompendiumMethod.withArgs(mockCompendiumOne.collection).returns(mockCompendiumOne);
 
-        const underTest = new CompendiumImporter(mockCompendiumProvider);
+        const underTest = new CompendiumImporter(stubCompendiumProvider);
 
         let error: Error;
         try {
@@ -364,7 +364,7 @@ describe('Import', () => {
 
 });
 
-function mockItemsCompendium(packKey: string, items: Item[]): Compendium {
+function stubItemsCompendium(packKey: string, items: Item[]): Compendium {
     const mockCompendium: Compendium = <Compendium><unknown>{
         collection: packKey,
         entity: 'Item',

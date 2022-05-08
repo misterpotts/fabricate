@@ -32,19 +32,25 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.size()).toBe(1);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.contains(testComponentOne)).toBe(true);
-    expect(underTest.contains(CraftingComponent.builder()
+    let equivalentComponent = CraftingComponent.builder()
         .withPartId(testComponentOne.partId)
-        .withCompendiumId(testComponentOne.systemId)
+        .withCompendiumId(testComponentOne.compendiumId)
+        .withSystemId(testComponentOne.systemId)
         .withImageUrl(testComponentOne.imageUrl)
         .withName(testComponentOne.name)
         .withEssences(testComponentOne.essences)
-        .build())).toBe(true);
-    expect(underTest.contains(CraftingComponent.builder()
+        .build();
+    expect(underTest.contains(equivalentComponent))
+        .toBe(true);
+    let nonEquivalentComponent = CraftingComponent.builder()
         .withPartId('XYZ345')
-        .withCompendiumId('system-two')
+        .withCompendiumId('FGTH654')
+        .withSystemId('system-two')
         .withImageUrl('/img/picture.png')
         .withName('Test Component 2')
-        .build())).toBe(false);
+        .build();
+    expect(underTest.contains(nonEquivalentComponent))
+        .toBe(false);
 
     expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne]));
 });
@@ -67,14 +73,17 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.contains(testComponentThree)).toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId(testComponentOne.partId)
-        .withCompendiumId(testComponentOne.systemId)
+        .withCompendiumId(testComponentOne.compendiumId)
+        .withSystemId(testComponentOne.systemId)
         .withImageUrl(testComponentOne.imageUrl)
         .withName(testComponentOne.name)
         .withEssences(testComponentOne.essences)
-        .build())).toBe(true);
+        .build()))
+        .toBe(true);
     expect(underTest.contains(CraftingComponent.builder()
         .withPartId('XYZ345')
-        .withCompendiumId('system-two')
+        .withCompendiumId('FGTH654')
+        .withSystemId('system-two')
         .withImageUrl('/img/picture.png')
         .withName('Test Component 2')
         .build())).toBe(false);

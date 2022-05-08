@@ -1,4 +1,7 @@
-import {AlchemicalEffect} from "../crafting/alchemy/AlchemicalEffect";
+import {AlchemicalEffect, AlchemicalEffectType} from "../crafting/alchemy/AlchemicalEffect";
+import {Combination} from "../common/Combination";
+import {EssenceDefinition} from "../common/EssenceDefinition";
+import {DiceUtility} from "../foundry/DiceUtility";
 
 interface AoeExtension {
     units: DND5e.TargetUnitType;
@@ -10,7 +13,7 @@ interface Damage {
     type: DND5e.DamageType;
 }
 
-abstract class AlchemicalEffect5e extends AlchemicalEffect<Item5e.Data.Data> {
+class AlchemicalEffect5e extends AlchemicalEffect<Item5e.Data.Data> {
 
     protected constructor(builder: AlchemicalEffect5e.Builder) {
         super(builder);
@@ -20,6 +23,7 @@ abstract class AlchemicalEffect5e extends AlchemicalEffect<Item5e.Data.Data> {
         itemData.description.value += `<p>${this.description}</p>`;
         return itemData;
     }
+
 }
 
 class Damage5e extends AlchemicalEffect5e {
@@ -155,6 +159,26 @@ namespace AlchemicalEffect5e {
             return new Damage5e(this);
         }
 
+        public withEssenceCombination(value: Combination<EssenceDefinition>): DamageBuilder {
+            this.essenceCombination = value;
+            return this;
+        }
+
+        public withDescription(value: string): DamageBuilder {
+            this.description = value;
+            return this;
+        }
+
+        public withType(value: AlchemicalEffectType): DamageBuilder {
+            this.type = value;
+            return this;
+        }
+
+        public withDiceUtility(value: DiceUtility): DamageBuilder {
+            this.diceUtility = value;
+            return this;
+        }
+
         public withDamage(value: Damage): DamageBuilder {
             this.damage = value;
             return this;
@@ -163,45 +187,120 @@ namespace AlchemicalEffect5e {
 
     export class ConditionBuilder extends Builder {
 
+        public type: AlchemicalEffectType = AlchemicalEffectType.BASIC;
+
+        public build(): Condition5e {
+            return new Condition5e(this);
+        }
+
+        public withEssenceCombination(value: Combination<EssenceDefinition>): ConditionBuilder {
+            this.essenceCombination = value;
+            return this;
+        }
+
+        public withDescription(value: string): ConditionBuilder {
+            this.description = value;
+            return this;
+        }
+
+        public withDiceUtility(value: DiceUtility): ConditionBuilder {
+            this.diceUtility = value;
+            return this;
+        }
+
     }
 
     export class AoeExtensionBuilder extends Builder {
+
         public aoeExtension: AoeExtension;
+        public type: AlchemicalEffectType = AlchemicalEffectType.BASIC;
 
         public build(): AoeExtension5e {
             return new AoeExtension5e(this);
+        }
+
+        public withEssenceCombination(value: Combination<EssenceDefinition>): AoeExtensionBuilder {
+            this.essenceCombination = value;
+            return this;
+        }
+
+        public withDescription(value: string): AoeExtensionBuilder {
+            this.description = value;
+            return this;
+        }
+
+        public withDiceUtility(value: DiceUtility): AoeExtensionBuilder {
+            this.diceUtility = value;
+            return this;
         }
 
         public withAoEExtension(value: AoeExtension): AoeExtensionBuilder {
             this.aoeExtension = value;
             return this;
         }
+
     }
 
     export class SavingThrowModifierBuilder extends Builder {
+
         public savingThrowModifier: number;
+        public type: AlchemicalEffectType = AlchemicalEffectType.BASIC;
 
         public build(): SavingThrowModifier5e {
             return new SavingThrowModifier5e(this);
+        }
+
+        public withEssenceCombination(value: Combination<EssenceDefinition>): SavingThrowModifierBuilder {
+            this.essenceCombination = value;
+            return this;
+        }
+
+        public withDescription(value: string): SavingThrowModifierBuilder {
+            this.description = value;
+            return this;
+        }
+
+        public withDiceUtility(value: DiceUtility): SavingThrowModifierBuilder {
+            this.diceUtility = value;
+            return this;
         }
 
         public withSavingThrowModifier(value: number): SavingThrowModifierBuilder {
             this.savingThrowModifier = value;
             return this;
         }
+
     }
 
     export class DiceMultiplierBuilder extends Builder {
+
         public diceMultiplier: number;
+        public type: AlchemicalEffectType = AlchemicalEffectType.MODIFIER;
 
         public build(): DiceMultiplier5e {
             return new DiceMultiplier5e(this);
+        }
+
+        public withEssenceCombination(value: Combination<EssenceDefinition>): DiceMultiplierBuilder {
+            this.essenceCombination = value;
+            return this;
+        }
+
+        public withDescription(value: string): DiceMultiplierBuilder {
+            this.description = value;
+            return this;
+        }
+
+        public withDiceUtility(value: DiceUtility): DiceMultiplierBuilder {
+            this.diceUtility = value;
+            return this;
         }
 
         public withDiceMultiplier(value: number): DiceMultiplierBuilder {
             this.diceMultiplier = value;
             return this;
         }
+
     }
 
 }

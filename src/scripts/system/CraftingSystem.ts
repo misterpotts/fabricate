@@ -3,52 +3,45 @@ import {Fabricator} from "../core/Fabricator";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import { EssenceDefinition } from "../common/EssenceDefinition";
-import {CraftingCheck} from "../crafting/CraftingCheck";
 import {Inventory} from "../actor/Inventory";
 import {FabricationOutcome} from "../core/FabricationOutcome";
 import {CraftingChatMessage} from "../interface/CraftingChatMessage";
-import Properties from "../../Properties";
+import Properties from "../Properties";
 import {Combination} from "../common/Combination";
 import {CraftingError} from "../error/CraftingError";
+import {GameSystem} from "./GameSystem";
+import {PartDictionary} from "./PartDictionary";
+import {CraftingCheck} from "../crafting/CraftingCheck";
+
+interface CraftingSystemConfig {
+    partDictionary: PartDictionary;
+    essences: EssenceDefinition[],
+    enabled: boolean;
+    fabricator: Fabricator<{}, Actor>;
+    craftingCheck: CraftingCheck<Actor>;
+    supportedGameSystems: GameSystem[];
+    id: string;
+}
 
 class CraftingSystem implements Identifiable {
-    private readonly _name: string;
-    private readonly _compendiumPackKey: string;
+    private readonly _essencesBySlug: Map<string, EssenceDefinition>;
+    private readonly _partDictionary: PartDictionary;
     private readonly _fabricator: Fabricator<{}, Actor>;
-    private readonly _recipesById: Map<string, Recipe> = new Map();
-    private readonly _componentsById: Map<string, CraftingComponent> = new Map();
-    private readonly _supportedGameSystems: string[] = [];
-    private readonly _enableHint: string;
-    private readonly _description: string;
-    private readonly _essences: EssenceDefinition[] = [];
-    private readonly _essencesBySlug: Map<string, EssenceDefinition> = new Map();
     private readonly _craftingCheck: CraftingCheck<Actor>;
-    private readonly _hasCraftingCheck: boolean;
+    private readonly _supportedGameSystems: GameSystem[];
+    private readonly _id: string;
 
-    private _enabled: boolean;
+    private _enabled: boolean = false;
+    private _craftingCheckEnabled: boolean = false;
 
-    constructor(builder: CraftingSystem.Builder) {
-        this._name = builder.name;
-        this._compendiumPackKey = builder.compendiumPackKey;
-        this._fabricator = builder.fabricator;
-        this._recipesById = builder.recipes;
-        this._componentsById = builder.components;
-        this._supportedGameSystems = builder.supportedGameSystems;
-        this._enabled = builder.enabled;
-        this._enableHint = builder.enableHint;
-        this._description = builder.description;
-        this._essences = builder.essences;
-        this._essencesBySlug = new Map(builder.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
-        this._craftingCheck = builder.craftingCheck;
-        this._hasCraftingCheck = !!this._craftingCheck;
-    }
-
-    public static builder() {
-        return new CraftingSystem.Builder();
-    }
-
-    get name(): string {
-        return this._name;
+    constructor(config: CraftingSystemConfig) {
+        this._essencesBySlug = new Map(config.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
+        this._partDictionary = config.partDictionary;
+        this._fabricator = config.fabricator;
+        this._enabled = config.enabled;
+        this._craftingCheck = config.craftingCheck;
+        this._supportedGameSystems = config.supportedGameSystems;
+        this._id = config.id;
     }
 
     get enabled(): boolean {
@@ -59,28 +52,20 @@ class CraftingSystem implements Identifiable {
         this._enabled = value;
     }
 
-    get enableHint(): string {
-        return this._enableHint;
-    }
-
-    get description(): string {
-        return this._description;
-    }
-
     get essences(): EssenceDefinition[] {
-        return this._essences;
+        return Array.from(this._essencesBySlug.values());
     }
 
     getEssenceBySlug(slug: string) {
         return this._essencesBySlug.get(slug);
     }
 
-    get craftingCheck(): CraftingCheck<Actor> {
-        return this._craftingCheck;
+    get isCraftingCheckEnabled(): boolean {
+        return this._craftingCheckEnabled;
     }
 
     get hasCraftingCheck(): boolean {
-        return this._hasCraftingCheck;
+        return this._craftingCheck !== null;
     }
 
     get supportsAlchemy() {
@@ -88,10 +73,16 @@ class CraftingSystem implements Identifiable {
     }
 
     get id(): string {
-        return this.compendiumPackKey;
+        return this._id;
     }
 
     public async craft(actor: Actor, inventory: Inventory<{}, Actor>, recipe: Recipe): Promise<FabricationOutcome> {
+        // use a component selector to get an ingredient selection
+        // check that the ingredient selection is present in the inventory before proceeding
+        // create a crafting attempt (interface) with an ingredient selection (simple crafting attempt) or with an ingredient selection and a crafting check (checked crafting attempt)
+        // get a successful or failed crafting result (interface) from the crafting attempt
+        // apply the result to the inventory
+        // create a chat message from the crafting result and post it
         try {
             const fabricationOutcome: FabricationOutcome = await this.fabricator.followRecipe(actor, inventory, recipe);
             const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
@@ -128,138 +119,34 @@ class CraftingSystem implements Identifiable {
         await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
     }
 
-    get compendiumPackKey(): string {
-        return this._compendiumPackKey;
-    }
-
     get fabricator(): Fabricator<{}, Actor> {
         return this._fabricator;
     }
 
-    get supportedGameSystems(): string[] {
+    get supportedGameSystems(): GameSystem[] {
         return this._supportedGameSystems;
     }
 
     get recipes(): Recipe[] {
-        return Array.from(this._recipesById.values());
+        return this._partDictionary.getRecipes()
     }
 
     get components(): CraftingComponent[] {
-        return Array.from(this._componentsById.values());
+        return this._partDictionary.getComponents();
     }
 
-    public getComponentByPartId(entryId: string): CraftingComponent {
-        return this._componentsById.get(entryId);
+    public getComponentByPartId(partId: string): CraftingComponent {
+        return this._partDictionary.getComponent(partId, this.id);
     }
 
-    public supports(gameSystem: string): boolean {
-        if (!this._supportedGameSystems || this._supportedGameSystems.length == 0) {
-            return true;
-        }
-        return this._supportedGameSystems.indexOf(gameSystem) > -1;
+    public supports(gameSystem: GameSystem): boolean {
+        return this._supportedGameSystems.includes(gameSystem);
     }
 
     getRecipeByPartId(partId: string): Recipe {
-        return this._recipesById.get(partId);
+        return this._partDictionary.getRecipe(partId, this.id);
     }
 
 }
 
-namespace CraftingSystem {
-
-    export class Builder {
-
-        public name!: string;
-        public compendiumPackKey!: string;
-        public fabricator!: Fabricator<{}, Actor>;
-        public supportedGameSystems: string[] = [];
-        public recipes: Map<string, Recipe> = new Map();
-        public components: Map<string, CraftingComponent> = new Map();
-        public enabled: boolean;
-        public enableHint!: string;
-        public description!: string;
-        public essences: EssenceDefinition[] = [];
-        public craftingCheck: CraftingCheck<Actor>;
-
-        public build() : CraftingSystem{
-            return new CraftingSystem(this);
-        }
-
-        public withName(value: string): Builder {
-            this.name = value;
-            return this;
-        }
-
-        public withCompendiumPackKey(value: string): Builder {
-            this.compendiumPackKey = value;
-            return this;
-        }
-
-        public withFabricator(value: Fabricator<{}, Actor>): Builder {
-            this.fabricator = value;
-            return this;
-        }
-
-        public withSupportedGameSystems(value: string[]): Builder {
-            this.supportedGameSystems = value;
-            return this;
-        }
-
-        public withSupportedGameSystem(value: string): Builder {
-            this.supportedGameSystems.push(value);
-            return this;
-        }
-
-        public withRecipes(value: Map<string, Recipe>): Builder {
-            this.recipes = value;
-            return this;
-        }
-
-        public withRecipe(value: Recipe): Builder {
-            this.recipes.set(value.partId, value);
-            return this;
-        }
-
-        public withComponent(value: CraftingComponent): Builder {
-            this.components.set(value.partId, value);
-            return this;
-        }
-
-        public withComponents(value: Map<string, CraftingComponent>): Builder {
-            this.components = value;
-            return this;
-        }
-
-        public isEnabled(value: boolean): Builder {
-            this.enabled = value;
-            return this;
-        }
-
-        public withEnableHint(value: string): Builder {
-            this.enableHint = value;
-            return this;
-        }
-
-        public withDescription(value: string): Builder {
-            this.description = value;
-            return this;
-        }
-
-        public withEssence(value: EssenceDefinition): Builder {
-            this.essences.push(value);
-            return this;
-        }
-
-        public withEssences(value: EssenceDefinition[]): Builder {
-            this.essences = value;
-            return this;
-        }
-
-        withCraftingCheck(value: CraftingCheck<Actor>) {
-            this.craftingCheck = value;
-            return this;
-        }
-    }
-}
-
-export {CraftingSystem};
+export {CraftingSystem, CraftingSystemConfig};

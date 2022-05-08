@@ -3,11 +3,11 @@ import {expect} from 'chai';
 import {Done} from "mocha";
 import ErrnoException = NodeJS.ErrnoException;
 import {CraftingSystemRegistry} from "../../src/scripts/registries/CraftingSystemRegistry";
-import {CraftingSystemSpecification} from "../../src/scripts/core/CraftingSystemSpecification";
-import {CraftingSystemFactory, FileReadingCraftingSystemFactory} from "../../src/scripts/core/CraftingSystemFactory";
-import {CraftingSystem} from "../../src/scripts/core/CraftingSystem";
-import {Recipe} from "../../src/scripts/core/Recipe";
-import {CraftingComponent} from "../../src/scripts/core/CraftingComponent";
+import {DND5ECraftingSystemSpecification} from "../../src/scripts/system/specification/DND5ECraftingSystemSpecification";
+import {CompendiumImporter} from "../../src/scripts/system/CompendiumImporter";
+import {CraftingSystem} from "../../src/scripts/system/CraftingSystem";
+import {Recipe} from "../../src/scripts/crafting/Recipe";
+import {CraftingComponent} from "../../src/scripts/common/CraftingComponent";
 
 const factoriesByCompendiumPackKey: Map<string, CraftingSystemFactory> = new Map<string, CraftingSystemFactory>();
 
@@ -20,7 +20,7 @@ before((done: Done) => {
         const compendiumPackFilePaths: Map<string, string> = new Map(fileNames.map((fileName: string) => ['fabricate.' + fileName.substring(0, fileName.length - 3), bundleDirectory + fileName]));
         compendiumPackFilePaths.forEach( (filePath: string, compendiumKey: string) => {
             const systemSpecifications = CraftingSystemRegistry.systemSpecifications();
-            const systemSpec: CraftingSystemSpecification = systemSpecifications.find((systemSpec: CraftingSystemSpecification) => systemSpec.compendiumPackKey === compendiumKey);
+            const systemSpec: DND5ECraftingSystemSpecification = systemSpecifications.find((systemSpec: DND5ECraftingSystemSpecification) => systemSpec.compendiumPackKey === compendiumKey);
             const craftingSystemFactory: CraftingSystemFactory = new FileReadingCraftingSystemFactory(systemSpec, filePath);
             factoriesByCompendiumPackKey.set(compendiumKey, craftingSystemFactory);
         });

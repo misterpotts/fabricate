@@ -4,7 +4,7 @@ import * as Sinon from "sinon";
 import {Inventory} from "../src/scripts/actor/Inventory";
 import {Fabricator} from "../src/scripts/core/Fabricator";
 import {AlchemicalCombiner} from "../src/scripts/crafting/alchemy/AlchemicalCombiner";
-import {CraftingCheck} from "../src/scripts/crafting/CraftingCheck";
+import {CraftingCheck5E} from "../src/scripts/5e/CraftingCheck5E";
 import {Recipe} from "../src/scripts/crafting/Recipe";
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
@@ -43,7 +43,7 @@ const mockAlchemicalCombiner: AlchemicalCombiner<any> = <AlchemicalCombiner<any>
 }
 const stubAlchemicalCombinerPerformMethod = Sandbox.stub(mockAlchemicalCombiner, 'perform');
 
-const mockCraftingCheck: CraftingCheck<any> = <CraftingCheck<any>><unknown>{
+const mockCraftingCheck: CraftingCheck5E<any> = <CraftingCheck5E<any>><unknown>{
     perform: () => {}
 };
 const stubPerformCraftingCheckMethod = Sandbox.stub(mockCraftingCheck, 'perform');

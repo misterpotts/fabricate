@@ -1,6 +1,5 @@
 import {Inventory} from '../actor/Inventory';
 import {Recipe} from "../crafting/Recipe";
-import {CraftingCheck} from "../crafting/CraftingCheck";
 import {Combination, Unit} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {ActionType, FabricationAction} from "./FabricationAction";
@@ -9,6 +8,13 @@ import {FabricationOutcome} from "./FabricationOutcome";
 import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
 import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 import {AlchemyError} from "../error/AlchemyError";
+import {CraftingCheck} from "../crafting/CraftingCheck";
+
+interface FabricatorConfig<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
+    craftingCheck: CraftingCheck<A>;
+    consumeComponentsOnFailure: boolean;
+    alchemicalCombiners?: AlchemicalCombiner<D>[];
+}
 
 class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
 
@@ -16,14 +22,10 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     private readonly _consumeComponentsOnFailure: boolean;
     private readonly _alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>>;
 
-    constructor(builder: Fabricator.Builder<D, A>) {
-        this._craftingCheck = builder.craftingCheck;
-        this._consumeComponentsOnFailure = builder.consumeComponentsOnFailure;
-        this._alchemicalCombinersByBaseComponent = builder.alchemicalCombinersByBaseComponent;
-    }
-
-    public static builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>>(): Fabricator.Builder<D, A> {
-        return new Fabricator.Builder<D, A>();
+    constructor(config: FabricatorConfig<any,any>) {
+        this._craftingCheck = config.craftingCheck;
+        this._consumeComponentsOnFailure = config.consumeComponentsOnFailure;
+        this._alchemicalCombinersByBaseComponent = config.alchemicalCombiners ? new Map(config.alchemicalCombiners.map(combiner => [combiner.baseComponent, combiner])) : new Map();
     }
 
     get craftingCheck(): CraftingCheck<A> {
@@ -183,47 +185,6 @@ class Fabricator<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
             .withComponent(componentUnit)
             .withItemData(itemData)
             .build();
-    }
-
-}
-
-namespace Fabricator {
-
-    export class Builder<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
-
-        public craftingCheck: CraftingCheck<A>;
-        public consumeComponentsOnFailure: boolean;
-        public alchemicalCombiners: AlchemicalCombiner<D>[] = [];
-
-        public alchemicalCombinersByBaseComponent: Map<CraftingComponent, AlchemicalCombiner<D>> = new Map();
-
-        public build(): Fabricator<D, A> {
-            if (this.alchemicalCombiners && this.alchemicalCombiners.length > 0) {
-                this.alchemicalCombinersByBaseComponent = new Map(this.alchemicalCombiners.map(combiner => [combiner.baseComponent, combiner]));
-            }
-            return new Fabricator<D, A>(this);
-        }
-
-        public withAlchemicalCombiner(value: AlchemicalCombiner<D>): Builder<D, A> {
-            this.alchemicalCombiners.push(value);
-            return this;
-        }
-
-        public withAlchemicalCombiners(value: AlchemicalCombiner<D>[]): Builder<D, A> {
-            this.alchemicalCombiners = value;
-            return this;
-        }
-
-        public withCraftingCheck(value: CraftingCheck<A>): Builder<D, A> {
-            this.craftingCheck = value;
-            return this;
-        }
-
-        public withConsumeComponentsOnFailure(value: boolean): Builder<D, A> {
-            this.consumeComponentsOnFailure = value;
-            return this;
-        }
-
     }
 
 }

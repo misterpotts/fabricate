@@ -1,7 +1,7 @@
 import {CraftingSystem} from "../system/CraftingSystem";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
-import {CraftingSystemSpecification} from "../system/CraftingSystemSpecification";
+import {DND5ECraftingSystemSpecification} from "../system/specification/DND5ECraftingSystemSpecification";
 import {AlchemistsSuppliesSystemSpec} from "./system_definitions/AlchemistsSuppliesV16";
 
 
@@ -9,7 +9,7 @@ class CraftingSystemRegistry {
 
     private _craftingSystemsByCompendiumKey: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
     private _craftingSystemsByPartId: Map<string, CraftingSystem> = new Map<string, CraftingSystem>();
-    private _systemSpecifications: CraftingSystemSpecification[] = CraftingSystemRegistry.systemSpecifications();
+    private _systemSpecifications: DND5ECraftingSystemSpecification[] = CraftingSystemRegistry.systemSpecifications();
 
     public register(system: CraftingSystem): void {
         this._craftingSystemsByCompendiumKey.set(system.compendiumPackKey, system);
@@ -48,19 +48,19 @@ class CraftingSystemRegistry {
         return Array.from(this._craftingSystemsByCompendiumKey.values());
     }
 
-    public get systemSpecifications(): CraftingSystemSpecification[] {
+    public get systemSpecifications(): DND5ECraftingSystemSpecification[] {
         return this._systemSpecifications;
     }
 
-    public declareSpecification(spec: CraftingSystemSpecification): void {
+    public declareSpecification(spec: DND5ECraftingSystemSpecification): void {
         this._systemSpecifications.push(spec);
     }
 
-    public static systemSpecifications(): CraftingSystemSpecification[] {
+    public static systemSpecifications(): DND5ECraftingSystemSpecification[] {
 
-        const systemSpecifications: CraftingSystemSpecification[] = [];
+        const systemSpecifications: DND5ECraftingSystemSpecification[] = [];
 
-        const testSystemSpec: CraftingSystemSpecification = CraftingSystemSpecification.builder()
+        const testSystemSpec: DND5ECraftingSystemSpecification = DND5ECraftingSystemSpecification.builder()
             .withName('Child\'s Play')
             .withSummary('The test Crafting System for Fabricate')
             .withDescription('A simple tech demo used for the early development of Fabricate. ')

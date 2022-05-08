@@ -25,10 +25,6 @@ abstract class AlchemicalEffect<D>{
         this._diceUtility = builder.diceUtility;
     }
 
-    public static builder<D>(): AlchemicalEffect.Builder<D> {
-        return new AlchemicalEffect.Builder<D>();
-    }
-
     get essenceCombination(): Combination<EssenceDefinition> {
         return this._essenceCombination;
     }
@@ -54,7 +50,7 @@ namespace AlchemicalEffect {
         public essenceCombination: Combination<EssenceDefinition>;
         public description: string;
         public type: AlchemicalEffectType;
-        public diceUtility: DiceUtility;
+        public diceUtility: DiceUtility = new DiceUtility();
 
         public withEssenceCombination(value: Combination<EssenceDefinition>): Builder<D> {
             this.essenceCombination = value;
@@ -75,7 +71,6 @@ namespace AlchemicalEffect {
             this.diceUtility = value;
             return this;
         }
-
 
     }
 }

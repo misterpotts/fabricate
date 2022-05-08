@@ -5,16 +5,16 @@ import {CraftingComponent} from "../common/CraftingComponent";
 import {Recipe} from "../crafting/Recipe";
 import {FabricateCompendiumData, FabricateItemType} from "../compendium/CompendiumData";
 import {Combination, Unit} from "../common/Combination";
-import {CraftingSystemSpecification} from "./CraftingSystemSpecification";
 import Properties from "../Properties";
 import {CompendiumEntryImportError} from "../error/CompendiumEntryImportError";
 import {CompendiumEntryReferencePopulationError} from "../error/CompendiumEntryReferencePopulationError";
+import {CraftingSystemSpecification} from "./specification/CraftingSystemSpecification";
 
 class CompendiumImporter {
     private readonly _compendiumProvider: CompendiumProvider;
 
-    constructor(compendiumProvider: CompendiumProvider) {
-        this._compendiumProvider = compendiumProvider;
+    constructor(compendiumProvider?: CompendiumProvider) {
+        this._compendiumProvider = compendiumProvider ? compendiumProvider : new CompendiumProvider();
     }
 
     public async import(craftingSystemSpecification: CraftingSystemSpecification): Promise<PartDictionary> {

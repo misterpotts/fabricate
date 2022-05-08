@@ -1,9 +1,12 @@
 import Properties from "./Properties";
 import {FabricateLifecycle} from "./application/FabricateLifecycle";
-import {CraftingSystemSpecification} from "./core/CraftingSystemSpecification";
-import {CompendiumImportingCraftingSystemFactory, CraftingSystemFactory} from "./core/CraftingSystemFactory";
 import FabricateApplication from "./application/FabricateApplication";
-
+import {CompendiumImporter} from "./system/CompendiumImporter";
+import {CraftingSystemSpecification} from "./system/specification/CraftingSystemSpecification";
+import {GameSystem} from "./system/GameSystem";
+import {PartDictionary} from "./system/PartDictionary";
+import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
+import {CraftingSystem} from "./system/CraftingSystem";
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -31,14 +34,16 @@ async function loadCraftingSystems(): Promise<void> {
  * for the system should be loaded from.
  * */
 async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
-    console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `);
-    if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
-        console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
+    console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack(s) ${systemSpec.compendiumPacks.join(', ')}. `);
+    if (systemSpec.supportedGameSystems.indexOf(game.system.id as GameSystem) < 0) {
+        console.log(`${Properties.module.label} | ${systemSpec.name} does not support the current game system (${game.system.id}), and will not be loaded. `);
         return;
     }
-    const craftingSystemFactory: CraftingSystemFactory = new CompendiumImportingCraftingSystemFactory(systemSpec);
-    const craftingSystem = await craftingSystemFactory.make();
-    craftingSystem.enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
+    const compendiumImporter: CompendiumImporter = new CompendiumImporter();
+    const partDictionary: PartDictionary = await compendiumImporter.import(systemSpec);
+    const enabled: boolean = <boolean> game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id));
+    const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory(systemSpec, partDictionary, enabled);
+    const craftingSystem: CraftingSystem = craftingSystemFactory.make();
     FabricateApplication.systems.register(craftingSystem);
     console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
 }
