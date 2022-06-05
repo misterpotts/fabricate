@@ -10,13 +10,13 @@ import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {FabricationOutcome} from "../src/scripts/core/FabricationOutcome";
 import {EssenceDefinition} from "../src/scripts/common/EssenceDefinition";
-import {CraftingCheckResult} from "../src/scripts/crafting/CraftingCheckResult";
 import {OutcomeType} from "../src/scripts/core/OutcomeType";
 import {ActionType, FabricationAction} from "../src/scripts/core/FabricationAction";
 import {AlchemyError} from "../src/scripts/error/AlchemyError";
 
 import {elementalAir, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 import { testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive} from "./test_data/TestCraftingComponents";
+import {CraftingCheckResult} from "../src/scripts/crafting/check/CraftingCheckResult";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 

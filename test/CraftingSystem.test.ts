@@ -7,47 +7,41 @@ import {PartDictionary} from "../src/scripts/system/PartDictionary";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 import {GameSystem} from "../src/scripts/system/GameSystem";
-import {CraftingCheck} from "../src/scripts/crafting/CraftingCheck";
+import {CraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
 import {Inventory} from "../src/scripts/actor/Inventory";
-import {Recipe} from "../src/scripts/crafting/Recipe";
+import {testRecipeOne} from "./test_data/TestRecipes";
+import {NoCraftingCheck} from "../src/scripts/crafting/check/NoCraftingCheck";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
 const essences: EssenceDefinition[] = [elementalAir, elementalEarth, elementalFire, elementalWater];
-
-const stubFabricator: Fabricator<{}, Actor> = <Fabricator<{}, Actor>><unknown>{
-    followRecipe: () => {},
-    performAlchemy: () => {}
-};
-//const stubFollowRecipeMethod = Sandbox.stub(stubFabricator, 'followRecipe');
-//const stubPerformAlchemyMethod = Sandbox.stub(stubFabricator, 'performAlchemy');
 
 const stubPartDictionary: PartDictionary = <PartDictionary><unknown>{
 
 };
 
 const stubCraftingCheck: CraftingCheck<Actor> = <CraftingCheck<Actor>><unknown>{
+    perform: () => {}
+};
+
+//const stubPerformMethod = Sandbox.stub(stubCraftingCheck, 'perform');
+
+//todo: Deleteme
+const stubFabricator: Fabricator<any, any> = <Fabricator<any, any>><unknown>{
 
 };
 
 const stubActor: Actor<Actor.Data, Item<Item.Data>> = <Actor<Actor.Data, Item<Item.Data>>><unknown>{};
 
 const stubInventory: Inventory<any, Actor<Actor.Data, Item<Item.Data>>> = <Inventory<any, Actor<Actor.Data, Item<Item.Data>>>><unknown>{
-    actor: Sandbox.stub(),
-    ownedComponents: Sandbox.stub(),
-    containsIngredients: () => {},
-    containsEssences: () => {},
-    selectFor: () => {},
-    excluding: () => {},
-    perform: () => {}
+    actor: {},
+    ownedComponents: {},
+    removeAll: () => {},
+    addAll: () => {},
+    accept: () => {},
+    index: () => {}
 };
-//const stubInventoryExcludingMethod = Sandbox.stub(stubInventory, 'excluding');
-//const stubInventoryContainsIngredientsMethod = Sandbox.stub(stubInventory, 'containsIngredients');
-//const stubInventorySelectForMethod = Sandbox.stub(stubInventory, 'selectFor');
-//const stubInventoryPerformMethod = Sandbox.stub(stubInventory, 'perform');
-//const stubInventoryContainsEssencesMethod = Sandbox.stub(stubInventory, 'containsEssences');
-
-const stubRecipe: Recipe = <Recipe><unknown>{};
+//const stubAcceptMethod = Sandbox.stub(stubInventory, 'accept');
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -87,12 +81,14 @@ describe('Crafting', () => {
             supportedGameSystems: [GameSystem.DND5E],
             essences: essences,
             partDictionary: stubPartDictionary,
-            craftingCheck: stubCraftingCheck,
+            craftingCheck: new NoCraftingCheck(),
             fabricator: stubFabricator
         });
 
-        const fabricationOutcome = await underTest.craft(stubActor, stubInventory, stubRecipe);
-        expect(fabricationOutcome).not.toBeNull();
+        Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+
+        const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
+        expect(craftingResult).not.toBeNull();
 
     });
 

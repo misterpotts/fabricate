@@ -1,7 +1,7 @@
 import {EssenceDefinition} from "../../common/EssenceDefinition";
 import {GameSystem} from "../GameSystem";
 import {CraftingSystemSpecification} from "./CraftingSystemSpecification";
-import {CraftingCheckSpecification} from "../../crafting/CraftingCheck";
+import {CraftingCheckSpecification} from "../../crafting/check/CraftingCheck";
 import {Tool} from "../../crafting/Tool";
 import AbilityType = DND5e.AbilityType;
 

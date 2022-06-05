@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import * as Sinon from "sinon";
 import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
-import {CompendiumProvider} from "../src/scripts/foundry/CompendiumProvider";
+import {CompendiumProvider} from "../src/scripts/compendium/CompendiumProvider";
 import {DND5ECraftingSystemSpecification} from "../src/scripts/system/specification/DND5ECraftingSystemSpecification";
 import {GameSystem} from "../src/scripts/system/GameSystem";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";

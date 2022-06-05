@@ -3,7 +3,7 @@ import {CraftingComponent} from "../../common/CraftingComponent";
 import {EssenceDefinition, EssenceIdentityProvider} from "../../common/EssenceDefinition";
 import {Combination, Unit} from "../../common/Combination";
 import {AlchemyError} from "../../error/AlchemyError";
-import {CompendiumProvider} from "../../foundry/CompendiumProvider";
+import {CompendiumProvider} from "../../compendium/CompendiumProvider";
 import {ObjectUtility} from "../../foundry/ObjectUtility";
 
 interface EssenceCombinerConfiguration {

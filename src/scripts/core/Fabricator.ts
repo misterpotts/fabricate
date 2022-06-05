@@ -6,9 +6,9 @@ import {ActionType, FabricationAction} from "./FabricationAction";
 import {OutcomeType} from "./OutcomeType";
 import {FabricationOutcome} from "./FabricationOutcome";
 import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
-import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
 import {AlchemyError} from "../error/AlchemyError";
-import {CraftingCheck} from "../crafting/CraftingCheck";
+import {CraftingCheck} from "../crafting/check/CraftingCheck";
+import {CraftingCheckResult} from "../crafting/check/CraftingCheckResult";
 
 interface FabricatorConfig<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     craftingCheck: CraftingCheck<A>;

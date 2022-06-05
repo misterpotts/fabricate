@@ -1,5 +1,5 @@
-import {Combination, Unit} from "../common/Combination";
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Combination, Unit} from "../../common/Combination";
+import {CraftingComponent} from "../../common/CraftingComponent";
 
 /**
  * Determines how a Combination of Crafting Components impacts the difficulty of a Crafting check (if at all)

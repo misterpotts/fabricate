@@ -5,7 +5,7 @@ import {Combination, Unit} from "../../common/Combination";
 import {AlchemySpecification} from "../../system/specification/AlchemySpecification";
 import {Tool} from "../../crafting/Tool";
 import {CraftingCheck5E} from "../../5e/CraftingCheck5E";
-import {IngredientContributionCounter} from "../../crafting/ContributionCounter";
+import {IngredientContributionCounter} from "../../crafting/check/ContributionCounter";
 
 const elementalWater: EssenceDefinition = EssenceDefinition.builder()
     .withName('Water')

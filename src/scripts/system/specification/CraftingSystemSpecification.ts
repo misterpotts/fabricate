@@ -1,6 +1,6 @@
 import {GameSystem} from "../GameSystem";
 import {EssenceDefinition} from "../../common/EssenceDefinition";
-import {CraftingCheckSpecification} from "../../crafting/CraftingCheck";
+import {CraftingCheckSpecification} from "../../crafting/check/CraftingCheck";
 
 interface CraftingSystemSpecification {
     name: string;

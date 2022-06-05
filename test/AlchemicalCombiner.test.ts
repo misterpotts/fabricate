@@ -7,7 +7,7 @@ import {AlchemicalEffect, AlchemicalEffectType} from "../src/scripts/crafting/al
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {DiceUtility} from "../src/scripts/foundry/DiceUtility";
-import {CompendiumProvider} from "../src/scripts/foundry/CompendiumProvider";
+import {CompendiumProvider} from "../src/scripts/compendium/CompendiumProvider";
 import {ObjectUtility} from "../src/scripts/foundry/ObjectUtility";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();

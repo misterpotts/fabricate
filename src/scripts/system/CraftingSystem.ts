@@ -5,13 +5,15 @@ import {CraftingComponent} from "../common/CraftingComponent";
 import { EssenceDefinition } from "../common/EssenceDefinition";
 import {Inventory} from "../actor/Inventory";
 import {FabricationOutcome} from "../core/FabricationOutcome";
-import {CraftingChatMessage} from "../interface/CraftingChatMessage";
-import Properties from "../Properties";
 import {Combination} from "../common/Combination";
-import {CraftingError} from "../error/CraftingError";
 import {GameSystem} from "./GameSystem";
 import {PartDictionary} from "./PartDictionary";
-import {CraftingCheck} from "../crafting/CraftingCheck";
+import {CraftingCheck} from "../crafting/check/CraftingCheck";
+import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
+import {CraftingAttempt} from "../crafting/attempt/CraftingAttempt";
+import {CraftingResult} from "../crafting/result/CraftingResult";
+import {CraftingMessage} from "../interface/CraftingMessage";
+import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 
 interface CraftingSystemConfig {
     partDictionary: PartDictionary;
@@ -76,51 +78,40 @@ class CraftingSystem implements Identifiable {
         return this._id;
     }
 
-    public async craft(actor: Actor, inventory: Inventory<{}, Actor>, recipe: Recipe): Promise<FabricationOutcome> {
-        // use a component selector to get an ingredient selection
-        // check that the ingredient selection is present in the inventory before proceeding
-        // create a crafting attempt (interface) with an ingredient selection (simple crafting attempt) or with an ingredient selection and a crafting check (checked crafting attempt)
-        // get a successful or failed crafting result (interface) from the crafting attempt
-        // apply the result to the inventory
-        // create a chat message from the crafting result and post it
-        try {
-            const fabricationOutcome: FabricationOutcome = await this.fabricator.followRecipe(actor, inventory, recipe);
-            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
-            const messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
-            await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
-            return fabricationOutcome;
-        } catch (error) {
-            await this.handleCraftingError(error, actor);
-        }
+    public async craft(actor: Actor, inventory: Inventory<{}, Actor>, recipe: Recipe): Promise<CraftingResult> {
+
+        const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
+            selectionStrategy: new DefaultComponentSelectionStrategy(),
+            availableComponents: inventory.ownedComponents,
+            recipe: recipe,
+            craftingCheck: this._craftingCheck,
+            actor: actor
+        });
+
+        const craftingAttempt: CraftingAttempt = craftingAttemptFactory.make();
+
+        const craftingResult: CraftingResult = craftingAttempt.perform();
+
+        await inventory.accept(craftingResult);
+
+        const craftingMessage: CraftingMessage = craftingResult.describe();
+
+        await craftingMessage.send(actor.id);
+
+        return craftingResult;
+
     }
 
+    // @ts-ignore
+    // todo implement
     public async doAlchemy(actor: Actor, inventory: Inventory<{}, Actor>, baseComponent: CraftingComponent, components: Combination<CraftingComponent>): Promise<FabricationOutcome> {
-        try {
-            const fabricationOutcome: FabricationOutcome = await this.fabricator.performAlchemy(baseComponent, components, actor, inventory);
-            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
-            const messageTemplate: string = await renderTemplate(Properties.module.templates.craftingMessage, message);
-            await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
-            return fabricationOutcome;
-        } catch (error) {
-            await this.handleCraftingError(error, actor);
-        }
-    }
 
-    private async handleCraftingError(error: Error, actor: Actor): Promise<void> {
-        let messageTemplate: string;
-        if (error instanceof CraftingError) {
-            const message: CraftingChatMessage = CraftingChatMessage.fromFabricationError(error);
-            messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
-        } else {
-            const message: CraftingChatMessage = CraftingChatMessage.fromUnexpectedError(error);
-            messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, message);
-            console.error(error);
-        }
+        /*const fabricationOutcome: FabricationOutcome = await this.fabricator.performAlchemy(baseComponent, components, actor, inventory);
+        const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
+        const messageTemplate: string = await renderTemplate(Properties.module.templates.craftingMessage, message);
         await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
-    }
+        return fabricationOutcome;*/
 
-    get fabricator(): Fabricator<{}, Actor> {
-        return this._fabricator;
     }
 
     get supportedGameSystems(): GameSystem[] {

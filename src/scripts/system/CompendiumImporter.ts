@@ -1,6 +1,6 @@
 import {PartDictionary} from "./PartDictionary";
 import {EssenceDefinition} from "../common/EssenceDefinition";
-import {CompendiumProvider} from "../foundry/CompendiumProvider";
+import {CompendiumProvider} from "../compendium/CompendiumProvider";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Recipe} from "../crafting/Recipe";
 import {FabricateCompendiumData, FabricateItemType} from "../compendium/CompendiumData";

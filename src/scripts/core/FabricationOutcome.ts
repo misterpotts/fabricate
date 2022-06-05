@@ -1,6 +1,6 @@
 import {OutcomeType} from "./OutcomeType";
 import {FabricationAction} from "./FabricationAction";
-import {CraftingCheckResult} from "../crafting/CraftingCheckResult";
+import {CraftingCheckResult} from "../crafting/check/CraftingCheckResult";
 
 class FabricationOutcome {
 

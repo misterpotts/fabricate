@@ -1,9 +1,9 @@
-import {BaseCraftingInventory, Inventory} from "../actor/Inventory";
+import {CraftingInventory, Inventory} from "../actor/Inventory";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 
 // @ts-ignore todo: figure out how to correctly restrict this type
-class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
+class Inventory5e extends CraftingInventory<Item5e.Data.Data, Actor5e> {
 
     constructor(builder: Inventory5e.Builder) {
         super(builder);
@@ -40,7 +40,7 @@ class Inventory5e extends BaseCraftingInventory<Item5e.Data.Data, Actor5e> {
 
 namespace Inventory5e {
 
-    export class Builder extends BaseCraftingInventory.Builder<Item5e.Data.Data, Actor5e> {
+    export class Builder extends CraftingInventory.Builder<Item5e.Data.Data, Actor5e> {
 
         public build(): Inventory5e {
             return new Inventory5e(this);

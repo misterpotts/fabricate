@@ -1,6 +1,6 @@
 <div class="chat-card dnd5e fabricate-chat-card">
     <header class="card-header flexrow">
-        <img src="{{cardImageUrl}}" title="Fabricate Crafting" width="36" height="36">
+        <img src="{{iconUrl}}" title="{{iconTitle}}}" width="36" height="36">
         <h3>{{cardTitle}}</h3>
     </header>
     <div class="card-content">
@@ -13,8 +13,8 @@
                 <li>
                     <div class="component">
                         <span class="quantity">{{quantity}}</span>
-                        <span class="name">{{itemType.name}}</span>
-                        <img src="{{itemType.imageUrl}}" title="{{itemType.name}}">
+                        <span class="name">{{name}}</span>
+                        <img src="{{imageUrl}}" title="{{name}}">
                     </div>
                 </li>
                 {{/each}}
@@ -23,7 +23,7 @@
         {{/if}}
     </div>
     <div class="card-footer">
-        {{#each footerParts}}
+        {{#each footer}}
             <span>{{.}}</span>
         {{/each}}
     </div>

@@ -2,10 +2,11 @@ import {CraftingSystemSpecification} from "./specification/CraftingSystemSpecifi
 import {CraftingSystem} from "./CraftingSystem";
 import {PartDictionary} from "./PartDictionary";
 import {CraftingCheck5E} from "../5e/CraftingCheck5E";
-import {CraftingCheck, NoCraftingCheck} from "../crafting/CraftingCheck";
-import {ContributionCounterFactory} from "../crafting/ContributionCounterFactory";
+import {CraftingCheck} from "../crafting/check/CraftingCheck";
+import {ContributionCounterFactory} from "../crafting/check/ContributionCounterFactory";
 import {DND5ECraftingCheckSpecification} from "./specification/DND5ECraftingSystemSpecification";
 import {Fabricator} from "../core/Fabricator";
+import {NoCraftingCheck} from "../crafting/check/NoCraftingCheck";
 
 class CraftingSystemFactory {
     private readonly _specification: CraftingSystemSpecification;
