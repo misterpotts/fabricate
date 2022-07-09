@@ -1,4 +1,3 @@
-import {CraftingMessage} from "./CraftingMessage";
 import Properties from "../Properties";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
@@ -21,7 +20,7 @@ interface CraftingChatMessageConfig {
     consumedItems?: Combination<CraftingComponent>;
 }
 
-class CraftingChatMessage implements CraftingMessage {
+class CraftingChatMessage {
 
     private static readonly _unexpectedErrorIconUrl = 'modules/fabricate/assets/caution.svg';
 

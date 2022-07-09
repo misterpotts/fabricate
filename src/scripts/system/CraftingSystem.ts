@@ -12,8 +12,9 @@ import {CraftingCheck} from "../crafting/check/CraftingCheck";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
 import {CraftingAttempt} from "../crafting/attempt/CraftingAttempt";
 import {CraftingResult} from "../crafting/result/CraftingResult";
-import {CraftingMessage} from "../interface/CraftingMessage";
 import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
+import {ChatDialog} from "../interface/ChatDialog";
+import {CraftingChatMessage} from "../interface/CraftingChatMessage";
 
 interface CraftingSystemConfig {
     partDictionary: PartDictionary;
@@ -21,6 +22,7 @@ interface CraftingSystemConfig {
     enabled: boolean;
     fabricator: Fabricator<{}, Actor>;
     craftingCheck: CraftingCheck<Actor>;
+    chatDialog: ChatDialog;
     supportedGameSystems: GameSystem[];
     id: string;
 }
@@ -30,6 +32,7 @@ class CraftingSystem implements Identifiable {
     private readonly _partDictionary: PartDictionary;
     private readonly _fabricator: Fabricator<{}, Actor>;
     private readonly _craftingCheck: CraftingCheck<Actor>;
+    private readonly _chatDialog: ChatDialog;
     private readonly _supportedGameSystems: GameSystem[];
     private readonly _id: string;
 
@@ -42,6 +45,7 @@ class CraftingSystem implements Identifiable {
         this._fabricator = config.fabricator;
         this._enabled = config.enabled;
         this._craftingCheck = config.craftingCheck;
+        this._chatDialog = config.chatDialog;
         this._supportedGameSystems = config.supportedGameSystems;
         this._id = config.id;
     }
@@ -94,9 +98,9 @@ class CraftingSystem implements Identifiable {
 
         await inventory.accept(craftingResult);
 
-        const craftingMessage: CraftingMessage = craftingResult.describe();
+        const craftingMessage: CraftingChatMessage = craftingResult.describe();
 
-        await craftingMessage.send(actor.id);
+        await this._chatDialog.send(actor.id, craftingMessage);
 
         return craftingResult;
 
