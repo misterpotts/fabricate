@@ -16,6 +16,9 @@ import {testComponentFive, testComponentOne, testComponentThree} from "./test_da
 import {SuccessfulCraftingResult} from "../src/scripts/crafting/result/SuccessfulCraftingResult";
 import {Combination} from "../src/scripts/common/Combination";
 import {NoCraftingResult} from "../src/scripts/crafting/result/NoCraftingResult";
+import {SuccessfulCraftingCheckResult} from "../src/scripts/crafting/check/SuccessfulCraftingCheckResult";
+import {FailedCraftingCheckResult} from "../src/scripts/crafting/check/FailedCraftingCheckResult";
+import {UnsuccessfulCraftingResult} from "../src/scripts/crafting/result/UnsuccessfulCraftingResult";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -28,7 +31,7 @@ const stubPartDictionary: PartDictionary = <PartDictionary><unknown>{
 const stubCraftingCheck: CraftingCheck<Actor> = <CraftingCheck<Actor>><unknown>{
     perform: () => {}
 };
-//const stubPerformMethod = Sandbox.stub(stubCraftingCheck, 'perform');
+const stubPerformMethod = Sandbox.stub(stubCraftingCheck, 'perform');
 
 const stubChatDialog: ChatDialog = <ChatDialog><unknown>{
     send: () => {}
@@ -50,7 +53,6 @@ const stubInventory: Inventory<any, Actor<Actor.Data, Item<Item.Data>>> = <Inven
     accept: () => {},
     index: () => {}
 };
-//const stubAcceptMethod = Sandbox.stub(stubInventory, 'accept');
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -81,49 +83,103 @@ describe('Create and configure', () => {
 
 });
 
-describe('Crafting without a Crafting Check', () => {
+describe('Crafting ', () => {
 
-    const testSystemId = `fabricate-test-system`;
-    const underTest = new CraftingSystem({
-        id: testSystemId,
-        enabled: true,
-        supportedGameSystems: [GameSystem.DND5E],
-        essences: essences,
-        partDictionary: stubPartDictionary,
-        craftingCheck: new NoCraftingCheck(),
-        fabricator: stubFabricator,
-        chatDialog: stubChatDialog
+    describe('without a Crafting Check', () => {
+
+        const testSystemId = `fabricate-test-system`;
+        const underTest = new CraftingSystem({
+            id: testSystemId,
+            enabled: true,
+            supportedGameSystems: [GameSystem.DND5E],
+            essences: essences,
+            partDictionary: stubPartDictionary,
+            craftingCheck: new NoCraftingCheck(),
+            fabricator: stubFabricator,
+            chatDialog: stubChatDialog
+        });
+
+        test('should succeed for recipe with sufficient components',async () => {
+
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+
+            const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
+
+            expect(craftingResult).not.toBeNull();
+            expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
+            expect(craftingResult.created.size()).toEqual(1);
+            expect(craftingResult.created.amountFor(testComponentFive)).toEqual(1);
+            expect(craftingResult.consumed.size()).toEqual(3);
+            expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(1);
+            expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(2);
+
+        });
+
+        test('should fail for recipe with insufficient components',async () => {
+
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => Combination.of(testComponentOne, 1));
+
+            const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
+
+            expect(craftingResult).not.toBeNull();
+            expect(craftingResult instanceof NoCraftingResult).toEqual(true);
+            expect(craftingResult.created.size()).toEqual(0);
+            expect(craftingResult.created.amountFor(testComponentFive)).toEqual(0);
+            expect(craftingResult.consumed.size()).toEqual(0);
+            expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(0);
+            expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(0);
+
+        });
+
     });
 
-    test('Should craft successfully recipe with sufficient components',async () => {
+    describe('with a Crafting Check', () => {
 
-        Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+        const testSystemId = `fabricate-test-system`;
+        const underTest = new CraftingSystem({
+            id: testSystemId,
+            enabled: true,
+            supportedGameSystems: [GameSystem.DND5E],
+            essences: essences,
+            partDictionary: stubPartDictionary,
+            craftingCheck: stubCraftingCheck,
+            fabricator: stubFabricator,
+            chatDialog: stubChatDialog
+        });
 
-        const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
+        test('should succeed for recipe with sufficient components and successful check',async () => {
 
-        expect(craftingResult).not.toBeNull();
-        expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
-        expect(craftingResult.created.size()).toEqual(1);
-        expect(craftingResult.created.amountFor(testComponentFive)).toEqual(1);
-        expect(craftingResult.consumed.size()).toEqual(3);
-        expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(1);
-        expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(2);
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+            stubPerformMethod.returns(new SuccessfulCraftingCheckResult({result: 10, successThreshold: 10, expression: "1d20 + 5"}));
 
-    });
+            const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
 
-    test('Should fail to craft recipe with insufficient components',async () => {
+            expect(craftingResult).not.toBeNull();
+            expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
+            expect(craftingResult.created.size()).toEqual(1);
+            expect(craftingResult.created.amountFor(testComponentFive)).toEqual(1);
+            expect(craftingResult.consumed.size()).toEqual(3);
+            expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(1);
+            expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(2);
 
-        Sinon.stub(stubInventory, 'ownedComponents').get(() => Combination.of(testComponentOne, 1));
+        });
 
-        const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
+        test('should fail for recipe with sufficient components and unsuccessful check',async () => {
 
-        expect(craftingResult).not.toBeNull();
-        expect(craftingResult instanceof NoCraftingResult).toEqual(true);
-        expect(craftingResult.created.size()).toEqual(0);
-        expect(craftingResult.created.amountFor(testComponentFive)).toEqual(0);
-        expect(craftingResult.consumed.size()).toEqual(0);
-        expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(0);
-        expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(0);
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+            stubPerformMethod.returns(new FailedCraftingCheckResult({result: 9, successThreshold: 11, expression: "1d20 + 5"}));
+
+            const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
+
+            expect(craftingResult).not.toBeNull();
+            expect(craftingResult instanceof UnsuccessfulCraftingResult).toEqual(true);
+            expect(craftingResult.created.size()).toEqual(0);
+            expect(craftingResult.created.amountFor(testComponentFive)).toEqual(0);
+            expect(craftingResult.consumed.size()).toEqual(3);
+            expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(1);
+            expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(2);
+
+        });
 
     });
 
