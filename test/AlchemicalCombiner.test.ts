@@ -6,7 +6,7 @@ import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./tes
 import {AlchemicalEffect, AlchemicalEffectType} from "../src/scripts/crafting/alchemy/AlchemicalEffect";
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
-import {DiceUtility} from "../src/scripts/foundry/DiceUtility";
+import {DiceRoller} from "../src/scripts/foundry/DiceRoller";
 import {CompendiumProvider} from "../src/scripts/compendium/CompendiumProvider";
 import {ObjectUtility} from "../src/scripts/foundry/ObjectUtility";
 
@@ -24,7 +24,7 @@ class TestItemDataType {
     public multipliedValue: number = 0;
 }
 
-const mockDiceUtility: DiceUtility = <DiceUtility><unknown>{};
+const mockDiceUtility: DiceRoller = <DiceRoller><unknown>{};
 const mockCompendiumProvider: CompendiumProvider = <CompendiumProvider><unknown>{
     getEntity: () => {}
 };

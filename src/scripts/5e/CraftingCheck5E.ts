@@ -1,7 +1,7 @@
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {OutcomeType} from "../core/OutcomeType";
-import {DiceUtility, RollResult} from "../foundry/DiceUtility";
+import {DiceRoller, RollResult} from "../foundry/DiceRoller";
 import {ContributionCounter} from "../crafting/check/ContributionCounter";
 import {Tool} from "../crafting/Tool";
 import {CraftingCheck} from "../crafting/check/CraftingCheck";
@@ -28,21 +28,21 @@ interface CraftingCheck5EConfig {
     exceedThreshold: boolean,
     baseDC: number,
     contributionCounter: ContributionCounter;
-    diceRoller?: DiceUtility;
+    diceRoller?: DiceRoller;
 }
 
 class CraftingCheck5E implements CraftingCheck<Actor5e>{
     private readonly _ability: AbilityType;
     private readonly _tool: Tool;
     private readonly _rollMustExceedThreshold: boolean;
-    private readonly _diceRoller: DiceUtility;
+    private readonly _diceRoller: DiceRoller;
     private readonly _baseThreshold: number;
     private readonly _contributionCounter: ContributionCounter;
     
     public constructor(config: CraftingCheck5EConfig) {
         this._tool = config.tool;
         this._ability = config.ability;
-        this._diceRoller = config.diceRoller ? config.diceRoller : new DiceUtility();
+        this._diceRoller = config.diceRoller ? config.diceRoller : new DiceRoller();
         this._rollMustExceedThreshold = config.exceedThreshold;
         this._baseThreshold = config.baseDC;
         this._contributionCounter = config.contributionCounter;

@@ -1,6 +1,6 @@
 import {Combination} from "../../common/Combination";
 import {EssenceDefinition} from "../../common/EssenceDefinition";
-import {DiceUtility} from "../../foundry/DiceUtility";
+import {DiceRoller} from "../../foundry/DiceRoller";
 
 enum AlchemicalEffectType {
     MODIFIER = 1,
@@ -14,7 +14,7 @@ abstract class AlchemicalEffect<D>{
     private readonly _essenceCombination: Combination<EssenceDefinition>;
     private readonly _description: string;
     private readonly _type: AlchemicalEffectType;
-    protected readonly _diceUtility: DiceUtility;
+    protected readonly _diceUtility: DiceRoller;
 
     abstract applyTo(itemData: D): D;
 
@@ -37,7 +37,7 @@ abstract class AlchemicalEffect<D>{
         return this._type;
     }
 
-    protected get diceUtility(): DiceUtility {
+    protected get diceUtility(): DiceRoller {
         return this._diceUtility;
     }
 
@@ -50,7 +50,7 @@ namespace AlchemicalEffect {
         public essenceCombination: Combination<EssenceDefinition>;
         public description: string;
         public type: AlchemicalEffectType;
-        public diceUtility: DiceUtility = new DiceUtility();
+        public diceUtility: DiceRoller = new DiceRoller();
 
         public withEssenceCombination(value: Combination<EssenceDefinition>): Builder<D> {
             this.essenceCombination = value;
@@ -67,7 +67,7 @@ namespace AlchemicalEffect {
             return this;
         }
 
-        public withDiceUtility(value: DiceUtility): Builder<D> {
+        public withDiceUtility(value: DiceRoller): Builder<D> {
             this.diceUtility = value;
             return this;
         }

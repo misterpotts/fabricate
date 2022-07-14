@@ -17,7 +17,7 @@ class RollResult {
 
 }
 
-class DiceUtility {
+class DiceRoller {
 
     public roll(termData: DiceTerm.TermData): RollResult {
         const die: Die = new Die(termData);
@@ -33,4 +33,4 @@ class DiceUtility {
 
 }
 
-export {DiceUtility, RollResult}
+export {DiceRoller, RollResult}

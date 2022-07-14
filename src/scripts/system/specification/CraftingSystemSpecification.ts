@@ -1,6 +1,6 @@
 import {GameSystem} from "../GameSystem";
 import {EssenceDefinition} from "../../common/EssenceDefinition";
-import {CraftingCheckSpecification} from "../../crafting/check/CraftingCheck";
+import {CraftingCheckConfig} from "../../crafting/check/CraftingCheck";
 
 interface CraftingSystemSpecification {
     name: string;
@@ -12,7 +12,7 @@ interface CraftingSystemSpecification {
     supportedGameSystems: GameSystem[];
     essences: EssenceDefinition[];
     craftingCheckType: CraftingCheckType;
-    craftingCheckSpecification?: CraftingCheckSpecification;
+    craftingCheckSpecification?: CraftingCheckConfig;
 }
 
 export {CraftingSystemSpecification}

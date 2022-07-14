@@ -1,7 +1,7 @@
 import {AlchemicalEffect, AlchemicalEffectType} from "../crafting/alchemy/AlchemicalEffect";
 import {Combination} from "../common/Combination";
 import {EssenceDefinition} from "../common/EssenceDefinition";
-import {DiceUtility} from "../foundry/DiceUtility";
+import {DiceRoller} from "../foundry/DiceRoller";
 
 interface AoeExtension {
     units: DND5e.TargetUnitType;
@@ -174,7 +174,7 @@ namespace AlchemicalEffect5e {
             return this;
         }
 
-        public withDiceUtility(value: DiceUtility): DamageBuilder {
+        public withDiceUtility(value: DiceRoller): DamageBuilder {
             this.diceUtility = value;
             return this;
         }
@@ -203,7 +203,7 @@ namespace AlchemicalEffect5e {
             return this;
         }
 
-        public withDiceUtility(value: DiceUtility): ConditionBuilder {
+        public withDiceUtility(value: DiceRoller): ConditionBuilder {
             this.diceUtility = value;
             return this;
         }
@@ -229,7 +229,7 @@ namespace AlchemicalEffect5e {
             return this;
         }
 
-        public withDiceUtility(value: DiceUtility): AoeExtensionBuilder {
+        public withDiceUtility(value: DiceRoller): AoeExtensionBuilder {
             this.diceUtility = value;
             return this;
         }
@@ -260,7 +260,7 @@ namespace AlchemicalEffect5e {
             return this;
         }
 
-        public withDiceUtility(value: DiceUtility): SavingThrowModifierBuilder {
+        public withDiceUtility(value: DiceRoller): SavingThrowModifierBuilder {
             this.diceUtility = value;
             return this;
         }
@@ -291,7 +291,7 @@ namespace AlchemicalEffect5e {
             return this;
         }
 
-        public withDiceUtility(value: DiceUtility): DiceMultiplierBuilder {
+        public withDiceUtility(value: DiceRoller): DiceMultiplierBuilder {
             this.diceUtility = value;
             return this;
         }

@@ -36,8 +36,7 @@ class CraftingSystem implements Identifiable {
     private readonly _supportedGameSystems: GameSystem[];
     private readonly _id: string;
 
-    private _enabled: boolean = false;
-    private _craftingCheckEnabled: boolean = false;
+    private _enabled: boolean;
 
     constructor(config: CraftingSystemConfig) {
         this._essencesBySlug = new Map(config.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
@@ -64,10 +63,6 @@ class CraftingSystem implements Identifiable {
 
     getEssenceBySlug(slug: string) {
         return this._essencesBySlug.get(slug);
-    }
-
-    get isCraftingCheckEnabled(): boolean {
-        return this._craftingCheckEnabled;
     }
 
     get hasCraftingCheck(): boolean {

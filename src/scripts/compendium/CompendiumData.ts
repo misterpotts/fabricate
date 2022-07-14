@@ -41,7 +41,6 @@ export interface ComponentFlags {
     salvage: Record<string, number>;
 }
 
-
 /**
  * The structure of a configuration data object found in Fabricate flags that describes a Recipe
  * */
