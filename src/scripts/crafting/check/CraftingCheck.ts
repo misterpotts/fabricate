@@ -1,11 +1,14 @@
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
-import {CraftingCheckResult, NoCraftingCheckResult, SuccessfulCraftingCheckResult} from "./CraftingCheckResult";
+import {
+    CraftingCheckResult,
+    FailedCraftingCheckResult,
+    NoCraftingCheckResult,
+    SuccessfulCraftingCheckResult
+} from "./CraftingCheckResult";
 import {DiceRoller, RollResult} from "../../foundry/DiceRoller";
-import {OutcomeType} from "../../core/OutcomeType";
-import {FailedCraftingCheckResult} from "./CraftingCheckResult";
-import {Threshold} from "./Threshold";
-import {ThresholdCalculator} from "./ThresholdCalculator";
+import {OutcomeType} from "../result/OutcomeType";
+import {Threshold, ThresholdCalculator} from "./Threshold";
 import {RollTermProvider} from "./RollTermProvider";
 
 interface CraftingCheck<A extends Actor> {
@@ -61,3 +64,17 @@ class DefaultCraftingCheck<A extends Actor> implements CraftingCheck<A> {
 }
 
 export {CraftingCheck, CraftingCheckConfig, DefaultCraftingCheck}
+
+class NoCraftingCheck implements CraftingCheck<Actor> {
+
+    constructor() {
+    }
+
+    // @ts-ignore This no-op implementation does not need to use variables passed to the implementation of perform
+    perform(actor: Actor, components: Combination<CraftingComponent>): CraftingCheckResult {
+        return new NoCraftingCheckResult();
+    }
+
+}
+
+export {NoCraftingCheck};

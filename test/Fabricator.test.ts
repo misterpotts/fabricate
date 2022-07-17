@@ -10,7 +10,7 @@ import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {FabricationOutcome} from "../src/scripts/core/FabricationOutcome";
 import {EssenceDefinition} from "../src/scripts/common/EssenceDefinition";
-import {OutcomeType} from "../src/scripts/core/OutcomeType";
+import {OutcomeType} from "../src/scripts/crafting/result/OutcomeType";
 import {ActionType, FabricationAction} from "../src/scripts/core/FabricationAction";
 import {AlchemyError} from "../src/scripts/error/AlchemyError";
 

@@ -1,40 +1,31 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {Fabricator} from "../src/scripts/core/Fabricator";
 import {EssenceDefinition} from "../src/scripts/common/EssenceDefinition";
-import {PartDictionary} from "../src/scripts/system/PartDictionary";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 import {GameSystem} from "../src/scripts/system/GameSystem";
 import {Inventory} from "../src/scripts/actor/Inventory";
 import {testRecipeOne} from "./test_data/TestRecipes";
-import {NoCraftingCheck} from "../src/scripts/crafting/check/NoCraftingCheck";
-import {ChatDialog} from "../src/scripts/interface/ChatDialog";
 import {testComponentFive, testComponentOne, testComponentThree} from "./test_data/TestCraftingComponents";
-import {SuccessfulCraftingResult} from "../src/scripts/crafting/result/SuccessfulCraftingResult";
 import {Combination} from "../src/scripts/common/Combination";
-import {NoCraftingResult} from "../src/scripts/crafting/result/NoCraftingResult";
-import {UnsuccessfulCraftingResult} from "../src/scripts/crafting/result/UnsuccessfulCraftingResult";
-import {CraftingCheck, DefaultCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
-import {DefaultThresholdCalculator} from "../src/scripts/crafting/check/ThresholdCalculator";
-import {ThresholdType} from "../src/scripts/crafting/check/Threshold";
-import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounterFactory";
+import {CraftingCheck, DefaultCraftingCheck, NoCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
+import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
 import {RollTermProvider} from "../src/scripts/crafting/check/RollTermProvider";
+import {testPartDictionary} from "./test_data/TestPartDictionary";
+import {CraftingAttemptFactory, WastageType} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
+import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/DefaultComponentSelectionStrategy";
+import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
+import {
+    NoCraftingResult,
+    SuccessfulCraftingResult,
+    UnsuccessfulCraftingResult
+} from "../src/scripts/crafting/result/CraftingResult";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
 const essences: EssenceDefinition[] = [elementalAir, elementalEarth, elementalFire, elementalWater];
-
-const stubPartDictionary: PartDictionary = <PartDictionary><unknown>{
-
-};
-
-const stubChatDialog: ChatDialog = <ChatDialog><unknown>{
-    send: () => {}
-};
-// const stubSendMethod = Sandbox.stub(stubChatDialog, 'send');
 
 const stubDiceRoller: DiceRoller = <DiceRoller><unknown>{
     roll: () => {}
@@ -46,12 +37,12 @@ const stubRollTermProvider: RollTermProvider<Actor> = <RollTermProvider<Actor>><
 };
 const stubGetForMethod = Sandbox.stub(stubRollTermProvider, 'getFor');
 
-//todo: Deleteme
-const stubFabricator: Fabricator<any, any> = <Fabricator<any, any>><unknown>{
-
-};
-
 const stubActor: Actor<Actor.Data, Item<Item.Data>> = <Actor<Actor.Data, Item<Item.Data>>><unknown>{};
+
+const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
+    selectionStrategy: new DefaultComponentSelectionStrategy(),
+    wastageType: WastageType.PUNITIVE
+});
 
 const stubInventory: Inventory<any, Actor<Actor.Data, Item<Item.Data>>> = <Inventory<any, Actor<Actor.Data, Item<Item.Data>>>><unknown>{
     actor: {},
@@ -74,12 +65,11 @@ describe('Create and configure', () => {
         const underTest = new CraftingSystem({
             id: testSystemId,
             enabled: true,
-            supportedGameSystems: [GameSystem.DND5E],
+            gameSystem: GameSystem.DND5E,
             essences: essences,
-            partDictionary: stubPartDictionary,
+            partDictionary: testPartDictionary,
             craftingCheck: new NoCraftingCheck(),
-            fabricator: stubFabricator,
-            chatDialog: stubChatDialog
+            craftingAttemptFactory: craftingAttemptFactory
         });
         expect(underTest).not.toBeNull();
         expect(underTest.id).toEqual(testSystemId);
@@ -88,7 +78,7 @@ describe('Create and configure', () => {
         expect(underTest.supportsAlchemy).toEqual(false);
         expect(underTest.essences).toEqual(expect.arrayContaining(essences));
         expect(underTest.supports(GameSystem.DND5E)).toEqual(true);
-        expect(underTest.supportedGameSystems).toEqual(expect.arrayContaining([GameSystem.DND5E]));
+        expect(underTest.gameSystem).toEqual(GameSystem.DND5E);
     });
 
 });
@@ -101,12 +91,11 @@ describe('Crafting ', () => {
         const underTest = new CraftingSystem({
             id: testSystemId,
             enabled: true,
-            supportedGameSystems: [GameSystem.DND5E],
+            gameSystem: GameSystem.DND5E,
             essences: essences,
-            partDictionary: stubPartDictionary,
+            partDictionary: testPartDictionary,
             craftingCheck: new NoCraftingCheck(),
-            fabricator: stubFabricator,
-            chatDialog: stubChatDialog
+            craftingAttemptFactory: craftingAttemptFactory
         });
 
         test('should succeed for recipe with sufficient ingredients',async () => {
@@ -165,12 +154,11 @@ describe('Crafting ', () => {
         const underTest = new CraftingSystem({
             id: testSystemId,
             enabled: true,
-            supportedGameSystems: [GameSystem.DND5E],
+            gameSystem: GameSystem.DND5E,
             essences: essences,
-            partDictionary: stubPartDictionary,
+            partDictionary: testPartDictionary,
             craftingCheck: craftingCheck,
-            fabricator: stubFabricator,
-            chatDialog: stubChatDialog
+            craftingAttemptFactory: craftingAttemptFactory
         });
 
         test('should succeed for recipe with sufficient ingredients and successful check',async () => {

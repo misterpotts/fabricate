@@ -2,52 +2,53 @@ import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
 import {Recipe} from "../Recipe";
-import {CraftingCheck} from "../check/CraftingCheck";
-import {CraftingAttempt} from "./CraftingAttempt";
-import {AbandonedCraftingAttempt} from "./AbandonedCraftingAttempt";
-import {WastefulCraftingAttempt} from "./WastefulCraftingAttempt";
+import {
+    AbandonedCraftingAttempt,
+    CraftingAttempt,
+    GenerousCraftingAttempt,
+    WastefulCraftingAttempt
+} from "./CraftingAttempt";
 import {ComponentSelection} from "../../component/ComponentSelection";
+import {WastageType} from "../../system/specification/CraftingSystemSpecification";
 
 interface CraftingAttemptFactoryConfig {
-    selectionStrategy: ComponentSelectionStrategy,
-    availableComponents: Combination<CraftingComponent>,
-    recipe: Recipe,
-    craftingCheck: CraftingCheck<Actor>,
-    actor: Actor
+    selectionStrategy: ComponentSelectionStrategy;
+    wastageType: WastageType;
 }
 
 class CraftingAttemptFactory {
 
     private readonly _selectionStrategy: ComponentSelectionStrategy;
-    private readonly _availableComponents: Combination<CraftingComponent>;
-    private readonly _recipe: Recipe;
-    private readonly _craftingCheck: CraftingCheck<Actor>;
-    private readonly _actor: Actor;
+    private readonly _wastageType: WastageType;
 
     constructor(config: CraftingAttemptFactoryConfig) {
         this._selectionStrategy = config.selectionStrategy;
-        this._availableComponents = config.availableComponents;
-        this._recipe = config.recipe;
-        this._craftingCheck = config.craftingCheck;
-        this._actor = config.actor
+        this._wastageType = config.wastageType;
     }
 
-    make(): CraftingAttempt {
-        const componentSelection: ComponentSelection = this._selectionStrategy.perform(this._recipe, this._availableComponents);
+    make(availableComponents: Combination<CraftingComponent>, recipe: Recipe): CraftingAttempt {
+        const componentSelection: ComponentSelection = this._selectionStrategy.perform(recipe, availableComponents);
         if (!componentSelection.isSufficient()) {
             return new AbandonedCraftingAttempt({
-                recipe: this._recipe,
+                recipe: recipe,
                 reason: componentSelection.describe()
             });
         }
-        return new WastefulCraftingAttempt({
-            recipe: this._recipe,
-            components: componentSelection.components,
-            craftingCheck: this._craftingCheck,
-            actor: this._actor
-        });
+        switch (this._wastageType) {
+            case WastageType.PUNITIVE:
+                return new WastefulCraftingAttempt({
+                    recipe: recipe,
+                    components: componentSelection.components
+                });
+            case WastageType.NONPUNITIVE:
+                return new GenerousCraftingAttempt({
+                    recipe: recipe,
+                    components: componentSelection.components
+                });
+        }
+
     }
 
 }
 
-export {CraftingAttemptFactory, CraftingAttemptFactoryConfig}
+export {CraftingAttemptFactory, CraftingAttemptFactoryConfig, WastageType}

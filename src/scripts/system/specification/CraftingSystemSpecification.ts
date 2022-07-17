@@ -1,6 +1,35 @@
 import {GameSystem} from "../GameSystem";
 import {EssenceDefinition} from "../../common/EssenceDefinition";
-import {CraftingCheckConfig} from "../../crafting/check/CraftingCheck";
+import {ThresholdType} from "../../crafting/check/Threshold";
+import {Tool} from "../../crafting/Tool";
+import AbilityType = DND5e.AbilityType;
+import {ContributionCounterConfig} from "../../crafting/check/ContributionCounter";
+
+enum WastageType {
+    NONPUNITIVE,
+    PUNITIVE
+}
+
+interface PF2EERollModifiers {
+
+}
+
+interface DND5ERollModifiers {
+    ability: AbilityType;
+    tool: Tool;
+}
+
+interface CraftingCheckSpecification {
+    enabled: boolean;
+    die: {
+        faces: 2 | 4 | 6 | 8 | 10 | 12 | 20 | 100,
+        number: number
+    };
+    baseValue: number;
+    thresholdType: ThresholdType;
+    contributionCounterConfig: ContributionCounterConfig;
+    systemProperties: DND5ERollModifiers | PF2EERollModifiers
+}
 
 interface CraftingSystemSpecification {
     name: string;
@@ -9,10 +38,10 @@ interface CraftingSystemSpecification {
     description: string;
     author: string;
     compendiumPacks: string[];
-    supportedGameSystems: GameSystem[];
+    wastageType: WastageType;
+    gameSystem: GameSystem;
     essences: EssenceDefinition[];
-    craftingCheckType: CraftingCheckType;
-    craftingCheckSpecification?: CraftingCheckConfig;
+    craftingCheckSpecification?: CraftingCheckSpecification
 }
 
-export {CraftingSystemSpecification}
+export {CraftingSystemSpecification, CraftingCheckSpecification, DND5ERollModifiers, WastageType}

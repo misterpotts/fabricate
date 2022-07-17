@@ -1,6 +1,6 @@
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
-import {OutcomeType} from "../core/OutcomeType";
+import {OutcomeType} from "../crafting/result/OutcomeType";
 import {DiceRoller, RollResult} from "../foundry/DiceRoller";
 import {ContributionCounter} from "../crafting/check/ContributionCounter";
 import {Tool} from "../crafting/Tool";

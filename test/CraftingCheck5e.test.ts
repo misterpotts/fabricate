@@ -7,7 +7,7 @@ import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
-import {OutcomeType} from "../src/scripts/core/OutcomeType";
+import {OutcomeType} from "../src/scripts/crafting/result/OutcomeType";
 import {CraftingCheckResult} from "../src/scripts/crafting/check/CraftingCheckResult";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();

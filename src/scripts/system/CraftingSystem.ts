@@ -1,10 +1,8 @@
 import {Identifiable} from "../common/FabricateItem";
-import {Fabricator} from "../core/Fabricator";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import { EssenceDefinition } from "../common/EssenceDefinition";
 import {Inventory} from "../actor/Inventory";
-import {FabricationOutcome} from "../core/FabricationOutcome";
 import {Combination} from "../common/Combination";
 import {GameSystem} from "./GameSystem";
 import {PartDictionary} from "./PartDictionary";
@@ -12,41 +10,39 @@ import {CraftingCheck} from "../crafting/check/CraftingCheck";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
 import {CraftingAttempt} from "../crafting/attempt/CraftingAttempt";
 import {CraftingResult} from "../crafting/result/CraftingResult";
-import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
-import {ChatDialog} from "../interface/ChatDialog";
-import {CraftingChatMessage} from "../interface/CraftingChatMessage";
+import {AlchemyAttempt, AlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttempt";
+import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 
 interface CraftingSystemConfig {
+    id: string;
+    gameSystem: GameSystem;
+    craftingCheck: CraftingCheck<Actor>;
     partDictionary: PartDictionary;
     essences: EssenceDefinition[],
+    alchemyAttemptFactory: AlchemyAttemptFactory;
+    craftingAttemptFactory: CraftingAttemptFactory;
     enabled: boolean;
-    fabricator: Fabricator<{}, Actor>;
-    craftingCheck: CraftingCheck<Actor>;
-    chatDialog: ChatDialog;
-    supportedGameSystems: GameSystem[];
-    id: string;
 }
 
 class CraftingSystem implements Identifiable {
-    private readonly _essencesBySlug: Map<string, EssenceDefinition>;
-    private readonly _partDictionary: PartDictionary;
-    private readonly _fabricator: Fabricator<{}, Actor>;
-    private readonly _craftingCheck: CraftingCheck<Actor>;
-    private readonly _chatDialog: ChatDialog;
-    private readonly _supportedGameSystems: GameSystem[];
     private readonly _id: string;
+    private readonly _gameSystem: GameSystem;
+    private readonly _craftingCheck: CraftingCheck<Actor>;
+    private readonly _partDictionary: PartDictionary;
+    private readonly _essencesBySlug: Map<string, EssenceDefinition>;
+    private readonly _alchemyAttemptFactory: AlchemyAttemptFactory;
+    private readonly _craftingAttemptFactory: CraftingAttemptFactory;
 
     private _enabled: boolean;
 
     constructor(config: CraftingSystemConfig) {
-        this._essencesBySlug = new Map(config.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
-        this._partDictionary = config.partDictionary;
-        this._fabricator = config.fabricator;
-        this._enabled = config.enabled;
-        this._craftingCheck = config.craftingCheck;
-        this._chatDialog = config.chatDialog;
-        this._supportedGameSystems = config.supportedGameSystems;
         this._id = config.id;
+        this._gameSystem = config.gameSystem;
+        this._craftingCheck = config.craftingCheck;
+        this._partDictionary = config.partDictionary;
+        this._essencesBySlug = new Map(config.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
+        this._craftingAttemptFactory = config.craftingAttemptFactory;
+        this._enabled = config.enabled;
     }
 
     get enabled(): boolean {
@@ -70,32 +66,37 @@ class CraftingSystem implements Identifiable {
     }
 
     get supportsAlchemy() {
-        return !!this._fabricator.supportsAlchemy;
+        return false; // todo implement
     }
 
     get id(): string {
         return this._id;
     }
 
+    /**
+     * Attempts to craft a Recipe for the given Actor, modifying the given inventory to reflect the result.
+     *
+     * @param actor The Actor performing the Crafting Attempt
+     * @param inventory The Inventory owned by the Actor
+     * @param recipe The Recipe to attempt to craft
+     *
+     * @return a CraftingResult describing the outcome of the Crafting attempt
+     *
+     * The Crafting Result returned by this function is self-describing. Once obtained, it can be used to create and
+     * send a Chat Message if required.
+     *
+     * @example
+     * const craftingResult: CraftingResult = await craft(actor, inventory, recipe);
+     * const craftingMessage: CraftingChatMessage = craftingResult.describe();
+     * await chatDialog.send(actor.id, craftingMessage);
+     * */
     public async craft(actor: Actor, inventory: Inventory<{}, Actor>, recipe: Recipe): Promise<CraftingResult> {
 
-        const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
-            selectionStrategy: new DefaultComponentSelectionStrategy(),
-            availableComponents: inventory.ownedComponents,
-            recipe: recipe,
-            craftingCheck: this._craftingCheck,
-            actor: actor
-        });
+        const craftingAttempt: CraftingAttempt = this._craftingAttemptFactory.make(inventory.ownedComponents, recipe);
 
-        const craftingAttempt: CraftingAttempt = craftingAttemptFactory.make();
+        const craftingResult: CraftingResult = craftingAttempt.perform(actor, this._craftingCheck);
 
-        const craftingResult: CraftingResult = craftingAttempt.perform();
-
-        await inventory.accept(craftingResult);
-
-        const craftingMessage: CraftingChatMessage = craftingResult.describe();
-
-        await this._chatDialog.send(actor.id, craftingMessage);
+        await inventory.acceptCraftingResult(craftingResult);
 
         return craftingResult;
 
@@ -103,18 +104,23 @@ class CraftingSystem implements Identifiable {
 
     // @ts-ignore
     // todo implement
-    public async doAlchemy(actor: Actor, inventory: Inventory<{}, Actor>, baseComponent: CraftingComponent, components: Combination<CraftingComponent>): Promise<FabricationOutcome> {
+    public async doAlchemy(actor: Actor,
+                           inventory: Inventory<{}, Actor>,
+                           baseComponent: CraftingComponent,
+                           componentSelection: Combination<CraftingComponent>): Promise<AlchemyResult> {
 
-        /*const fabricationOutcome: FabricationOutcome = await this.fabricator.performAlchemy(baseComponent, components, actor, inventory);
-        const message: CraftingChatMessage = CraftingChatMessage.fromFabricationOutcome(fabricationOutcome);
-        const messageTemplate: string = await renderTemplate(Properties.module.templates.craftingMessage, message);
-        await ChatMessage.create({user: game.user, speaker: {actor: actor._id}, content: messageTemplate});
-        return fabricationOutcome;*/
+        const alchemyAttempt: AlchemyAttempt = this._alchemyAttemptFactory.make(baseComponent, componentSelection);
+
+        const alchemyResult: AlchemyResult = alchemyAttempt.perform(actor, this._craftingCheck);
+
+        await inventory.acceptAlchemyResult(alchemyResult);
+
+        return alchemyResult;
 
     }
 
-    get supportedGameSystems(): GameSystem[] {
-        return this._supportedGameSystems;
+    get gameSystem(): GameSystem {
+        return this._gameSystem;
     }
 
     get recipes(): Recipe[] {
@@ -130,7 +136,7 @@ class CraftingSystem implements Identifiable {
     }
 
     public supports(gameSystem: GameSystem): boolean {
-        return this._supportedGameSystems.includes(gameSystem);
+        return this._gameSystem.includes(gameSystem);
     }
 
     getRecipeByPartId(partId: string): Recipe {

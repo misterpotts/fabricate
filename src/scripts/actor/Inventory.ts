@@ -6,14 +6,13 @@ import {ObjectUtility} from "../foundry/ObjectUtility";
 import {CraftingResult} from "../crafting/result/CraftingResult";
 import {GameSystemDocumentManager} from "./GameSystemDocumentManager";
 import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
+import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 
 interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
     actor: A;
     ownedComponents: Combination<CraftingComponent>;
-    removeAll(components: Combination<CraftingComponent>): Promise<Item<Item.Data<D>>[]>;
-    addAll(components: Combination<CraftingComponent>): Promise<Item<Item.Data<D>>[]>;
-    add(component: CraftingComponent, customData: Item<Item.Data<D>>): Promise<Item<Item.Data<D>>>;
-    accept(craftingResult: CraftingResult): Promise<Item<Item.Data<D>>[]>;
+    acceptCraftingResult(craftingResult: CraftingResult): Promise<Item<Item.Data<D>>[]>;
+    acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<Item<Item.Data<D>>[]>;
     index(): Combination<CraftingComponent>;
 }
 
@@ -134,7 +133,7 @@ class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> impl
         return results;
     }
 
-    async accept(craftingResult: CraftingResult): Promise<Item<Item.Data<D>>[]> {
+    async acceptCraftingResult(craftingResult: CraftingResult): Promise<Item<Item.Data<D>>[]> {
         const inventoryActions: InventoryActions = this.rationalise(craftingResult.created, craftingResult.consumed);
         // todo: Can *potentially* optimise further by combining all update operations across both add and remove,
         //  reducing total actions on the actor from 4 (ADD[CREATE, UPDATE], REMOVE[UPDATE, DELETE]) to 3
@@ -144,6 +143,14 @@ class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> impl
             this.removeAll(inventoryActions.removals)
         ]);
         return modifiedItemData[0].concat(modifiedItemData[1]);
+    }
+
+    async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<Item<Item.Data<D>>[]> {
+        const compendium: Compendium = this._game.packs.get(alchemyResult.baseItem.compendiumId);
+        const compendiumBaseItem: Entity<Entity.Data, Entity.Data> = await compendium.getEntity(alchemyResult.baseItem.partId);
+        const baseItemData: Entity.Data = duplicate(compendiumBaseItem.data);
+        mergeObject(baseItemData.data, alchemyResult.customItemData);
+        const createdItemData: Entity.Data = await this._actor.createEmbeddedEntity('OwnedItem', baseItemData);
     }
 
     private rationalise(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): InventoryActions {
