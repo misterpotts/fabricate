@@ -8,7 +8,10 @@ import {Combination, Unit} from "../common/Combination";
 import Properties from "../Properties";
 import {CompendiumEntryImportError} from "../error/CompendiumEntryImportError";
 import {CompendiumEntryReferencePopulationError} from "../error/CompendiumEntryReferencePopulationError";
-import {CraftingSystemSpecification} from "./specification/CraftingSystemSpecification";
+
+type FoundryCompendium = Compendium<CompendiumCollection.Metadata,
+    ApplicationOptions,
+    Compendium.Data<CompendiumCollection.Metadata>>;
 
 class CompendiumImporter {
     private readonly _compendiumProvider: CompendiumProvider;
@@ -17,22 +20,22 @@ class CompendiumImporter {
         this._compendiumProvider = compendiumProvider ? compendiumProvider : new CompendiumProvider();
     }
 
-    public async import(craftingSystemSpecification: CraftingSystemSpecification): Promise<PartDictionary> {
-        const compendiumPackKeys: string[] = craftingSystemSpecification.compendiumPacks;
-        const essenceDefinitions: EssenceDefinition[] = craftingSystemSpecification.essences;
-        const compendiums: Compendium[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
+    public async import(systemId: string,
+                        compendiumPackKeys: string[],
+                        essenceDefinitions: EssenceDefinition[]): Promise<PartDictionary> {
+        const compendiums: FoundryCompendium[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
         const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: EssenceDefinition) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
-            const partDictionary: PartDictionary = await this.importCompendiumContents(craftingSystemSpecification.id, compendium, essencesBySlug);
+            const partDictionary: PartDictionary = await this.importCompendiumContents(systemId, compendium, essencesBySlug);
             partialPartDictionaries.push(partDictionary);
         }
         return this.rationaliseAndPopulateReferences(partialPartDictionaries);
     }
 
-    private async importCompendiumContents(systemId: string, compendium: Compendium, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
-        if (!Properties.module.compendiums.supportedTypes.includes(compendium.entity)) {
-            throw new Error(`Compendium ${compendium.collection} has an unsupported Entity type: ${compendium.entity}. Supported Compendium Entity types are: ${Properties.module.compendiums.supportedTypes}. `);
+    private async importCompendiumContents(systemId: string, compendium: FoundryCompendium, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
+        if (!Properties.module.compendiums.supportedTypes.includes(compendium.metadata.type)) {
+            throw new Error(`Compendium ${compendium.collection} has an unsupported Entity type: ${compendium.metadata.type}. Supported Compendium Entity types are: ${Properties.module.compendiums.supportedTypes}. `);
         }
         const partDictionary: PartDictionary = new PartDictionary();
         const content: Item[] = await this.loadCompendiumContent<Item>(compendium, 10);
@@ -123,8 +126,8 @@ class CompendiumImporter {
      * @param compendium The Compendium from which to reliably load the Content
      * @param maxAttempts The maximum number of times to attempt loading Compendium Content
      * */
-    private async loadCompendiumContent<T extends Entity>(compendium: Compendium, maxAttempts: number): Promise<T[]> {
-        let content: Entity[] = await compendium.getContent();
+    private async loadCompendiumContent<T extends Entity>(compendium: FoundryCompendium, maxAttempts: number): Promise<T[]> {
+        let content: Entity[] = await compendium.collection.contents;
         let attempts: number = 0;
         while (!content && (attempts <= maxAttempts)) {
             console.log(`${Properties.module.label} | Waiting for content in Compendium Pack ${compendium.collection} (Attempt ${attempts} of ${maxAttempts}. `);

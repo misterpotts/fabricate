@@ -2,7 +2,7 @@ import { describe, expect, test, jest } from '@jest/globals';
 import * as Sinon from "sinon";
 import * as fs from 'fs/promises';
 
-//import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
+import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {CraftingSystemSpecification} from "../src/scripts/system/specification/CraftingSystemSpecification";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
@@ -19,10 +19,9 @@ describe('A Crafting System Factory', () => {
         expect(rawData).not.toBeNull();
         const jsonData = JSON.parse(rawData);
         console.log(jsonData);
-        // @ts-ignore
         const systemSpec: CraftingSystemSpecification = <CraftingSystemSpecification> jsonData;
 
-        //const underTest: CraftingSystemFactory = new CraftingSystemFactory(systemSpec);
+        const underTest: CraftingSystemFactory = new CraftingSystemFactory(systemSpec);
     });
 
 });
