@@ -1,6 +1,14 @@
 import {Combination} from "./Combination";
 import {Identifiable} from "./FabricateItem";
 
+interface EssenceDefinitionConfig {
+    iconCode: string;
+    tooltip: string;
+    description: string;
+    slug: string;
+    name: string;
+}
+
 class EssenceDefinition implements Identifiable {
 
     private readonly _name: string;
@@ -9,16 +17,12 @@ class EssenceDefinition implements Identifiable {
     private readonly _tooltip: string;
     private readonly _iconCode: string;
 
-    constructor(builder: EssenceDefinition.Builder) {
-        this._name = builder.name;
-        this._slug = builder.name.toLowerCase().replace(' ', '-');
-        this._description = builder.description;
-        this._tooltip = builder.tooltip;
-        this._iconCode = builder.iconCode;
-    }
-
-    public static builder() {
-        return new EssenceDefinition.Builder();
+    constructor(config: EssenceDefinitionConfig) {
+        this._name = config.name;
+        this._slug = config.slug;
+        this._description = config.description;
+        this._tooltip = config.tooltip;
+        this._iconCode = config.iconCode;
     }
 
     get id(): string {
@@ -100,41 +104,4 @@ class EssenceIdentityProvider {
 
 }
 
-namespace EssenceDefinition {
-
-    export class Builder {
-
-        public name: string;
-        public description: string;
-        public tooltip: string;
-        public iconCode: string;
-
-        public build(): EssenceDefinition {
-            return new EssenceDefinition(this);
-        }
-
-        public withName(value: string): Builder {
-            this.name = value;
-            return this;
-        }
-
-        public withDescription(value: string): Builder {
-            this.description = value;
-            return this;
-        }
-
-        public withTooltip(value: string) {
-            this.tooltip = value;
-            return this;
-        }
-
-        public withIconCode(value: any): Builder {
-            this.iconCode = value;
-            return this;
-        }
-
-    }
-
-}
-
-export {EssenceDefinition, EssenceIdentityProvider}
+export {EssenceDefinition, EssenceIdentityProvider, EssenceDefinitionConfig}

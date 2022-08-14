@@ -35,7 +35,7 @@ async function loadCraftingSystems(): Promise<void> {
  * */
 async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
     console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack(s) ${systemSpec.compendiumPacks.join(', ')}. `);
-    if (systemSpec.supportedGameSystems.indexOf(game.system.id as GameSystem) < 0) {
+    if (systemSpec.gameSystem !== game.system.id as GameSystem) {
         console.log(`${Properties.module.label} | ${systemSpec.name} does not support the current game system (${game.system.id}), and will not be loaded. `);
         return;
     }

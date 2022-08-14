@@ -1,7 +1,6 @@
 import {
-    CraftingCheckSpecification,
-    CraftingSystemSpecification,
-    DND5ERollModifiers
+    DnD5ECraftingCheckSpecification,
+    CraftingSystemSpecification
 } from "./specification/CraftingSystemSpecification";
 import {CraftingSystem} from "./CraftingSystem";
 import {PartDictionary} from "./PartDictionary";
@@ -13,37 +12,39 @@ import {DiceRoller} from "../foundry/DiceRoller";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
 import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 import {DefaultThresholdCalculator, ThresholdCalculator} from "../crafting/check/Threshold";
+import {DefaultAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 
 class CraftingSystemFactory {
     private readonly _specification: CraftingSystemSpecification;
     private readonly _partDictionary: PartDictionary;
-    private readonly _enabled: boolean;
 
-    constructor(specification: CraftingSystemSpecification, partDictionary: PartDictionary, enabled: boolean) {
+    constructor(specification: CraftingSystemSpecification, partDictionary: PartDictionary) {
         this._specification = specification;
         this._partDictionary = partDictionary;
-        this._enabled = enabled;
     }
 
     public make(): CraftingSystem {
         const craftingCheck: CraftingCheck<Actor> = this.buildCraftingCheck(
             this._specification.gameSystem,
-            this._specification.craftingCheckSpecification);
+            this._specification.defaultCheck);
         return new CraftingSystem({
             id: this._specification.id,
             essences: this._specification.essences,
-            enabled: this._enabled,
+            enabled: this._specification.enabled,
             gameSystem: this._specification.gameSystem,
             craftingCheck: craftingCheck,
             partDictionary: this._partDictionary,
             craftingAttemptFactory: new CraftingAttemptFactory({
                 selectionStrategy: new DefaultComponentSelectionStrategy(),
                 wastageType: this._specification.wastageType
+            }),
+            alchemyAttemptFactory: new DefaultAlchemyAttemptFactory({
+                wastageType: this._specification.wastageType
             })
         });
     }
 
-    private buildCraftingCheck(gameSystem: GameSystem, specification: CraftingCheckSpecification): CraftingCheck<Actor> {
+    private buildCraftingCheck(gameSystem: GameSystem, specification: DnD5ECraftingCheckSpecification): CraftingCheck<Actor> {
         const contributionCounterFactory = new ContributionCounterFactory(specification.contributionCounterConfig);
         const contributionCounter: ContributionCounter = contributionCounterFactory.make();
         const thresholdCalculator: ThresholdCalculator = new DefaultThresholdCalculator({

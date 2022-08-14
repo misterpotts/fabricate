@@ -19,7 +19,8 @@ interface CraftingSystemConfig {
     craftingCheck: CraftingCheck<Actor>;
     partDictionary: PartDictionary;
     essences: EssenceDefinition[],
-    alchemyAttemptFactory: AlchemyAttemptFactory;
+    alchemyAttemptFactory: AlchemyAttemptFactory<any>;
+
     craftingAttemptFactory: CraftingAttemptFactory;
     enabled: boolean;
 }

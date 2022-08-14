@@ -21,7 +21,8 @@
       "node",
       "chai",
       "sinon",
-      "@jest/globals",
+      "jest",
+      "mocha",
       "handlebars",
       "@league-of-foundry-developers/foundry-vtt-types",
       "@league-of-foundry-developers/foundry-vtt-dnd5e-types"
@@ -31,7 +32,7 @@
     ],
     "allowUmdGlobalAccess": true
   },
-  "include": ["./src/**/*.ts", "./typings/**/*.ts"],
+  "include": ["./src/**/*.ts", "./typings/**/*.ts", "./test/**/*.ts"],
   "exclude": ["node_modules", "./gulpfile.ts"],
   "files": [
     "./typings/global.d.ts"

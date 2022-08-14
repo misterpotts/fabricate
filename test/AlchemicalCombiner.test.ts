@@ -74,7 +74,7 @@ class TestAlchemicalEffectThree extends AlchemicalEffect<TestItemDataType> {
 
     constructor() {
         const superBuilder: AlchemicalEffect.Builder<TestItemDataType> = new AlchemicalEffect.Builder<TestItemDataType>()
-            .withType(AlchemicalEffectType.MODIFIER)
+            .withType(AlchemicalEffectType.MULTIPLIER)
             .withDescription('Test Alchemical Effect One')
             .withDiceUtility(mockDiceUtility)
             .withEssenceCombination(testComponentThree.essences);

@@ -4,7 +4,6 @@ import {Done} from "mocha";
 import ErrnoException = NodeJS.ErrnoException;
 import {CraftingSystemRegistry} from "../../src/scripts/registries/CraftingSystemRegistry";
 import {DND5ECraftingSystemSpecification} from "../../src/scripts/system/specification/DND5ECraftingSystemSpecification";
-import {CompendiumImporter} from "../../src/scripts/system/CompendiumImporter";
 import {CraftingSystem} from "../../src/scripts/system/CraftingSystem";
 import {Recipe} from "../../src/scripts/crafting/Recipe";
 import {CraftingComponent} from "../../src/scripts/common/CraftingComponent";

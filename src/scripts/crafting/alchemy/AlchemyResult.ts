@@ -1,6 +1,7 @@
 import {FabricateItem} from "../../common/FabricateItem";
 
-interface AlchemyResult {
+interface AlchemyResult<D> {
+    customItemData: D;
     baseItem: FabricateItem;
 }
 

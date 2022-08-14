@@ -1,4 +1,4 @@
-import {AoeExtension5e, Condition5e, Damage5e, DiceMultiplier5e, SavingThrowModifier5e} from "../../5e/AlchemicalEffect5E";
+import {AoeExtension5e, DescriptiveEffect5e, Damage5e, DiceMultiplier5e, SavingThrowModifier5e} from "../../5e/AlchemicalEffect5E";
 import {EssenceDefinition} from "../../common/EssenceDefinition";
 import {DND5ECraftingSystemSpecification} from "../../system/specification/DND5ECraftingSystemSpecification";
 import {Combination, Unit} from "../../common/Combination";
@@ -53,14 +53,14 @@ const systemEssences: EssenceDefinition[] = [
     negativeEnergy
 ];
 
-const blinded = Condition5e.builder()
+const blinded = DescriptiveEffect5e.builder()
     .withDescription('Release a burst of stinging dust. Affected targets are blinded for the next round. ')
     .withEssenceCombination(Combination.ofUnits([
         new Unit<EssenceDefinition>(elementalEarth, 2)
     ]))
     .build();
 
-const prone = Condition5e.builder()
+const prone = DescriptiveEffect5e.builder()
     .withDescription('Release a puddle of slippery oil. Affected targets immediately fall prone. ')
     .withEssenceCombination(Combination.ofUnits([
         new Unit<EssenceDefinition>(elementalWater, 2)
@@ -83,7 +83,7 @@ const fireDamage = Damage5e.builder()
     ]))
     .build();
 
-const persistentDamage = Condition5e.builder()
+const persistentDamage = DescriptiveEffect5e.builder()
     .withDescription('Release gel that sticks to targets. Each round, any damage-dealing effects continue to ' +
         'deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .')
     .withEssenceCombination(Combination.ofUnits([

@@ -1,16 +1,31 @@
 import {CraftingCheck} from "../check/CraftingCheck";
 import {AlchemyResult} from "./AlchemyResult";
-import {CraftingComponent} from "../../common/CraftingComponent";
-import {Combination} from "../../common/Combination";
+import {AlchemicalCombiner} from "./AlchemicalCombiner";
+ 
+interface AlchemyAttempt<D> {
 
-interface AlchemyAttemptFactory {
+    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult<D>;
 
-    make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
 }
 
-interface AlchemyAttempt {
+class WastefulAlchemyAttempt<D> implements AlchemyAttempt<D> {
 
-    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult;
+    private readonly _alchemicalCombiner: AlchemicalCombiner<D>;
+
+    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult<D> {
+        return undefined;
+    }
+
 }
 
-export {AlchemyAttempt, AlchemyAttemptFactory}
+class GenerousAlchemyAttempt<D> implements AlchemyAttempt<D> {
+
+    private readonly _alchemicalCombiner: AlchemicalCombiner<D>;
+
+    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult<D> {
+        return undefined;
+    }
+
+}
+
+export {AlchemyAttempt, WastefulAlchemyAttempt, GenerousAlchemyAttempt}

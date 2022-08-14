@@ -1,10 +1,16 @@
 import {AlchemicalEffect, AlchemicalEffectType} from "../crafting/alchemy/AlchemicalEffect";
-import {Combination} from "../common/Combination";
-import {EssenceDefinition} from "../common/EssenceDefinition";
 import {DiceRoller} from "../foundry/DiceRoller";
 
+enum Dnd5EAlchemicalEffectType {
+    AOE_EXTENSION,
+    DAMAGE,
+    DAMAGE_MULTIPLIER,
+    DESCRIPTIVE,
+    SAVE_MODIFIER
+}
+
 interface AoeExtension {
-    units: DND5e.TargetUnitType;
+    units: DND5e.Unit;
     value: number;
 }
 
@@ -13,15 +19,29 @@ interface Damage {
     type: DND5e.DamageType;
 }
 
-class AlchemicalEffect5e extends AlchemicalEffect<Item5e.Data.Data> {
+interface AlchemicalEffect5eConfig {
+    description: string;
+    type: AlchemicalEffectType;
+}
 
-    protected constructor(builder: AlchemicalEffect5e.Builder) {
-        super(builder);
+abstract class AlchemicalEffect5e implements AlchemicalEffect<Item5e.Data.Data> {
+
+    private readonly _description: string;
+    private readonly _type: AlchemicalEffectType;
+
+    protected constructor(alchemicalEffect5eConfig: AlchemicalEffect5eConfig) {
+        this._description = alchemicalEffect5eConfig.description;
+        this._type = alchemicalEffect5eConfig.type;
     }
 
-    applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        itemData.description.value += `<p>${this.description}</p>`;
-        return itemData;
+    abstract applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data;
+
+    get description(): string {
+        return this._description;
+    }
+
+    get type(): AlchemicalEffectType {
+        return this._type;
     }
 
 }
@@ -29,13 +49,12 @@ class AlchemicalEffect5e extends AlchemicalEffect<Item5e.Data.Data> {
 class Damage5e extends AlchemicalEffect5e {
     private readonly _damage: Damage;
 
-    constructor(builder: AlchemicalEffect5e.DamageBuilder) {
-        super(builder);
-        this._damage = builder.damage;
-    }
-
-    public static builder(): AlchemicalEffect5e.DamageBuilder {
-        return new AlchemicalEffect5e.DamageBuilder();
+    constructor(damage: Damage) {
+        super({
+            type: AlchemicalEffectType.BASIC,
+            description: `Adds an additional ${damage.expression} ${damage.type} damage. `
+        });
+        this._damage = damage;
     }
 
     get damage(): Damage {
@@ -43,7 +62,6 @@ class Damage5e extends AlchemicalEffect5e {
     }
 
     applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        itemData = super.applyTo(itemData);
         if ('damage' in itemData) {
             itemData.damage.parts.push([this._damage.expression, this._damage.type]);
             return itemData;
@@ -53,18 +71,28 @@ class Damage5e extends AlchemicalEffect5e {
 
 }
 
-class Condition5e extends AlchemicalEffect5e {
+interface DescriptiveEffect5eConfig {
+    effectDetail: string;
+    effectDescription: string;
+}
 
-    constructor(builder: AlchemicalEffect5e.ConditionBuilder) {
-        super(builder);
-    }
+/**
+ * Used for Conditions
+ */
+class DescriptiveEffect5e extends AlchemicalEffect5e {
 
-    public static builder(): AlchemicalEffect5e.ConditionBuilder {
-        return new AlchemicalEffect5e.ConditionBuilder();
+    private readonly _effectDetail: string;
+
+    constructor(config: DescriptiveEffect5eConfig) {
+        super({
+            type: AlchemicalEffectType.BASIC,
+            description: config.effectDescription
+        });
+        this._effectDetail = config.effectDetail;
     }
 
     applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        itemData = super.applyTo(itemData);
+        itemData.description.value += `<p>${this._effectDetail}</p>`;
         return itemData;
     }
 
@@ -73,17 +101,15 @@ class Condition5e extends AlchemicalEffect5e {
 class AoeExtension5e extends AlchemicalEffect5e {
     private readonly _aoeExtension: AoeExtension;
 
-    constructor(builder: AlchemicalEffect5e.AoeExtensionBuilder) {
-        super(builder);
-        this._aoeExtension = builder.aoeExtension;
-    }
-
-    public static builder(): AlchemicalEffect5e.AoeExtensionBuilder {
-        return new AlchemicalEffect5e.AoeExtensionBuilder();
+    constructor(aoeExtension: AoeExtension) {
+        super({
+            type: AlchemicalEffectType.BASIC,
+            description: `Increases the effect radius of the item by ${aoeExtension.value} ${aoeExtension.units}. `
+        });
+        this._aoeExtension = aoeExtension;
     }
 
     applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        itemData = super.applyTo(itemData);
         if ('target' in itemData) {
             if (itemData.target.units !== this._aoeExtension.units) {
                 throw new Error(`You may not mix units in Alchemical Effects AoE Extensions. Found ${itemData.target.units}, expected ${this._aoeExtension.units}`);
@@ -99,17 +125,15 @@ class AoeExtension5e extends AlchemicalEffect5e {
 class SavingThrowModifier5e extends AlchemicalEffect5e {
     private readonly _savingThrowModifier: number;
 
-    constructor(builder: AlchemicalEffect5e.SavingThrowModifierBuilder) {
-        super(builder);
-        this._savingThrowModifier = builder.savingThrowModifier;
-    }
-
-    public static builder(): AlchemicalEffect5e.SavingThrowModifierBuilder {
-        return new AlchemicalEffect5e.SavingThrowModifierBuilder();
+    constructor(savingThrowModifier: number) {
+        super({
+            type:AlchemicalEffectType.BASIC,
+            description: `Increases save DC by ${savingThrowModifier}. `
+        });
+        this._savingThrowModifier = savingThrowModifier;
     }
 
     applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        itemData = super.applyTo(itemData);
         if ('save' in itemData) {
             itemData.save.dc += this._savingThrowModifier;
             return itemData;
@@ -120,23 +144,23 @@ class SavingThrowModifier5e extends AlchemicalEffect5e {
 }
 
 class DiceMultiplier5e extends AlchemicalEffect5e {
-    private readonly _diceMultiplier: number;
+    private readonly _multiplierValue: number;
+    private readonly _diceRoller: DiceRoller;
 
-    constructor(builder: AlchemicalEffect5e.DiceMultiplierBuilder) {
-        super(builder);
-        this._diceMultiplier = builder.diceMultiplier;
-    }
-
-    public static builder(): AlchemicalEffect5e.DiceMultiplierBuilder {
-        return new AlchemicalEffect5e.DiceMultiplierBuilder();
+    constructor(multiplierValue: number, diceRoller: DiceRoller) {
+        super({
+            type: AlchemicalEffectType.MULTIPLIER,
+            description: `Multiplies the number of damage dice by a factor of ${multiplierValue}`
+        });
+        this._multiplierValue = multiplierValue;
+        this._diceRoller = diceRoller;
     }
 
     applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        itemData = super.applyTo(itemData);
         if ('damage' in itemData) {
             itemData.damage.parts = itemData.damage.parts
                 .map((damagePart: [string, DND5e.DamageType| 'none']) => {
-                    const multipliedExpression: string = this.diceUtility.multiply(damagePart[0], this._diceMultiplier);
+                    const multipliedExpression: string = this._diceRoller.multiply(damagePart[0], this._multiplierValue);
                     return [multipliedExpression, damagePart[1]];
                 });
             return itemData;
@@ -146,165 +170,6 @@ class DiceMultiplier5e extends AlchemicalEffect5e {
 
 }
 
-namespace AlchemicalEffect5e {
-
-    export class Builder extends AlchemicalEffect.Builder<Item5e.Data.Data>{
-
-    }
-
-    export class DamageBuilder extends Builder {
-        public damage: Damage;
-
-        public build(): Damage5e {
-            return new Damage5e(this);
-        }
-
-        public withEssenceCombination(value: Combination<EssenceDefinition>): DamageBuilder {
-            this.essenceCombination = value;
-            return this;
-        }
-
-        public withDescription(value: string): DamageBuilder {
-            this.description = value;
-            return this;
-        }
-
-        public withType(value: AlchemicalEffectType): DamageBuilder {
-            this.type = value;
-            return this;
-        }
-
-        public withDiceUtility(value: DiceRoller): DamageBuilder {
-            this.diceUtility = value;
-            return this;
-        }
-
-        public withDamage(value: Damage): DamageBuilder {
-            this.damage = value;
-            return this;
-        }
-    }
-
-    export class ConditionBuilder extends Builder {
-
-        public type: AlchemicalEffectType = AlchemicalEffectType.BASIC;
-
-        public build(): Condition5e {
-            return new Condition5e(this);
-        }
-
-        public withEssenceCombination(value: Combination<EssenceDefinition>): ConditionBuilder {
-            this.essenceCombination = value;
-            return this;
-        }
-
-        public withDescription(value: string): ConditionBuilder {
-            this.description = value;
-            return this;
-        }
-
-        public withDiceUtility(value: DiceRoller): ConditionBuilder {
-            this.diceUtility = value;
-            return this;
-        }
-
-    }
-
-    export class AoeExtensionBuilder extends Builder {
-
-        public aoeExtension: AoeExtension;
-        public type: AlchemicalEffectType = AlchemicalEffectType.BASIC;
-
-        public build(): AoeExtension5e {
-            return new AoeExtension5e(this);
-        }
-
-        public withEssenceCombination(value: Combination<EssenceDefinition>): AoeExtensionBuilder {
-            this.essenceCombination = value;
-            return this;
-        }
-
-        public withDescription(value: string): AoeExtensionBuilder {
-            this.description = value;
-            return this;
-        }
-
-        public withDiceUtility(value: DiceRoller): AoeExtensionBuilder {
-            this.diceUtility = value;
-            return this;
-        }
-
-        public withAoEExtension(value: AoeExtension): AoeExtensionBuilder {
-            this.aoeExtension = value;
-            return this;
-        }
-
-    }
-
-    export class SavingThrowModifierBuilder extends Builder {
-
-        public savingThrowModifier: number;
-        public type: AlchemicalEffectType = AlchemicalEffectType.BASIC;
-
-        public build(): SavingThrowModifier5e {
-            return new SavingThrowModifier5e(this);
-        }
-
-        public withEssenceCombination(value: Combination<EssenceDefinition>): SavingThrowModifierBuilder {
-            this.essenceCombination = value;
-            return this;
-        }
-
-        public withDescription(value: string): SavingThrowModifierBuilder {
-            this.description = value;
-            return this;
-        }
-
-        public withDiceUtility(value: DiceRoller): SavingThrowModifierBuilder {
-            this.diceUtility = value;
-            return this;
-        }
-
-        public withSavingThrowModifier(value: number): SavingThrowModifierBuilder {
-            this.savingThrowModifier = value;
-            return this;
-        }
-
-    }
-
-    export class DiceMultiplierBuilder extends Builder {
-
-        public diceMultiplier: number;
-        public type: AlchemicalEffectType = AlchemicalEffectType.MODIFIER;
-
-        public build(): DiceMultiplier5e {
-            return new DiceMultiplier5e(this);
-        }
-
-        public withEssenceCombination(value: Combination<EssenceDefinition>): DiceMultiplierBuilder {
-            this.essenceCombination = value;
-            return this;
-        }
-
-        public withDescription(value: string): DiceMultiplierBuilder {
-            this.description = value;
-            return this;
-        }
-
-        public withDiceUtility(value: DiceRoller): DiceMultiplierBuilder {
-            this.diceUtility = value;
-            return this;
-        }
-
-        public withDiceMultiplier(value: number): DiceMultiplierBuilder {
-            this.diceMultiplier = value;
-            return this;
-        }
-
-    }
-
-}
 
 
-
-export {Damage5e, Condition5e, AoeExtension5e, SavingThrowModifier5e, DiceMultiplier5e}
+export {Damage5e, DescriptiveEffect5e, AoeExtension5e, SavingThrowModifier5e, DiceMultiplier5e, Dnd5EAlchemicalEffectType}
