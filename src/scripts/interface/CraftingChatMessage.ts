@@ -108,7 +108,7 @@ class CraftingChatMessage {
 
     async send(actorId: string): Promise<void> {
         const messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, this);
-        await ChatMessage.create({user: game.user, speaker: {actor: actorId}, content: messageTemplate});
+        await ChatMessage.create({user: new GameProvider().globalGameObject().user, speaker: {actor: actorId}, content: messageTemplate});
     }
 
 }

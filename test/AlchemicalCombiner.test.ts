@@ -28,7 +28,7 @@ const mockDiceUtility: DiceRoller = <DiceRoller><unknown>{};
 const mockCompendiumProvider: CompendiumProvider = <CompendiumProvider><unknown>{
     getEntity: () => {}
 };
-const stubGetEntityMethod = Sandbox.stub(mockCompendiumProvider, 'getEntity');
+const stubGetEntityMethod = Sandbox.stub(mockCompendiumProvider, 'getDocument');
 const mockObjectUtility: ObjectUtility = <ObjectUtility><unknown>{
     duplicate: () => {}
 };

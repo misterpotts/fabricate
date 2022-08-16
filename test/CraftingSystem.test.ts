@@ -12,7 +12,7 @@ import {Combination} from "../src/scripts/common/Combination";
 import {CraftingCheck, DefaultCraftingCheck, NoCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
 import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
-import {RollTermProvider} from "../src/scripts/crafting/check/RollTermProvider";
+import {RollProvider} from "../src/scripts/crafting/check/RollProvider";
 import {testPartDictionary} from "./test_data/TestPartDictionary";
 import {CraftingAttemptFactory, WastageType} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
 import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/DefaultComponentSelectionStrategy";
@@ -30,9 +30,9 @@ const essences: EssenceDefinition[] = [elementalAir, elementalEarth, elementalFi
 const stubDiceRoller: DiceRoller = <DiceRoller><unknown>{
     roll: () => {}
 };
-const stubRollMethod = Sandbox.stub(stubDiceRoller, 'roll');
+const stubRollMethod = Sandbox.stub(stubDiceRoller, 'evaluate');
 
-const stubRollTermProvider: RollTermProvider<Actor> = <RollTermProvider<Actor>><unknown>{
+const stubRollTermProvider: RollProvider<Actor> = <RollProvider<Actor>><unknown>{
     getFor: () => {}
 };
 const stubGetForMethod = Sandbox.stub(stubRollTermProvider, 'getFor');
@@ -146,7 +146,7 @@ describe('Crafting ', () => {
         });
         const craftingCheck: CraftingCheck<Actor> = new DefaultCraftingCheck({
             diceRoller: stubDiceRoller,
-            rollTermProvider: stubRollTermProvider,
+            rollProvider: stubRollTermProvider,
             thresholdCalculator: thresholdCalculator
         });
 

@@ -89,23 +89,19 @@ interface CraftingSpecification {
     customCheck?: DnD5ECraftingCheckSpecification;
 }
 
+interface DnD5ECraftingCheckSpecification {
+    ability: AbilityType;
+    tool: DnD5EToolSpecification;
+    threshold: DnD5EThresholdSpecification
+}
+
 interface AlchemySpecification {
     performCheck: boolean;
     wastage: WastageType;
     useCustomCheck: boolean;
     customCheck?: DnD5ECraftingCheckSpecification;
-    formulae: AlchemyFormula[]
-}
-
-interface DnD5ECraftingCheckSpecification {
-    ability: AbilityType;
-    tool: DnD5EToolSpecification;
-    threshold: DnD5EThresholdSpecification
-    baseValue: number;
-    thresholdType: ThresholdType;
-    crafting: CraftingSpecification;
-    alchemyEnabled: boolean;
-    alchemy?: AlchemySpecification;
+    formulae: AlchemyFormula[];
+    constraints: AlchemyConstraints;
 }
 
 interface CraftingSystemSpecification {
@@ -116,9 +112,12 @@ interface CraftingSystemSpecification {
     description: string;
     summary: string;
     author: string;
-    enabled: boolean,
+    enabled: boolean;
     essences: EssenceDefinition[];
-    defaultCheck: DnD5ECraftingCheckSpecification | Pf2ECraftingCheckSpecification
+    defaultCheck: DnD5ECraftingCheckSpecification;
+    crafting: CraftingSpecification;
+    alchemyEnabled: boolean;
+    alchemy: AlchemySpecification;
 }
 
-export {CraftingSystemSpecification, DnD5ECraftingCheckSpecification, WastageType}
+export {CraftingSystemSpecification, DnD5ECraftingCheckSpecification, Pf2ECraftingCheckSpecification, WastageType}

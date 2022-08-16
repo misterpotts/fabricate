@@ -9,7 +9,7 @@ import {
 import {DiceRoller, RollResult} from "../../foundry/DiceRoller";
 import {OutcomeType} from "../result/OutcomeType";
 import {Threshold, ThresholdCalculator} from "./Threshold";
-import {RollTermProvider} from "./RollTermProvider";
+import {RollProvider} from "./RollProvider";
 
 interface CraftingCheck<A extends Actor> {
 
@@ -19,26 +19,26 @@ interface CraftingCheck<A extends Actor> {
 
 interface CraftingCheckConfig<A extends Actor> {
     diceRoller: DiceRoller;
-    rollTermProvider: RollTermProvider<A>;
+    rollProvider: RollProvider<A>;
     thresholdCalculator: ThresholdCalculator;
 }
 
 class DefaultCraftingCheck<A extends Actor> implements CraftingCheck<A> {
 
     private readonly _diceRoller: DiceRoller;
-    private readonly _rollTermProvider: RollTermProvider<A>;
+    private readonly _rollTermProvider: RollProvider<A>;
     private readonly _thresholdCalculator: ThresholdCalculator;
 
     constructor(craftingCheckConfig: CraftingCheckConfig<A>) {
         this._diceRoller = craftingCheckConfig.diceRoller;
-        this._rollTermProvider = craftingCheckConfig.rollTermProvider;
+        this._rollTermProvider = craftingCheckConfig.rollProvider;
         this._thresholdCalculator = craftingCheckConfig.thresholdCalculator;
     }
 
     perform(actor: A, components: Combination<CraftingComponent>): CraftingCheckResult {
 
-        const dieData: DiceTerm.TermData = this._rollTermProvider.getFor(actor);
-        const rollResult: RollResult = this._diceRoller.roll(dieData);
+        const roll: Roll = this._rollTermProvider.getFor(actor);
+        const rollResult: RollResult = this._diceRoller.evaluate(roll);
         const threshold: Threshold = this._thresholdCalculator.calculateFor(components);
         const outcome: OutcomeType = threshold.test(rollResult);
 

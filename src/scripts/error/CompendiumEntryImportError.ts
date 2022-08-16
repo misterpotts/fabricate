@@ -11,7 +11,7 @@ class CompendiumEntryImportError extends Error {
                 systemId: string,
                 cause: Error) {
         const message: string =
-            `Unable to import ${fabricateItem.type} with Fabricate Part ID '${fabricateItem.identity.partId}' from Compendium Entry with ID '${entryId}' specified in Compendium with Pack Key '${compendiumPackKey}' into System '${systemId}'. Caused by: ${cause.message}`;
+            `Unable to import ${fabricateItem.type} with Fabricate Part ID '${fabricateItem.identity.partId}' from Compendium Document with ID '${entryId}' specified in Compendium with Pack Key '${compendiumPackKey}' into System '${systemId}'. Caused by: ${cause.message}`;
         super(message);
         this._fabricateCompendiumData = fabricateItem;
         this._cause = cause;

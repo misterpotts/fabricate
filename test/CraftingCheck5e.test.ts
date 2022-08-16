@@ -15,7 +15,7 @@ const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 const mockDiceRoller: DiceRoller = <DiceRoller><unknown>{
     roll: () => {}
 };
-const stubRollMethod = Sandbox.stub(mockDiceRoller, 'roll');
+const stubRollMethod = Sandbox.stub(mockDiceRoller, 'evaluate');
 
 beforeEach(() => {
     jest.resetAllMocks();

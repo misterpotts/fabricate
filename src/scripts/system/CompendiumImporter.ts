@@ -1,6 +1,6 @@
 import {PartDictionary} from "./PartDictionary";
 import {EssenceDefinition} from "../common/EssenceDefinition";
-import {CompendiumProvider} from "../compendium/CompendiumProvider";
+import {CompendiumProvider, DefaultCompendiumProvider} from "../compendium/CompendiumProvider";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Recipe} from "../crafting/Recipe";
 import {FabricateCompendiumData, FabricateItemType} from "../compendium/CompendiumData";
@@ -8,22 +8,22 @@ import {Combination, Unit} from "../common/Combination";
 import Properties from "../Properties";
 import {CompendiumEntryImportError} from "../error/CompendiumEntryImportError";
 import {CompendiumEntryReferencePopulationError} from "../error/CompendiumEntryReferencePopulationError";
-
-type FoundryCompendium = Compendium<CompendiumCollection.Metadata,
-    ApplicationOptions,
-    Compendium.Data<CompendiumCollection.Metadata>>;
+import {
+    DocumentInstanceForCompendiumMetadata
+} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/client/data/collections/compendium";
 
 class CompendiumImporter {
+
     private readonly _compendiumProvider: CompendiumProvider;
 
     constructor(compendiumProvider?: CompendiumProvider) {
-        this._compendiumProvider = compendiumProvider ? compendiumProvider : new CompendiumProvider();
+        this._compendiumProvider = compendiumProvider ? compendiumProvider : new DefaultCompendiumProvider();
     }
 
     public async import(systemId: string,
                         compendiumPackKeys: string[],
                         essenceDefinitions: EssenceDefinition[]): Promise<PartDictionary> {
-        const compendiums: FoundryCompendium[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
+        const compendiums: CompendiumCollection<CompendiumCollection.Metadata>[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
         const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: EssenceDefinition) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
@@ -33,38 +33,44 @@ class CompendiumImporter {
         return this.rationaliseAndPopulateReferences(partialPartDictionaries);
     }
 
-    private async importCompendiumContents(systemId: string, compendium: FoundryCompendium, essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
+    private async importCompendiumContents(systemId: string,
+                                           compendium:  CompendiumCollection<CompendiumCollection.Metadata>,
+                                           essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
         if (!Properties.module.compendiums.supportedTypes.includes(compendium.metadata.type)) {
-            throw new Error(`Compendium ${compendium.collection} has an unsupported Entity type: ${compendium.metadata.type}. Supported Compendium Entity types are: ${Properties.module.compendiums.supportedTypes}. `);
+            throw new Error(`Compendium ${compendium.collection} has an unsupported Document type: ${compendium.metadata.type}. Supported Compendium Document types are: ${Properties.module.compendiums.supportedTypes}. `);
         }
         const partDictionary: PartDictionary = new PartDictionary();
-        const content: Item[] = await this.loadCompendiumContent<Item>(compendium, 10);
-        content.forEach((item: Item) => {
-            if (!('fabricate' in item.data.flags)) {
+        const documents: StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>[] = await this.loadCompendiumContent(compendium, 10);
+        documents.forEach((document: StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>) => {
+            if (!('fabricate' in document.data.flags)) {
                 return;
             }
-            const fabricateCompendiumData: FabricateCompendiumData = <FabricateCompendiumData>item.data.flags.fabricate;
+            const fabricateCompendiumData: FabricateCompendiumData = <FabricateCompendiumData>document.data.flags.fabricate;
             switch (fabricateCompendiumData.type) {
                 case FabricateItemType.COMPONENT:
-                    const component: CraftingComponent = this.getComponent(item, fabricateCompendiumData, compendium, systemId, essencesBySlug);
+                    const component: CraftingComponent = this.getComponent(document, fabricateCompendiumData, compendium, systemId, essencesBySlug);
                     partDictionary.addComponent(component);
                     break;
                 case FabricateItemType.RECIPE:
-                    const recipe: Recipe = this.getRecipe(item, fabricateCompendiumData, compendium, systemId, essencesBySlug);
+                    const recipe: Recipe = this.getRecipe(document, fabricateCompendiumData, compendium, systemId, essencesBySlug);
                     partDictionary.addRecipe(recipe);
                     break;
                 default:
-                    throw new Error(`${Properties.module.label} | Unable to load item ${item.id}. Could not determine Fabricate Entity Type. `);
+                    throw new Error(`${Properties.module.label} | Unable to load item ${document.id}. Could not determine Fabricate Entity Type. `);
             }
         });
         return partDictionary;
     }
 
-    private getRecipe(item: Item, fabricateCompendiumData: FabricateCompendiumData, compendium: Compendium, systemId: string, essencesBySlug: Map<string, EssenceDefinition>) {
+    private getRecipe(document: StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>,
+                      fabricateCompendiumData: FabricateCompendiumData,
+                      compendium: CompendiumCollection<CompendiumCollection.Metadata>,
+                      systemId: string,
+                      essencesBySlug: Map<string, EssenceDefinition>) {
         try {
             return Recipe.builder()
-                .withName(item.name)
-                .withImageUrl(item.img)
+                .withName(document.name)
+                .withImageUrl(document.img)
                 .withPartId(fabricateCompendiumData.identity.partId)
                 .withCompendiumId(compendium.collection)
                 .withSystemId(systemId)
@@ -74,16 +80,20 @@ class CompendiumImporter {
                 .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.recipe.essences, essencesBySlug))
                 .build();
         } catch (error) {
-            throw new CompendiumEntryImportError(compendium.collection, item.id, fabricateCompendiumData, systemId, error);
+            throw new CompendiumEntryImportError(compendium.collection, document.id, fabricateCompendiumData, systemId, error as Error);
         }
 
     }
 
-    private getComponent(item: Item, fabricateCompendiumData: FabricateCompendiumData, compendium: Compendium, systemId: string, essencesBySlug: Map<string, EssenceDefinition>) {
+    private getComponent(document: StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>,
+                         fabricateCompendiumData: FabricateCompendiumData,
+                         compendium: CompendiumCollection<CompendiumCollection.Metadata>,
+                         systemId: string,
+                         essencesBySlug: Map<string, EssenceDefinition>) {
         try {
             return CraftingComponent.builder()
-                .withName(item.name)
-                .withImageUrl(item.img)
+                .withName(document.name)
+                .withImageUrl(document.img)
                 .withPartId(fabricateCompendiumData.identity.partId)
                 .withCompendiumId(compendium.collection)
                 .withSystemId(systemId)
@@ -91,7 +101,7 @@ class CompendiumImporter {
                 .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.component.essences, essencesBySlug))
                 .build();
         } catch (error) {
-            throw new CompendiumEntryImportError(compendium.collection, item.id, fabricateCompendiumData, systemId, error);
+            throw new CompendiumEntryImportError(compendium.collection, document.id, fabricateCompendiumData, systemId, error as Error);
         }
     }
 
@@ -126,16 +136,17 @@ class CompendiumImporter {
      * @param compendium The Compendium from which to reliably load the Content
      * @param maxAttempts The maximum number of times to attempt loading Compendium Content
      * */
-    private async loadCompendiumContent<T extends Entity>(compendium: FoundryCompendium, maxAttempts: number): Promise<T[]> {
-        let content: Entity[] = await compendium.collection.contents;
+    private async loadCompendiumContent(compendium:  CompendiumCollection<CompendiumCollection.Metadata>,
+                                        maxAttempts: number): Promise<StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>[]> {
+        let documents: Document[] = await compendium.getDocuments();
         let attempts: number = 0;
-        while (!content && (attempts <= maxAttempts)) {
+        while (!documents && (attempts <= maxAttempts)) {
             console.log(`${Properties.module.label} | Waiting for content in Compendium Pack ${compendium.collection} (Attempt ${attempts} of ${maxAttempts}. `);
             await this.wait(1000);
             attempts++;
-            content = await compendium.getContent();
+            documents = await compendium.getDocuments();
         }
-        return <T[]>content;
+        return documents
     }
 
     /**
@@ -194,7 +205,7 @@ class CompendiumImporter {
                 .withSalvage(this.populateCombination(component.salvage, componentsById))
                 .build();
         } catch (error) {
-            throw new CompendiumEntryReferencePopulationError(component, error);
+            throw new CompendiumEntryReferencePopulationError(component, error as Error);
         }
 
     }
@@ -206,8 +217,8 @@ class CompendiumImporter {
                 .withCatalysts(this.populateCombination(recipe.catalysts, componentsById))
                 .withResults(this.populateCombination(recipe.results, componentsById))
                 .build();
-        } catch (error) {
-            throw new CompendiumEntryReferencePopulationError(recipe, error);
+        } catch (error: any) {
+            throw new CompendiumEntryReferencePopulationError(recipe, error as Error);
         }
     }
 

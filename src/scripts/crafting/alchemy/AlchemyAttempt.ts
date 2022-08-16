@@ -10,8 +10,10 @@ interface AlchemyAttempt<D> {
 
 class WastefulAlchemyAttempt<D> implements AlchemyAttempt<D> {
 
+    // @ts-ignore
     private readonly _alchemicalCombiner: AlchemicalCombiner<D>;
 
+    // @ts-ignore
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult<D> {
         return undefined;
     }
@@ -20,8 +22,10 @@ class WastefulAlchemyAttempt<D> implements AlchemyAttempt<D> {
 
 class GenerousAlchemyAttempt<D> implements AlchemyAttempt<D> {
 
+    // @ts-ignore
     private readonly _alchemicalCombiner: AlchemicalCombiner<D>;
 
+    // @ts-ignore
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult<D> {
         return undefined;
     }

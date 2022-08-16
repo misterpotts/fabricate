@@ -1,23 +1,37 @@
-class CompendiumProvider {
+import {
+    DocumentInstanceForCompendiumMetadata
+} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/client/data/collections/compendium";
 
-    public getCompendium(packKey: string): Compendium {
-        const compendium: Compendium = game.packs.get(packKey);
+type Document = StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>;
+
+interface CompendiumProvider {
+
+    getCompendium(packKey: string): CompendiumCollection<CompendiumCollection.Metadata>;
+
+    getDocument(packKey: string, entityId: string): Promise<Document>
+
+}
+
+class DefaultCompendiumProvider implements CompendiumProvider {
+
+    public getCompendium(packKey: string): CompendiumCollection<CompendiumCollection.Metadata> {
+        const gameInstance: Game = new GameProvider().globalGameObject();
+        const compendium: CompendiumCollection<CompendiumCollection.Metadata> = gameInstance.packs.get(packKey);
         if (!compendium) {
             throw new Error(`No Compendium was found with the Compendium Pack Key '${packKey}'. `);
         }
         return compendium;
     }
 
-    public async getEntity<D>(packKey: string, entityId: string): Promise<Entity<Item.Data<D>>> {
-        const compendium: Compendium = this.getCompendium(packKey);
-        // @ts-ignore todo: Pretty sure this typing is correct. Check with smart folks in League to find out why it errors
-        const entity: Entity<Item.Data<D>> = await compendium.getEntity(entityId);
-        if (!entity) {
+    public async getDocument(packKey: string, entityId: string): Promise<Document> {
+        const compendium: CompendiumCollection<CompendiumCollection.Metadata> = this.getCompendium(packKey);
+        const document: Document = await compendium.getDocument(entityId);
+        if (!document) {
             throw new Error(`No Compendium Entry with ID '${entityId}' was found in the Compendium '${packKey}'. `);
         }
-        return entity;
+        return document;
     }
 
 }
 
-export {CompendiumProvider}
+export { CompendiumProvider, DefaultCompendiumProvider }

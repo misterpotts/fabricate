@@ -26,11 +26,14 @@ interface AlchemyAttemptFactoryConfig<D> {
 
 class DefaultAlchemyAttemptFactory<D> implements AlchemyAttemptFactory<D> {
 
+    // @ts-ignore
     private readonly _alchemySpecification: AlchemySpecification<D>;
     private readonly _wastage: WastageType;
+    // @ts-ignore
     private readonly _minimumEffectMatches: number;
     private readonly _maximumEffectMatches: number;
     private readonly _minimumComponents: number;
+    // @ts-ignore
     private readonly _maximumComponents: number;
 
 
@@ -42,6 +45,7 @@ class DefaultAlchemyAttemptFactory<D> implements AlchemyAttemptFactory<D> {
         this._minimumEffectMatches = alchemyAttemptFactoryConfig.effectMatches.min;
     }
 
+    // @ts-ignore
     make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt<D> {
         if (componentSelection.size() > this._maximumEffectMatches || componentSelection.size() < this._minimumComponents) {
             switch (this._wastage) {
@@ -52,6 +56,7 @@ class DefaultAlchemyAttemptFactory<D> implements AlchemyAttemptFactory<D> {
             }
         }
 
+        // @ts-ignore
         const essenceCombination: Combination<EssenceDefinition> = componentSelection.explode((component: CraftingComponent) => component.essences);
 
     }

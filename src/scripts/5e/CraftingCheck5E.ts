@@ -54,7 +54,7 @@ class CraftingCheck5E implements CraftingCheck<Actor5e>{
             "${this.getSupportedActorTypes().join(', ')}". ${actor.name} is a ${actor.data.type}`);
         }
         const dieData: DiceTerm.TermData = this.getRollTermData(actor);
-        const rolledResult: RollResult = this._diceRoller.roll(dieData);
+        const rolledResult: RollResult = this._diceRoller.evaluate(dieData);
         const successThreshold = this.getSuccessThreshold(components);
         const outcome: OutcomeType = this.compare(rolledResult.value, successThreshold, this._rollMustExceedThreshold);
         return new CraftingCheckResult(outcome, rolledResult.expression, rolledResult.value, successThreshold);

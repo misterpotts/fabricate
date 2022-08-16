@@ -3,7 +3,7 @@ import Properties from "../Properties";
 import {FabricateItem} from "../common/FabricateItem";
 import {Recipe} from "../crafting/Recipe";
 import {CompendiumEntry, FabricateItemType} from "../compendium/CompendiumData";
-
+import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 class PartDictionary {
     private readonly _components: Map<string, CraftingComponent> = new Map();
     private readonly _recipes: Map<string, Recipe> = new Map();
@@ -13,43 +13,43 @@ class PartDictionary {
         this._recipes = recipes;
     }
 
-    public static typeOf(item: Item): FabricateItemType | 'NONE' {
-        const itemType: FabricateItemType = <FabricateItemType>item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
+    public static typeOf(item: BaseItem): FabricateItemType | 'NONE' {
+        const itemType: FabricateItemType = <FabricateItemType> item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
         if (itemType) {
             return itemType;
         }
         return 'NONE';
     }
 
-    private static validateType(item: Item, expectedType: FabricateItemType): void {
+    private static validateType(item: BaseItem, expectedType: FabricateItemType): void {
         if (PartDictionary.typeOf(item) !== expectedType) {
-            const ownershipDescription: string = item.actor ? `owned by Actor '${item.actor.name}` : 'with no owning Actor'
+            const ownershipDescription: string = item.parent ? `owned by Actor '${item.parent.name}` : 'with no owning Actor'
             throw new Error(`Item '${item.id}', with name '${item.name}' ${ownershipDescription} is not a ${expectedType}! `);
         }
     }
 
-    private static getIdentifier(item: Item): string {
+    private static getIdentifier(item: BaseItem): string {
         const identity: CompendiumEntry = <CompendiumEntry>item.getFlag(Properties.module.name, Properties.flagKeys.item.identity);
         return FabricateItem.globalIdentifier(identity.partId, identity.systemId);
     }
 
-    public componentFrom(item: Item): CraftingComponent {
+    public componentFrom(item: BaseItem): CraftingComponent {
         PartDictionary.validateType(item, FabricateItemType.COMPONENT);
         const identifier: string = PartDictionary.getIdentifier(item);
         if (this._components.has(identifier)) {
             return this._components.get(identifier);
         }
-        const ownershipDescription: string = item.actor ? `owned by Actor '${item.actor.name}` : 'with no owning Actor'
+        const ownershipDescription: string = item.parent ? `owned by Actor '${item.parent.name}` : 'with no owning Actor'
         throw new Error(`Unable to look up Fabricate System Part for Item '${item.id}', with name '${item.name}' ${ownershipDescription}. `);
     }
 
-    public recipeFrom(item: Item): Recipe {
+    public recipeFrom(item: BaseItem): Recipe {
         PartDictionary.validateType(item, FabricateItemType.RECIPE);
         const identifier: string = PartDictionary.getIdentifier(item);
         if (this._recipes.has(identifier)) {
             return this._recipes.get(identifier);
         }
-        const ownershipDescription: string = item.actor ? `owned by Actor '${item.actor.name}` : 'with no owning Actor'
+        const ownershipDescription: string = item.parent ? `owned by Actor '${item.parent.name}` : 'with no owning Actor'
         throw new Error(`Unable to look up Fabricate System Part for Item '${item.id}', with name '${item.name}' ${ownershipDescription}. `);
     }
 
