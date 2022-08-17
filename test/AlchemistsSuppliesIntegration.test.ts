@@ -8,6 +8,7 @@ import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
 import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
 import {PartDictionary} from "../src/scripts/system/PartDictionary";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
+import {GameSystem} from "../src/scripts/system/GameSystem";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -26,7 +27,15 @@ describe('A Crafting System Factory', () => {
 
         const rawCompendiumData = await fs.readFile('./src/packs/alchemists-supplies-v16.db', {encoding: 'utf8'});
         const jsonDocuments: {}[] = rawCompendiumData.split("\n")
-            .map(line => JSON.parse(line));
+            .map((line, index) => {
+                try {
+                    return JSON.parse(line)
+                } catch (e) {
+                    const error: Error = e as Error;
+                    console.log(`Error parsing compendium entry on line ${index + 1}. Caused by: ${error.message} `);
+                    expect(error).toBeNull();
+                }
+            });
         const jsonCompendiumProvider: JsonCompendiumProvider = new JsonCompendiumProvider(new Map<string, {}[]>([["fabricate.alchemists-supplies-v16", jsonDocuments]]));
         const compendiumImporter: CompendiumImporter = new CompendiumImporter(jsonCompendiumProvider);
         const partDictionary: PartDictionary = await compendiumImporter.import(systemSpec.id, systemSpec.compendia, systemSpec.essences);
@@ -35,6 +44,16 @@ describe('A Crafting System Factory', () => {
         const craftingSystem: CraftingSystem = craftingSystemFactory.make();
 
         expect(craftingSystem).not.toBeNull();
+        expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");
+        expect(craftingSystem.enabled).toEqual(true);
+        expect(craftingSystem.gameSystem).toEqual(GameSystem.DND5E);
+        expect(craftingSystem.essences.length).toEqual(6);
+        expect(craftingSystem.essences.map(essence => essence.slug))
+            .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
+        expect(craftingSystem.hasCraftingCheck).toEqual(true);
+        expect(craftingSystem.components.length).toEqual(30);
+        expect(craftingSystem.recipes.length).toEqual(15);
+        expect(craftingSystem.supportsAlchemy).toBe(true);
     });
 
 });

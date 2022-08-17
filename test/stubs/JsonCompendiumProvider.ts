@@ -17,14 +17,25 @@ class StubDocument {
     get data(): any {
         return this._rawData;
     }
+
+    get name(): string {
+        return this._rawData.name;
+    }
+
+    get img(): string {
+        return this._rawData.img;
+    }
+
 }
 
 class StubCompendiumCollection {
 
+    private readonly _packKey: string;
     private readonly _type: string;
     private readonly _documentsById: Map<string, Document>;
 
-    constructor(type: string, documentsById: Map<string, Document>) {
+    constructor(packKey: string, type: string, documentsById: Map<string, Document>) {
+        this._packKey = packKey;
         this._type = type;
         this._documentsById = documentsById;
     }
@@ -35,6 +46,10 @@ class StubCompendiumCollection {
 
     get metadata(): { type: string } {
         return { type: this._type };
+    }
+
+    get collection() {
+        return this._packKey;
     }
 
     getDocuments(): Document[] {
@@ -59,7 +74,7 @@ class JsonCompendiumProvider implements CompendiumProvider {
         if (!this._rawCompendiumData.has(packKey)) {
             throw new Error(`No data provided for Compendium: ${packKey}. `);
         }
-        const compendium: CompendiumCollection<CompendiumCollection.Metadata> = this.parse(this._rawCompendiumData.get(packKey));
+        const compendium: CompendiumCollection<CompendiumCollection.Metadata> = this.parse(packKey, this._rawCompendiumData.get(packKey));
         this._parsedCompendiumData.set(packKey, compendium);
         return compendium;
     }
@@ -68,11 +83,11 @@ class JsonCompendiumProvider implements CompendiumProvider {
         return this.getCompendium(packKey).get(entityId);
     }
 
-    private parse(rawCompendiumData: any[]): CompendiumCollection<CompendiumCollection.Metadata> {
+    private parse(packKey: string, rawCompendiumData: any[]): CompendiumCollection<CompendiumCollection.Metadata> {
         const compendiumEntries: [string, Document][] = rawCompendiumData.map(jsonData => new StubDocument(jsonData._id, jsonData))
             .map(stubDocument => [stubDocument.id, stubDocument as unknown as Document]);
         const documentsById: Map<string, Document> = new Map(compendiumEntries);
-        return new StubCompendiumCollection("Item", documentsById) as unknown as CompendiumCollection<CompendiumCollection.Metadata>;
+        return new StubCompendiumCollection(packKey, "Item", documentsById) as unknown as CompendiumCollection<CompendiumCollection.Metadata>;
     }
 }
 
