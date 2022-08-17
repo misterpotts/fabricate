@@ -1,5 +1,4 @@
-import { describe, expect, test, jest } from '@jest/globals';
-import * as Sinon from "sinon";
+import { describe, expect, test } from '@jest/globals';
 import * as fs from 'fs/promises';
 
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
@@ -9,13 +8,6 @@ import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
 import {PartDictionary} from "../src/scripts/system/PartDictionary";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import {GameSystem} from "../src/scripts/system/GameSystem";
-
-const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
-
-beforeEach(() => {
-    jest.resetAllMocks();
-    Sandbox.reset();
-});
 
 describe('A Crafting System Factory', () => {
 
@@ -53,7 +45,7 @@ describe('A Crafting System Factory', () => {
         expect(craftingSystem.hasCraftingCheck).toEqual(true);
         expect(craftingSystem.components.length).toEqual(30);
         expect(craftingSystem.recipes.length).toEqual(15);
-        expect(craftingSystem.supportsAlchemy).toBe(true);
+        expect(craftingSystem.supportsAlchemy).toEqual(true);
     });
 
 });

@@ -68,17 +68,19 @@ class CompendiumImporter {
                       systemId: string,
                       essencesBySlug: Map<string, EssenceDefinition>) {
         try {
-            return Recipe.builder()
-                .withName(document.name)
-                .withImageUrl(document.img)
-                .withPartId(fabricateCompendiumData.identity.partId)
-                .withCompendiumId(compendium.collection)
-                .withSystemId(systemId)
-                .withIngredients(this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.ingredients, compendium.collection, systemId))
-                .withCatalysts(this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.catalysts, compendium.collection, systemId))
-                .withResults(this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.results, compendium.collection, systemId))
-                .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.recipe.essences, essencesBySlug))
-                .build();
+            return new Recipe({
+                item: {
+                    partId: fabricateCompendiumData.identity.partId,
+                    systemId: systemId,
+                    compendiumId: compendium.collection,
+                    name: document.name,
+                    imageUrl: document.img
+                },
+                ingredients: this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.ingredients, compendium.collection, systemId),
+                catalysts: this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.catalysts, compendium.collection, systemId),
+                essences: this.essencesFromCompendiumData(fabricateCompendiumData.recipe.essences, essencesBySlug),
+                results: this.partialComponentsFromCompendiumData(fabricateCompendiumData.recipe.results, compendium.collection, systemId)
+            });
         } catch (error) {
             throw new CompendiumEntryImportError(compendium.collection, document.id, fabricateCompendiumData, systemId, error as Error);
         }
@@ -91,15 +93,17 @@ class CompendiumImporter {
                          systemId: string,
                          essencesBySlug: Map<string, EssenceDefinition>) {
         try {
-            return CraftingComponent.builder()
-                .withName(document.name)
-                .withImageUrl(document.img)
-                .withPartId(fabricateCompendiumData.identity.partId)
-                .withCompendiumId(compendium.collection)
-                .withSystemId(systemId)
-                .withSalvage(this.partialComponentsFromCompendiumData(fabricateCompendiumData.component.salvage, compendium.collection, systemId))
-                .withEssences(this.essencesFromCompendiumData(fabricateCompendiumData.component.essences, essencesBySlug))
-                .build();
+            return new CraftingComponent({
+                item: {
+                    partId: fabricateCompendiumData.identity.partId,
+                    systemId: systemId,
+                    compendiumId: compendium.collection,
+                    name: document.name,
+                    imageUrl: document.img
+                },
+                salvage: this.partialComponentsFromCompendiumData(fabricateCompendiumData.component.salvage, compendium.collection, systemId),
+                essences: this.essencesFromCompendiumData(fabricateCompendiumData.component.essences, essencesBySlug)
+            });
         } catch (error) {
             throw new CompendiumEntryImportError(compendium.collection, document.id, fabricateCompendiumData, systemId, error as Error);
         }
@@ -187,11 +191,17 @@ class CompendiumImporter {
             return Combination.EMPTY();
         }
         const componentUnits: Unit<CraftingComponent>[] = componentIds.map((partId: string) => {
-            const component: CraftingComponent = CraftingComponent.builder()
-                .withPartId(partId)
-                .withCompendiumId(packKey)
-                .withSystemId(systemId)
-                .build();
+            const component: CraftingComponent = new CraftingComponent({
+                item: {
+                    partId: partId,
+                    compendiumId: packKey,
+                    systemId: systemId,
+                    name: "",
+                    imageUrl: ""
+                },
+                salvage: Combination.EMPTY(),
+                essences: Combination.EMPTY()
+            });
             const amount: number = componentRecord[partId];
             return new Unit<CraftingComponent>(component, amount);
         });
@@ -201,9 +211,7 @@ class CompendiumImporter {
 
     private populateComponentReferences(component: CraftingComponent, componentsById: Map<string, CraftingComponent>): CraftingComponent {
         try {
-            return component.toBuilder()
-                .withSalvage(this.populateCombination(component.salvage, componentsById))
-                .build();
+            return component.mutate({ salvage: this.populateCombination(component.salvage, componentsById) });
         } catch (error) {
             throw new CompendiumEntryReferencePopulationError(component, error as Error);
         }
@@ -212,11 +220,11 @@ class CompendiumImporter {
 
     private populateRecipeReferences(recipe: Recipe, componentsById: Map<string, CraftingComponent>): Recipe {
         try {
-            return recipe.toBuilder()
-                .withIngredients(this.populateCombination(recipe.ingredients, componentsById))
-                .withCatalysts(this.populateCombination(recipe.catalysts, componentsById))
-                .withResults(this.populateCombination(recipe.results, componentsById))
-                .build();
+            return recipe.mutate({
+                ingredients: this.populateCombination(recipe.ingredients, componentsById),
+                catalysts: this.populateCombination(recipe.catalysts, componentsById),
+                results: this.populateCombination(recipe.results, componentsById)
+            });
         } catch (error: any) {
             throw new CompendiumEntryReferencePopulationError(recipe, error as Error);
         }

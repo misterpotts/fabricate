@@ -1,7 +1,22 @@
-import {FabricateItem} from "../common/FabricateItem";
+import {FabricateItem, FabricateItemConfig} from "../common/FabricateItem";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {EssenceDefinition} from "../common/EssenceDefinition";
+
+interface RecipeMutation {
+    ingredients?: Combination<CraftingComponent>;
+    catalysts?: Combination<CraftingComponent>;
+    essences?: Combination<EssenceDefinition>;
+    results?: Combination<CraftingComponent>;
+}
+
+interface RecipeConfig {
+    item: FabricateItemConfig,
+    ingredients: Combination<CraftingComponent>;
+    catalysts: Combination<CraftingComponent>;
+    essences: Combination<EssenceDefinition>;
+    results: Combination<CraftingComponent>;
+}
 
 class Recipe extends FabricateItem {
 
@@ -10,29 +25,28 @@ class Recipe extends FabricateItem {
     private readonly _essences: Combination<EssenceDefinition>;
     private readonly _results: Combination<CraftingComponent>;
 
-    constructor(builder: Recipe.Builder) {
-        super(builder);
-        this._ingredients = builder.ingredients;
-        this._catalysts = builder.catalysts;
-        this._essences = builder.essences;
-        this._results = builder.results;
+    constructor(config: RecipeConfig) {
+        super(config.item);
+        this._ingredients = config.ingredients;
+        this._catalysts = config.catalysts;
+        this._essences = config.essences;
+        this._results = config.results;
     }
 
-    public static builder() {
-        return new Recipe.Builder();
-    }
-
-    public toBuilder(): Recipe.Builder {
-        return new Recipe.Builder()
-            .withPartId(this._partId)
-            .withCompendiumId(this._compendiumId)
-            .withSystemId(this._systemId)
-            .withImageUrl(this._imageUrl)
-            .withName(this._name)
-            .withEssences(this._essences)
-            .withIngredients(this._ingredients)
-            .withCatalysts(this._catalysts)
-            .withResults(this._results);
+    public mutate(mutation: RecipeMutation): Recipe {
+        return new Recipe({
+            item: {
+                systemId: this.systemId,
+                partId: this.partId,
+                compendiumId: this.compendiumId,
+                name: this.name,
+                imageUrl: this.imageUrl
+            },
+            ingredients: mutation.ingredients ? mutation.ingredients : this._ingredients,
+            catalysts: mutation.catalysts ? mutation.catalysts : this._catalysts,
+            essences: mutation.essences ? mutation.essences : this._essences,
+            results: mutation.results ? mutation.results : this._results,
+        })
     }
 
     get hasSpecificIngredients() {
@@ -69,67 +83,6 @@ class Recipe extends FabricateItem {
 
     get results(): Combination<CraftingComponent> {
         return this._results;
-    }
-}
-
-namespace Recipe {
-
-    export class Builder extends FabricateItem.Builder {
-
-        public ingredients: Combination<CraftingComponent> = Combination.EMPTY();
-        public catalysts: Combination<CraftingComponent> = Combination.EMPTY();
-        public essences: Combination<EssenceDefinition> = Combination.EMPTY();
-        public results: Combination<CraftingComponent> = Combination.EMPTY();
-
-        public build(): Recipe {
-            return new Recipe(this);
-        }
-
-        public withIngredients(value: Combination<CraftingComponent>): Builder {
-            this.ingredients = value;
-            return this;
-        }
-
-        public withCatalysts(value: Combination<CraftingComponent>): Builder {
-            this.catalysts = value;
-            return this;
-        }
-
-        public withEssences(value: Combination<EssenceDefinition>): Builder {
-            this.essences = value;
-            return this;
-        }
-
-        public withResults(value: Combination<CraftingComponent>): Builder {
-            this.results = value;
-            return this;
-        }
-
-        public withPartId(value: string): Builder {
-            this.partId = value;
-            return this;
-        }
-
-        public withCompendiumId(value: string): Builder {
-            this.compendiumId = value;
-            return this;
-        }
-
-        public withSystemId(value: string): Builder {
-            this.systemId = value;
-            return this;
-        }
-
-        public withImageUrl(value: string): Builder {
-            this.imageUrl = value;
-            return this;
-        }
-
-        public withName(value: string): Builder {
-            this.name = value;
-            return this;
-        }
-
     }
 
 }

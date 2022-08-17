@@ -16,6 +16,14 @@ interface Identifiable {
     id: string;
 }
 
+interface FabricateItemConfig {
+    systemId: string;
+    partId: string;
+    compendiumId: string;
+    imageUrl: string;
+    name: string;
+}
+
 abstract class FabricateItem {
     protected readonly _systemId: string;
     protected readonly _partId: string;
@@ -24,13 +32,13 @@ abstract class FabricateItem {
     protected readonly _imageUrl: string;
     protected readonly _name: string;
 
-    protected constructor(builder: FabricateItem.Builder) {
-        this._systemId = builder.systemId;
-        this._compendiumId = builder.compendiumId;
-        this._partId = builder.partId;
-        this._id = FabricateItem.globalIdentifier(builder.partId, builder.systemId);
-        this._imageUrl = builder.imageUrl;
-        this._name = builder.name;
+    protected constructor(config: FabricateItemConfig) {
+        this._systemId = config.systemId;
+        this._compendiumId = config.compendiumId;
+        this._partId = config.partId;
+        this._id = FabricateItem.globalIdentifier(config.partId, config.systemId);
+        this._imageUrl = config.imageUrl;
+        this._name = config.name;
     }
 
     get id(): string {
@@ -74,45 +82,4 @@ abstract class FabricateItem {
 
 }
 
-namespace FabricateItem {
-
-    export abstract class Builder {
-
-        public partId: string;
-        public compendiumId: string;
-        public systemId: string;
-        public imageUrl: string;
-        public name: string;
-
-        abstract build(): FabricateItem;
-
-        public withPartId(value: string): Builder {
-            this.partId = value;
-            return this;
-        }
-
-        public withCompendiumId(value: string): Builder {
-            this.compendiumId = value;
-            return this;
-        }
-
-        public withSystemId(value: string): Builder {
-            this.systemId = value;
-            return this;
-        }
-
-        public withImageUrl(value: string): Builder {
-            this.imageUrl = value;
-            return this;
-        }
-
-        public withName(value: string): Builder {
-            this.name = value;
-            return this;
-        }
-
-    }
-
-}
-
-export {Identifiable, FabricateItem, FabricateItemType}
+export {Identifiable, FabricateItem, FabricateItemType, FabricateItemConfig}
