@@ -45,6 +45,10 @@ class Unit<T extends Identifiable> {
         return this.add(other.quantity);
     }
 
+    flatten(): T[] {
+        return Array.from(Array(this._quantity).keys()).map(() => this._part);
+    }
+
 }
 
 class Combination<T extends Identifiable> {

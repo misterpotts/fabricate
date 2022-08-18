@@ -9,7 +9,7 @@ import {
     WastefulCraftingAttempt
 } from "./CraftingAttempt";
 import {ComponentSelection} from "../../component/ComponentSelection";
-import {WastageType} from "../../system/specification/CraftingSystemSpecification";
+import {WastageType} from "../../system/specification/CraftingSystemSpec";
 
 interface CraftingAttemptFactoryConfig {
     selectionStrategy: ComponentSelectionStrategy;

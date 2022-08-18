@@ -1,14 +1,11 @@
-import {
-    DocumentInstanceForCompendiumMetadata
-} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/client/data/collections/compendium";
-
-type Document = StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>;
+import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
+import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";
 
 interface CompendiumProvider {
 
     getCompendium(packKey: string): CompendiumCollection<CompendiumCollection.Metadata>;
 
-    getDocument(packKey: string, entityId: string): Promise<Document>
+    getDocument(packKey: string, entityId: string): Promise<Document<AnyDocumentData>>
 
 }
 
@@ -23,9 +20,9 @@ class DefaultCompendiumProvider implements CompendiumProvider {
         return compendium;
     }
 
-    public async getDocument(packKey: string, entityId: string): Promise<Document> {
+    public async getDocument(packKey: string, entityId: string): Promise<Document<AnyDocumentData>> {
         const compendium: CompendiumCollection<CompendiumCollection.Metadata> = this.getCompendium(packKey);
-        const document: Document = await compendium.getDocument(entityId);
+        const document: Document<AnyDocumentData> = await compendium.getDocument(entityId);
         if (!document) {
             throw new Error(`No Compendium Entry with ID '${entityId}' was found in the Compendium '${packKey}'. `);
         }

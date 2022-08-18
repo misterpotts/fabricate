@@ -1,5 +1,5 @@
 import {PartDictionary} from "./PartDictionary";
-import {EssenceDefinition} from "../common/EssenceDefinition";
+import {EssenceDefinition, EssenceDefinitionConfig} from "../common/EssenceDefinition";
 import {CompendiumProvider, DefaultCompendiumProvider} from "../compendium/CompendiumProvider";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Recipe} from "../crafting/Recipe";
@@ -22,9 +22,9 @@ class CompendiumImporter {
 
     public async import(systemId: string,
                         compendiumPackKeys: string[],
-                        essenceDefinitions: EssenceDefinition[]): Promise<PartDictionary> {
+                        essenceDefinitions: EssenceDefinitionConfig[]): Promise<PartDictionary> {
         const compendiums: CompendiumCollection<CompendiumCollection.Metadata>[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
-        const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: EssenceDefinition) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
+        const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: EssenceDefinitionConfig) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
             const partDictionary: PartDictionary = await this.importCompendiumContents(systemId, compendium, essencesBySlug);

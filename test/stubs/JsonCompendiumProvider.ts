@@ -1,4 +1,6 @@
 import {CompendiumProvider} from "../../src/scripts/compendium/CompendiumProvider";
+import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";
+import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
 
 class StubDocument {
 
@@ -32,15 +34,15 @@ class StubCompendiumCollection {
 
     private readonly _packKey: string;
     private readonly _type: string;
-    private readonly _documentsById: Map<string, Document>;
+    private readonly _documentsById: Map<string, Document<AnyDocumentData>>;
 
-    constructor(packKey: string, type: string, documentsById: Map<string, Document>) {
+    constructor(packKey: string, type: string, documentsById: Map<string, Document<AnyDocumentData>>) {
         this._packKey = packKey;
         this._type = type;
         this._documentsById = documentsById;
     }
 
-    get(documentId: string): Document {
+    get(documentId: string): Document<AnyDocumentData> {
         return this._documentsById.get(documentId);
     }
 
@@ -52,7 +54,7 @@ class StubCompendiumCollection {
         return this._packKey;
     }
 
-    getDocuments(): Document[] {
+    getDocuments(): Document<AnyDocumentData>[] {
         return Array.from(this._documentsById.values());
     }
 }
@@ -79,14 +81,14 @@ class JsonCompendiumProvider implements CompendiumProvider {
         return compendium;
     }
 
-    async getDocument(packKey: string, entityId: string): Promise<Document> {
+    async getDocument(packKey: string, entityId: string): Promise<Document<AnyDocumentData>> {
         return this.getCompendium(packKey).get(entityId);
     }
 
     private parse(packKey: string, rawCompendiumData: any[]): CompendiumCollection<CompendiumCollection.Metadata> {
-        const compendiumEntries: [string, Document][] = rawCompendiumData.map(jsonData => new StubDocument(jsonData._id, jsonData))
-            .map(stubDocument => [stubDocument.id, stubDocument as unknown as Document]);
-        const documentsById: Map<string, Document> = new Map(compendiumEntries);
+        const compendiumEntries: [string, Document<AnyDocumentData>][] = rawCompendiumData.map(jsonData => new StubDocument(jsonData._id, jsonData))
+            .map(stubDocument => [stubDocument.id, stubDocument as unknown as Document<AnyDocumentData>]);
+        const documentsById: Map<string, Document<AnyDocumentData>> = new Map(compendiumEntries);
         return new StubCompendiumCollection(packKey, "Item", documentsById) as unknown as CompendiumCollection<CompendiumCollection.Metadata>;
     }
 }

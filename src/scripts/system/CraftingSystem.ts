@@ -20,7 +20,7 @@ interface CraftingSystemConfig {
     craftingCheck: CraftingCheck<Actor>;
     partDictionary: PartDictionary;
     essences: EssenceDefinition[],
-    alchemyAttemptFactory: AlchemyAttemptFactory<any>;
+    alchemyAttemptFactory: AlchemyAttemptFactory;
 
     craftingAttemptFactory: CraftingAttemptFactory;
     enabled: boolean;
@@ -32,7 +32,7 @@ class CraftingSystem implements Identifiable {
     private readonly _craftingCheck: CraftingCheck<Actor>;
     private readonly _partDictionary: PartDictionary;
     private readonly _essencesBySlug: Map<string, EssenceDefinition>;
-    private readonly _alchemyAttemptFactory: AlchemyAttemptFactory<any>;
+    private readonly _alchemyAttemptFactory: AlchemyAttemptFactory;
     private readonly _craftingAttemptFactory: CraftingAttemptFactory;
 
     private _enabled: boolean;
@@ -104,16 +104,15 @@ class CraftingSystem implements Identifiable {
 
     }
 
-    // @ts-ignore
     // todo implement
     public async doAlchemy(actor: Actor,
                            inventory: Inventory<{}, Actor>,
                            baseComponent: CraftingComponent,
-                           componentSelection: Combination<CraftingComponent>): Promise<AlchemyResult<any>> {
+                           componentSelection: Combination<CraftingComponent>): Promise<AlchemyResult> {
 
-        const alchemyAttempt: AlchemyAttempt<any> = this._alchemyAttemptFactory.make(baseComponent, componentSelection);
+        const alchemyAttempt: AlchemyAttempt = this._alchemyAttemptFactory.make(baseComponent, componentSelection);
 
-        const alchemyResult: AlchemyResult<any> = alchemyAttempt.perform(actor, this._craftingCheck);
+        const alchemyResult: AlchemyResult = alchemyAttempt.perform(actor, this._craftingCheck);
 
         await inventory.acceptAlchemyResult(alchemyResult);
 

@@ -2,16 +2,19 @@ import {AlchemicalEffect} from "./AlchemicalEffect";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {EssenceDefinition, EssenceIdentityProvider} from "../../common/EssenceDefinition";
 import {Combination, Unit} from "../../common/Combination";
-import {AlchemyError} from "../../error/AlchemyError";
 import {CompendiumProvider} from "../../compendium/CompendiumProvider";
 import {ObjectUtility} from "../../foundry/ObjectUtility";
+import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
+import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";
 
-interface EssenceCombinerConfiguration {
-    maxComponents: number;
-    maxEssences: number;
-    minimumEffectMatches: number;
-    wastageEnabled: boolean;
+interface AlchemicalCombinerConfig {
+    effectsByEssenceIdentity: Map<number, AlchemicalEffect<ItemData>>;
+    essenceIdentityProvider: EssenceIdentityProvider;
+    compendiumProvider: CompendiumProvider;
+    objectUtility: ObjectUtility;
 }
+
 /**
  * An Alchemical Combiner is responsible for determining which Alchemical Effects, if any, should be applied when
  * performing alchemy and applying them to the Base Component. A Crafting System can support multiple Alchemical
@@ -22,52 +25,21 @@ interface EssenceCombinerConfiguration {
  * ensure that, for example, only an AlchemicalEffect<ItemDataValue5e> is applied to Item5e when customising Item data
  * through alchemy
 * */
-class AlchemicalCombiner<D> {
-    private readonly _effects: AlchemicalEffect<D>[];
-    private readonly _config: EssenceCombinerConfiguration;
-    private readonly _baseComponent: CraftingComponent;
+class AlchemicalCombiner {
     private readonly _essenceIdentityProvider: EssenceIdentityProvider;
-    private readonly _effectsByEssenceCombinationIdentity: Map<number, AlchemicalEffect<D>> = new Map();
+    private readonly _effectsByEssenceCombinationIdentity: Map<number, AlchemicalEffect<ItemData>> = new Map();
     private readonly _compendiumProvider: CompendiumProvider;
     private readonly _objectUtility: ObjectUtility;
 
-    public constructor(builder: AlchemicalCombiner.Builder<D>) {
-        this._config = builder.config;
-        this._effects = builder.effects;
-        this._baseComponent = builder.baseComponent;
-        const essenceIdentityProvider = EssenceIdentityProvider.for(builder.systemEssences);;
-        this._essenceIdentityProvider = essenceIdentityProvider;
-        builder.effects.forEach((effect: AlchemicalEffect<D>) => this._effectsByEssenceCombinationIdentity.set(essenceIdentityProvider.getForEssenceCombination(effect.essenceCombination), effect));
-        this._compendiumProvider = builder.compendiumProvider;
-        this._objectUtility = builder.objectUtility;
+    public constructor(config: AlchemicalCombinerConfig) {
+        this._objectUtility = config.objectUtility;
+        this._compendiumProvider = config.compendiumProvider;
+        this._essenceIdentityProvider = config.essenceIdentityProvider;
+        this._effectsByEssenceCombinationIdentity = config.effectsByEssenceIdentity;
     }
 
     public static builder<D>(): AlchemicalCombiner.Builder<D> {
         return new AlchemicalCombiner.Builder<D>();
-    }
-
-    get maxComponents(): number {
-        return this._config.maxComponents;
-    }
-
-    get maxEssences(): number {
-        return this._config.maxEssences;
-    }
-    
-    get minimumEffectMatches(): number {
-        return this._config.minimumEffectMatches;
-    }
-    
-    get wastageEnabled(): boolean {
-        return this._config.wastageEnabled;
-    }
-
-    get effects(): AlchemicalEffect<D>[] {
-        return this._effects;
-    }
-
-    get baseComponent(): CraftingComponent {
-        return this._baseComponent;
     }
 
     /**
@@ -81,33 +53,18 @@ class AlchemicalCombiner<D> {
      * @throws AlchemyError when invariants are broken, such as the maximum number of components or essences that can be
      * mixed, or if insufficient effects are matched
      * */
-    async perform(componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, Item.Data<D>]> {
-        const essenceCombination = componentCombination.explode((component: CraftingComponent) => component.essences);
-        this.validate(componentCombination, essenceCombination);
-        const effects: [AlchemicalEffect<D>, number][] = this.determineAlchemicalEffectsForComponents(componentCombination);
-        if (this.minimumEffectMatches > 0 && (!effects || effects.length < this.minimumEffectMatches)) {
-            throw new AlchemyError(`Too few Alchemical Effects were produced by mixing the provided Components. A minimum of ${this.minimumEffectMatches} was required, but only ${effects ? effects.length : 0} were found. `, componentCombination, true);
-        }
-        const orderedEffects: [AlchemicalEffect<D>, number][] = this.orderAlchemicalEffects(effects);
-        const alchemyItemData: Item.Data<D> = await this.applyEffectsToBaseItem(orderedEffects, this._baseComponent);
-        return [new Unit(this.baseComponent, 1), alchemyItemData];
+    async perform(baseComponent: CraftingComponent, componentCombination: Combination<CraftingComponent>): Promise<[Unit<CraftingComponent>, ItemData]> {
+        const effects: [AlchemicalEffect<ItemData>, number][] = this.matchAlchemicalEffectsForComponents(componentCombination);
+
+        const orderedEffects: [AlchemicalEffect<ItemData>, number][] = this.orderAlchemicalEffects(effects);
+        const alchemyItemData: ItemData = await this.applyEffectsToBaseItem(orderedEffects, baseComponent);
+        return [new Unit(baseComponent, 1), alchemyItemData];
     }
 
-    private validate(components: Combination<CraftingComponent>, essences: Combination<EssenceDefinition>) {
-        if ((this.maxComponents > 0) && (this.maxComponents < components.size())) {
-            throw new AlchemyError(`The Essence Combiner for this system supports a maximum of ${this.maxComponents} components. ${components.size()} Components were provided. `, components, this.wastageEnabled);
-        }
-        if (this.maxEssences > 0) {
-            if (essences.size() > this.maxEssences) {
-                throw new AlchemyError(`The Essence Combiner for this system supports a maximum of ${this.maxEssences} essences. The provided Component mix contains ${essences.size()} essences. `, components, this.wastageEnabled);
-            }
-        }
-    }
-
-    private async applyEffectsToBaseItem(effects: [AlchemicalEffect<D>, number][], baseComponent: CraftingComponent): Promise<Item.Data<D>> {
-        const compendiumEntry: Entity<Item.Data<D>> = await this._compendiumProvider.getDocument(baseComponent.systemId, baseComponent.partId);
-        const duplicated: Item.Data<D> = this._objectUtility.duplicate(compendiumEntry.data);
-        effects.forEach((effectCount: [AlchemicalEffect<D>, number]) => {
+    private async applyEffectsToBaseItem(effects: [AlchemicalEffect<ItemData>, number][], baseComponent: CraftingComponent): Promise<ItemData> {
+        const compendiumEntry: Document<AnyDocumentData> = await this._compendiumProvider.getDocument(baseComponent.systemId, baseComponent.partId);
+        const duplicated: AnyDocumentData = this._objectUtility.duplicate(compendiumEntry.data);
+        effects.forEach((effectCount: [AlchemicalEffect<ItemData>, number]) => {
             for (let i = 0; i < effectCount[1]; i++) {
                 effectCount[0].applyTo(duplicated.data);
             }
@@ -115,7 +72,7 @@ class AlchemicalCombiner<D> {
         return duplicated;
     }
 
-    private determineAlchemicalEffectsForComponents(componentCombination: Combination<CraftingComponent>): [AlchemicalEffect<D>, number][] {
+    private matchAlchemicalEffectsForComponents(componentCombination: Combination<CraftingComponent>): [AlchemicalEffect<D>, number][] {
         if (componentCombination.isEmpty()) {
             return [];
         }

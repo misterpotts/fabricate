@@ -1,5 +1,5 @@
 import {GameSystem} from "../GameSystem";
-import {EssenceDefinition} from "../../common/EssenceDefinition";
+import {EssenceDefinition, EssenceDefinitionConfig} from "../../common/EssenceDefinition";
 import {ThresholdType} from "../../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
 import {AlchemicalEffectType} from "../../crafting/alchemy/AlchemicalEffect";
@@ -24,7 +24,7 @@ interface DnD5EThresholdSpecification {
     };
 }
 
-interface Pf2ECraftingCheckSpecification {
+interface Pf2ECraftingCheck {
 
 }
 
@@ -33,12 +33,12 @@ interface ComponentConstraint {
     max: number
 }
 
-interface AlchemyConstraints {
+interface AlchemyConstraintSpec {
     components: ComponentConstraint;
     effects: ComponentConstraint;
 }
 
-interface DnD5EAlchemyEffectConfig {
+interface DnD5EAlchemyEffectSpec {
     name: string,
     modifier: AlchemicalEffectType,
     type: Dnd5EAlchemicalEffectType,
@@ -46,7 +46,7 @@ interface DnD5EAlchemyEffectConfig {
     essenceMatch: Record<string, number>
 }
 
-interface DnD5EDamageEffectConfig extends DnD5EAlchemyEffectConfig {
+interface DnD5EDamageEffectSpec extends DnD5EAlchemyEffectSpec {
     type: Dnd5EAlchemicalEffectType.DAMAGE
     damage: {
         expression: string,
@@ -54,7 +54,7 @@ interface DnD5EDamageEffectConfig extends DnD5EAlchemyEffectConfig {
     }
 }
 
-interface DnD5EAoEExtensionEffectConfig extends DnD5EAlchemyEffectConfig {
+interface DnD5EAoEExtensionEffectSpec extends DnD5EAlchemyEffectSpec {
     type: Dnd5EAlchemicalEffectType.AOE_EXTENSION
     aoe: {
         units: DND5e.Unit,
@@ -62,49 +62,49 @@ interface DnD5EAoEExtensionEffectConfig extends DnD5EAlchemyEffectConfig {
     }
 }
 
-interface DnD5EDamageMultiplierEffectConfig extends DnD5EAlchemyEffectConfig {
+interface DnD5EDamageMultiplierEffectSpec extends DnD5EAlchemyEffectSpec {
     type: Dnd5EAlchemicalEffectType.DAMAGE_MULTIPLIER
     diceMultiplier: number
 }
 
-interface DnD5ESaveModifierEffectConfig extends DnD5EAlchemyEffectConfig {
+interface DnD5ESaveModifierEffectSpec extends DnD5EAlchemyEffectSpec {
     type: Dnd5EAlchemicalEffectType.SAVE_MODIFIER
     saveModifier: number
 }
 
-interface AlchemyFormula {
+interface AlchemyFormulaSpec {
     basePartID: string;
-    constraints: AlchemyConstraints;
-    effects: (DnD5EAlchemyEffectConfig
-        | DnD5EDamageEffectConfig
-        | DnD5EAoEExtensionEffectConfig
-        | DnD5EDamageMultiplierEffectConfig
+    constraints: AlchemyConstraintSpec;
+    effects: (DnD5EAlchemyEffectSpec
+        | DnD5EDamageEffectSpec
+        | DnD5EAoEExtensionEffectSpec
+        | DnD5EDamageMultiplierEffectSpec
         | DnD5ESaveModifierEffectConfig)[]
 }
 
-interface CraftingSpecification {
+interface CraftingSpec {
     performCheck: boolean;
     wastage: WastageType;
     useCustomCheck: boolean;
-    customCheck?: DnD5ECraftingCheckSpecification;
+    customCheck?: DnD5ECraftingCheckSpec;
 }
 
-interface DnD5ECraftingCheckSpecification {
+interface DnD5ECraftingCheckSpec {
     ability: AbilityType;
     tool: DnD5EToolSpecification;
     threshold: DnD5EThresholdSpecification
 }
 
-interface AlchemySpecification {
+interface AlchemySpec {
     performCheck: boolean;
     wastage: WastageType;
     useCustomCheck: boolean;
-    customCheck?: DnD5ECraftingCheckSpecification;
-    formulae: AlchemyFormula[];
-    constraints: AlchemyConstraints;
+    customCheck?: DnD5ECraftingCheckSpec;
+    formulae: AlchemyFormulaSpec[];
+    constraints: AlchemyConstraintSpec;
 }
 
-interface CraftingSystemSpecification {
+interface CraftingSystemSpec {
     id: string;
     gameSystem: GameSystem;
     name: string;
@@ -113,11 +113,11 @@ interface CraftingSystemSpecification {
     summary: string;
     author: string;
     enabled: boolean;
-    essences: EssenceDefinition[];
-    defaultCheck: DnD5ECraftingCheckSpecification;
-    crafting: CraftingSpecification;
+    essences: EssenceDefinitionConfig[];
+    defaultCheck: DnD5ECraftingCheckSpec;
+    crafting: CraftingSpec;
     alchemyEnabled: boolean;
-    alchemy: AlchemySpecification;
+    alchemy: AlchemySpec;
 }
 
-export {CraftingSystemSpecification, DnD5ECraftingCheckSpecification, Pf2ECraftingCheckSpecification, WastageType}
+export {CraftingSystemSpec, DnD5ECraftingCheckSpec, Pf2ECraftingCheck, WastageType}

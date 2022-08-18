@@ -2,30 +2,45 @@ import {AlchemicalEffect, NoAlchemicalEffect} from "./AlchemicalEffect";
 import {EssenceDefinition, EssenceIdentityProvider} from "../../common/EssenceDefinition";
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
+import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 
-interface AlchemySpecification<D> {
+interface AlchemyFormula<D> {
+
+    basePartId: string;
 
     registerEffect(essences: Combination<EssenceDefinition>, effect: AlchemicalEffect<D>): AlchemicalEffect<D>;
 
     getEffect(essences: Combination<EssenceDefinition>): AlchemicalEffect<D>;
 
-    getAllEffects(components: CraftingComponent[]): AlchemicalEffect<D>[];
+    getAllEffects(components: Combination<CraftingComponent>): AlchemicalEffect<D>[];
 
     hasEffectFor(essences: Combination<EssenceDefinition>): boolean;
 
 }
 
-class DefaultAlchemySpecification<D> implements AlchemySpecification<D> {
+interface AlchemyFormulaConfig {
+    basePartId: string;
+    essenceIdentityProvider: EssenceIdentityProvider;
+    effectsByEssenceIdentity?: Map<number, AlchemicalEffect<ItemData>>;
+}
 
-    private readonly _effectsByEssenceIdentity: Map<number, AlchemicalEffect<D>>;
+class DefaultAlchemyFormula implements AlchemyFormula<ItemData> {
+
+    private readonly _basePartId: string;
+    private readonly _effectsByEssenceIdentity: Map<number, AlchemicalEffect<ItemData>>;
     private readonly _essenceIdentityProvider: EssenceIdentityProvider;
 
-    constructor(essenceIdentityProvider: EssenceIdentityProvider, effectsByEssenceIdentity?: Map<number, AlchemicalEffect<D>>) {
-        this._essenceIdentityProvider = essenceIdentityProvider;
-        this._effectsByEssenceIdentity = effectsByEssenceIdentity == null ? new Map<number, AlchemicalEffect<D>>() : effectsByEssenceIdentity;
+    constructor(config: AlchemyFormulaConfig) {
+        this._basePartId = config.basePartId;
+        this._essenceIdentityProvider = config.essenceIdentityProvider;
+        this._effectsByEssenceIdentity = config.effectsByEssenceIdentity ? config.effectsByEssenceIdentity : new Map<number, AlchemicalEffect<ItemData>>();
     }
 
-    getEffect(essences: Combination<EssenceDefinition>): AlchemicalEffect<D> {
+    get basePartId() {
+        return this._basePartId;
+    }
+
+    getEffect(essences: Combination<EssenceDefinition>): AlchemicalEffect<ItemData> {
         if (essences.isEmpty()) {
             return new NoAlchemicalEffect();
         }
@@ -44,7 +59,7 @@ class DefaultAlchemySpecification<D> implements AlchemySpecification<D> {
         return this._effectsByEssenceIdentity.has(combinationIdentity);
     }
 
-    registerEffect(essences: Combination<EssenceDefinition>, effect: AlchemicalEffect<D>): AlchemicalEffect<D> {
+    registerEffect(essences: Combination<EssenceDefinition>, effect: AlchemicalEffect<ItemData>): AlchemicalEffect<ItemData> {
         if (essences.isEmpty()) {
             return new NoAlchemicalEffect();
         }
@@ -58,13 +73,14 @@ class DefaultAlchemySpecification<D> implements AlchemySpecification<D> {
         return previousEffect;
     }
 
-    getAllEffects(components: CraftingComponent[]): AlchemicalEffect<D>[] {
-        if (components.length === 0) {
+    getAllEffects(components: Combination<CraftingComponent>): AlchemicalEffect<ItemData>[] {
+        if (components.isEmpty()) {
             return []
         }
-        return components.map(component => this.getEffect(component.essences));
+        return components.units.flatMap(unit => unit.flatten())
+            .map(part => this.getEffect(part.essences));
     }
 
 }
 
-export { AlchemySpecification, DefaultAlchemySpecification }
+export { AlchemyFormula, DefaultAlchemyFormula }

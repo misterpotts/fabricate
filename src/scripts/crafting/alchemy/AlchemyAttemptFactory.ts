@@ -1,63 +1,59 @@
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {Combination} from "../../common/Combination";
-import {AlchemySpecification} from "./AlchemySpecification";
-import {WastageType} from "../../system/specification/CraftingSystemSpecification";
-import {EssenceDefinition} from "../../common/EssenceDefinition";
-import {AlchemyAttempt, GenerousAlchemyAttempt, WastefulAlchemyAttempt} from "./AlchemyAttempt";
+import {AlchemyFormula} from "./AlchemyFormula";
+import {
+    AbandonedAlchemyAttempt,
+    AlchemyAttempt,
+    AlchemyConstraints, DefaultAlchemyAttempt, DefaultAlchemyConstraintEnforcer
+} from "./AlchemyAttempt";
+import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import {AlchemicalCombiner} from "./AlchemicalCombiner";
+import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 
-interface AlchemyAttemptFactory<D> {
+interface AlchemyAttemptFactory {
 
-    make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt<D>;
+    make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
 
 }
 
-interface AlchemyAttemptFactoryConfig<D> {
-    components: {
-        min: number,
-        max:number
-    },
-    effectMatches: {
-        min: number,
-        max:number
-    },
-    alchemySpecification: AlchemySpecification<D>,
-    wastage: WastageType;
+interface AlchemyAttemptFactoryConfig {
+    componentConsumptionCalculator: ComponentConsumptionCalculator;
+    constraints: AlchemyConstraints,
+    alchemyFormulae: AlchemyFormula<ItemData>[],
+    alchemicalCombiner: AlchemicalCombiner
 }
 
-class DefaultAlchemyAttemptFactory<D> implements AlchemyAttemptFactory<D> {
+class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
-    // @ts-ignore
-    private readonly _alchemySpecification: AlchemySpecification<D>;
-    private readonly _wastage: WastageType;
-    // @ts-ignore
-    private readonly _minimumEffectMatches: number;
-    private readonly _maximumEffectMatches: number;
-    private readonly _minimumComponents: number;
-    // @ts-ignore
-    private readonly _maximumComponents: number;
+    private readonly _constraints: AlchemyConstraints;
+    private readonly _alchemicalCombiner: AlchemicalCombiner;
+    private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
+    private readonly _alchemyFormulaeByBasePartId: Map<string, AlchemyFormula<ItemData>>;
 
-
-    constructor(alchemyAttemptFactoryConfig: AlchemyAttemptFactoryConfig<D>) {
-        this._alchemySpecification = alchemyAttemptFactoryConfig.alchemySpecification;
-        this._maximumComponents = alchemyAttemptFactoryConfig.components.max;
-        this._minimumComponents = alchemyAttemptFactoryConfig.components.min;
-        this._maximumEffectMatches = alchemyAttemptFactoryConfig.effectMatches.max;
-        this._minimumEffectMatches = alchemyAttemptFactoryConfig.effectMatches.min;
+    constructor(config: AlchemyAttemptFactoryConfig) {
+        this._componentConsumptionCalculator = config.componentConsumptionCalculator;
+        this._constraints = config.constraints;
+        this._alchemicalCombiner = config.alchemicalCombiner;
+        this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula<ItemData>>(config.alchemyFormulae.map(formula => [formula.basePartId, formula]));
     }
 
-    // @ts-ignore
-    make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt<D> {
-        if (componentSelection.size() > this._maximumEffectMatches || componentSelection.size() < this._minimumComponents) {
-            switch (this._wastage) {
-                case WastageType.PUNITIVE:
-                    return new WastefulAlchemyAttempt();
-                case WastageType.NONPUNITIVE:
-                    return new GenerousAlchemyAttempt();
-            }
+    make(baseComponent: CraftingComponent, components: Combination<CraftingComponent>): AlchemyAttempt {
+
+        if (!this._alchemyFormulaeByBasePartId.has(baseComponent.partId)) {
+            throw new Error(`There is no Alchemy Formula specified for the base component with ID: ${baseComponent.partId}. `);
         }
 
-        // @ts-ignore
-        const essenceCombination: Combination<EssenceDefinition> = componentSelection.explode((component: CraftingComponent) => component.essences);
+        if (components.isEmpty()) {
+            return new AbandonedAlchemyAttempt("You cannot perform Alchemy without any ingredients. ");
+        }
+
+        return new DefaultAlchemyAttempt({
+            components: components,
+            alchemicalCombiner: this._alchemicalCombiner,
+            componentConsumptionCalculator: this._componentConsumptionCalculator,
+            alchemyFormula: this._alchemyFormulaeByBasePartId.get(baseComponent.partId),
+            alchemyConstraintEnforcer: new DefaultAlchemyConstraintEnforcer(this._constraints)
+        });
 
     }
 

@@ -1,12 +1,11 @@
 class ObjectUtility {
 
-    public duplicate<T = {}>(source: T): T {
-        // @ts-ignore
-        return duplicate(source);
+    public duplicate<T extends {}>(source: T): T {
+        return duplicate(source) as T;
     }
 
-    public merge<T = {}>(target: T, source: T): T {
-        return mergeObject(target, source);
+    public merge<T extends object>(target: T, source: T): T {
+        return mergeObject(target, source) as T;
     }
 
 }
