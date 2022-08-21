@@ -20,6 +20,7 @@ interface AlchemyConstraints {
 }
 
 interface AlchemyAttemptConfig {
+    baseComponent: CraftingComponent;
     components: Combination<CraftingComponent>;
     alchemyFormula: AlchemyFormula<ItemData>;
     alchemicalCombiner: AlchemicalCombiner;
@@ -91,7 +92,7 @@ class AbandonedAlchemyAttempt implements AlchemyAttempt {
 
     perform(_actor: Actor, _craftingCheck: CraftingCheck<Actor>): NoAlchemyResult {
         return new NoAlchemyResult({
-            description: this._reason,
+            detail: this._reason,
             consumed: Combination.EMPTY()
         });
     }
@@ -100,18 +101,20 @@ class AbandonedAlchemyAttempt implements AlchemyAttempt {
 
 class DefaultAlchemyAttempt implements AlchemyAttempt {
 
+    private readonly _baseComponent: CraftingComponent;
     private readonly _alchemicalCombiner: AlchemicalCombiner;
-    private readonly _components: Combination<CraftingComponent>;
     private readonly _alchemyFormula: AlchemyFormula<ItemData>;
+    private readonly _components: Combination<CraftingComponent>;
     private readonly _alchemyConstraintEnforcer: AlchemyConstraintEnforcer;
     private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
 
     constructor(config: AlchemyAttemptConfig) {
-        this._alchemicalCombiner = config.alchemicalCombiner;
         this._components = config.components;
+        this._baseComponent = config.baseComponent;
         this._alchemyFormula = config.alchemyFormula;
-        this._componentConsumptionCalculator = config.componentConsumptionCalculator;
+        this._alchemicalCombiner = config.alchemicalCombiner;
         this._alchemyConstraintEnforcer = config.alchemyConstraintEnforcer;
+        this._componentConsumptionCalculator = config.componentConsumptionCalculator;
     }
 
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult {
@@ -120,7 +123,7 @@ class DefaultAlchemyAttempt implements AlchemyAttempt {
         const componentConstraintCheck: ConstraintCheck = this._alchemyConstraintEnforcer.checkComponents(this._components.size());
         if (!componentConstraintCheck.isOk) {
             return new UnsuccessfulAlchemyResult({
-                description: componentConstraintCheck.detail,
+                detail: componentConstraintCheck.detail,
                 consumed: consumed
             });
         }
@@ -128,26 +131,28 @@ class DefaultAlchemyAttempt implements AlchemyAttempt {
         const craftingCheckResult: CraftingCheckResult = craftingCheck.perform(actor, this._components);
         if (!craftingCheckResult.isSuccessful) {
             return new UnsuccessfulAlchemyResult({
-                description: craftingCheckResult.describe(),
+                detail: craftingCheckResult.describe(),
                 consumed: consumed
             });
         }
 
-        const matchingEffects: AlchemicalEffect<ItemData>[] = this._alchemyFormula.getAllEffects(this._components);
+        const matchingEffects: AlchemicalEffect[] = this._alchemyFormula.getAllEffects(this._components);
 
         const effectConstraintCheck: ConstraintCheck = this._alchemyConstraintEnforcer.checkEffectMatches(matchingEffects.length);
         if (!effectConstraintCheck.isOk) {
             return new UnsuccessfulAlchemyResult({
-                description: effectConstraintCheck.detail,
+                detail: effectConstraintCheck.detail,
                 consumed: consumed
             });
         }
 
+        const alchemicalEffect: AlchemicalEffect = this._alchemicalCombiner.mix(matchingEffects);
+
         return new SuccessfulAlchemyResult({
             consumed: consumed,
-            description: "Alchemy success!",
-            alchemicalCombiner: this._alchemicalCombiner,
-            matchingEffects: matchingEffects
+            baseComponent: this._baseComponent,
+            detail: `Alchemy success! ${matchingEffects.length} effects were applied to the ${this._baseComponent.name}. `,
+            alchemicalEffect: alchemicalEffect
         });
 
     }

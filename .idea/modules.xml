@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/fabricate.iml" filepath="$PROJECT_DIR$/.idea/fabricate.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../mastercrafted/.idea/mastercrafted.iml" filepath="$PROJECT_DIR$/../mastercrafted/.idea/mastercrafted.iml" />
     </modules>
   </component>
 </project>

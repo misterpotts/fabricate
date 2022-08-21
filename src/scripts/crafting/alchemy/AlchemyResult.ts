@@ -1,9 +1,8 @@
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
-import {AlchemicalCombiner} from "./AlchemicalCombiner";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
-import {AlchemicalEffect} from "./AlchemicalEffect";
-import {CraftingChatMessage} from "../../interface/CraftingChatMessage";
+import {AlchemicalEffect, NoAlchemicalEffect} from "./AlchemicalEffect";
+import {CraftingChatMessage, IconType} from "../../interface/CraftingChatMessage";
 
 interface AlchemyResult {
 
@@ -11,12 +10,14 @@ interface AlchemyResult {
 
     consumed: Combination<CraftingComponent>;
 
-    getCustomItemData(): ItemData;
+    effect: AlchemicalEffect;
+
+    baseComponent: CraftingComponent;
 
 }
 
 interface AlchemyResultConfig {
-    description: string;
+    detail: string;
     consumed: Combination<CraftingComponent>;
 }
 
@@ -31,7 +32,7 @@ class NoAlchemyResult implements AlchemyResult {
 
     constructor(config: NoAlchemyResultConfig) {
         this._consumed = config.consumed;
-        this._description = config.description;
+        this._description = config.detail;
     }
 
     get consumed(): Combination<CraftingComponent> {
@@ -39,47 +40,62 @@ class NoAlchemyResult implements AlchemyResult {
     }
 
     describe(): CraftingChatMessage {
-        return undefined;
+        return new CraftingChatMessage({
+            title: "Crafting not attempted",
+            description: this._description,
+            iconType: IconType.FAILURE
+        });
     }
 
-    getCustomItemData(): ItemData {
-        return {} as ItemData;
+    get effect(): AlchemicalEffect {
+        return new NoAlchemicalEffect();
+    }
+
+    get baseComponent(): CraftingComponent {
+        return null;
     }
 
 }
 
 interface SuccessfulAlchemyResultConfig extends AlchemyResultConfig {
-    alchemicalCombiner: AlchemicalCombiner,
-    matchingEffects: AlchemicalEffect<ItemData>[]
+    alchemicalEffect: AlchemicalEffect;
+    baseComponent: CraftingComponent;
 }
 
 class SuccessfulAlchemyResult implements AlchemyResult {
 
-    private readonly _description: string;
-    private readonly _alchemicalCombiner: AlchemicalCombiner;
+    private readonly _detail: string;
+    private readonly _baseComponent: CraftingComponent;
+    private readonly _alchemicalEffect: AlchemicalEffect;
     private readonly _consumed: Combination<CraftingComponent>;
-    private readonly _matchingEffects: AlchemicalEffect<ItemData>[];
 
     constructor(config: SuccessfulAlchemyResultConfig) {
         this._consumed = config.consumed;
-        this._description = config.description;
-        this._matchingEffects = config.matchingEffects;
-        this._alchemicalCombiner = config.alchemicalCombiner;
+        this._detail = config.detail;
+        this._baseComponent = config.baseComponent;
+        this._alchemicalEffect = config.alchemicalEffect;
     }
 
-    consumed: Combination<CraftingComponent>;
+    get consumed(): Combination<CraftingComponent> {
+        return this._consumed;
+    }
 
     describe(): CraftingChatMessage {
-        return undefined;
+        return new CraftingChatMessage({
+            iconType: IconType.RANDOM,
+            consumedItems: this._consumed,
+            createdItems: Combination.of(this._baseComponent, 1), // todo - find a suitable way to display the custom item data
+            description: this._detail
+        });
     }
 
-    getCustomItemData(): ItemData {
-        // todo: the combiner no longer needs to select effects, only merge them into an item.
-        //  It could be replaced with the GameSystemDocumentManager and removed from this class (having the inventory
-        //  pass it the item data)
-        return this._alchemicalCombiner.perform();
+    get effect(): AlchemicalEffect {
+        return this._alchemicalEffect;
     }
 
+    get baseComponent(): CraftingComponent {
+        return this._baseComponent;
+    }
 }
 
 interface UnsuccessfulAlchemyResultConfig extends AlchemyResultConfig {
@@ -89,9 +105,33 @@ interface UnsuccessfulAlchemyResultConfig extends AlchemyResultConfig {
 class UnsuccessfulAlchemyResult implements AlchemyResult {
 
     private readonly _description: string;
+    private readonly _consumed: Combination<CraftingComponent>;
 
     constructor(config: UnsuccessfulAlchemyResultConfig) {
-        this._description = config.description;
+        this._description = config.detail;
+    }
+
+    get consumed(): Combination<CraftingComponent> {
+        return this._consumed;
+    }
+
+    describe(): CraftingChatMessage {
+        return new CraftingChatMessage({
+            iconType: IconType.FAILURE,
+            description: `Alchemy attempt failed. ${this._description}. `
+        });
+    }
+
+    applyToBaseItemData(baseItemData: ItemData): ItemData {
+        return baseItemData;
+    }
+
+    get baseComponent(): CraftingComponent {
+        return null;
+    }
+
+    get effect(): AlchemicalEffect {
+        return new NoAlchemicalEffect();
     }
 
 }

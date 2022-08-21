@@ -6,7 +6,6 @@ import {
     AlchemyAttempt,
     AlchemyConstraints, DefaultAlchemyAttempt, DefaultAlchemyConstraintEnforcer
 } from "./AlchemyAttempt";
-import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {AlchemicalCombiner} from "./AlchemicalCombiner";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 
@@ -19,7 +18,7 @@ interface AlchemyAttemptFactory {
 interface AlchemyAttemptFactoryConfig {
     componentConsumptionCalculator: ComponentConsumptionCalculator;
     constraints: AlchemyConstraints,
-    alchemyFormulae: AlchemyFormula<ItemData>[],
+    alchemyFormulae: AlchemyFormula[],
     alchemicalCombiner: AlchemicalCombiner
 }
 
@@ -28,13 +27,13 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
     private readonly _constraints: AlchemyConstraints;
     private readonly _alchemicalCombiner: AlchemicalCombiner;
     private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
-    private readonly _alchemyFormulaeByBasePartId: Map<string, AlchemyFormula<ItemData>>;
+    private readonly _alchemyFormulaeByBasePartId: Map<string, AlchemyFormula>;
 
     constructor(config: AlchemyAttemptFactoryConfig) {
         this._componentConsumptionCalculator = config.componentConsumptionCalculator;
         this._constraints = config.constraints;
         this._alchemicalCombiner = config.alchemicalCombiner;
-        this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula<ItemData>>(config.alchemyFormulae.map(formula => [formula.basePartId, formula]));
+        this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula>(config.alchemyFormulae.map(formula => [formula.basePartId, formula]));
     }
 
     make(baseComponent: CraftingComponent, components: Combination<CraftingComponent>): AlchemyAttempt {
@@ -49,6 +48,7 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
         return new DefaultAlchemyAttempt({
             components: components,
+            baseComponent: baseComponent,
             alchemicalCombiner: this._alchemicalCombiner,
             componentConsumptionCalculator: this._componentConsumptionCalculator,
             alchemyFormula: this._alchemyFormulaeByBasePartId.get(baseComponent.partId),

@@ -1,14 +1,10 @@
 import {GameSystem} from "../GameSystem";
-import {EssenceDefinition, EssenceDefinitionConfig} from "../../common/EssenceDefinition";
+import {EssenceDefinitionConfig} from "../../common/EssenceDefinition";
 import {ThresholdType} from "../../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
 import {AlchemicalEffectType} from "../../crafting/alchemy/AlchemicalEffect";
 import {Dnd5EAlchemicalEffectType} from "../../5e/AlchemicalEffect5E";
-
-enum WastageType {
-    NONPUNITIVE,
-    PUNITIVE
-}
+import {WastageType} from "../../common/ComponentConsumptionCalculator";
 
 interface DnD5EToolSpecification {
     name: string;
@@ -73,13 +69,13 @@ interface DnD5ESaveModifierEffectSpec extends DnD5EAlchemyEffectSpec {
 }
 
 interface AlchemyFormulaSpec {
-    basePartID: string;
+    basePartId: string;
     constraints: AlchemyConstraintSpec;
     effects: (DnD5EAlchemyEffectSpec
         | DnD5EDamageEffectSpec
         | DnD5EAoEExtensionEffectSpec
         | DnD5EDamageMultiplierEffectSpec
-        | DnD5ESaveModifierEffectConfig)[]
+        | DnD5ESaveModifierEffectSpec)[]
 }
 
 interface CraftingSpec {
@@ -120,4 +116,4 @@ interface CraftingSystemSpec {
     alchemy: AlchemySpec;
 }
 
-export {CraftingSystemSpec, DnD5ECraftingCheckSpec, Pf2ECraftingCheck, WastageType}
+export {CraftingSystemSpec, AlchemySpec, AlchemyFormulaSpec, DnD5ECraftingCheckSpec, Pf2ECraftingCheck}

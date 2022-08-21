@@ -1,4 +1,5 @@
 import {
+    AlchemyFormulaSpec,
     CraftingSystemSpec,
     DnD5ECraftingCheckSpec
 } from "./specification/CraftingSystemSpec";
@@ -16,9 +17,9 @@ import {Tool} from "../crafting/Tool";
 import {AlchemyFormula, DefaultAlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
 import {EssenceDefinition, EssenceIdentityProvider} from "../common/EssenceDefinition";
 import {RollProvider5EFactory} from "../5e/RollProvider5E";
-import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {AlchemicalEffect} from "../crafting/alchemy/AlchemicalEffect";
-import {AlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
+import {DefaultAlchemicalCombiner} from "../crafting/alchemy/AlchemicalCombiner";
+import {ComponentConsumptionCalculatorFactory} from "../common/ComponentConsumptionCalculator";
 
 class CraftingSystemFactory {
 
@@ -40,6 +41,8 @@ class CraftingSystemFactory {
 
         const essenceIdentityProvider = EssenceIdentityProvider.for(essenceDefinitions);
 
+        const componentConsumptionCalculatorFactory: ComponentConsumptionCalculatorFactory = new ComponentConsumptionCalculatorFactory();
+
         return new CraftingSystem({
             id: this._specification.id,
             essences: essenceDefinitions,
@@ -52,21 +55,19 @@ class CraftingSystemFactory {
                 wastageType: this._specification.crafting.wastage
             }),
             alchemyAttemptFactory: new DefaultAlchemyAttemptFactory({
-                wastage: this._specification.alchemy.wastage,
-                combiner: new AlchemicalCombiner({
-
-                }),
+                componentConsumptionCalculator: componentConsumptionCalculatorFactory.make(this._specification.alchemy.wastage),
+                alchemicalCombiner: new DefaultAlchemicalCombiner(),
                 constraints: this._specification.alchemy.constraints,
                 alchemyFormulae: this._specification.alchemy.formulae.map(formula => this.buildAlchemyFormula(essenceIdentityProvider, formula))
             })
         });
     }
 
-    private buildAlchemyFormula(essenceIdentityProvider: EssenceIdentityProvider, alchemyFormula: AlchemyFormula<ItemData>): AlchemyFormula<ItemData> {
+    private buildAlchemyFormula(essenceIdentityProvider: EssenceIdentityProvider, alchemyFormula: AlchemyFormulaSpec): AlchemyFormula {
         return new DefaultAlchemyFormula({
-            basePartId: alchemyFormula.basePartID,
+            basePartId: alchemyFormula.basePartId,
             essenceIdentityProvider: essenceIdentityProvider,
-            effectsByEssenceIdentity: new Map<number, AlchemicalEffect<ItemData>>()
+            effectsByEssenceIdentity: new Map<number, AlchemicalEffect>()
         });
     }
 

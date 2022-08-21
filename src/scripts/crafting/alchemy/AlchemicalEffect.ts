@@ -7,28 +7,22 @@ enum AlchemicalEffectType {
 /**
  * @type D The System-Specific, concrete Item Data type to modify when applying  an Alchemical Effect
  * */
-interface AlchemicalEffect<D>{
+interface AlchemicalEffect {
 
-    applyTo(itemData: D): D;
+    applyTo(other: AlchemicalEffect): AlchemicalEffect;
 
     description: string;
 
-    type: AlchemicalEffectType;
-
 }
 
-class NoAlchemicalEffect implements AlchemicalEffect<any>{
+class NoAlchemicalEffect implements AlchemicalEffect {
 
-    applyTo(itemData: any): any {
-        return itemData;
+    applyTo(other: AlchemicalEffect): any {
+        return other;
     }
 
     get description(): string {
         return "No effect. ";
-    }
-
-    get type(): AlchemicalEffectType {
-        return AlchemicalEffectType.NONE;
     }
 
 }
