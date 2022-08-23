@@ -1,30 +1,53 @@
+import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+
 enum AlchemicalEffectType {
-    MULTIPLIER ,
-    BASIC,
-    NONE
+    SIMPLE= "SIMPLE",
+    MULTIPLIER = "SIMPLE",
+    NONE = "NONE"
 }
 
-/**
- * @type D The System-Specific, concrete Item Data type to modify when applying  an Alchemical Effect
- * */
 interface AlchemicalEffect {
 
-    applyTo(other: AlchemicalEffect): AlchemicalEffect;
+    canCombineWith(other: AlchemicalEffect): boolean;
 
-    description: string;
+    combineWith(other: AlchemicalEffect): AlchemicalEffect;
+
+    describe(): string;
+
+    applyToItemData(itemData: ItemData): ItemData;
+
+    effectName: string;
+
+    effectType: AlchemicalEffectType;
 
 }
 
 class NoAlchemicalEffect implements AlchemicalEffect {
 
-    applyTo(other: AlchemicalEffect): any {
+    canCombineWith(other: AlchemicalEffect): boolean {
+        return other instanceof NoAlchemicalEffect;
+    }
+
+    combineWith(other: any): any {
         return other;
     }
 
-    get description(): string {
+    describe(): string {
         return "No effect. ";
+    }
+
+    applyToItemData(itemData: ItemData): ItemData {
+        return itemData;
+    }
+
+    get effectName(): string {
+        return "NONE"
+    }
+
+    get effectType(): AlchemicalEffectType {
+        return AlchemicalEffectType.NONE
     }
 
 }
 
-export {AlchemicalEffect, AlchemicalEffectType, NoAlchemicalEffect}
+export { AlchemicalEffect, NoAlchemicalEffect, AlchemicalEffectType }

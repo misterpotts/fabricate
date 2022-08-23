@@ -125,11 +125,7 @@
             "modifier": "BASIC",
             "type": "DAMAGE",
             "description": "Deal 1d4 lightning damage on contact. Double damage to targets touching a metal surface or using metal weapons or armor. ",
-            "damage": {
-              "dice": [{
-                "number": 1,
-                "faces": 4
-              }],
+            "expression": "1d4",
               "type": "lightning"
             },
             "essenceMatch": {
@@ -142,10 +138,7 @@
             "type": "DAMAGE",
             "description": "Deal 1d4 fire damage on contact. Double damage to targets with cloth or leather armor. ",
             "damage": {
-              "dice": [{
-                "number": 1,
-                "faces": 4
-              }],
+              "expression": "1d4",
               "type": "fire"
             },
             "essenceMatch": {
@@ -158,10 +151,7 @@
             "type": "DAMAGE",
             "description": "Deal 1d4 cold damage on contact. Reduce target speed by 10 feet for the next round. ",
             "damage": {
-              "dice": [{
-                "number": 1,
-                "faces": 4
-              }],
+              "expression": "1d4",
               "type": "cold"
             },
             "essenceMatch": {
@@ -175,10 +165,7 @@
             "type": "DAMAGE",
             "description": "Deal 1d8 acid damage on contact. ",
             "damage": {
-              "dice": [{
-                "number": 1,
-                "faces": 4
-              }],
+              "expression": "1d8",
               "type": "acid"
             },
             "essenceMatch": {

@@ -37,7 +37,7 @@ class DefaultCraftingCheck<A extends Actor> implements CraftingCheck<A> {
 
     perform(actor: A, components: Combination<CraftingComponent>): CraftingCheckResult {
 
-        const roll: Roll = this._rollTermProvider.getFor(actor);
+        const roll: Roll = this._rollTermProvider.getForActor(actor);
         const rollResult: RollResult = this._diceRoller.evaluate(roll);
         const threshold: Threshold = this._thresholdCalculator.calculateFor(components);
         const outcome: OutcomeType = threshold.test(rollResult);

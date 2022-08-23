@@ -3,7 +3,7 @@ import {EssenceDefinitionConfig} from "../../common/EssenceDefinition";
 import {ThresholdType} from "../../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
 import {AlchemicalEffectType} from "../../crafting/alchemy/AlchemicalEffect";
-import {Dnd5EAlchemicalEffectType} from "../../5e/AlchemicalEffect5E";
+import {Dnd5EAlchemicalEffectName} from "../../5e/AlchemicalEffect5E";
 import {WastageType} from "../../common/ComponentConsumptionCalculator";
 
 interface DnD5EToolSpecification {
@@ -37,13 +37,13 @@ interface AlchemyConstraintSpec {
 interface DnD5EAlchemyEffectSpec {
     name: string,
     modifier: AlchemicalEffectType,
-    type: Dnd5EAlchemicalEffectType,
+    type: Dnd5EAlchemicalEffectName,
     description: string,
     essenceMatch: Record<string, number>
 }
 
 interface DnD5EDamageEffectSpec extends DnD5EAlchemyEffectSpec {
-    type: Dnd5EAlchemicalEffectType.DAMAGE
+    type: Dnd5EAlchemicalEffectName.DAMAGE
     damage: {
         expression: string,
         type: DND5e.DamageType
@@ -51,7 +51,7 @@ interface DnD5EDamageEffectSpec extends DnD5EAlchemyEffectSpec {
 }
 
 interface DnD5EAoEExtensionEffectSpec extends DnD5EAlchemyEffectSpec {
-    type: Dnd5EAlchemicalEffectType.AOE_EXTENSION
+    type: Dnd5EAlchemicalEffectName.AOE_EXTENSION
     aoe: {
         units: DND5e.Unit,
         value: number
@@ -59,12 +59,12 @@ interface DnD5EAoEExtensionEffectSpec extends DnD5EAlchemyEffectSpec {
 }
 
 interface DnD5EDamageMultiplierEffectSpec extends DnD5EAlchemyEffectSpec {
-    type: Dnd5EAlchemicalEffectType.DAMAGE_MULTIPLIER
+    type: Dnd5EAlchemicalEffectName.DAMAGE_MULTIPLIER
     diceMultiplier: number
 }
 
 interface DnD5ESaveModifierEffectSpec extends DnD5EAlchemyEffectSpec {
-    type: Dnd5EAlchemicalEffectType.SAVE_MODIFIER
+    type: Dnd5EAlchemicalEffectName.SAVE_MODIFIER
     saveModifier: number
 }
 

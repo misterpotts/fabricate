@@ -72,12 +72,20 @@ class RollProvider5E implements RollProvider<PatchActor5e> {
         this._modifierCalculators = config.modifierCalculators;
     }
 
-    getFor(actor: PatchActor5e): Roll {
+    fromExpression(expression:string): Roll {
+        return new Roll(expression);
+    }
+
+    getForActor(actor: PatchActor5e): Roll {
         const rollTerms: RollTerm[] = this._modifierCalculators.map(calculator => calculator.calculate(actor))
             .flatMap((rollTerm: RollTerm) => [rollTerm, new OperatorTerm({ operator: "+" })]);
         return Roll.fromTerms(rollTerms);
     }
 
+    combine(left: Roll, right: Roll) {
+        const simplifiedTerms: RollTerm[] = Roll.simplifyTerms(left.terms.concat(right.terms));
+        return Roll.fromTerms(simplifiedTerms);
+    }
 }
 
 class RollProvider5EFactory {

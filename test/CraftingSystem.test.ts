@@ -35,7 +35,7 @@ const stubRollMethod = Sandbox.stub(stubDiceRoller, 'evaluate');
 const stubRollTermProvider: RollProvider<Actor> = <RollProvider<Actor>><unknown>{
     getFor: () => {}
 };
-const stubGetForMethod = Sandbox.stub(stubRollTermProvider, 'getFor');
+const stubGetForMethod = Sandbox.stub(stubRollTermProvider, 'getForActor');
 
 const stubActor: Actor<Actor.Data, Item<Item.Data>> = <Actor<Actor.Data, Item<Item.Data>>><unknown>{};
 

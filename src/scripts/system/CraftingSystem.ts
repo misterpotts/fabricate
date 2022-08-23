@@ -44,6 +44,7 @@ class CraftingSystem implements Identifiable {
         this._partDictionary = config.partDictionary;
         this._essencesBySlug = new Map(config.essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
         this._craftingAttemptFactory = config.craftingAttemptFactory;
+        this._alchemyAttemptFactory = config.alchemyAttemptFactory;
         this._enabled = config.enabled;
     }
 
@@ -68,7 +69,7 @@ class CraftingSystem implements Identifiable {
     }
 
     get supportsAlchemy() {
-        return false; // todo implement
+        return this._alchemyAttemptFactory.isEnabled();
     }
 
     get id(): string {

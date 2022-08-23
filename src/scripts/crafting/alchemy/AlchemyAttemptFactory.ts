@@ -13,6 +13,7 @@ interface AlchemyAttemptFactory {
 
     make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
 
+    isEnabled(): boolean;
 }
 
 interface AlchemyAttemptFactoryConfig {
@@ -34,6 +35,10 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
         this._constraints = config.constraints;
         this._alchemicalCombiner = config.alchemicalCombiner;
         this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula>(config.alchemyFormulae.map(formula => [formula.basePartId, formula]));
+    }
+
+    isEnabled(): boolean {
+        return true;
     }
 
     make(baseComponent: CraftingComponent, components: Combination<CraftingComponent>): AlchemyAttempt {
@@ -59,4 +64,16 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
 }
 
-export { AlchemyAttemptFactory, DefaultAlchemyAttemptFactory }
+class DisabledAlchemyAttemptFactory implements AlchemyAttemptFactory {
+
+    isEnabled(): boolean {
+        return false;
+    }
+
+    make(_baseComponent: CraftingComponent, _componentSelection: Combination<CraftingComponent>): AlchemyAttempt {
+        return new AbandonedAlchemyAttempt("This crafting system does not support Alchemy. ");
+    }
+
+}
+
+export { AlchemyAttemptFactory, DefaultAlchemyAttemptFactory, DisabledAlchemyAttemptFactory }
