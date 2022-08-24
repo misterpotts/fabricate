@@ -95,7 +95,6 @@
         "effects": [
           {
             "name": "Blind",
-            "modifier": "BASIC",
             "type": "DESCRIPTIVE",
             "description": "Release a burst of stinging dust. Affected targets are blinded for the next round. ",
             "essenceMatch": {
@@ -104,7 +103,6 @@
           },
           {
             "name": "Knock prone",
-            "modifier": "BASIC",
             "type": "DESCRIPTIVE",
             "description": "Release a puddle of slippery oil. Affected targets immediately fall prone.",
             "essenceMatch": {
@@ -113,7 +111,6 @@
           },
           {
             "name": "Persistent damage",
-            "modifier": "BASIC",
             "type": "DESCRIPTIVE",
             "description": "Release gel that sticks to targets. Each round, any damage-dealing effects continue to deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .",
             "essenceMatch": {
@@ -123,7 +120,6 @@
           },
           {
             "name": "Lightning damage",
-            "modifier": "BASIC",
             "type": "DAMAGE",
             "description": "Deal 1d4 lightning damage on contact. Double damage to targets touching a metal surface or using metal weapons or armor. ",
             "damage": {
@@ -136,7 +132,6 @@
           },
           {
             "name": "Fire damage",
-            "modifier": "BASIC",
             "type": "DAMAGE",
             "description": "Deal 1d4 fire damage on contact. Double damage to targets with cloth or leather armor. ",
             "damage": {
@@ -149,7 +144,6 @@
           },
           {
             "name": "Cold damage",
-            "modifier": "BASIC",
             "type": "DAMAGE",
             "description": "Deal 1d4 cold damage on contact. Reduce target speed by 10 feet for the next round. ",
             "damage": {
@@ -163,7 +157,6 @@
           },
           {
             "name": "Acid damage",
-            "modifier": "BASIC",
             "type": "DAMAGE",
             "description": "Deal 1d8 acid damage on contact. ",
             "damage": {
@@ -177,7 +170,6 @@
           },
           {
             "name": "AoE extension",
-            "modifier": "BASIC",
             "type": "AOE_EXTENSION",
             "description": "Release concentrated mist in all directions. Increase the radius of all effects by 5 feet. ",
             "aoe": {
@@ -191,7 +183,6 @@
           },
           {
             "name": "Damage multiplier",
-            "modifier": "MULTIPLIER",
             "type": "DAMAGE_MULTIPLIER",
             "description": "Roll double the number of all damage dice. ",
             "diceMultiplier": 2,
@@ -201,7 +192,6 @@
           },
           {
             "name": "Saving throw modifier",
-            "modifier": "BASIC",
             "type": "SAVE_MODIFIER",
             "description": "Increase the DC to avoid bomb effects by 2.  ",
             "saveModifier": 2,
