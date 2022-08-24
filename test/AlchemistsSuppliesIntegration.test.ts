@@ -1,39 +1,76 @@
-import { describe, expect, test } from '@jest/globals';
+import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import * as fs from 'fs/promises';
 
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {CraftingSystemSpec} from "../src/scripts/system/specification/CraftingSystemSpec";
 import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
 import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
-import {PartDictionary} from "../src/scripts/system/PartDictionary";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import {GameSystem} from "../src/scripts/system/GameSystem";
+import * as Sinon from "sinon";
+import {RollProvider5E} from "../src/scripts/5e/RollProvider5E";
+import {RollProviderFactory} from "../src/scripts/crafting/check/RollProvider";
+import {
+    AoeExtension5e,
+    Damage5e,
+    DescriptiveEffect5e,
+    DiceMultiplier5e,
+    SavingThrowModifier5e
+} from "../src/scripts/5e/AlchemicalEffect5E";
 
-describe('A Crafting System Factory', async () => {
+const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-    const rawSystemSpec = await fs.readFile('./src/resources/alchemists-supplies-v16-system-spec.json', {encoding: 'utf8'});
-    expect(rawSystemSpec).not.toBeNull();
-    const jsonSystemSpec = JSON.parse(rawSystemSpec);
-    const systemSpec: CraftingSystemSpec = <CraftingSystemSpec>jsonSystemSpec;
+beforeEach(() => {
+    jest.resetAllMocks();
+    Sandbox.reset();
+});
 
-    const rawCompendiumData = await fs.readFile('./src/packs/alchemists-supplies-v16.db', {encoding: 'utf8'});
-    const jsonDocuments: {}[] = rawCompendiumData.split("\n")
-        .map((line, index) => {
-            try {
-                return JSON.parse(line);
-            } catch (e) {
-                const error: Error = e as Error;
-                console.log(`Error parsing compendium entry on line ${index + 1}. Caused by: ${error.message} `);
-                expect(error).toBeNull();
-            }
-        });
-    const jsonCompendiumProvider: JsonCompendiumProvider = new JsonCompendiumProvider(new Map<string, {}[]>([["fabricate.alchemists-supplies-v16", jsonDocuments]]));
-    const compendiumImporter: CompendiumImporter = new CompendiumImporter(jsonCompendiumProvider);
-    const partDictionary: PartDictionary = await compendiumImporter.import(systemSpec.id, systemSpec.compendia, systemSpec.essences);
+const stubRollProvider: RollProvider5E = <RollProvider5E><unknown>{
+    combine: () => {},
+    getForActor: () => {},
+    fromExpression: () => {}
+};
+const stubFromExpressionMethod = Sandbox.stub(stubRollProvider, 'fromExpression');
+
+const stubRollProviderFactory: RollProviderFactory<Actor> = <RollProviderFactory<Actor>><unknown>{
+    make: () => {}
+};
+const stubMakeMethod = Sandbox.stub(stubRollProviderFactory, 'make');
+
+describe('A Crafting System Factory', () => {
 
     test('should create a new Crafting System from a valid specification', async () => {
 
-        const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory(systemSpec, partDictionary);
+        const rawSystemSpec = await fs.readFile('./src/resources/alchemists-supplies-v16-system-spec.json', {encoding: 'utf8'});
+        expect(rawSystemSpec).not.toBeNull();
+        const jsonSystemSpec = JSON.parse(rawSystemSpec);
+        const systemSpec=  <CraftingSystemSpec>jsonSystemSpec;
+
+        const rawCompendiumData = await fs.readFile('./src/packs/alchemists-supplies-v16.db', {encoding: 'utf8'});
+        const jsonDocuments: {}[] = rawCompendiumData.split("\n")
+            .map((line, index) => {
+                try {
+                    return JSON.parse(line);
+                } catch (e) {
+                    const error: Error = e as Error;
+                    console.log(`Error parsing compendium entry on line ${index + 1}. Caused by: ${error.message} `);
+                    expect(error).toBeNull();
+                }
+            });
+        const jsonCompendiumProvider = new JsonCompendiumProvider(new Map<string, {}[]>([["fabricate.alchemists-supplies-v16", jsonDocuments]]));
+        const compendiumImporter = new CompendiumImporter(jsonCompendiumProvider);
+        const partDictionary = await compendiumImporter.import(systemSpec.id, systemSpec.compendia, systemSpec.essences);
+
+        const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
+            specification: systemSpec,
+            partDictionary: partDictionary,
+            rollProviderFactory: stubRollProviderFactory
+        });
+
+        stubMakeMethod.returns(stubRollProvider);
+        const stubRoll: Roll = <Roll><unknown>{}
+        stubFromExpressionMethod.returns(stubRoll);
+
         const craftingSystem: CraftingSystem = craftingSystemFactory.make();
 
         expect(craftingSystem).not.toBeNull();
@@ -43,10 +80,30 @@ describe('A Crafting System Factory', async () => {
         expect(craftingSystem.essences.length).toEqual(6);
         expect(craftingSystem.essences.map(essence => essence.slug))
             .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
-        expect(craftingSystem.hasCraftingCheck).toEqual(true);
+        expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);
+        expect(craftingSystem.hasAlchemyCraftingCheck).toEqual(true);
         expect(craftingSystem.components.length).toEqual(30);
         expect(craftingSystem.recipes.length).toEqual(15);
         expect(craftingSystem.supportsAlchemy).toEqual(true);
+        expect(craftingSystem.alchemyFormulae.size).toEqual(1);
+
+        const alchemicalBombPartId = "90z9nOwmGnP4aUUk";
+        expect(craftingSystem.alchemyFormulae.has(alchemicalBombPartId)).toEqual(true);
+
+        const alchemyFormula = craftingSystem.alchemyFormulae.get(alchemicalBombPartId);
+        const allEffects = alchemyFormula.getAllEffects();
+
+        const damageEffectCount = allEffects.filter(effect => effect instanceof Damage5e).length;
+        const descriptiveEffectCount = allEffects.filter(effect => effect instanceof DescriptiveEffect5e).length;
+        const savingThrowEffectCount = allEffects.filter(effect => effect instanceof SavingThrowModifier5e).length;
+        const diceMultiplierEffectCount = allEffects.filter(effect => effect instanceof DiceMultiplier5e).length;
+        const aoeExtensionEffectCount = allEffects.filter(effect => effect instanceof AoeExtension5e).length;
+        expect(allEffects.length).toEqual(8);
+        expect(damageEffectCount).toEqual(3);
+        expect(descriptiveEffectCount).toEqual(2);
+        expect(savingThrowEffectCount).toEqual(1);
+        expect(diceMultiplierEffectCount).toEqual(1);
+        expect(aoeExtensionEffectCount).toEqual(1);
     });
 
 });

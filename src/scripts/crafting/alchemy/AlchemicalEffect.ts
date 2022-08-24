@@ -1,53 +1,43 @@
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 
-enum AlchemicalEffectType {
-    SIMPLE= "SIMPLE",
-    MULTIPLIER = "SIMPLE",
-    NONE = "NONE"
-}
-
-interface AlchemicalEffect {
-
-    canCombineWith(other: AlchemicalEffect): boolean;
-
-    combineWith(other: AlchemicalEffect): AlchemicalEffect;
-
-    describe(): string;
+interface AlchemicalCombination {
 
     applyToItemData(itemData: ItemData): ItemData;
 
-    effectName: string;
+}
 
-    effectType: AlchemicalEffectType;
+interface AlchemicalCombiner<T extends AlchemicalCombination> {
+
+    mix(effects: AlchemicalEffect<T>[]): T;
 
 }
 
-class NoAlchemicalEffect implements AlchemicalEffect {
+interface AlchemicalEffect<C extends AlchemicalCombination> {
 
-    canCombineWith(other: AlchemicalEffect): boolean {
-        return other instanceof NoAlchemicalEffect;
+    mixInto(combination: C): C;
+
+    describe(): string;
+
+}
+
+class NoAlchemicalCombination implements AlchemicalCombination {
+
+    applyToItemData(itemData: ItemData): ItemData {
+        return itemData;
     }
 
-    combineWith(other: any): any {
-        return other;
+}
+
+class NoAlchemicalEffect implements AlchemicalEffect<NoAlchemicalCombination> {
+
+    mixInto(combination: NoAlchemicalCombination): NoAlchemicalCombination {
+        return combination;
     }
 
     describe(): string {
         return "No effect. ";
     }
 
-    applyToItemData(itemData: ItemData): ItemData {
-        return itemData;
-    }
-
-    get effectName(): string {
-        return "NONE"
-    }
-
-    get effectType(): AlchemicalEffectType {
-        return AlchemicalEffectType.NONE
-    }
-
 }
 
-export { AlchemicalEffect, NoAlchemicalEffect, AlchemicalEffectType }
+export { AlchemicalEffect, NoAlchemicalEffect, NoAlchemicalCombination, AlchemicalCombination, AlchemicalCombiner }

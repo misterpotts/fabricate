@@ -1,5 +1,6 @@
-import {RollProvider} from "../crafting/check/RollProvider";
+import {ModifierCalculator, RollProvider, RollProviderFactory} from "../crafting/check/RollProvider";
 import {Tool} from "../crafting/Tool";
+import {GameSystem} from "../system/GameSystem";
 import AbilityType = DND5e.AbilityType;
 import Character = data5e.Character;
 import PatchActor5e = PatchTypes5e.PatchActor5e;
@@ -7,13 +8,7 @@ import CharacterAbility = PatchTypes5e.CharacterAbility;
 import OwnedItemPatch5e = PatchTypes5e.OwnedItemPatch5e;
 import PatchAttributes5e = PatchTypes5e.PatchAttributes5e;
 
-interface ModifierCalculator {
-
-    calculate(actor: PatchActor5e): RollTerm;
-
-}
-
-class ToolProficiencyModifierCalculator implements ModifierCalculator {
+class ToolProficiencyModifierCalculator implements ModifierCalculator<PatchActor5e> {
 
     private readonly _tool: Tool;
 
@@ -42,7 +37,7 @@ class ToolProficiencyModifierCalculator implements ModifierCalculator {
 
 }
 
-class CraftingAbilityModifierCalculator implements ModifierCalculator {
+class CraftingAbilityModifierCalculator implements ModifierCalculator<PatchActor5e> {
 
     private readonly _ability: DND5e.AbilityType;
 
@@ -58,21 +53,19 @@ class CraftingAbilityModifierCalculator implements ModifierCalculator {
 
 }
 
-interface RollProvider5EConfig {
-
-    modifierCalculators: ModifierCalculator[];
-
-}
-
 class RollProvider5E implements RollProvider<PatchActor5e> {
 
-    private readonly _modifierCalculators: ModifierCalculator[];
+    private readonly _modifierCalculators: ModifierCalculator<PatchActor5e>[];
 
-    constructor(config: RollProvider5EConfig) {
-        this._modifierCalculators = config.modifierCalculators;
+    constructor({
+        modifierCalculators = []
+    }: {
+        modifierCalculators?: ModifierCalculator<PatchActor5e>[];
+    }) {
+        this._modifierCalculators = modifierCalculators;
     }
 
-    fromExpression(expression:string): Roll {
+    fromExpression(expression: string): Roll {
         return new Roll(expression);
     }
 
@@ -88,20 +81,39 @@ class RollProvider5E implements RollProvider<PatchActor5e> {
     }
 }
 
-class RollProvider5EFactory {
+class RollProvider5EFactory implements RollProviderFactory<PatchActor5e> {
 
-    make(ability: AbilityType, tool?: Tool): RollProvider5E {
-        const modifierCalculators: ModifierCalculator[] = [];
+    private readonly _ability: AbilityType;
+    private readonly _tool?: Tool;
 
-        const abilityModifierCalculator: CraftingAbilityModifierCalculator = new CraftingAbilityModifierCalculator(ability);
-        modifierCalculators.push(abilityModifierCalculator);
+    constructor({
+        ability,
+        tool
+    }: {
+        ability: DND5e.AbilityType;
+        tool?: Tool;
+    }) {
+        this._ability = ability;
+        this._tool = tool;
+    }
 
-        if (tool) {
-            const proficiencyModifierCalculator = new ToolProficiencyModifierCalculator(tool);
-            modifierCalculators.push(proficiencyModifierCalculator);
+    getCraftingAbilityModifierCalculator(): ModifierCalculator<PatchActor5e> {
+        return new CraftingAbilityModifierCalculator(this._ability);
+    }
+
+    getToolProficiencyModifierCalculator(): ModifierCalculator<PatchActor5e> {
+        if (!this._tool) {
+            return undefined;
         }
+        return new ToolProficiencyModifierCalculator(this._tool);
+    }
 
+    make(modifierCalculators: ModifierCalculator<PatchActor5e>[] = []): RollProvider5E {
         return new RollProvider5E({ modifierCalculators: modifierCalculators } );
+    }
+
+    get gameSystem(): GameSystem {
+        return GameSystem.DND5E;
     }
 
 }

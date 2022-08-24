@@ -51,6 +51,7 @@
       "tooltip": "Positive energy"
     }
   ],
+  "hasCraftingChecks": true,
   "defaultCheck": {
     "ability": "int",
     "tool": {
@@ -66,21 +67,21 @@
       }
     }
   },
-  "crafting": {
+  "recipes": {
     "performCheck": true,
     "wastage": "PUNITIVE",
     "useCustomCheck": false,
     "customCheck": null
   },
-  "alchemyEnabled": true,
   "alchemy": {
+    "enabled": true,
     "performCheck": true,
     "wastage": "PUNITIVE",
     "useCustomCheck": false,
     "customCheck": null,
     "formulae": [
       {
-        "basePartID": "90z9nOwmGnP4aUUk",
+        "basePartId": "90z9nOwmGnP4aUUk",
         "constraints": {
           "components": {
             "min": 1,
@@ -125,7 +126,8 @@
             "modifier": "BASIC",
             "type": "DAMAGE",
             "description": "Deal 1d4 lightning damage on contact. Double damage to targets touching a metal surface or using metal weapons or armor. ",
-            "expression": "1d4",
+            "damage": {
+              "expression": "1d4",
               "type": "lightning"
             },
             "essenceMatch": {

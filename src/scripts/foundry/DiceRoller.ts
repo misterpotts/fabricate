@@ -26,9 +26,12 @@ class DiceRoller {
         return new RollResult(rollResult.total, rollResult.result);
     }
 
-    public multiply(expression: string, factor: number): string {
-        const roll: Roll = new Roll(expression, {});
-        return roll.alter(factor, 0).formula;
+    public multiply(input: string | Roll, factor: number): Roll {
+        if (typeof input === "string") {
+            const roll: Roll = new Roll(input, {});
+            return roll.alter(factor, 0);
+        }
+        return input.alter(factor, 0);
     }
 
 }

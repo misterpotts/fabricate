@@ -1,7 +1,7 @@
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
-import {AlchemicalEffect, NoAlchemicalEffect} from "./AlchemicalEffect";
+import {AlchemicalCombination, NoAlchemicalCombination} from "./AlchemicalEffect";
 import {CraftingChatMessage, IconType} from "../../interface/CraftingChatMessage";
 
 interface AlchemyResult {
@@ -10,7 +10,7 @@ interface AlchemyResult {
 
     consumed: Combination<CraftingComponent>;
 
-    effect: AlchemicalEffect;
+    effects: AlchemicalCombination;
 
     baseComponent: CraftingComponent;
 
@@ -47,8 +47,8 @@ class NoAlchemyResult implements AlchemyResult {
         });
     }
 
-    get effect(): AlchemicalEffect {
-        return new NoAlchemicalEffect();
+    get effects(): AlchemicalCombination {
+        return new NoAlchemicalCombination();
     }
 
     get baseComponent(): CraftingComponent {
@@ -58,7 +58,7 @@ class NoAlchemyResult implements AlchemyResult {
 }
 
 interface SuccessfulAlchemyResultConfig extends AlchemyResultConfig {
-    alchemicalEffect: AlchemicalEffect;
+    alchemicalEffect: AlchemicalCombination;
     baseComponent: CraftingComponent;
 }
 
@@ -66,7 +66,7 @@ class SuccessfulAlchemyResult implements AlchemyResult {
 
     private readonly _detail: string;
     private readonly _baseComponent: CraftingComponent;
-    private readonly _alchemicalEffect: AlchemicalEffect;
+    private readonly _alchemicalEffect: AlchemicalCombination;
     private readonly _consumed: Combination<CraftingComponent>;
 
     constructor(config: SuccessfulAlchemyResultConfig) {
@@ -89,7 +89,7 @@ class SuccessfulAlchemyResult implements AlchemyResult {
         });
     }
 
-    get effect(): AlchemicalEffect {
+    get effects(): AlchemicalCombination {
         return this._alchemicalEffect;
     }
 
@@ -130,8 +130,8 @@ class UnsuccessfulAlchemyResult implements AlchemyResult {
         return null;
     }
 
-    get effect(): AlchemicalEffect {
-        return new NoAlchemicalEffect();
+    get effects(): AlchemicalCombination {
+        return new NoAlchemicalCombination();
     }
 
 }

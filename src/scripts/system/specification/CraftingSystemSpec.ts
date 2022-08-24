@@ -2,7 +2,6 @@ import {GameSystem} from "../GameSystem";
 import {EssenceDefinitionConfig} from "../../common/EssenceDefinition";
 import {ThresholdType} from "../../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
-import {AlchemicalEffectType} from "../../crafting/alchemy/AlchemicalEffect";
 import {Dnd5EAlchemicalEffectName} from "../../5e/AlchemicalEffect5E";
 import {WastageType} from "../../common/ComponentConsumptionCalculator";
 
@@ -36,7 +35,6 @@ interface AlchemyConstraintSpec {
 
 interface DnD5EAlchemyEffectSpec {
     name: string,
-    modifier: AlchemicalEffectType,
     type: Dnd5EAlchemicalEffectName,
     description: string,
     essenceMatch: Record<string, number>
@@ -78,7 +76,7 @@ interface AlchemyFormulaSpec {
         | DnD5ESaveModifierEffectSpec)[]
 }
 
-interface CraftingSpec {
+interface RecipeSpec {
     performCheck: boolean;
     wastage: WastageType;
     useCustomCheck: boolean;
@@ -87,11 +85,13 @@ interface CraftingSpec {
 
 interface DnD5ECraftingCheckSpec {
     ability: AbilityType;
+    addToolProficiency: boolean;
     tool: DnD5EToolSpecification;
     threshold: DnD5EThresholdSpecification
 }
 
 interface AlchemySpec {
+    enabled: boolean;
     performCheck: boolean;
     wastage: WastageType;
     useCustomCheck: boolean;
@@ -111,9 +111,19 @@ interface CraftingSystemSpec {
     enabled: boolean;
     essences: EssenceDefinitionConfig[];
     defaultCheck: DnD5ECraftingCheckSpec;
-    crafting: CraftingSpec;
-    alchemyEnabled: boolean;
+    hasCraftingChecks: boolean;
+    recipes: RecipeSpec;
     alchemy: AlchemySpec;
 }
 
-export {CraftingSystemSpec, AlchemySpec, AlchemyFormulaSpec, DnD5ECraftingCheckSpec, Pf2ECraftingCheck}
+export {CraftingSystemSpec,
+    AlchemySpec,
+    AlchemyFormulaSpec,
+    DnD5ECraftingCheckSpec,
+    Pf2ECraftingCheck,
+    DnD5EAlchemyEffectSpec,
+    DnD5EDamageEffectSpec,
+    DnD5EAoEExtensionEffectSpec,
+    DnD5EDamageMultiplierEffectSpec,
+    DnD5ESaveModifierEffectSpec
+}

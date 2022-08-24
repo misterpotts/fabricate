@@ -1,8 +1,6 @@
 import {CraftingCheck} from "../check/CraftingCheck";
 import {AlchemyResult, NoAlchemyResult, SuccessfulAlchemyResult, UnsuccessfulAlchemyResult} from "./AlchemyResult";
-import {AlchemicalCombiner} from "./AlchemicalCombiner";
-import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
-import {AlchemicalEffect} from "./AlchemicalEffect";
+import {AlchemicalCombination, AlchemicalCombiner, AlchemicalEffect} from "./AlchemicalEffect";
 import {CraftingCheckResult} from "../check/CraftingCheckResult";
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
@@ -22,8 +20,8 @@ interface AlchemyConstraints {
 interface AlchemyAttemptConfig {
     baseComponent: CraftingComponent;
     components: Combination<CraftingComponent>;
-    alchemyFormula: AlchemyFormula<ItemData>;
-    alchemicalCombiner: AlchemicalCombiner;
+    alchemyFormula: AlchemyFormula;
+    alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>;
     componentConsumptionCalculator: ComponentConsumptionCalculator;
     alchemyConstraintEnforcer: AlchemyConstraintEnforcer;
 }
@@ -102,8 +100,8 @@ class AbandonedAlchemyAttempt implements AlchemyAttempt {
 class DefaultAlchemyAttempt implements AlchemyAttempt {
 
     private readonly _baseComponent: CraftingComponent;
-    private readonly _alchemicalCombiner: AlchemicalCombiner;
-    private readonly _alchemyFormula: AlchemyFormula<ItemData>;
+    private readonly _alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>;
+    private readonly _alchemyFormula: AlchemyFormula;
     private readonly _components: Combination<CraftingComponent>;
     private readonly _alchemyConstraintEnforcer: AlchemyConstraintEnforcer;
     private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
@@ -136,7 +134,7 @@ class DefaultAlchemyAttempt implements AlchemyAttempt {
             });
         }
 
-        const matchingEffects: AlchemicalEffect[] = this._alchemyFormula.getAllEffects(this._components);
+        const matchingEffects: AlchemicalEffect<AlchemicalCombination>[] = this._alchemyFormula.getEffectsForComponents(this._components);
 
         const effectConstraintCheck: ConstraintCheck = this._alchemyConstraintEnforcer.checkEffectMatches(matchingEffects.length);
         if (!effectConstraintCheck.isOk) {
@@ -146,7 +144,7 @@ class DefaultAlchemyAttempt implements AlchemyAttempt {
             });
         }
 
-        const alchemicalEffect: AlchemicalEffect = this._alchemicalCombiner.mix(matchingEffects);
+        const alchemicalEffect: AlchemicalCombination = this._alchemicalCombiner.mix(matchingEffects);
 
         return new SuccessfulAlchemyResult({
             consumed: consumed,

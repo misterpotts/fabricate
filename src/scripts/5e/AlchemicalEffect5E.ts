@@ -1,7 +1,7 @@
-import {AlchemicalEffect, AlchemicalEffectType} from "../crafting/alchemy/AlchemicalEffect";
-import {DiceRoller} from "../foundry/DiceRoller";
+import {AlchemicalCombination, AlchemicalCombiner, AlchemicalEffect} from "../crafting/alchemy/AlchemicalEffect";
 import {RollProvider5E} from "./RollProvider5E";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import {DiceRoller} from "../foundry/DiceRoller";
 
 enum Dnd5EAlchemicalEffectName {
     AOE_EXTENSION = "AOE_EXTENSION",
@@ -11,14 +11,68 @@ enum Dnd5EAlchemicalEffectName {
     SAVE_MODIFIER = "SAVE_MODIFIER"
 }
 
-class Damage5e implements AlchemicalEffect {
+class AlchemicalCombiner5e implements AlchemicalCombiner<AlchemicalCombination5e> {
+
+    mix(effects: AlchemicalEffect<AlchemicalCombination5e>[]): AlchemicalCombination5e {
+        let combination = new AlchemicalCombination5e({});
+        effects.forEach(effect => combination = effect.mixInto(combination))
+        return combination;
+    }
+
+}
+
+interface AlchemicalCombination5eConfig {
+    diceMultiplier?: DiceMultiplier5e;
+    damageByType?: Map<DND5e.DamageType, Damage5e>;
+    descriptiveEffects?: DescriptiveEffect5e[];
+    aoeExtension?: AoeExtension5e;
+    savingThrowModifier?: SavingThrowModifier5e;
+}
+
+class AlchemicalCombination5e implements AlchemicalCombination {
+
+    private readonly _damageByType: Map<DND5e.DamageType, Damage5e>;
+    private readonly _descriptiveEffects: DescriptiveEffect5e[];
+    private readonly _aoeExtension: AoeExtension5e;
+    private readonly _savingThrowModifier: SavingThrowModifier5e;
+    private readonly _diceMultiplier: DiceMultiplier5e;
+
+    constructor({
+        damageByType = new Map(),
+        descriptiveEffects = [],
+        aoeExtension,
+        savingThrowModifier,
+        diceMultiplier
+    }: AlchemicalCombination5eConfig) {
+        this._damageByType = damageByType;
+        this._descriptiveEffects = descriptiveEffects;
+        this._aoeExtension = aoeExtension;
+        this._savingThrowModifier = savingThrowModifier;
+        this._diceMultiplier = diceMultiplier;
+    }
+
+    applyToItemData(itemData: ItemData): ItemData {
+        // todo: implement
+        return itemData;
+    }
+
+    toConstructorArgs(): AlchemicalCombination5eConfig {
+        return {
+            damageByType: new Map(this._damageByType),
+            descriptiveEffects: this._descriptiveEffects,
+            aoeExtension:this._aoeExtension,
+            savingThrowModifier: this._savingThrowModifier,
+            diceMultiplier: this._diceMultiplier
+        }
+    }
+
+}
+
+class Damage5e implements AlchemicalEffect<AlchemicalCombination5e> {
 
     private readonly _roll: Roll;
     private readonly _damageType: DND5e.DamageType;
     private readonly _rollProvider: RollProvider5E;
-
-    private readonly _effectName: Dnd5EAlchemicalEffectName = Dnd5EAlchemicalEffectName.DAMAGE;
-    private readonly _effectType: AlchemicalEffectType = AlchemicalEffectType.SIMPLE;
 
     constructor(config: {
         roll: Roll,
@@ -34,6 +88,10 @@ class Damage5e implements AlchemicalEffect {
         return `Adds ${this._roll.formula} ${this._damageType} damage`
     }
 
+    get rollProvider(): RollProvider5E {
+        return this._rollProvider;
+    }
+
     get roll(): Roll {
         return this._roll;
     }
@@ -42,83 +100,53 @@ class Damage5e implements AlchemicalEffect {
         return this._damageType;
     }
 
-    get effectName(): string {
-        return this._effectName;
-    }
-
-    get effectType(): AlchemicalEffectType {
-        return this._effectType;
-    }
-
-    canCombineWith(other: AlchemicalEffect): boolean {
-        if (other.effectName !== this._effectName) {
-            return false;
+    mixInto(combination: AlchemicalCombination5e): AlchemicalCombination5e {
+        const combinationConfig = combination.toConstructorArgs();
+        const modifiedDamage = combinationConfig.damageByType;
+        if (modifiedDamage.has(this._damageType)) {
+            const damageToCombine = modifiedDamage.get(this._damageType);
+            const combinedDamage = damageToCombine.combineWith(this);
+            modifiedDamage.set(this._damageType, combinedDamage);
+        } else {
+            modifiedDamage.set(this._damageType, this);
         }
-        return (<Damage5e><unknown>other).damageType === this._damageType;
+        combinationConfig.damageByType = modifiedDamage;
+        return new AlchemicalCombination5e(combinationConfig);
     }
 
-    combineWith(other: AlchemicalEffect): Damage5e {
-        if (this.canCombineWith(other)) {
-            throw new Error("Cannot combine 5E damage effects of different damage types");
-        }
-        const combinedRoll: Roll = this._rollProvider.combine((<Damage5e><unknown>other).roll, this._roll);
+    private combineWith(other: Damage5e): Damage5e {
+        const combinedRoll: Roll = this._rollProvider.combine(other.roll, this._roll);
         return new Damage5e({type: this._damageType, roll: combinedRoll, rollProvider: this._rollProvider});
     }
 
-    applyToItemData(itemData: ItemData): ItemData {
-        return itemData;
-    }
-
 }
-
 /**
  * Used for Conditions
  */
-class DescriptiveEffect5e implements AlchemicalEffect {
+class DescriptiveEffect5e implements AlchemicalEffect<AlchemicalCombination5e> {
 
     private readonly _effectDetail: string;
 
-    private readonly _effectName: Dnd5EAlchemicalEffectName = Dnd5EAlchemicalEffectName.DESCRIPTIVE;
-    private readonly _effectType: AlchemicalEffectType = AlchemicalEffectType.SIMPLE;
-
     constructor(effectDetail: string) {
         this._effectDetail = effectDetail;
-    }
-
-    get effectName(): string {
-        return this._effectName;
-    }
-
-    get effectType(): AlchemicalEffectType {
-        return this._effectType;
-    }
-
-    applyToItemData(itemData: ItemData): ItemData {
-        itemData.data.description.value += `<p>${this._effectDetail}</p>`;
-        return itemData;
-    }
-
-    canCombineWith(_other: AlchemicalEffect): boolean {
-        return false;
-    }
-
-    combineWith(other: AlchemicalEffect): AlchemicalEffect {
-        return other;
     }
 
     describe(): string {
         return this._effectDetail;
     }
 
+    mixInto(combination: AlchemicalCombination5e): AlchemicalCombination5e {
+        const combinationConfig = combination.toConstructorArgs();
+        combinationConfig.descriptiveEffects.push(this);
+        return new AlchemicalCombination5e(combinationConfig);
+    }
+
 }
 
-class AoeExtension5e implements AlchemicalEffect {
+class AoeExtension5e implements AlchemicalEffect<AlchemicalCombination5e> {
 
     private readonly _units: DND5e.Unit;
     private readonly _value: number;
-
-    private readonly _effectName: Dnd5EAlchemicalEffectName = Dnd5EAlchemicalEffectName.AOE_EXTENSION;
-    private readonly _effectType: AlchemicalEffectType = AlchemicalEffectType.SIMPLE;
 
     constructor(config: {
         units: DND5e.Unit;
@@ -128,89 +156,139 @@ class AoeExtension5e implements AlchemicalEffect {
         this._value = config.value;
     }
 
-    get effectName(): string {
-        return this._effectName;
+    get units(): DND5e.Unit {
+        return this._units;
     }
 
-    get effectType(): AlchemicalEffectType {
-        return this._effectType;
-    }
-
-    applyToItemData(itemData: ItemData): ItemData {
-        if ('target' in itemData.data) {
-            if (itemData.target.units !== this._aoeExtension.units) {
-                throw new Error(`You may not mix units in Alchemical Effects AoE Extensions. Found ${itemData.target.units}, expected ${this._aoeExtension.units}`);
-            }
-            itemData.target.value += this._aoeExtension.value;
-            return itemData;
-        }
-        throw new Error(`Type '${typeof itemData}' does not include the required 'target' property`);
-    }
-
-    canCombineWith(other: AlchemicalEffect): boolean {
-        return false;
-    }
-
-    combineWith(other: AlchemicalEffect): AlchemicalEffect {
-        return undefined;
+    get value(): number {
+        return this._value;
     }
 
     describe(): string {
         return `Increases the range of area effects by ${this._value}${this._units}`;
     }
 
-
-
-}
-
-class SavingThrowModifier5e extends AlchemicalDistillation5e {
-    private readonly _savingThrowModifier: number;
-
-    constructor(savingThrowModifier: number) {
-        super({
-            type:AlchemicalEffectType.BASIC,
-            description: `Increases save DC by ${savingThrowModifier}. `
-        });
-        this._savingThrowModifier = savingThrowModifier;
-    }
-
-    applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        if ('save' in itemData) {
-            itemData.save.dc += this._savingThrowModifier;
-            return itemData;
+    mixInto(combination: AlchemicalCombination5e): AlchemicalCombination5e {
+        const combinationConfig = combination.toConstructorArgs();
+        const existing = combinationConfig.aoeExtension;
+        if (!existing) {
+            combinationConfig.aoeExtension = this;
+            return new AlchemicalCombination5e(combinationConfig);
         }
-        throw new Error(`Type '${typeof itemData}' does not include the required 'save' property`);
+        if (existing.units !== this._units) {
+            throw new Error("Mixing units in AOE Extension effects is not currently supported. ");
+        }
+        combinationConfig.aoeExtension = existing.combineWith(this);
+        return new AlchemicalCombination5e(combinationConfig);
+    }
+
+    private combineWith(other: AoeExtension5e): AoeExtension5e {
+        const combinedValue = other.value + this._value;
+        return new AoeExtension5e({units: this._units, value: combinedValue});
     }
 
 }
 
-class DiceMultiplier5e extends AlchemicalDistillation5e {
-    private readonly _multiplierValue: number;
+class SavingThrowModifier5e implements AlchemicalEffect<AlchemicalCombination5e> {
+
+    private readonly _value: number;
+
+    constructor({
+        value
+    }: {
+        value: number
+    }) {
+        this._value = value;
+    }
+
+    private toExpression(): string {
+        return `${Math.sign(this._value)}${this._value}`;
+    }
+
+    describe(): string {
+        return `Modifies the DC of the saving throw to avoid effects by ${this.toExpression()}. `;
+    }
+
+    get value(): number {
+        return this._value;
+    }
+
+    combineWith(other: SavingThrowModifier5e): SavingThrowModifier5e {
+        return new SavingThrowModifier5e({value: other.value + this._value});
+    }
+
+    mixInto(combination: AlchemicalCombination5e): AlchemicalCombination5e {
+        const combinationConfig = combination.toConstructorArgs();
+        const existing = combinationConfig.savingThrowModifier;
+        if (!existing) {
+            combinationConfig.savingThrowModifier = this;
+            return new AlchemicalCombination5e(combinationConfig);
+        }
+        combinationConfig.savingThrowModifier = existing.combineWith(this);
+        return new AlchemicalCombination5e(combinationConfig);
+    }
+
+}
+
+class DiceMultiplier5e implements AlchemicalEffect<AlchemicalCombination5e> {
+
+    private readonly _value: number;
     private readonly _diceRoller: DiceRoller;
 
-    constructor(multiplierValue: number, diceRoller: DiceRoller) {
-        super({
-            type: AlchemicalEffectType.MULTIPLIER,
-            description: `Multiplies the number of damage dice by a factor of ${multiplierValue}`
-        });
-        this._multiplierValue = multiplierValue;
+    describe(): string {
+        return `Multiplies the number of damage dice for all effects by ${this._value}`;
+    }
+
+    constructor({
+        multiplierValue, diceRoller
+    }: {
+        multiplierValue: number,
+        diceRoller: DiceRoller
+    }) {
+        this._value = multiplierValue;
         this._diceRoller = diceRoller;
     }
 
-    applyTo(itemData: Item5e.Data.Data): Item5e.Data.Data {
-        if ('damage' in itemData) {
-            itemData.damage.parts = itemData.damage.parts
-                .map((damagePart: [string, DND5e.DamageType| 'none']) => {
-                    const multipliedExpression: string = this._diceRoller.multiply(damagePart[0], this._multiplierValue);
-                    return [multipliedExpression, damagePart[1]];
-                });
-            return itemData;
+    get value(): number {
+        return this._value;
+    }
+
+    combineWith(other: DiceMultiplier5e): DiceMultiplier5e {
+        return new DiceMultiplier5e({
+            multiplierValue: other.value * this._value,
+            diceRoller:this._diceRoller
+        });
+    }
+
+    multiply(damageEffect: Damage5e): Damage5e {
+        const multipliedRoll = this._diceRoller.multiply(damageEffect.roll, this._value);
+        return new Damage5e({
+            type: damageEffect.damageType,
+            roll: multipliedRoll,
+            rollProvider: damageEffect.rollProvider
+        });
+    }
+
+    mixInto(combination: AlchemicalCombination5e): AlchemicalCombination5e {
+        const combinationConfig = combination.toConstructorArgs();
+        const existing = combinationConfig.diceMultiplier;
+        if (!existing) {
+            combinationConfig.diceMultiplier = this;
+            return new AlchemicalCombination5e(combinationConfig);
         }
-        throw new Error(`Type '${typeof itemData}' does not include the required 'damage' property`);
+        combinationConfig.diceMultiplier = existing.combineWith(this);
+        return new AlchemicalCombination5e(combinationConfig);
     }
 
 }
 
-
-
-export { Dnd5EAlchemicalEffectName, Damage5e, DescriptiveEffect5e }
+export {
+    Dnd5EAlchemicalEffectName,
+    AlchemicalCombiner5e,
+    AlchemicalCombination5e,
+    Damage5e,
+    DescriptiveEffect5e,
+    AoeExtension5e,
+    SavingThrowModifier5e,
+    DiceMultiplier5e
+}

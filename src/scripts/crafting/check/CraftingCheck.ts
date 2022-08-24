@@ -67,8 +67,7 @@ export {CraftingCheck, CraftingCheckConfig, DefaultCraftingCheck}
 
 class NoCraftingCheck implements CraftingCheck<Actor> {
 
-    constructor() {
-    }
+    constructor() {}
 
     // @ts-ignore This no-op implementation does not need to use variables passed to the implementation of perform
     perform(actor: Actor, components: Combination<CraftingComponent>): CraftingCheckResult {

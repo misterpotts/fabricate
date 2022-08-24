@@ -6,10 +6,11 @@ import {
     AlchemyAttempt,
     AlchemyConstraints, DefaultAlchemyAttempt, DefaultAlchemyConstraintEnforcer
 } from "./AlchemyAttempt";
-import {AlchemicalCombiner} from "./AlchemicalCombiner";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
+import {AlchemicalCombination, AlchemicalCombiner} from "./AlchemicalEffect";
 
 interface AlchemyAttemptFactory {
+    formulaeByBasePartId: Map<string, AlchemyFormula>;
 
     make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
 
@@ -20,13 +21,13 @@ interface AlchemyAttemptFactoryConfig {
     componentConsumptionCalculator: ComponentConsumptionCalculator;
     constraints: AlchemyConstraints,
     alchemyFormulae: AlchemyFormula[],
-    alchemicalCombiner: AlchemicalCombiner
+    alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>
 }
 
 class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
     private readonly _constraints: AlchemyConstraints;
-    private readonly _alchemicalCombiner: AlchemicalCombiner;
+    private readonly _alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>;
     private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
     private readonly _alchemyFormulaeByBasePartId: Map<string, AlchemyFormula>;
 
@@ -35,6 +36,10 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
         this._constraints = config.constraints;
         this._alchemicalCombiner = config.alchemicalCombiner;
         this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula>(config.alchemyFormulae.map(formula => [formula.basePartId, formula]));
+    }
+
+    get formulaeByBasePartId(): Map<string, AlchemyFormula> {
+        return this._alchemyFormulaeByBasePartId;
     }
 
     isEnabled(): boolean {
@@ -72,6 +77,10 @@ class DisabledAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
     make(_baseComponent: CraftingComponent, _componentSelection: Combination<CraftingComponent>): AlchemyAttempt {
         return new AbandonedAlchemyAttempt("This crafting system does not support Alchemy. ");
+    }
+
+    get formulaeByBasePartId(): Map<string, AlchemyFormula> {
+        return new Map();
     }
 
 }

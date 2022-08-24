@@ -9,7 +9,7 @@ import {
     WastefulCraftingAttempt
 } from "./CraftingAttempt";
 import {ComponentSelection} from "../../component/ComponentSelection";
-import {WastageType} from "../../system/specification/CraftingSystemSpec";
+import {WastageType} from "../../common/ComponentConsumptionCalculator";
 
 interface CraftingAttemptFactoryConfig {
     selectionStrategy: ComponentSelectionStrategy;
@@ -40,7 +40,7 @@ class CraftingAttemptFactory {
                     recipe: recipe,
                     components: componentSelection.components
                 });
-            case WastageType.NONPUNITIVE:
+            case WastageType.NON_PUNITIVE:
                 return new GenerousCraftingAttempt({
                     recipe: recipe,
                     components: componentSelection.components
@@ -51,4 +51,4 @@ class CraftingAttemptFactory {
 
 }
 
-export {CraftingAttemptFactory, CraftingAttemptFactoryConfig, WastageType}
+export {CraftingAttemptFactory, CraftingAttemptFactoryConfig}
