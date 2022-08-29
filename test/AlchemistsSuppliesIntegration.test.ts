@@ -8,7 +8,6 @@ import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import {GameSystem} from "../src/scripts/system/GameSystem";
 import * as Sinon from "sinon";
-import {RollProvider5E} from "../src/scripts/5e/RollProvider5E";
 import {RollModifierProviderFactory} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {
     AoeExtension5e,
@@ -17,6 +16,7 @@ import {
     DiceMultiplier5e,
     SavingThrowModifier5e
 } from "../src/scripts/5e/AlchemicalEffect5E";
+import {DiceRoller} from "../src/scripts/foundry/DiceRoller";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -25,17 +25,9 @@ beforeEach(() => {
     Sandbox.reset();
 });
 
-const stubRollProvider: RollProvider5E = <RollProvider5E><unknown>{
-    combine: () => {},
-    getForActor: () => {},
-    fromExpression: () => {}
-};
-const stubFromExpressionMethod = Sandbox.stub(stubRollProvider, 'fromExpression');
-
 const stubRollProviderFactory: RollModifierProviderFactory<Actor> = <RollModifierProviderFactory<Actor>><unknown>{
     make: () => {}
 };
-const stubMakeMethod = Sandbox.stub(stubRollProviderFactory, 'make');
 
 describe('A Crafting System Factory', () => {
 
@@ -61,15 +53,16 @@ describe('A Crafting System Factory', () => {
         const compendiumImporter = new CompendiumImporter(jsonCompendiumProvider);
         const partDictionary = await compendiumImporter.import(systemSpec.id, systemSpec.compendia, systemSpec.essences);
 
+        const stubDiceRoller: DiceRoller = <DiceRoller><unknown> {
+            fromExpression: () => {}
+        }
+
         const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
             specification: systemSpec,
             partDictionary: partDictionary,
-            rollProviderFactory: stubRollProviderFactory
+            rollProviderFactory: stubRollProviderFactory,
+            diceRoller: stubDiceRoller
         });
-
-        stubMakeMethod.returns(stubRollProvider);
-        const stubRoll: Roll = <Roll><unknown>{}
-        stubFromExpressionMethod.returns(stubRoll);
 
         const craftingSystem: CraftingSystem = craftingSystemFactory.make();
 

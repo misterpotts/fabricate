@@ -14,7 +14,6 @@ import {DefaultThresholdCalculator, ThresholdCalculator, ThresholdType} from "..
 import {DefaultAlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula, DefaultAlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
 import {EssenceDefinition, EssenceIdentityProvider} from "../common/EssenceDefinition";
-import {RollProvider5E} from "../5e/RollProvider5E";
 import {ComponentConsumptionCalculatorFactory, WastageType} from "../common/ComponentConsumptionCalculator";
 import {
     AlchemicalCombination5e,
@@ -39,19 +38,23 @@ class CraftingSystemFactory {
     private readonly _specification: CraftingSystemDefinition;
     private readonly _partDictionary: PartDictionary;
     private readonly _rollProviderFactory: RollModifierProviderFactory<Actor>;
+    private readonly _diceRoller: DiceRoller;
 
     constructor({
         specification,
         partDictionary,
-        rollProviderFactory
+        rollProviderFactory,
+        diceRoller
     }: {
         specification: CraftingSystemDefinition;
         partDictionary: PartDictionary;
         rollProviderFactory: RollModifierProviderFactory<Actor>;
+        diceRoller: DiceRoller;
     }) {
         this._specification = specification;
         this._partDictionary = partDictionary;
         this._rollProviderFactory = rollProviderFactory;
+        this._diceRoller = diceRoller;
     }
 
     public make(): CraftingSystem {
@@ -83,15 +86,13 @@ class CraftingSystemFactory {
             }),
             alchemyAttemptFactory: this.buildAlchemyAttemptFactory(this._specification.alchemy.enabled,
                 consumptionCalculatorFactory,
-                essenceIdentityProvider,
-                this._rollProviderFactory.make() as RollProvider5E) // todo, fix this cast
+                essenceIdentityProvider)
         });
     }
 
     private buildAlchemyAttemptFactory(enabled: boolean,
                                        componentConsumptionCalculatorFactory: ComponentConsumptionCalculatorFactory,
-                                       essenceIdentityProvider: EssenceIdentityProvider,
-                                       rollProvider: RollProvider5E) {
+                                       essenceIdentityProvider: EssenceIdentityProvider) {
         if (!enabled) {
             return new DisabledAlchemyAttemptFactory()
         }
@@ -99,13 +100,12 @@ class CraftingSystemFactory {
             componentConsumptionCalculator: componentConsumptionCalculatorFactory.make(WastageType[this._specification.alchemy.wastage]),
             alchemicalCombiner: new AlchemicalCombiner5e(),
             constraints: this._specification.alchemy.constraints,
-            alchemyFormulae: this._specification.alchemy.formulae.map(formula => this.buildAlchemyFormula(essenceIdentityProvider, formula, rollProvider))
+            alchemyFormulae: this._specification.alchemy.formulae.map(formula => this.buildAlchemyFormula(essenceIdentityProvider, formula))
         });
     }
 
     private buildAlchemyFormula(essenceIdentityProvider: EssenceIdentityProvider,
-                                alchemyFormulaSpec: AlchemyFormulaDefinition,
-                                rollProvider: RollProvider5E): AlchemyFormula {
+                                alchemyFormulaSpec: AlchemyFormulaDefinition): AlchemyFormula {
         const alchemyFormula = new DefaultAlchemyFormula({
             basePartId: alchemyFormulaSpec.basePartId,
             essenceIdentityProvider: essenceIdentityProvider
@@ -134,8 +134,8 @@ class CraftingSystemFactory {
                     const damageSpec = alchemyEffectSpec as DnD5EDamageEffectSpec;
                     const damageEffect = new Damage5e({
                         type: damageSpec.damage.type,
-                        roll: rollProvider.fromExpression(damageSpec.damage.expression),
-                        diceRoller: rollProvider
+                        roll: this._diceRoller.fromExpression(damageSpec.damage.expression),
+                        diceRoller: this._diceRoller
                     })
                     result.alchemicalEffect = damageEffect;
                     break;
@@ -148,7 +148,7 @@ class CraftingSystemFactory {
                     const multiplierValue = (alchemyEffectSpec as DnD5EDamageMultiplierEffectSpec).diceMultiplier;
                     const diceMultiplier = new DiceMultiplier5e({
                         multiplierValue: multiplierValue,
-                        diceRoller: new DiceRoller()
+                        diceRoller: this._diceRoller
                     });
                     result.alchemicalEffect = diceMultiplier
                     break;
@@ -183,7 +183,7 @@ class CraftingSystemFactory {
         return new DefaultCraftingCheck({
             thresholdCalculator: thresholdCalculator,
             gameSystemRollModifierProvider: rollProvider,
-            diceRoller: new DiceRoller()
+            diceRoller: this._diceRoller
         });
     }
 

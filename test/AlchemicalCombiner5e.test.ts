@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import {AlchemicalCombiner5e, Damage5e} from "../src/scripts/5e/AlchemicalEffect5E";
 import * as Sinon from "sinon";
-import {RollProvider5E} from "../src/scripts/5e/RollProvider5E";
+import {DiceRoller} from "../src/scripts/foundry/DiceRoller";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -10,10 +10,10 @@ beforeEach(() => {
     Sandbox.reset();
 });
 
-const stubRollProvider: RollProvider5E = <RollProvider5E><unknown>{
+const stubDiceRoller: DiceRoller = <DiceRoller><unknown>{
     combine: () => {}
 };
-const stubCombineMethod = Sandbox.stub(stubRollProvider, 'combine');
+const stubCombineMethod = Sandbox.stub(stubDiceRoller, 'combine');
 
 
 describe("Alchemical combiner for 5th edition alchemical effects ", () => {
@@ -32,18 +32,32 @@ describe("Alchemical combiner for 5th edition alchemical effects ", () => {
                 formula: "1d4 + 1d6"
             };
 
-            const acidDamageOne = new Damage5e({type: "acid", roll: stubRollOne, diceRoller: stubRollProvider});
-            const acidDamageTwo = new Damage5e({type: "acid", roll: stubRollTwo, diceRoller: stubRollProvider});
-            const coldDamage = new Damage5e({type: "cold", roll: stubRollOne, diceRoller: stubRollProvider});
+            const acidDamageOne = new Damage5e({type: "acid", roll: stubRollOne, diceRoller: stubDiceRoller});
+            const acidDamageTwo = new Damage5e({type: "acid", roll: stubRollTwo, diceRoller: stubDiceRoller});
+            const coldDamage = new Damage5e({type: "cold", roll: stubRollOne, diceRoller: stubDiceRoller});
 
             stubCombineMethod.onCall(0).returns(stubRollThree);
 
             const underTest = new AlchemicalCombiner5e();
             const result = underTest.mix([acidDamageOne, coldDamage, acidDamageTwo]);
             expect(result).not.toBeNull();
-            expect(result.damageByType.size).toEqual(2);
-            expect(result.damageByType.get("acid").roll.formula).toEqual(stubRollThree.formula);
-
+            const itemData: any = {
+                damage: {
+                    parts: [["1d6", "slashing"]]
+                },
+                save: {
+                    dc: 8
+                },
+                target: {
+                    units: "ft",
+                    value: 0
+                },
+                description: {
+                    value: ""
+                }
+            };
+            result.applyToItemData(itemData);
+            expect(itemData.damage.parts.length).toEqual(3);
         });
 
     });

@@ -1,5 +1,4 @@
 import {AlchemicalCombination, AlchemicalCombiner, AlchemicalEffect} from "../crafting/alchemy/AlchemicalEffect";
-import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {DiceRoller} from "../foundry/DiceRoller";
 
 enum Dnd5EAlchemicalEffectName {
@@ -50,8 +49,28 @@ class AlchemicalCombination5e implements AlchemicalCombination {
         this._diceMultiplier = diceMultiplier;
     }
 
-    applyToItemData(itemData: ItemData): ItemData {
-        // todo: implement
+    applyToItemData(itemData: any): any {
+        // todo: figure out correct typing for v10
+        if (this._diceMultiplier) {
+            Array.from(this._damageByType.values())
+                .map(damage => this._diceMultiplier.multiply(damage))
+                .forEach(multipliedDamage => this._damageByType.set(multipliedDamage.damageType, multipliedDamage));
+        }
+        Array.from(this._damageByType.values())
+            .forEach(damage => itemData.damage.parts.push([damage.toExpression(), damage.damageType]));
+        if (this._savingThrowModifier) {
+            if (itemData.save?.dc) {
+                itemData.save.dc += this._savingThrowModifier.value;
+            }
+        }
+        if (this._aoeExtension) {
+            if (itemData.target?.units === this._aoeExtension.units) {
+                itemData.target.value += this._aoeExtension.value;
+            }
+        }
+        this._descriptiveEffects.forEach(effect => {
+            itemData.description.value += `<p>${effect.describe()}</p>`
+        });
         return itemData;
     }
 
@@ -118,6 +137,9 @@ class Damage5e implements AlchemicalEffect<AlchemicalCombination5e> {
         return new Damage5e({type: this._damageType, roll: combinedRoll, diceRoller: this._diceRoller});
     }
 
+    toExpression(): string {
+        return this._roll.formula;
+    }
 }
 /**
  * Used for Conditions
@@ -239,7 +261,8 @@ class DiceMultiplier5e implements AlchemicalEffect<AlchemicalCombination5e> {
     }
 
     constructor({
-        multiplierValue, diceRoller
+        multiplierValue,
+        diceRoller
     }: {
         multiplierValue: number,
         diceRoller: DiceRoller
