@@ -1,10 +1,10 @@
 import {CraftingSystem} from "../system/CraftingSystem";
 import FabricateApplication from "./FabricateApplication";
 import {EssenceDefinition} from "../common/EssenceDefinition";
-import {CraftingTab} from "../../interface/CraftingTab";
-import {ItemRecipeTab} from "../../interface/ItemRecipeTab";
-import Properties from "../../Properties";
-import {DND5ECraftingSystemSpecification} from "../system/specification/DND5ECraftingSystemSpecification";
+import {CraftingTab} from "../interface/CraftingTab";
+import {ItemRecipeTab} from "../interface/ItemRecipeTab";
+import {CraftingSystemDefinition} from "../registries/system_definitions/interface/CraftingSystemDefinition";
+import Properties from "../Properties";
 
 
 class FabricateLifecycle {
@@ -63,8 +63,9 @@ class FabricateLifecycle {
 
     }
 
-    public static registerCraftingSystemSettings(systemSpec: DND5ECraftingSystemSpecification) {
-        game.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
+    public static registerCraftingSystemSettings(systemSpec: CraftingSystemDefinition) {
+        const globalGameObject = new GameProvider().globalGameObject();
+        globalGameObject.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
             name: systemSpec.name,
             hint: systemSpec.summary,
             scope: "world",

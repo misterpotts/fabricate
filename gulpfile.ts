@@ -1,7 +1,7 @@
 const gulp = require('gulp')
 const project = require('gulp-typescript').createProject('tsconfig.json');
 const less = require('gulp-less');
-const gulp_mocha = require('gulp-mocha');
+const gulp_jest = require('gulp-jest').default;
 const webpack = require('webpack-stream');
 const webpack_config = require('./webpack.config.js');
 
@@ -19,10 +19,11 @@ gulp.task('compile-less', () => {
 
 gulp.task('test', () => {
   return gulp.src('test/**/*.ts')
-      .pipe(gulp_mocha({
-        reporter: 'list',
-        require: ['ts-node/register'],
-        ui: 'bdd'
+      .pipe(gulp_jest({
+          "preprocessorIgnorePatterns": [
+              "<rootDir>/dist/", "<rootDir>/node_modules/"
+          ],
+          automock: false
       }));
 });
 
