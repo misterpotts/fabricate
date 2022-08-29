@@ -11,21 +11,23 @@ interface CraftingComponentMutation {
     salvage?: Combination<CraftingComponent>;
 }
 
-interface CraftingComponentConfig {
-    item: FabricateItemConfig,
-    essences: Combination<EssenceDefinition>;
-    salvage: Combination<CraftingComponent>;
-}
-
 class CraftingComponent extends FabricateItem {
 
     private readonly _essences: Combination<EssenceDefinition>;
     private readonly _salvage: Combination<CraftingComponent>;
 
-    constructor(config: CraftingComponentConfig) {
-        super(config.item);
-        this._essences = config.essences;
-        this._salvage = config.salvage;
+    constructor({
+        gameItem,
+        essences,
+        salvage
+    }: {
+        gameItem: FabricateItemConfig,
+        essences?: Combination<EssenceDefinition>;
+        salvage?: Combination<CraftingComponent>;
+    }) {
+        super(gameItem);
+        this._essences = essences ?? Combination.EMPTY();
+        this._salvage = salvage ?? Combination.EMPTY();
     }
 
     public mutate(mutation: CraftingComponentMutation): CraftingComponent {
@@ -34,7 +36,7 @@ class CraftingComponent extends FabricateItem {
             return this;
         }
         return new CraftingComponent({
-            item: {
+            gameItem: {
                 systemId: this.systemId,
                 partId: this.partId,
                 compendiumId: this.compendiumId,
@@ -55,4 +57,4 @@ class CraftingComponent extends FabricateItem {
     }
 }
 
-export {CraftingComponent, CraftingComponentConfig}
+export {CraftingComponent}

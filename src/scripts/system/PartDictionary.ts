@@ -3,7 +3,7 @@ import Properties from "../Properties";
 import {FabricateItem} from "../common/FabricateItem";
 import {Recipe} from "../crafting/Recipe";
 import {CompendiumEntry, FabricateItemType} from "../compendium/CompendiumData";
-import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
+
 class PartDictionary {
     private readonly _components: Map<string, CraftingComponent> = new Map();
     private readonly _recipes: Map<string, Recipe> = new Map();
@@ -13,7 +13,7 @@ class PartDictionary {
         this._recipes = recipes;
     }
 
-    public static typeOf(item: BaseItem): FabricateItemType | 'NONE' {
+    public static typeOf(item: any): FabricateItemType | 'NONE' {
         const itemType: FabricateItemType = <FabricateItemType> item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
         if (itemType) {
             return itemType;
@@ -21,19 +21,19 @@ class PartDictionary {
         return 'NONE';
     }
 
-    private static validateType(item: BaseItem, expectedType: FabricateItemType): void {
+    private static validateType(item: any, expectedType: FabricateItemType): void {
         if (PartDictionary.typeOf(item) !== expectedType) {
             const ownershipDescription: string = item.parent ? `owned by Actor '${item.parent.name}` : 'with no owning Actor'
             throw new Error(`Item '${item.id}', with name '${item.name}' ${ownershipDescription} is not a ${expectedType}! `);
         }
     }
 
-    private static getIdentifier(item: BaseItem): string {
+    private static getIdentifier(item: any): string {
         const identity: CompendiumEntry = <CompendiumEntry>item.getFlag(Properties.module.name, Properties.flagKeys.item.identity);
         return FabricateItem.globalIdentifier(identity.partId, identity.systemId);
     }
 
-    public componentFrom(item: BaseItem): CraftingComponent {
+    public componentFrom(item: any): CraftingComponent {
         PartDictionary.validateType(item, FabricateItemType.COMPONENT);
         const identifier: string = PartDictionary.getIdentifier(item);
         if (this._components.has(identifier)) {
@@ -43,7 +43,7 @@ class PartDictionary {
         throw new Error(`Unable to look up Fabricate System Part for Item '${item.id}', with name '${item.name}' ${ownershipDescription}. `);
     }
 
-    public recipeFrom(item: BaseItem): Recipe {
+    public recipeFrom(item: any): Recipe {
         PartDictionary.validateType(item, FabricateItemType.RECIPE);
         const identifier: string = PartDictionary.getIdentifier(item);
         if (this._recipes.has(identifier)) {

@@ -2,7 +2,7 @@ import {expect, jest, test, beforeEach} from "@jest/globals";
 
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
-// @ts-ignore
+
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 
 beforeEach(() => {
@@ -15,12 +15,17 @@ test('Should create an empty Combination',() => {
     expect(underTest.size()).toBe(0);
     expect(underTest.isEmpty()).toBe(true);
     expect(underTest.has(testComponentOne)).toBe(false);
-    expect(underTest.has(CraftingComponent.builder()
-        .withPartId('XYZ345')
-        .withCompendiumId('system-two')
-        .withImageUrl('/img/picture.png')
-        .withName('Test Component 2')
-        .build())).toBe(false);
+    expect(underTest.has(new CraftingComponent({
+        gameItem: {
+            partId: 'XYZ345',
+            compendiumId: 'system-two',
+            imageUrl: '/img/picture.png',
+            name: 'Test Component 2',
+            systemId: 'fabricate.test-system'
+        },
+        salvage: Combination.EMPTY(),
+        essences: Combination.EMPTY()
+    }))).toBe(false);
 
     const underTestAsUnits: Unit<CraftingComponent>[] = underTest.units;
     expect(underTestAsUnits.length).toBe(0);
@@ -32,23 +37,30 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.size()).toBe(1);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
-    let equivalentComponent = CraftingComponent.builder()
-        .withPartId(testComponentOne.partId)
-        .withCompendiumId(testComponentOne.compendiumId)
-        .withSystemId(testComponentOne.systemId)
-        .withImageUrl(testComponentOne.imageUrl)
-        .withName(testComponentOne.name)
-        .withEssences(testComponentOne.essences)
-        .build();
+    let equivalentComponent = new CraftingComponent({
+        gameItem: {
+            partId: testComponentOne.partId,
+            compendiumId: testComponentOne.compendiumId,
+            imageUrl: testComponentOne.imageUrl,
+            name: testComponentOne.name,
+            systemId: testComponentOne.systemId
+        },
+        salvage:testComponentOne.salvage,
+        essences: testComponentOne.essences
+    });
     expect(underTest.has(equivalentComponent))
         .toBe(true);
-    let nonEquivalentComponent = CraftingComponent.builder()
-        .withPartId('XYZ345')
-        .withCompendiumId('FGTH654')
-        .withSystemId('system-two')
-        .withImageUrl('/img/picture.png')
-        .withName('Test Component 2')
-        .build();
+    let nonEquivalentComponent = new CraftingComponent({
+        gameItem: {
+            partId: 'XYZ345',
+            compendiumId: 'system-two',
+            imageUrl: '/img/picture.png',
+            name: 'Test Component 2',
+            systemId: 'fabricate.test-system'
+        },
+        salvage: Combination.EMPTY(),
+        essences: Combination.EMPTY()
+    });
     expect(underTest.has(nonEquivalentComponent))
         .toBe(false);
 
@@ -71,22 +83,28 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.has(testComponentOne)).toBe(true);
     expect(underTest.has(testComponentTwo)).toBe(true);
     expect(underTest.has(testComponentThree)).toBe(true);
-    expect(underTest.has(CraftingComponent.builder()
-        .withPartId(testComponentOne.partId)
-        .withCompendiumId(testComponentOne.compendiumId)
-        .withSystemId(testComponentOne.systemId)
-        .withImageUrl(testComponentOne.imageUrl)
-        .withName(testComponentOne.name)
-        .withEssences(testComponentOne.essences)
-        .build()))
-        .toBe(true);
-    expect(underTest.has(CraftingComponent.builder()
-        .withPartId('XYZ345')
-        .withCompendiumId('FGTH654')
-        .withSystemId('system-two')
-        .withImageUrl('/img/picture.png')
-        .withName('Test Component 2')
-        .build())).toBe(false);
+    expect(underTest.has(new CraftingComponent({
+        gameItem: {
+            partId: testComponentOne.partId,
+            compendiumId: testComponentOne.compendiumId,
+            imageUrl: testComponentOne.imageUrl,
+            name: testComponentOne.name,
+            systemId: testComponentOne.systemId
+        },
+        salvage:testComponentOne.salvage,
+        essences: testComponentOne.essences
+    }))).toBe(true);
+    expect(underTest.has(new CraftingComponent({
+        gameItem: {
+            partId: 'XYZ345',
+            compendiumId: 'system-two',
+            imageUrl: '/img/picture.png',
+            name: 'Test Component 2',
+            systemId: 'fabricate.test-system'
+        },
+        salvage: Combination.EMPTY(),
+        essences: Combination.EMPTY()
+    }))).toBe(false);
     expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree]));
 });
 

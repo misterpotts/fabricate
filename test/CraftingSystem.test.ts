@@ -9,12 +9,12 @@ import {Inventory} from "../src/scripts/actor/Inventory";
 import {testRecipeOne} from "./test_data/TestRecipes";
 import {testComponentFive, testComponentOne, testComponentThree} from "./test_data/TestCraftingComponents";
 import {Combination} from "../src/scripts/common/Combination";
-import {CraftingCheck, DefaultCraftingCheck, NoCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
+import {CraftingCheck, DefaultCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
 import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
-import {RollProvider} from "../src/scripts/crafting/check/RollProvider";
+import {GameSystemRollModifierProvider} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {testPartDictionary} from "./test_data/TestPartDictionary";
-import {CraftingAttemptFactory, WastageType} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
+import {CraftingAttemptFactory} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
 import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/DefaultComponentSelectionStrategy";
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {
@@ -22,35 +22,35 @@ import {
     SuccessfulCraftingResult,
     UnsuccessfulCraftingResult
 } from "../src/scripts/crafting/result/CraftingResult";
+import {ComponentConsumptionCalculatorFactory, WastageType} from "../src/scripts/common/ComponentConsumptionCalculator";
+import {DefaultAlchemyAttemptFactory} from "../src/scripts/crafting/alchemy/AlchemyAttemptFactory";
+import {AlchemicalCombiner5e} from "../src/scripts/5e/AlchemicalEffect5E";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
 const essences: EssenceDefinition[] = [elementalAir, elementalEarth, elementalFire, elementalWater];
 
 const stubDiceRoller: DiceRoller = <DiceRoller><unknown>{
-    roll: () => {}
+    roll: () => {},
+    evaluate: () => {},
+    createUnmodifiedRoll: () => {}
 };
-const stubRollMethod = Sandbox.stub(stubDiceRoller, 'evaluate');
+const stubEvaluateMethod = Sandbox.stub(stubDiceRoller, 'evaluate');
 
-const stubRollTermProvider: RollProvider<Actor> = <RollProvider<Actor>><unknown>{
-    getFor: () => {}
+const stubRollTermProvider: GameSystemRollModifierProvider<Actor> = <GameSystemRollModifierProvider<Actor>><unknown>{
+    getForActor: () => {}
 };
-const stubGetForMethod = Sandbox.stub(stubRollTermProvider, 'getForActor');
 
-const stubActor: Actor<Actor.Data, Item<Item.Data>> = <Actor<Actor.Data, Item<Item.Data>>><unknown>{};
+const stubActor: Actor = <Actor><unknown>{};
 
 const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
     selectionStrategy: new DefaultComponentSelectionStrategy(),
     wastageType: WastageType.PUNITIVE
 });
 
-const stubInventory: Inventory<any, Actor<Actor.Data, Item<Item.Data>>> = <Inventory<any, Actor<Actor.Data, Item<Item.Data>>>><unknown>{
-    actor: {},
-    ownedComponents: {},
-    removeAll: () => {},
-    addAll: () => {},
-    accept: () => {},
-    index: () => {}
+const stubInventory: Inventory = <Inventory><unknown>{
+    acceptCraftingResult: () => {},
+    ownedComponents: {}
 };
 
 beforeEach(() => {
@@ -60,25 +60,83 @@ beforeEach(() => {
 
 describe('Create and configure', () => {
 
-    test('Should create a new Crafting System',() => {
+    test('Should create a new Crafting System with no checks and alchemy disabled',() => {
+
         const testSystemId = `fabricate-test-system`;
+
         const underTest = new CraftingSystem({
             id: testSystemId,
             enabled: true,
             gameSystem: GameSystem.DND5E,
             essences: essences,
             partDictionary: testPartDictionary,
-            craftingCheck: new NoCraftingCheck(),
             craftingAttemptFactory: craftingAttemptFactory
         });
+
         expect(underTest).not.toBeNull();
         expect(underTest.id).toEqual(testSystemId);
         expect(underTest.enabled).toEqual(true);
-        expect(underTest.hasCraftingCheck).toEqual(true);
+        expect(underTest.hasAlchemyCraftingCheck).toEqual(false);
+        expect(underTest.hasRecipeCraftingCheck).toEqual(false);
         expect(underTest.supportsAlchemy).toEqual(false);
         expect(underTest.essences).toEqual(expect.arrayContaining(essences));
-        expect(underTest.supports(GameSystem.DND5E)).toEqual(true);
         expect(underTest.gameSystem).toEqual(GameSystem.DND5E);
+
+    });
+
+    test('Should create a new Crafting System with checks and support for alchemy',() => {
+
+        const testSystemId = `fabricate-test-system`;
+
+        const defaultCraftingCheck = new DefaultCraftingCheck({
+            diceRoller: stubDiceRoller,
+            gameSystemRollModifierProvider: stubRollTermProvider,
+            thresholdCalculator: new DefaultThresholdCalculator({
+                thresholdType: ThresholdType.MEET,
+                baseValue: 8,
+                contributionCounter: new ContributionCounterFactory({
+                    ingredientContribution: 0,
+                    essenceContribution: 2
+                }).make()
+            })
+        });
+        const underTest = new CraftingSystem({
+            id: testSystemId,
+            enabled: true,
+            gameSystem: GameSystem.DND5E,
+            essences: essences,
+            partDictionary: testPartDictionary,
+            craftingAttemptFactory: craftingAttemptFactory,
+            alchemyAttemptFactory: new DefaultAlchemyAttemptFactory({
+                alchemyFormulae: [],
+                constraints: {
+                    components: {
+                        min: 1,
+                        max: 10
+                    },
+                    effects: {
+                        min: 1,
+                        max: 10
+                    }
+                },
+                alchemicalCombiner: new AlchemicalCombiner5e(),
+                componentConsumptionCalculator: new ComponentConsumptionCalculatorFactory().make(WastageType.PUNITIVE)
+            }),
+            craftingChecks: {
+                recipe: defaultCraftingCheck,
+                alchemy: defaultCraftingCheck
+            }
+        });
+
+        expect(underTest).not.toBeNull();
+        expect(underTest.id).toEqual(testSystemId);
+        expect(underTest.enabled).toEqual(true);
+        expect(underTest.hasAlchemyCraftingCheck).toEqual(true);
+        expect(underTest.hasRecipeCraftingCheck).toEqual(true);
+        expect(underTest.supportsAlchemy).toEqual(true);
+        expect(underTest.essences).toEqual(expect.arrayContaining(essences));
+        expect(underTest.gameSystem).toEqual(GameSystem.DND5E);
+
     });
 
 });
@@ -94,7 +152,6 @@ describe('Crafting ', () => {
             gameSystem: GameSystem.DND5E,
             essences: essences,
             partDictionary: testPartDictionary,
-            craftingCheck: new NoCraftingCheck(),
             craftingAttemptFactory: craftingAttemptFactory
         });
 
@@ -146,7 +203,7 @@ describe('Crafting ', () => {
         });
         const craftingCheck: CraftingCheck<Actor> = new DefaultCraftingCheck({
             diceRoller: stubDiceRoller,
-            rollProvider: stubRollTermProvider,
+            gameSystemRollModifierProvider: stubRollTermProvider,
             thresholdCalculator: thresholdCalculator
         });
 
@@ -157,20 +214,16 @@ describe('Crafting ', () => {
             gameSystem: GameSystem.DND5E,
             essences: essences,
             partDictionary: testPartDictionary,
-            craftingCheck: craftingCheck,
+            craftingChecks: {
+                recipe: craftingCheck
+            },
             craftingAttemptFactory: craftingAttemptFactory
         });
 
         test('should succeed for recipe with sufficient ingredients and successful check',async () => {
 
             Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
-            stubRollMethod.returns(new RollResult(11, "dummy dice expression"));
-            stubGetForMethod.returns({
-                faces: 20,
-                number: 1,
-                modifiers: [],
-                options: {}
-            });
+            stubEvaluateMethod.returns(new RollResult(11, "dummy dice expression"));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
 
@@ -187,13 +240,7 @@ describe('Crafting ', () => {
         test('should fail for recipe with sufficient ingredients and unsuccessful check',async () => {
 
             Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
-            stubRollMethod.returns(new RollResult(10, "dummy dice expression"));
-            stubGetForMethod.returns({
-                faces: 20,
-                number: 1,
-                modifiers: [],
-                options: {}
-            });
+            stubEvaluateMethod.returns(new RollResult(9, "dummy dice expression"));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
 

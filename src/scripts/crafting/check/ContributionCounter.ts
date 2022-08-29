@@ -39,7 +39,8 @@ class EssenceContributionCounter implements ContributionCounter {
      * */
     determineDCModifier(components: Combination<CraftingComponent>): number {
         return components.explode((component: CraftingComponent) => component.essences)
-            .members.map((() => this._essenceModifier))
+            .units
+            .map(((unit) => this._essenceModifier * unit.quantity))
             .reduce((left: number, right: number) => left + right, 0);
     }
 

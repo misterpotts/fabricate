@@ -2,14 +2,14 @@ import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import * as fs from 'fs/promises';
 
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
-import {CraftingSystemSpec} from "../src/scripts/system/specification/CraftingSystemSpec";
+import {CraftingSystemDefinition} from "../src/scripts/registries/system_definitions/interface/CraftingSystemDefinition";
 import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
 import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import {GameSystem} from "../src/scripts/system/GameSystem";
 import * as Sinon from "sinon";
 import {RollProvider5E} from "../src/scripts/5e/RollProvider5E";
-import {RollProviderFactory} from "../src/scripts/crafting/check/RollProvider";
+import {RollModifierProviderFactory} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {
     AoeExtension5e,
     Damage5e,
@@ -32,7 +32,7 @@ const stubRollProvider: RollProvider5E = <RollProvider5E><unknown>{
 };
 const stubFromExpressionMethod = Sandbox.stub(stubRollProvider, 'fromExpression');
 
-const stubRollProviderFactory: RollProviderFactory<Actor> = <RollProviderFactory<Actor>><unknown>{
+const stubRollProviderFactory: RollModifierProviderFactory<Actor> = <RollModifierProviderFactory<Actor>><unknown>{
     make: () => {}
 };
 const stubMakeMethod = Sandbox.stub(stubRollProviderFactory, 'make');
@@ -44,7 +44,7 @@ describe('A Crafting System Factory', () => {
         const rawSystemSpec = await fs.readFile('./src/resources/alchemists-supplies-v16-system-spec.json', {encoding: 'utf8'});
         expect(rawSystemSpec).not.toBeNull();
         const jsonSystemSpec = JSON.parse(rawSystemSpec);
-        const systemSpec=  <CraftingSystemSpec>jsonSystemSpec;
+        const systemSpec=  <CraftingSystemDefinition>jsonSystemSpec;
 
         const rawCompendiumData = await fs.readFile('./src/packs/alchemists-supplies-v16.db', {encoding: 'utf8'});
         const jsonDocuments: {}[] = rawCompendiumData.split("\n")

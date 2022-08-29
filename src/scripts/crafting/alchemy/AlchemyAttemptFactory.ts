@@ -4,24 +4,21 @@ import {AlchemyFormula} from "./AlchemyFormula";
 import {
     AbandonedAlchemyAttempt,
     AlchemyAttempt,
-    AlchemyConstraints, DefaultAlchemyAttempt, DefaultAlchemyConstraintEnforcer
+    AlchemyConstraints,
+    DefaultAlchemyAttempt,
+    DefaultAlchemyConstraintEnforcer
 } from "./AlchemyAttempt";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 import {AlchemicalCombination, AlchemicalCombiner} from "./AlchemicalEffect";
 
 interface AlchemyAttemptFactory {
+
     formulaeByBasePartId: Map<string, AlchemyFormula>;
 
     make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
 
     isEnabled(): boolean;
-}
 
-interface AlchemyAttemptFactoryConfig {
-    componentConsumptionCalculator: ComponentConsumptionCalculator;
-    constraints: AlchemyConstraints,
-    alchemyFormulae: AlchemyFormula[],
-    alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>
 }
 
 class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
@@ -31,11 +28,21 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
     private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
     private readonly _alchemyFormulaeByBasePartId: Map<string, AlchemyFormula>;
 
-    constructor(config: AlchemyAttemptFactoryConfig) {
-        this._componentConsumptionCalculator = config.componentConsumptionCalculator;
-        this._constraints = config.constraints;
-        this._alchemicalCombiner = config.alchemicalCombiner;
-        this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula>(config.alchemyFormulae.map(formula => [formula.basePartId, formula]));
+    constructor({
+        componentConsumptionCalculator,
+        constraints,
+        alchemyFormulae,
+        alchemicalCombiner
+    }: {
+        componentConsumptionCalculator: ComponentConsumptionCalculator;
+        constraints: AlchemyConstraints,
+        alchemyFormulae: AlchemyFormula[],
+        alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>
+    }) {
+        this._componentConsumptionCalculator = componentConsumptionCalculator;
+        this._constraints = constraints;
+        this._alchemicalCombiner = alchemicalCombiner;
+        this._alchemyFormulaeByBasePartId = new Map<string, AlchemyFormula>(alchemyFormulae.map(formula => [formula.basePartId, formula]));
     }
 
     get formulaeByBasePartId(): Map<string, AlchemyFormula> {

@@ -24,7 +24,7 @@ class FabricateLifecycle {
         });
 
         const convertEssenceSlugToIconMarkup = (essenceSlug: string, systemId: string) => {
-            const system: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(systemId);
+            const system: CraftingSystem = FabricateApplication.systems.getSystemById(systemId);
             const essenceDefinition: EssenceDefinition = system.getEssenceBySlug(essenceSlug);
             if (essenceDefinition) {
                 return essenceDefinition.icon;
@@ -71,7 +71,7 @@ class FabricateLifecycle {
             type: Boolean,
             default: true,
             config: true,
-            onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemByCompendiumPackKey(systemSpec.id).enabled = enabled; }
+            onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemById(systemSpec.id).enabled = enabled; }
         });
     }
 }

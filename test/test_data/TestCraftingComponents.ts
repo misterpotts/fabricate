@@ -4,40 +4,62 @@ import {EssenceDefinition} from "../../src/scripts/common/EssenceDefinition";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
-const testComponentOne: CraftingComponent = CraftingComponent.builder()
-    .withPartId('iyeUGBbSts0ij92X')
-    .withSystemId('fabricate.test-system')
-    .withImageUrl('/img/picture-1.png')
-    .withName('Test Component One')
-    .withEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 2)]))
-    .build();
-const testComponentTwo: CraftingComponent = CraftingComponent.builder()
-    .withPartId('Ie7NoXMja9wI6xya')
-    .withSystemId('fabricate.test-system')
-    .withImageUrl('/img/picture-2.png')
-    .withName('Test Component Two')
-    .withEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1)]))
-    .build();
-const testComponentThree: CraftingComponent = CraftingComponent.builder()
-    .withPartId('tdyV4AWuTMkXbepw')
-    .withSystemId('fabricate.test-system')
-    .withImageUrl('/img/picture-3.png')
-    .withName('Test Component Three')
-    .withEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 2), new Unit<EssenceDefinition>(elementalAir, 2)]))
-    .build();
-const testComponentFour: CraftingComponent = CraftingComponent.builder()
-    .withPartId('Ra2Z1ujre76weR0i')
-    .withSystemId('fabricate.test-system')
-    .withImageUrl('/img/picture-4.png')
-    .withName('Test Component Four')
-    .withEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 2)]))
-    .build();
-const testComponentFive: CraftingComponent = CraftingComponent.builder()
-    .withPartId('74K6TAuSg2xzd209')
-    .withSystemId('fabricate.test-system')
-    .withImageUrl('/img/picture-5.png')
-    .withName('Test Component Five')
-    .withEssences(Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1), new Unit<EssenceDefinition>(elementalEarth, 3)]))
-    .build();
+const testCompendiumId: string = "fabricate.test-compendium";
+const testSystemId = "fabricate.test-system";
+
+const testComponentOne: CraftingComponent = new CraftingComponent({
+    gameItem: {
+        partId: "iyeUGBbSts0ij92X",
+        imageUrl: "/img/picture-1.png",
+        name: "Test Component One",
+        systemId: testSystemId,
+        compendiumId: testCompendiumId,
+    },
+    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 2)])
+});
+
+const testComponentTwo: CraftingComponent = new CraftingComponent({
+    gameItem: {
+        partId: "Ie7NoXMja9wI6xya",
+        imageUrl: "/img/picture-2.png",
+        name: "Test Component Two",
+        systemId: testSystemId,
+        compendiumId: testCompendiumId,
+    },
+    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1)])
+});
+
+const testComponentThree: CraftingComponent = new CraftingComponent({
+    gameItem: {
+        partId: "tdyV4AWuTMkXbepw",
+        imageUrl: "/img/picture-3.png",
+        name: "Test Component Three",
+        systemId: testSystemId,
+        compendiumId: testCompendiumId,
+    },
+    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 2), new Unit<EssenceDefinition>(elementalAir, 2)])
+});
+
+const testComponentFour: CraftingComponent = new CraftingComponent({
+    gameItem: {
+        partId: "Ra2Z1ujre76weR0i",
+        imageUrl: "/img/picture-4.png",
+        name: "Test Component Four",
+        systemId: testSystemId,
+        compendiumId: testCompendiumId,
+    },
+    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 2)])
+});
+
+const testComponentFive: CraftingComponent = new CraftingComponent({
+    gameItem: {
+        partId: "74K6TAuSg2xzd209",
+        imageUrl: "/img/picture-5.png",
+        name: "Test Component Five",
+        systemId: testSystemId,
+        compendiumId: testCompendiumId,
+    },
+    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1), new Unit<EssenceDefinition>(elementalEarth, 3)])
+});
 
 export {testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive}

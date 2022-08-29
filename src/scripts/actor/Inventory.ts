@@ -8,22 +8,13 @@ import {GameSystemDocumentManager} from "./GameSystemDocumentManager";
 import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 
-interface Inventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
-    actor: A;
+// @ts-ignore // todo: figure out v10 types
+interface Inventory{
+    actor: any;
     ownedComponents: Combination<CraftingComponent>;
-    acceptCraftingResult(craftingResult: CraftingResult): Promise<Item<Item.Data<D>>[]>;
-    acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<Item<Item.Data<D>>[]>;
+    acceptCraftingResult(craftingResult: CraftingResult): Promise<any[]>;
+    acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]>;
     index(): Combination<CraftingComponent>;
-}
-
-interface CraftingInventoryConfig<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> {
-    actor: A;
-    partDictionary: PartDictionary;
-    game: Game;
-    objectUtils: ObjectUtility;
-    documentManager: GameSystemDocumentManager<D, A>;
-    ownedComponents?: Combination<CraftingComponent>;
-    managedItems?: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
 }
 
 interface InventoryActions {
@@ -31,28 +22,44 @@ interface InventoryActions {
     removals: Combination<CraftingComponent>;
 }
 
-class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> implements Inventory<D, A> {
+class CraftingInventory implements Inventory {
 
     private readonly _game: Game;
     private readonly _objectUtils: ObjectUtility;
-    private readonly _documentManager: GameSystemDocumentManager<D, A>;
+    private readonly _documentManager: GameSystemDocumentManager;
 
-    private readonly _actor: A;
+    private readonly _actor: any;
     private _ownedComponents: Combination<CraftingComponent>;
     private readonly _partDictionary: PartDictionary;
-    private _managedItems: Map<CraftingComponent, [Item<Item.Data<D>>, number][]>;
+    private _managedItems: Map<CraftingComponent, [any, number][]>;
 
-    protected constructor(config: CraftingInventoryConfig<D, A>) {
-        this._actor = config.actor;
-        this._partDictionary = config.partDictionary;
-        this._game = config.game;
-        this._objectUtils = config.objectUtils;
-        this._documentManager = config.documentManager;
-        this._ownedComponents = config.ownedComponents ? config.ownedComponents : Combination.EMPTY();
-        this._managedItems = config.managedItems ? config.managedItems : new Map();
+    protected constructor({
+            actor,
+            partDictionary,
+            game,
+            objectUtils,
+            documentManager,
+            ownedComponents,
+            managedItems
+        }: {
+            actor: any;
+            partDictionary: PartDictionary;
+            game: Game;
+            objectUtils: ObjectUtility;
+            documentManager: GameSystemDocumentManager;
+            ownedComponents?: Combination<CraftingComponent>;
+            managedItems?: Map<CraftingComponent, [any, number][]>;
+    }) {
+        this._actor = actor;
+        this._partDictionary = partDictionary;
+        this._game = game;
+        this._objectUtils = objectUtils;
+        this._documentManager = documentManager;
+        this._ownedComponents = ownedComponents ?? Combination.EMPTY();
+        this._managedItems = managedItems ?? new Map();
     }
 
-    get actor(): A {
+    get actor(): any {
         return this._actor;
     }
 
@@ -60,9 +67,9 @@ class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> impl
         return this._ownedComponents.clone();
     }
 
-    async removeAll(components: Combination<CraftingComponent>): Promise<Item<Item.Data<D>>[]> {
-        const updates: Item.Data<D>[] = [];
-        const deletes: Item.Data<D>[] = [];
+    async removeAll(components: Combination<CraftingComponent>): Promise<any[]> {
+        const updates: any[] = [];
+        const deletes: any[] = [];
         for (const unit of components.units) {
             const craftingComponent: CraftingComponent = unit.part;
             if (!this.ownedComponents.has(craftingComponent)) {
@@ -72,19 +79,19 @@ class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> impl
             if (unit.quantity > amountOwned) {
                 throw new InventoryContentsNotFoundError(unit, amountOwned, this._actor.id);
             }
-            const records: [Item<Item.Data<D>>, number][] = this._managedItems.get(craftingComponent)
-                .sort((left: [Item<Item.Data<D>>, number], right: [Item<Item.Data<D>>, number]) => left[1] - right[1]);
+            const records: [any, number][] = this._managedItems.get(craftingComponent)
+                .sort((left: [any, number], right: [any, number]) => left[1] - right[1]);
             let outstandingRemovalAmount: number = unit.quantity;
             let currentRecordIndex: number = 0;
             while (outstandingRemovalAmount > 0) {
-                const currentRecord: [Item<Item.Data<D>>, number] = records[currentRecordIndex];
+                const currentRecord: [any, number] = records[currentRecordIndex];
                 const quantity: number = currentRecord[1];
-                const itemData: Item.Data<D> = currentRecord[0].data;
+                const itemData: any = currentRecord[0].data;
                 if (quantity <= outstandingRemovalAmount) {
                     deletes.push(itemData);
                     outstandingRemovalAmount -= quantity;
                 } else {
-                    const newItemData: Item.Data<D> = this._documentManager.writeQuantity(
+                    const newItemData: any = this._documentManager.writeQuantity(
                         this._objectUtils.duplicate(itemData),
                         quantity - outstandingRemovalAmount);
                     updates.push(newItemData);
@@ -93,69 +100,71 @@ class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> impl
                 currentRecordIndex++;
             }
         }
-        const results: Item<Item.Data<D>>[] = [];
+        const results: any[] = [];
         if (updates.length > 0) {
-            const updatedItems: Item<Item.Data<D>>[] = await this.updateOwnedItems(this._actor, updates);
+            const updatedItems: any[] = await this.updateOwnedItems(this._actor, updates);
             results.push(...updatedItems);
         }
         if (deletes.length > 0) {
-            const createdItems: Item<Item.Data<D>>[] = await this.deleteOwnedItems(this._actor, deletes);
+            const createdItems: any[] = await this.deleteOwnedItems(this._actor, deletes);
             results.push(...createdItems);
         }
         return results;
     }
 
-    async addAll(components: Combination<CraftingComponent>): Promise<Item<Item.Data<D>>[]> {
-        const updates: Item.Data<D>[] = [];
-        const creates: Item.Data<D>[] = [];
+    async addAll(components: Combination<CraftingComponent>): Promise<any[]> {
+        const updates: any[] = [];
+        const creates: any[] = [];
         for (const unit of components.units) {
             const craftingComponent: CraftingComponent = unit.part;
             if (!this.ownedComponents.has(craftingComponent)) {
-                const sourceData: Item.Data<D> = await this.prepareItemData(craftingComponent);
-                const data: Item.Data<D> = this._objectUtils.duplicate(sourceData);
-                const newItemData: Item.Data<D> = this._documentManager.writeQuantity(data, unit.quantity);
+                const sourceData: any = await this.prepareItemData(craftingComponent);
+                const data: any = this._objectUtils.duplicate(sourceData);
+                const newItemData: any = this._documentManager.writeQuantity(data, unit.quantity);
                 creates.push(newItemData);
                 break;
             }
-            const records: [Item<Item.Data<D>>, number][] = this._managedItems.get(craftingComponent)
-                .sort((left: [Item<Item.Data<D>>, number], right: [Item<Item.Data<D>>, number]) => right[1] - left[1]);
-            const itemToUpdate: [Item<Item.Data<D>>, number] = records[0];
-            const newItemData: Item.Data<D> = this._documentManager.writeQuantity(
+            const records: [any, number][] = this._managedItems.get(craftingComponent)
+                .sort((left: [any, number], right: [any, number]) => right[1] - left[1]);
+            const itemToUpdate: [any, number] = records[0];
+            const newItemData: any = this._documentManager.writeQuantity(
                 this._objectUtils.duplicate(itemToUpdate[0].data),
                 unit.quantity + itemToUpdate[1]);
             updates.push(newItemData);
         }
-        const results: Item<Item.Data<D>>[] = [];
+        const results: any[] = [];
         if (updates.length > 0) {
-            const updatedItems: Item<Item.Data<D>>[] = await this.updateOwnedItems(this._actor, updates);
+            const updatedItems: any[] = await this.updateOwnedItems(this._actor, updates);
             results.push(...updatedItems);
         }
         if (creates.length > 0) {
-            const createdItems: Item<Item.Data<D>>[] = await this.createOwnedItems(this._actor, creates);
+            const createdItems: any[] = await this.createOwnedItems(this._actor, creates);
             results.push(...createdItems);
         }
         return results;
     }
 
-    async acceptCraftingResult(craftingResult: CraftingResult): Promise<Item<Item.Data<D>>[]> {
+    async acceptCraftingResult(craftingResult: CraftingResult): Promise<any[]> {
         const inventoryActions: InventoryActions = this.rationalise(craftingResult.created, craftingResult.consumed);
         // todo: Can *potentially* optimise further by combining all update operations across both add and remove,
         //  reducing total actions on the actor from 4 (ADD[CREATE, UPDATE], REMOVE[UPDATE, DELETE]) to 3
         //  ([CREATE, UPDATE, DELETE])
-        const modifiedItemData: Item<Item.Data<D>>[][] = await Promise.all([
+        const modifiedItemData: any[][] = await Promise.all([
             this.addAll(inventoryActions.additions),
             this.removeAll(inventoryActions.removals)
         ]);
         return modifiedItemData[0].concat(modifiedItemData[1]);
     }
 
-    async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<Item<Item.Data<D>>[]> {
-        const compendium: Compendium = this._game.packs.get(alchemyResult.baseItem.compendiumId);
-        const compendiumBaseItem: Entity<Entity.Data, Entity.Data> = await compendium.getEntity(alchemyResult.baseItem.partId);
-        const customItemData: Entity.Data = this._documentManager.customizeItem(compendiumBaseItem, alchemyResult.customItemData);
+    async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]> {
+        const compendium = this._game.packs.get(alchemyResult.baseComponent.compendiumId);
+        const compendiumBaseItem = await compendium.getDocument(alchemyResult.baseComponent.partId);
+        const customItemData = this._documentManager.customizeItem(compendiumBaseItem, alchemyResult.effects.applyToItemData(compendiumBaseItem));
         // const baseItemData: Entity.Data = duplicate(compendiumBaseItem.data);
         // mergeObject(baseItemData.data, alchemyResult.customItemData);
+        // @ts-ignore
         const createdItemData: Entity.Data = await this._actor.createEmbeddedEntity('OwnedItem', customItemData);
+        return null; // todo: implement once types are known
     }
 
     private rationalise(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): InventoryActions {
@@ -186,34 +195,34 @@ class CraftingInventory<D, A extends Actor<Actor.Data, Item<Item.Data<D>>>> impl
         });
     }
 
-    private async prepareItemData(component: CraftingComponent): Promise<Item.Data<D>> {
-        const compendium: Compendium = this._game.packs.get(component.systemId);
-        const entity: Entity<Item.Data<D>> = <Entity<Item.Data<D>>> await compendium.getEntity(component.partId);
+    private async prepareItemData(component: CraftingComponent): Promise<any> {
+        const compendium = this._game.packs.get(component.systemId);
+        const entity = await compendium.getDocument(component.partId);
         return entity.data;
     }
 
-    async deleteOwnedItems(actor: A, itemsData: Item.Data<D>[]): Promise<Item<Item.Data<D>>[]> {
-        const ids: string[] = itemsData.map((itemData: Item.Data<D>) => itemData._id);
+    async deleteOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
+        const ids: string[] = itemsData.map((itemData: any) => itemData._id);
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
         return actor.deleteEmbeddedEntity('OwnedItem', ids);
     }
 
-    async createOwnedItems(actor: A, itemsData: Item.Data<D>[]): Promise<Item<Item.Data<D>>[]> {
+    async createOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
         return actor.createEmbeddedEntity('OwnedItem', itemsData);
     }
 
-    async updateOwnedItems(actor: A, itemsData: Item.Data<D>[]): Promise<Item<Item.Data<D>>[]> {
+    async updateOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
         return actor.updateEmbeddedEntity('OwnedItem', itemsData);
     }
 
     index(): Combination<CraftingComponent> {
-        const actor: A = this.actor;
-        const ownedItems: Item<Item.Data<D>>[] = this._documentManager.listActorItems(actor);
-        const itemsByComponentType: Map<CraftingComponent, [Item<Item.Data<D>>, number][]> = new Map();
-        const ownedComponents: Combination<CraftingComponent> = ownedItems.filter((item: Item<Item.Data<D>>) => PartDictionary.typeOf(item) === FabricateItemType.COMPONENT)
-            .map((item: Item<Item.Data<D>>) => {
+        const actor: any = this.actor;
+        const ownedItems: any[] = this._documentManager.listActorItems(actor);
+        const itemsByComponentType: Map<CraftingComponent, [any, number][]> = new Map();
+        const ownedComponents: Combination<CraftingComponent> = ownedItems.filter((item: any) => PartDictionary.typeOf(item) === FabricateItemType.COMPONENT)
+            .map((item: any) => {
                 const component: CraftingComponent = this._partDictionary.componentFrom(item);
                 const quantity: number = this._documentManager.readQuantity(item);
                 if (itemsByComponentType.has(component)) {

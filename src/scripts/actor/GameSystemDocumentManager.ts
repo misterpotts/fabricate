@@ -1,12 +1,14 @@
-interface GameSystemDocumentManager<D extends Item<Actor.OwnedItemData<Actor.Data>>, A extends Actor<Actor.Data, D>> {
+// todo: figure out v10 types
 
-    listActorItems(actor: A): Item.Data<D>[];
+interface GameSystemDocumentManager {
 
-    readQuantity(item: Item<Item.Data<D>>): number;
+    listActorItems(actor: Actor): any[];
 
-    writeQuantity(itemData: Item.Data<D>, quantity: number): Item.Data<D>;
+    readQuantity(item: any): number;
 
-    customizeItem(compendiumBaseItem: Entity<Entity.Data, Entity.Data>, customItemData: D): Entity.Data;
+    writeQuantity(itemData: any, quantity: number): any;
+
+    customizeItem(compendiumBaseItem: any, customItemData: any): any;
 
 }
 

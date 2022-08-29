@@ -21,8 +21,25 @@ class RollResult {
 
 class DiceRoller {
 
-    public evaluate(roll: Roll): RollResult {
-        const rollResult: Evaluated<Roll> = roll.roll({ async: false });
+    private readonly _unmodifiedRollExpression: string;
+
+    constructor(unmodifiedRollExpression: string) {
+        this._unmodifiedRollExpression = unmodifiedRollExpression;
+    }
+
+    public createUnmodifiedRoll(): Roll {
+        return new Roll(this._unmodifiedRollExpression);
+    }
+
+    public evaluate(roll: Roll, modifiers?: RollTerm[]): RollResult {
+        if (!modifiers || modifiers.length === 0) {
+            const rollResult: Evaluated<Roll> = roll.roll({ async: false });
+            return new RollResult(rollResult.total, rollResult.result);
+        }
+        const preparedModifiers = modifiers
+            .flatMap((rollTerm: RollTerm) => [rollTerm, new OperatorTerm({ operator: "+" })]);
+        const modifiedRoll = this.combine(roll, Roll.fromTerms(preparedModifiers));
+        const rollResult: Evaluated<Roll> = modifiedRoll.roll({ async: false });
         return new RollResult(rollResult.total, rollResult.result);
     }
 
@@ -32,6 +49,15 @@ class DiceRoller {
             return roll.alter(factor, 0);
         }
         return input.alter(factor, 0);
+    }
+
+    fromExpression(expression: string): Roll {
+        return new Roll(expression);
+    }
+
+    combine(left: Roll, right: Roll) {
+        const simplifiedTerms: RollTerm[] = Roll.simplifyTerms(left.terms.concat(right.terms));
+        return Roll.fromTerms(simplifiedTerms);
     }
 
 }

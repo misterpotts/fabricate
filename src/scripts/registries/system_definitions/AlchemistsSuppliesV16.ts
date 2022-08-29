@@ -1,175 +1,221 @@
-import {AoeExtension5e, FlavourEffect5e, Damage5e, DiceMultiplier5e, SavingThrowModifier5e} from "../../5e/AlchemicalEffect5E";
-import {EssenceDefinition} from "../../common/EssenceDefinition";
-import {DND5ECraftingSystemSpecification} from "../../system/specification/DND5ECraftingSystemSpecification";
-import {Combination, Unit} from "../../common/Combination";
-import {AlchemySpecification} from "../../system/specification/AlchemySpecification";
-import {Tool} from "../../crafting/Tool";
-import {CraftingCheck5E} from "../../5e/CraftingCheck5E";
-import {IngredientContributionCounter} from "../../crafting/check/ContributionCounter";
+import {CraftingSystemDefinition} from "./interface/CraftingSystemDefinition";
 
-const elementalWater: EssenceDefinition = EssenceDefinition.builder()
-    .withName('Water')
-    .withDescription('Elemental water, one of the fundamental forces of nature')
-    .withIconCode('tint')
-    .withTooltip('Elemental water')
-    .build();
-const elementalEarth: EssenceDefinition = EssenceDefinition.builder()
-    .withName('Earth')
-    .withDescription('Elemental earth, one of the fundamental forces of nature')
-    .withIconCode('mountain')
-    .withTooltip('Elemental earth')
-    .build();
-const elementalAir: EssenceDefinition = EssenceDefinition.builder()
-    .withName('Air')
-    .withDescription('Elemental air, one of the fundamental forces of nature')
-    .withIconCode('wind')
-    .withTooltip('Elemental air')
-    .build();
-const elementalFire: EssenceDefinition = EssenceDefinition.builder()
-    .withName('Fire')
-    .withDescription('Elemental fire, one of the fundamental forces of nature')
-    .withIconCode('fire')
-    .withTooltip('Elemental fire')
-    .build();
-const negativeEnergy: EssenceDefinition = EssenceDefinition.builder()
-    .withName('Negative Energy')
-    .withDescription('Negative Energy\', \'Negative Energy - The essence of death and destruction')
-    .withIconCode('moon')
-    .withTooltip('Negative energy')
-    .build();
-const positiveEnergy: EssenceDefinition = EssenceDefinition.builder()
-    .withName('Positive Energy')
-    .withDescription('Positive Energy - The essence of life and creation')
-    .withIconCode('sun')
-    .withTooltip('Positive energy')
-    .build();
+const SYSTEM_DEFINITION: CraftingSystemDefinition = {
+    "id": "alchemists-supplies-v1.6",
+    "gameSystem": "DND5E",
+    "name": "Alchemist\"s Supplies v1.6",
+    "compendia": [ "fabricate.alchemists-supplies-v16" ],
+    "description": "Alchemy is the skill of exploiting unique properties of certain plants, minerals, and creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic minor magical effects, although the creations themselves are non-magical.",
+    "summary": "A crafting system for 5th Edition by u/calculusChild",
+    "author": "u/calculusChild",
+    "enabled": true,
+    "essences": [
+        {
+            "name": "Water",
+            "slug": "water",
+            "description": "Elemental water, one of the fundamental forces of nature",
+            "iconCode": "tint",
+            "tooltip": "Elemental water"
+        },
+        {
+            "name": "Earth",
+            "slug": "earth",
+            "description": "Elemental earth, one of the fundamental forces of nature",
+            "iconCode": "mountain",
+            "tooltip": "Elemental earth"
+        },
+        {
+            "name": "Air",
+            "slug": "air",
+            "description": "Elemental air, one of the fundamental forces of nature",
+            "iconCode": "wind",
+            "tooltip": "Elemental air"
+        },
+        {
+            "name": "Fire",
+            "slug": "fire",
+            "description": "Elemental fire, one of the fundamental forces of nature",
+            "iconCode": "fire",
+            "tooltip": "Elemental fire"
+        },
+        {
+            "name": "Negative Energy",
+            "slug": "negative-energy",
+            "description": "Negative Energy - The essence of death and destruction",
+            "iconCode": "moon",
+            "tooltip": "Negative energy"
+        },
+        {
+            "name": "Positive Energy",
+            "slug": "positive-energy",
+            "description": "Positive Energy - The essence of life and creation",
+            "iconCode": "sun",
+            "tooltip": "Positive energy"
+        }
+    ],
+    "hasCraftingChecks": true,
+    "defaultCheck": {
+        "ability": "int",
+        "addToolProficiency": true,
+        "tool": {
+            "name": "Alchemist's Supplies",
+            "skillProficiency": "Alchemy"
+        },
+        "threshold": {
+            "baseValue": 6,
+            "type": "MEET",
+            "contributions": {
+                "ingredient": 1,
+                "essence": 0
+            }
+        }
+    },
+    "recipes": {
+        "performCheck": true,
+        "wastage": "PUNITIVE",
+        "useCustomCheck": false,
+        "customCheck": null
+    },
+    "alchemy": {
+        "enabled": true,
+        "performCheck": true,
+        "wastage": "PUNITIVE",
+        "useCustomCheck": false,
+        "customCheck": null,
+        "formulae": [
+            {
+                "basePartId": "90z9nOwmGnP4aUUk",
+                "constraints": {
+                    "components": {
+                        "min": 1,
+                        "max": 6
+                    },
+                    "effects": {
+                        "min": 1,
+                        "max": 6
+                    }
+                },
+                "effects": [
+                    {
+                        "name": "Blind",
+                        "type": "DESCRIPTIVE",
+                        "description": "Release a burst of stinging dust. Affected targets are blinded for the next round. ",
+                        "essenceMatch": {
+                            "earth": 2
+                        }
+                    },
+                    {
+                        "name": "Knock prone",
+                        "type": "DESCRIPTIVE",
+                        "description": "Release a puddle of slippery oil. Affected targets immediately fall prone.",
+                        "essenceMatch": {
+                            "water": 2
+                        }
+                    },
+                    {
+                        "name": "Persistent damage",
+                        "type": "DESCRIPTIVE",
+                        "description": "Release gel that sticks to targets. Each round, any damage-dealing effects continue to deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .",
+                        "essenceMatch": {
+                            "earth": 1,
+                            "water": 1
+                        }
+                    },
+                    {
+                        "name": "Lightning damage",
+                        "type": "DAMAGE",
+                        "description": "Deal 1d4 lightning damage on contact. Double damage to targets touching a metal surface or using metal weapons or armor. ",
+                        "damage": {
+                            "expression": "1d4",
+                            "type": "lightning"
+                        },
+                        "essenceMatch": {
+                            "air": 2
+                        }
+                    },
+                    {
+                        "name": "Fire damage",
+                        "type": "DAMAGE",
+                        "description": "Deal 1d4 fire damage on contact. Double damage to targets with cloth or leather armor. ",
+                        "damage": {
+                            "expression": "1d4",
+                            "type": "fire"
+                        },
+                        "essenceMatch": {
+                            "fire": 2
+                        }
+                    },
+                    {
+                        "name": "Cold damage",
+                        "type": "DAMAGE",
+                        "description": "Deal 1d4 cold damage on contact. Reduce target speed by 10 feet for the next round. ",
+                        "damage": {
+                            "expression": "1d4",
+                            "type": "cold"
+                        },
+                        "essenceMatch": {
+                            "air": 1,
+                            "water": 1
+                        }
+                    },
+                    {
+                        "name": "Acid damage",
+                        "type": "DAMAGE",
+                        "description": "Deal 1d8 acid damage on contact. ",
+                        "damage": {
+                            "expression": "1d8",
+                            "type": "acid"
+                        },
+                        "essenceMatch": {
+                            "fire": 1,
+                            "earth": 1
+                        }
+                    },
+                    {
+                        "name": "AoE extension",
+                        "type": "AOE_EXTENSION",
+                        "description": "Release concentrated mist in all directions. Increase the radius of all effects by 5 feet. ",
+                        "aoe": {
+                            "units": "ft",
+                            "value": 5
+                        },
+                        "essenceMatch": {
+                            "fire": 1,
+                            "air": 1
+                        }
+                    },
+                    {
+                        "name": "Damage multiplier",
+                        "type": "DAMAGE_MULTIPLIER",
+                        "description": "Roll double the number of all damage dice. ",
+                        "diceMultiplier": 2,
+                        "essenceMatch": {
+                            "positive-energy": 1
+                        }
+                    },
+                    {
+                        "name": "Saving throw modifier",
+                        "type": "SAVE_MODIFIER",
+                        "description": "Increase the DC to avoid bomb effects by 2.  ",
+                        "saveModifier": 2,
+                        "essenceMatch": {
+                            "negative-energy": 1
+                        }
+                    }
+                ]
+            }
+        ],
+        "constraints": {
+            "components": {
+                "min": 1,
+                "max": 6
+            },
+            "effects": {
+                "min": 1,
+                "max": 6
+            }
+        }
+    }
+}
 
-const systemEssences: EssenceDefinition[] = [
-    elementalWater,
-    elementalEarth,
-    elementalAir,
-    elementalFire,
-    positiveEnergy,
-    negativeEnergy
-];
-
-const blinded = FlavourEffect5e.builder()
-    .withDescription('Release a burst of stinging dust. Affected targets are blinded for the next round. ')
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalEarth, 2)
-    ]))
-    .build();
-
-const prone = FlavourEffect5e.builder()
-    .withDescription('Release a puddle of slippery oil. Affected targets immediately fall prone. ')
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalWater, 2)
-    ]))
-    .build();
-
-const lightningDamage = Damage5e.builder()
-    .withDescription('Deal 1d4 lightning damage on contact. Double damage to targets touching a metal surface or using metal weapons or armor. ')
-    .withDamage({expression: '1d4', type: 'lightning'})
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalAir, 2)
-    ]))
-    .build();
-
-const fireDamage = Damage5e.builder()
-    .withDescription('Deal 1d4 fire damage on contact. Double damage to targets with cloth or leather armor. ')
-    .withDamage({expression: '1d4', type: 'fire'})
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalFire, 2)
-    ]))
-    .build();
-
-const persistentDamage = FlavourEffect5e.builder()
-    .withDescription('Release gel that sticks to targets. Each round, any damage-dealing effects continue to ' +
-        'deal 1 damage each until an action is used to remove the gel with a DC 10 Dexterity check .')
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalEarth, 1),
-        new Unit<EssenceDefinition>(elementalWater, 1)
-    ]))
-    .build();
-
-const coldDamage = Damage5e.builder()
-    .withDescription('Deal 1d4 cold damage on contact. Reduce target speed by 10 feet for the next round. ')
-    .withDamage({expression: '1d4', type: 'cold'})
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalWater, 1),
-        new Unit<EssenceDefinition>(elementalAir, 1)
-    ]))
-    .build();
-
-const aoeExtension = AoeExtension5e.builder()
-    .withDescription('Release concentrated mist in all directions. Increase the radius of all effects by 5 feet. ')
-    .withAoEExtension({units: 'ft', value: 5})
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalAir, 1),
-        new Unit<EssenceDefinition>(elementalFire, 1)
-    ]))
-    .build();
-
-const acidDamage = Damage5e.builder()
-    .withDescription('Deal 1d8 acid damage on contact. ')
-    .withDamage({expression: '1d8', type: 'acid'})
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalFire, 1),
-        new Unit<EssenceDefinition>(elementalEarth, 1)
-    ]))
-    .build();
-
-const diceMultiplier = DiceMultiplier5e.builder()
-    .withDescription('Roll double the number of all damage dice. ')
-    .withDiceMultiplier(2)
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(positiveEnergy, 1)
-    ]))
-    .build();
-
-const savingThrowModifier = SavingThrowModifier5e.builder()
-    .withDescription('Increase the DC to avoid bomb effects by 2. ')
-    .withSavingThrowModifier(2)
-    .withEssenceCombination(Combination.ofUnits([
-        new Unit<EssenceDefinition>(negativeEnergy, 1)
-    ]))
-    .build();
-
-const alchemicalCombinerSpec: AlchemySpecification<Item5e.Data.Data> = AlchemySpecification.builder<Item5e.Data.Data>()
-    .withMaxComponents(6)
-    .withMaxEssences(6)
-    .withAlchemicalEffect(blinded)
-    .withAlchemicalEffect(prone)
-    .withAlchemicalEffect(lightningDamage)
-    .withAlchemicalEffect(fireDamage)
-    .withAlchemicalEffect(persistentDamage)
-    .withAlchemicalEffect(coldDamage)
-    .withAlchemicalEffect(aoeExtension)
-    .withAlchemicalEffect(acidDamage)
-    .withAlchemicalEffect(diceMultiplier)
-    .withAlchemicalEffect(savingThrowModifier)
-    .withWastage(true)
-    .withBaseComponentPartId('90z9nOwmGnP4aUUk')
-    .build();
-
-const craftingCheck: CraftingCheck5E = new CraftingCheck5E({
-    ability: 'int',
-    baseDC: 6,
-    tool: new Tool('Alchemist\'s Supplies', 'Alchemy'),
-    contributionCounter: new IngredientContributionCounter(1),
-    exceedThreshold: false
-});
-
-const AlchemistsSuppliesSystemSpec: DND5ECraftingSystemSpecification = new DND5ECraftingSystemSpecification({
-    name:'Alchemist\'s Supplies v1.6',
-    compendiumPacks: ['fabricate.alchemists-supplies-v16'],
-    description: 'Alchemy is the skill of exploiting unique properties of certain plants, minerals, and ' +
-        'creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic ' +
-        'minor magical effects, although the creations themselves are nonmagical.',
-    essences: systemEssences,
-    id: 'alchemists-supplies-v1.6',
-    summary: '',
-    author: 'u/calculusChild'
-});
-
-export {AlchemistsSuppliesSystemSpec};
+export { SYSTEM_DEFINITION }

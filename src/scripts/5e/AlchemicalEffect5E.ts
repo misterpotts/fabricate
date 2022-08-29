@@ -1,5 +1,4 @@
 import {AlchemicalCombination, AlchemicalCombiner, AlchemicalEffect} from "../crafting/alchemy/AlchemicalEffect";
-import {RollProvider5E} from "./RollProvider5E";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {DiceRoller} from "../foundry/DiceRoller";
 
@@ -72,24 +71,24 @@ class Damage5e implements AlchemicalEffect<AlchemicalCombination5e> {
 
     private readonly _roll: Roll;
     private readonly _damageType: DND5e.DamageType;
-    private readonly _rollProvider: RollProvider5E;
+    private readonly _diceRoller: DiceRoller;
 
     constructor(config: {
         roll: Roll,
         type: DND5e.DamageType,
-        rollProvider: RollProvider5E
+        diceRoller: DiceRoller
     }) {
         this._roll = config.roll;
         this._damageType = config.type;
-        this._rollProvider = config.rollProvider;
+        this._diceRoller = config.diceRoller;
     }
 
     describe(): string {
         return `Adds ${this._roll.formula} ${this._damageType} damage`
     }
 
-    get rollProvider(): RollProvider5E {
-        return this._rollProvider;
+    get diceRoller(): DiceRoller {
+        return this._diceRoller;
     }
 
     get roll(): Roll {
@@ -115,8 +114,8 @@ class Damage5e implements AlchemicalEffect<AlchemicalCombination5e> {
     }
 
     private combineWith(other: Damage5e): Damage5e {
-        const combinedRoll: Roll = this._rollProvider.combine(other.roll, this._roll);
-        return new Damage5e({type: this._damageType, roll: combinedRoll, rollProvider: this._rollProvider});
+        const combinedRoll: Roll = this._diceRoller.combine(other.roll, this._roll);
+        return new Damage5e({type: this._damageType, roll: combinedRoll, diceRoller: this._diceRoller});
     }
 
 }
@@ -265,7 +264,7 @@ class DiceMultiplier5e implements AlchemicalEffect<AlchemicalCombination5e> {
         return new Damage5e({
             type: damageEffect.damageType,
             roll: multipliedRoll,
-            rollProvider: damageEffect.rollProvider
+            diceRoller: damageEffect.diceRoller
         });
     }
 

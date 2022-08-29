@@ -10,14 +10,6 @@ interface RecipeMutation {
     results?: Combination<CraftingComponent>;
 }
 
-interface RecipeConfig {
-    item: FabricateItemConfig,
-    ingredients: Combination<CraftingComponent>;
-    catalysts: Combination<CraftingComponent>;
-    essences: Combination<EssenceDefinition>;
-    results: Combination<CraftingComponent>;
-}
-
 class Recipe extends FabricateItem {
 
     private readonly _ingredients: Combination<CraftingComponent>;
@@ -25,17 +17,29 @@ class Recipe extends FabricateItem {
     private readonly _essences: Combination<EssenceDefinition>;
     private readonly _results: Combination<CraftingComponent>;
 
-    constructor(config: RecipeConfig) {
-        super(config.item);
-        this._ingredients = config.ingredients;
-        this._catalysts = config.catalysts;
-        this._essences = config.essences;
-        this._results = config.results;
+    constructor({
+        gameItem,
+        ingredients,
+        catalysts,
+        essences,
+        results
+    }: {
+        gameItem: FabricateItemConfig,
+        ingredients?: Combination<CraftingComponent>;
+        catalysts?: Combination<CraftingComponent>;
+        essences?: Combination<EssenceDefinition>;
+        results: Combination<CraftingComponent>;
+    }) {
+        super(gameItem);
+        this._ingredients = ingredients ?? Combination.EMPTY();
+        this._catalysts = catalysts ?? Combination.EMPTY();
+        this._essences = essences ?? Combination.EMPTY();
+        this._results = results;
     }
 
     public mutate(mutation: RecipeMutation): Recipe {
         return new Recipe({
-            item: {
+            gameItem: {
                 systemId: this.systemId,
                 partId: this.partId,
                 compendiumId: this.compendiumId,

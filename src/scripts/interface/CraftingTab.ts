@@ -94,7 +94,7 @@ class CraftingTab {
             }
             const component = hopperContentsForSystem.find((item: InventoryRecordData) => item.entryId === componentId);
             if (!component) {
-                const component: CraftingComponent = FabricateApplication.systems.getSystemByCompendiumPackKey(craftingSystemId).getComponentByPartId(componentId);
+                const component: CraftingComponent = FabricateApplication.systems.getSystemById(craftingSystemId).getComponentByPartId(componentId);
                 hopperContentsForSystem.push({name: component.name, quantity: 1, imageUrl: component.imageUrl, entryId: component.partId})
             } else {
                 component.quantity = component.quantity + 1;
@@ -140,7 +140,7 @@ class CraftingTab {
 
             console.log(`Craft for system ${craftingSystemId} with ${hopperContents.length} components`);
 
-            const craftingSystem: CraftingSystem = FabricateApplication.systems.getSystemByCompendiumPackKey(craftingSystemId);
+            const craftingSystem: CraftingSystem = FabricateApplication.systems.getSystemById(craftingSystemId);
             const craftingComponents = hopperContents.map((hopperItem: InventoryRecordData) => craftingSystem.getComponentByPartId(hopperItem.entryId));
 
             await this._actor.unsetFlag(Properties.module.name, `crafting.${craftingSystemId}.hopper`);

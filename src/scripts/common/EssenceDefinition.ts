@@ -1,14 +1,6 @@
 import {Combination} from "./Combination";
 import {Identifiable} from "./FabricateItem";
 
-interface EssenceDefinitionConfig {
-    iconCode: string;
-    tooltip: string;
-    description: string;
-    slug: string;
-    name: string;
-}
-
 class EssenceDefinition implements Identifiable {
 
     private readonly _name: string;
@@ -17,12 +9,24 @@ class EssenceDefinition implements Identifiable {
     private readonly _tooltip: string;
     private readonly _iconCode: string;
 
-    constructor(config: EssenceDefinitionConfig) {
-        this._name = config.name;
-        this._slug = config.slug;
-        this._description = config.description;
-        this._tooltip = config.tooltip;
-        this._iconCode = config.iconCode;
+    constructor({
+        iconCode,
+        tooltip,
+        description,
+        slug,
+        name,
+    }: {
+        iconCode: string;
+        tooltip: string;
+        description: string;
+        slug: string;
+        name: string;
+    }) {
+        this._name = name;
+        this._slug = slug;
+        this._description = description;
+        this._tooltip = tooltip;
+        this._iconCode = iconCode;
     }
 
     get id(): string {
@@ -121,4 +125,4 @@ class EssenceIdentityProvider {
 
 }
 
-export {EssenceDefinition, EssenceIdentityProvider, EssenceDefinitionConfig}
+export { EssenceDefinition, EssenceIdentityProvider }

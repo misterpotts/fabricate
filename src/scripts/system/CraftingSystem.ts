@@ -12,7 +12,7 @@ import {CraftingAttempt} from "../crafting/attempt/CraftingAttempt";
 import {CraftingResult} from "../crafting/result/CraftingResult";
 import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
-import {AlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
+import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
 
 class CraftingSystem implements Identifiable {
@@ -42,24 +42,24 @@ class CraftingSystem implements Identifiable {
     }: {
         id: string;
         gameSystem: GameSystem;
-        craftingChecks: {
-            recipe: CraftingCheck<Actor>;
-            alchemy: CraftingCheck<Actor>;
+        craftingChecks?: {
+            recipe?: CraftingCheck<Actor>;
+            alchemy?: CraftingCheck<Actor>;
         };
         partDictionary: PartDictionary;
         essences: EssenceDefinition[],
-        alchemyAttemptFactory: AlchemyAttemptFactory;
+        alchemyAttemptFactory?: AlchemyAttemptFactory;
         craftingAttemptFactory: CraftingAttemptFactory;
         enabled: boolean;
     }) {
         this._id = id;
         this._gameSystem = gameSystem;
-        this._alchemyCraftingCheck = craftingChecks.alchemy;
-        this._recipeCraftingCheck = craftingChecks.recipe;
+        this._alchemyCraftingCheck = craftingChecks?.alchemy ?? new NoCraftingCheck();
+        this._recipeCraftingCheck = craftingChecks?.recipe ?? new NoCraftingCheck();
         this._partDictionary = partDictionary;
         this._essencesBySlug = new Map(essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
         this._craftingAttemptFactory = craftingAttemptFactory;
-        this._alchemyAttemptFactory = alchemyAttemptFactory;
+        this._alchemyAttemptFactory = alchemyAttemptFactory ?? new DisabledAlchemyAttemptFactory();
         this._enabled = enabled;
     }
 
@@ -116,7 +116,7 @@ class CraftingSystem implements Identifiable {
      * const craftingMessage: CraftingChatMessage = craftingResult.describe();
      * await chatDialog.send(actor.id, craftingMessage);
      * */
-    public async craft(actor: Actor, inventory: Inventory<{}, Actor>, recipe: Recipe): Promise<CraftingResult> {
+    public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<CraftingResult> {
 
         const craftingAttempt: CraftingAttempt = this._craftingAttemptFactory.make(inventory.ownedComponents, recipe);
 
@@ -130,7 +130,7 @@ class CraftingSystem implements Identifiable {
 
     // todo implement
     public async doAlchemy(actor: Actor,
-                           inventory: Inventory<{}, Actor>,
+                           inventory: Inventory,
                            baseComponent: CraftingComponent,
                            componentSelection: Combination<CraftingComponent>): Promise<AlchemyResult> {
 

@@ -7,6 +7,8 @@ import {testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./t
 import {FabricateItem} from "../src/scripts/common/FabricateItem";
 import {FabricateItemType} from "../src/scripts/compendium/CompendiumData";
 import Properties from "../src/scripts/Properties";
+import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";
+import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -74,12 +76,12 @@ describe('Index and Retrieve', () => {
         expect(underTest).not.toBeNull();
         expect(underTest.size()).toBe(9);
 
-        const mockOwnedRecipeOneItem: Item<Item.Data<{}>> = mockOwnedItem(FabricateItemType.RECIPE,
+        const mockOwnedRecipeOneItem: Document<AnyDocumentData> = mockOwnedItem(FabricateItemType.RECIPE,
             testRecipeOne.partId,
             testRecipeOne.systemId);
         expect(underTest.recipeFrom(mockOwnedRecipeOneItem)).toBe(testRecipeOne);
 
-        const mockOwnedComponentFourOneItem: Item<Item.Data<{}>> = mockOwnedItem(FabricateItemType.COMPONENT,
+        const mockOwnedComponentFourOneItem: Document<AnyDocumentData> = mockOwnedItem(FabricateItemType.COMPONENT,
             testComponentFour.partId,
             testComponentFour.systemId);
         expect(underTest.componentFrom(mockOwnedComponentFourOneItem)).toBe(testComponentFour);
@@ -109,12 +111,12 @@ describe('Index and Retrieve', () => {
 
 });
 
-function mockOwnedItem(type: FabricateItemType, partId: string, systemId: string): Item<Item.Data<{}>> {
+function mockOwnedItem(type: FabricateItemType, partId: string, systemId: string): Document<AnyDocumentData> {
     const identity = {
         partId: partId,
         systemId: systemId
     };
-    const result: Item<Item.Data<{}>> = <Item<Item.Data<{}>>><unknown>{
+    const result: Document<AnyDocumentData> = <Document<AnyDocumentData>><unknown>{
         data: {
             flags: {
                 fabricate: {

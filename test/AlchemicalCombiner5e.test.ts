@@ -32,9 +32,9 @@ describe("Alchemical combiner for 5th edition alchemical effects ", () => {
                 formula: "1d4 + 1d6"
             };
 
-            const acidDamageOne = new Damage5e({type: "acid", roll: stubRollOne, rollProvider: stubRollProvider});
-            const acidDamageTwo = new Damage5e({type: "acid", roll: stubRollTwo, rollProvider: stubRollProvider});
-            const coldDamage = new Damage5e({type: "cold", roll: stubRollOne, rollProvider: stubRollProvider});
+            const acidDamageOne = new Damage5e({type: "acid", roll: stubRollOne, diceRoller: stubRollProvider});
+            const acidDamageTwo = new Damage5e({type: "acid", roll: stubRollTwo, diceRoller: stubRollProvider});
+            const coldDamage = new Damage5e({type: "cold", roll: stubRollOne, diceRoller: stubRollProvider});
 
             stubCombineMethod.onCall(0).returns(stubRollThree);
 
