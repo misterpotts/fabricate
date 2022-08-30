@@ -23,7 +23,8 @@ gulp.task('test', () => {
           "preprocessorIgnorePatterns": [
               "<rootDir>/dist/", "<rootDir>/node_modules/"
           ],
-          automock: false
+          automock: false,
+          reporters: ['default', 'github-actions']
       }));
 });
 

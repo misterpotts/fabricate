@@ -65,6 +65,7 @@ describe('Create and configure', () => {
         const testSystemId = `fabricate-test-system`;
 
         const underTest = new CraftingSystem({
+            name: "Test System",
             id: testSystemId,
             enabled: true,
             gameSystem: GameSystem.DND5E,
@@ -101,6 +102,7 @@ describe('Create and configure', () => {
             })
         });
         const underTest = new CraftingSystem({
+            name: "Test System",
             id: testSystemId,
             enabled: true,
             gameSystem: GameSystem.DND5E,
@@ -147,6 +149,7 @@ describe('Crafting ', () => {
 
         const testSystemId = `fabricate-test-system`;
         const underTest = new CraftingSystem({
+            name: "Test System",
             id: testSystemId,
             enabled: true,
             gameSystem: GameSystem.DND5E,
@@ -209,6 +212,7 @@ describe('Crafting ', () => {
 
         const testSystemId = `fabricate-test-system`;
         const underTest = new CraftingSystem({
+            name: "Test System",
             id: testSystemId,
             enabled: true,
             gameSystem: GameSystem.DND5E,

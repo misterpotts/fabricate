@@ -1,9 +1,11 @@
 import Properties from "../Properties";
-import {Recipe} from "../core/Recipe";
-import {CraftingSystem} from "../core/CraftingSystem";
 import FabricateApplication from "../application/FabricateApplication";
-import {Inventory} from "../game/Inventory";
-import {FabricateCompendiumData} from "../game/CompendiumData";
+import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
+import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";
+import {CraftingSystem} from "../system/CraftingSystem";
+import {Inventory} from "../actor/Inventory";
+import {Recipe} from "../crafting/Recipe";
+import {FabricateCompendiumData} from "../compendium/CompendiumData";
 
 class ItemRecipeTab {
     private static readonly tabs: Map<string, ItemRecipeTab> = new Map();
@@ -15,8 +17,8 @@ class ItemRecipeTab {
     private readonly _owned: boolean;
     private readonly _recipe: Recipe;
     private readonly _craftingSystem: CraftingSystem;
-    private readonly _inventory: Inventory<Item.Data>;
-    private readonly  _actor: Actor;
+    private readonly _inventory: Inventory;
+    private readonly  _actor: any;
     private _suppressedInNav: boolean = false;
     private static tabKey: string = 'fabricate-recipe';
 
@@ -34,9 +36,9 @@ class ItemRecipeTab {
             tab.init(sheetHtml);
         }
         if (fabricateFlags.type === Properties.types.component && fabricateFlags.component.essences && fabricateFlags.component.essences.length > 0) {
-            const essences: string[] = fabricateFlags.component.essences;
+            const essences: Record<string, number> = fabricateFlags.component.essences;
             const craftingSystem = FabricateApplication.systems.getSystemById(fabricateFlags.identity.systemId);
-            const essenceDescription = essences.map((essence: string) => craftingSystem.getEssenceBySlug(essence).icon)
+            const essenceDescription = Object.keys(essences).map((essence: string) => craftingSystem.getEssenceBySlug(essence).icon)
                 .join(', ');
             sheetHtml.find('ol.properties-list').append($(`<li>${essenceDescription}</li>`));
         }
@@ -48,7 +50,7 @@ class ItemRecipeTab {
         if (this._item.isOwned) {
             this._owned = true;
             const actorId: string = this._item.actor.id;
-            this._actor = game.actors.get(actorId);
+            "actors" in game ? this._actor = game.actors.get(actorId) : undefined;
             this._inventory = FabricateApplication.inventories.getFor(this._actor.id);
         } else {
             this._owned = false;
@@ -65,8 +67,8 @@ class ItemRecipeTab {
     }
 
     private async render(): Promise<void> {
-        const isCraftable = this._owned ? this._inventory.hasAllIngredientsFor(this._recipe) : false;
-        const template: HTMLElement = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item, system: this._craftingSystem, isCraftable: isCraftable});
+        const isCraftable = this._owned;
+        const template = await renderTemplate(Properties.module.templates.recipeTab, {recipe: this._recipe, item: this._item, system: this._craftingSystem, isCraftable: isCraftable});
         const element = this._sheetHtml.find('.recipe-tab-content');
         if (element && element.length) {
             element.replaceWith(template);
@@ -104,14 +106,15 @@ class ItemRecipeTab {
         this._sheetHtml.find('.open-compendium-item').click(async (event: any) => {
             const partId = event.currentTarget.getAttribute('data-part-id');
             const systemId = event.currentTarget.getAttribute('data-system-id');
-            const compendium: Compendium = game.packs.get(systemId);
-            const entity: Entity = await compendium.getEntity(partId);
-            if (!game.user.isGM && entity.permission === 0) {
+            const compendium: CompendiumCollection<CompendiumCollection.Metadata> = "packs" in game ? game.packs.get(systemId) : undefined;
+            // @ts-ignore
+            const document: Document<AnyDocumentData> = await compendium.getDocument(partId);
+            if ("user" in game ? game.user.isGM : false) {
                 console.warn('You are attempting to view the details of a Crafting Component that you have no ' +
                     'access to. Ask your GM oran administrator to grant you access to the items in the compendium for ' +
                     'the Crafting System "' + this._craftingSystem.name + '"');
             }
-            entity.sheet.render(true);
+            // document.sheet.render(true) // this used to work
         });
 
     }

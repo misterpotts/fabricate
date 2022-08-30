@@ -1,6 +1,6 @@
 interface InventoryRecordData {
     name: string;
-    entryId: string;
+    partId: string;
     quantity: number;
     imageUrl: string;
 }

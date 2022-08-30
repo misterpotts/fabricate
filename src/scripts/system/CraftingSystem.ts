@@ -16,7 +16,9 @@ import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
 
 class CraftingSystem implements Identifiable {
+
     private readonly _id: string;
+    private readonly _name: string;
     private readonly _gameSystem: GameSystem;
     private readonly _recipeCraftingCheck: CraftingCheck<Actor>;
     private readonly _alchemyCraftingCheck: CraftingCheck<Actor>;
@@ -29,6 +31,7 @@ class CraftingSystem implements Identifiable {
 
     constructor({
         id,
+        name,
         gameSystem,
         craftingChecks = {
             recipe: new NoCraftingCheck(),
@@ -41,6 +44,7 @@ class CraftingSystem implements Identifiable {
         enabled
     }: {
         id: string;
+        name: string;
         gameSystem: GameSystem;
         craftingChecks?: {
             recipe?: CraftingCheck<Actor>;
@@ -53,6 +57,7 @@ class CraftingSystem implements Identifiable {
         enabled: boolean;
     }) {
         this._id = id;
+        this._name = name;
         this._gameSystem = gameSystem;
         this._alchemyCraftingCheck = craftingChecks?.alchemy ?? new NoCraftingCheck();
         this._recipeCraftingCheck = craftingChecks?.recipe ?? new NoCraftingCheck();
@@ -97,6 +102,10 @@ class CraftingSystem implements Identifiable {
 
     get id(): string {
         return this._id;
+    }
+
+    get name(): string {
+        return this._name;
     }
 
     /**

@@ -15,6 +15,7 @@ interface Inventory{
     acceptCraftingResult(craftingResult: CraftingResult): Promise<any[]>;
     acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]>;
     index(): Combination<CraftingComponent>;
+    contains(partId: string): boolean;
 }
 
 interface InventoryActions {
@@ -65,6 +66,10 @@ class CraftingInventory implements Inventory {
 
     get ownedComponents(): Combination<CraftingComponent> {
         return this._ownedComponents.clone();
+    }
+
+    contains(partId: string, quantity: number = 1): boolean {
+        return this._ownedComponents.hasPart(partId, quantity);
     }
 
     async removeAll(components: Combination<CraftingComponent>): Promise<any[]> {

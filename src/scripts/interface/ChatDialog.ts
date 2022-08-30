@@ -11,7 +11,7 @@ class DefaultChatDialog implements ChatDialog {
 
     async send(actorId: string, craftingChatMessage: CraftingChatMessage): Promise<ChatMessage> {
         const messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, craftingChatMessage);
-        return ChatMessage.create({user: game.user, speaker: {actor: actorId}, content: messageTemplate});
+        return ChatMessage.create({user: "user" in game ? game.user : "Unknown User", speaker: {actor: actorId}, content: messageTemplate});
     }
 
 }

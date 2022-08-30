@@ -319,6 +319,13 @@ class Combination<T extends Identifiable> {
         return other.isIn(this) && this.isIn(other);
     }
 
+    hasPart(partId: string, quantity: number = 1) {
+        if (!this._amounts.has(partId)) {
+            return false;
+        }
+        const unit = this._amounts.get(partId);
+        return quantity >= unit.quantity;
+    }
 }
 
 export {Unit, Combination}

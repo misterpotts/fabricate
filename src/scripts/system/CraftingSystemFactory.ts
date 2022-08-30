@@ -72,6 +72,7 @@ class CraftingSystemFactory {
 
         return new CraftingSystem({
             id: this._specification.id,
+            name: this._specification.name,
             essences: essenceDefinitions,
             enabled: this._specification.enabled,
             gameSystem: GameSystem[this._specification.gameSystem],
