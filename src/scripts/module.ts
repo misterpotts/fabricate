@@ -8,6 +8,8 @@ import {PartDictionary} from "./system/PartDictionary";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystem} from "./system/CraftingSystem";
 import {RollProvider5EFactory} from "./5e/RollProvider5E";
+import {GameProvider} from "./foundry/GameProvider";
+import {DiceRoller} from "./foundry/DiceRoller";
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -49,7 +51,8 @@ async function loadCraftingSystem(systemDefinition: CraftingSystemDefinition): P
     const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
         specification: systemDefinition,
         partDictionary: partDictionary,
-        rollProviderFactory: new RollProvider5EFactory()
+        rollProviderFactory: new RollProvider5EFactory(),
+        diceRoller: new DiceRoller("1d20")
     });
     const craftingSystem: CraftingSystem = craftingSystemFactory.make();
     FabricateApplication.systems.register(craftingSystem);

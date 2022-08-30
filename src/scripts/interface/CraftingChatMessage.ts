@@ -1,6 +1,7 @@
 import Properties from "../Properties";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
+import {GameProvider} from "../foundry/GameProvider";
 
 enum IconType {
     ERROR,

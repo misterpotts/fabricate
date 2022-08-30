@@ -5,6 +5,7 @@ import {CraftingTab} from "../interface/CraftingTab";
 import {ItemRecipeTab} from "../interface/ItemRecipeTab";
 import {CraftingSystemDefinition} from "../registries/system_definitions/interface/CraftingSystemDefinition";
 import Properties from "../Properties";
+import {GameProvider} from "../foundry/GameProvider";
 
 
 class FabricateLifecycle {

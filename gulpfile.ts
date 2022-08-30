@@ -18,33 +18,31 @@ gulp.task('compile-less', () => {
 });
 
 gulp.task('test', () => {
-  return gulp.src('test/**/*.ts')
-      .pipe(gulp_jest({
-          "preprocessorIgnorePatterns": [
-              "<rootDir>/dist/", "<rootDir>/node_modules/"
-          ],
-          automock: false,
-          reporters: ['default', 'github-actions']
-      }));
+    process.env.NODE_ENV = 'test';
+    return gulp.src('test/**/*.ts')
+        .pipe(gulp_jest({
+            "preprocessorIgnorePatterns": [
+                "<rootDir>/dist/", "<rootDir>/node_modules/"
+            ],
+            automock: false,
+            reporters: ['default', 'github-actions']
+        }));
 });
 
 gulp.task('copy', async () => {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     gulp.src('README.md').pipe(gulp.dest("dist/"))
     gulp.src("src/module.json").pipe(gulp.dest('dist/'))
     gulp.src("src/packs/**").pipe(gulp.dest('dist/packs'))
-    gulp.src("src/lang/**").pipe(gulp.dest('dist/lang/'))
+    gulp.src("src/languages/**").pipe(gulp.dest('dist/languages/'))
     gulp.src("src/templates/**").pipe(gulp.dest('dist/templates/'))
     gulp.src("src/styles/**/*.css").pipe(gulp.dest('dist/styles/'))
     gulp.src("src/assets/**").pipe(gulp.dest('dist/assets/'))
-    // @ts-ignore
     resolve();
   });
 });
 
-gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy', 'test'));
-
-gulp.task('build-unsafe', gulp.parallel('compile-ts', 'compile-less', 'copy'));
+gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy'));
 
 // Copy the dist folder into the modules directory for testing
 // TODO - parameterize this property before asking anyone to contribute
@@ -54,4 +52,4 @@ gulp.task('foundry', () => {
   return gulp.src('dist/**').pipe(gulp.dest(MODULEPATH));
 });
 
-gulp.task("update", gulp.series('build', 'foundry'));
+gulp.task("deploy", gulp.series('build', 'test', 'foundry'));

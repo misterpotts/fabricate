@@ -48,7 +48,7 @@ interface AlchemyDefinition {
 
 interface CraftingSystemDefinition {
     id: string;
-    gameSystem: keyof typeof GameSystem;
+    gameSystem: `${ GameSystem }`;
     name: string;
     compendia: string[];
     description: string;

@@ -1,5 +1,6 @@
 import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
 import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";
+import {GameProvider} from "../foundry/GameProvider";
 
 interface CompendiumProvider {
 
