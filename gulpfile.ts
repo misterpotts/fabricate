@@ -76,7 +76,7 @@ function copyLanguages() {
 }
 
 function copyTemplates() {
-    return src("src/templates/!**")
+    return src("src/templates/**.hbs")
         .pipe(dest('dist/templates/'));
 }
 

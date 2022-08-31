@@ -97,7 +97,7 @@ class CraftingChatMessage {
 
     get results() {
         return this._createdItems.units.map(unit => ({
-            id: unit.part.name,
+            key: unit.part.name,
             imageUrl: unit.part.imageUrl,
             quantity: unit.quantity
         }));

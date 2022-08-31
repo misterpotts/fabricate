@@ -1,5 +1,8 @@
 {
   "fabricate": {
+    "CraftingSystemManagerApp": {
+      "title": "Fabricate | Crafting System Manager"
+    },
     "ui": {
       "sidebar": {
         "buttons": {

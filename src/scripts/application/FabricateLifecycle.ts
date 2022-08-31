@@ -66,7 +66,7 @@ class FabricateLifecycle {
 
     public static registerCraftingSystemSettings(systemSpec: CraftingSystemDefinition) {
         const globalGameObject = new GameProvider().globalGameObject();
-        globalGameObject.settings.register(Properties.module.id, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
+        globalGameObject.settings.register(Properties.module.id, Properties.settings.craftingSystem.enabled(systemSpec.id), {
             name: systemSpec.name,
             hint: systemSpec.summary,
             scope: "world",

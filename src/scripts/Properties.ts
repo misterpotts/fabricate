@@ -39,7 +39,10 @@ const Properties = {
             fabricateItemType: 'type',
         }
     },
-    settingsKeys: {
+    settings: {
+        craftingSystems: {
+            key: "craftingSystems"
+        },
         craftingSystem: {
             enabled: (systemId: string) => `${systemId}.enabled`
         }
