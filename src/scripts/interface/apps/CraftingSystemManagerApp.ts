@@ -14,7 +14,7 @@ class CraftingSystemManagerApp extends FormApplication {
             title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
             key: `${Properties.module.id}-crafting-system-manager-app`,
             classes: ["sheet", "journal-sheet", "journal-entry"],
-            template: `modules/${Properties.module.id}/templates/crafting-system-manager.hbs`,
+            template: Properties.module.templates.craftingSystemManagementApp,
             resizable: true,
             width: 600,
             height: 680,

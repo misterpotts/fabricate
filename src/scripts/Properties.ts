@@ -7,7 +7,8 @@ const Properties = {
         templates: {
             recipeTab: 'modules/fabricate/templates/recipe-tab.hbs',
             craftingTab: 'modules/fabricate/templates/crafting-tab.hbs',
-            craftingMessage: 'modules/fabricate/templates/chat-message.hbs'
+            craftingMessage: 'modules/fabricate/templates/chat-message.hbs',
+            craftingSystemManagementApp: 'modules/fabricate/templates/crafting-system-manager.hbs'
         },
         compendiums: {
             supportedTypes: ['Item']
