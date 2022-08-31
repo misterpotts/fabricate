@@ -2,7 +2,6 @@ import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import * as fs from 'fs/promises';
 
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
-import {CraftingSystemDefinition} from "../src/scripts/registries/system_definitions/interface/CraftingSystemDefinition";
 import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
 import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
@@ -17,6 +16,7 @@ import {
     SavingThrowModifier5e
 } from "../src/scripts/5e/AlchemicalEffect5E";
 import {DiceRoller} from "../src/scripts/foundry/DiceRoller";
+import {SYSTEM_DEFINITION as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -33,11 +33,7 @@ describe('A Crafting System Factory', () => {
 
     test('should create a new Crafting System from a valid specification', async () => {
 
-        const rawSystemSpec = await fs.readFile('./src/resources/alchemists-supplies-v16-system-spec.json', {encoding: 'utf8'});
-        expect(rawSystemSpec).not.toBeNull();
-        const jsonSystemSpec = JSON.parse(rawSystemSpec);
-        const systemSpec=  <CraftingSystemDefinition>jsonSystemSpec;
-
+        const systemSpec = AlchemistsSupplies;
         const rawCompendiumData = await fs.readFile('./src/packs/alchemists-supplies-v16.db', {encoding: 'utf8'});
         const jsonDocuments: {}[] = rawCompendiumData.split("\n")
             .map((line, index) => {

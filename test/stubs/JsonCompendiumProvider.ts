@@ -20,6 +20,10 @@ class StubDocument {
         return this._rawData;
     }
 
+    get flags(): any {
+        return this._rawData.flags;
+    }
+
     get name(): string {
         return this._rawData.name;
     }

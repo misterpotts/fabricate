@@ -1,5 +1,5 @@
-import {GameSystem} from "../../../system/GameSystem";
-import {WastageType} from "../../../common/ComponentConsumptionCalculator";
+import {GameSystem} from "../../system/GameSystem";
+import {WastageType} from "../../common/ComponentConsumptionCalculator";
 import {
     DnD5EAlchemyEffectSpec,
     DnD5EAoEExtensionEffectSpec,
@@ -48,7 +48,7 @@ interface AlchemyDefinition {
 
 interface CraftingSystemDefinition {
     id: string;
-    gameSystem: `${ GameSystem }`;
+    gameSystem: `${GameSystem}`;
     name: string;
     compendia: string[];
     description: string;

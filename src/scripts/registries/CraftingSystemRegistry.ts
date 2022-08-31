@@ -1,9 +1,9 @@
 import {CraftingSystem} from "../system/CraftingSystem";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
-import {CraftingSystemDefinition} from "./system_definitions/interface/CraftingSystemDefinition";
+import {CraftingSystemDefinition} from "../system_definitions/interface/CraftingSystemDefinition";
 
-import {SYSTEM_DEFINITION as ALCHEMISTS_SUPPLIES} from "./system_definitions/AlchemistsSuppliesV16";
+import {SYSTEM_DEFINITION as ALCHEMISTS_SUPPLIES} from "../system_definitions/AlchemistsSuppliesV16";
 
 class CraftingSystemRegistry {
 

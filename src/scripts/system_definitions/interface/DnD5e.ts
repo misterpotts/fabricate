@@ -1,5 +1,5 @@
-import {Dnd5EAlchemicalEffectName} from "../../../5e/AlchemicalEffect5E";
-import {ThresholdType} from "../../../crafting/check/Threshold";
+import {Dnd5EAlchemicalEffectName} from "../../5e/AlchemicalEffect5E";
+import {ThresholdType} from "../../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
 
 interface DnD5EToolSpecification {

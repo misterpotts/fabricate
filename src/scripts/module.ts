@@ -2,7 +2,7 @@ import Properties from "./Properties";
 import {FabricateLifecycle} from "./application/FabricateLifecycle";
 import FabricateApplication from "./application/FabricateApplication";
 import {CompendiumImporter} from "./system/CompendiumImporter";
-import {CraftingSystemDefinition} from "./registries/system_definitions/interface/CraftingSystemDefinition";
+import {CraftingSystemDefinition} from "./system_definitions/interface/CraftingSystemDefinition";
 import {GameSystem} from "./system/GameSystem";
 import {PartDictionary} from "./system/PartDictionary";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";

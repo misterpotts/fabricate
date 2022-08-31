@@ -5,7 +5,7 @@ import PatchActor5e = PatchTypes5e.PatchActor5e;
 import CharacterAbility = PatchTypes5e.CharacterAbility;
 import OwnedItemPatch5e = PatchTypes5e.OwnedItemPatch5e;
 import PatchAttributes5e = PatchTypes5e.PatchAttributes5e;
-import {DnD5ECraftingCheckSpec} from "../registries/system_definitions/interface/DnD5e";
+import {DnD5ECraftingCheckSpec} from "../system_definitions/interface/DnD5e";
 
 class ToolProficiencyModifierCalculator implements ModifierCalculator<PatchActor5e> {
 

@@ -54,10 +54,10 @@ class CompendiumImporter {
         const partDictionary: PartDictionary = new PartDictionary();
         const documents: StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>[] = await this.loadCompendiumContent(compendium, 10);
         documents.forEach((document: StoredDocument<DocumentInstanceForCompendiumMetadata<CompendiumCollection.Metadata>>) => {
-            if (!('fabricate' in document.data.flags)) {
+            if (!('fabricate' in document.flags)) {
                 return;
             }
-            const fabricateCompendiumData: FabricateCompendiumData = <FabricateCompendiumData>document.data.flags.fabricate;
+            const fabricateCompendiumData: FabricateCompendiumData = <FabricateCompendiumData>document.flags.fabricate;
             switch (fabricateCompendiumData.type) {
                 case FabricateItemType.COMPONENT:
                     const component: CraftingComponent = this.getComponent(document, fabricateCompendiumData, compendium, systemId, essencesBySlug);
