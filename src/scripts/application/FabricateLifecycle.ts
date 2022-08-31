@@ -3,7 +3,7 @@ import FabricateApplication from "./FabricateApplication";
 import {EssenceDefinition} from "../common/EssenceDefinition";
 import {CraftingTab} from "../interface/CraftingTab";
 import {ItemRecipeTab} from "../interface/ItemRecipeTab";
-import {CraftingSystemDefinition} from "../system_definitions/interface/CraftingSystemDefinition";
+import {CraftingSystemDefinition} from "../system_definitions/CraftingSystemDefinition";
 import Properties from "../Properties";
 import {GameProvider} from "../foundry/GameProvider";
 
@@ -66,7 +66,7 @@ class FabricateLifecycle {
 
     public static registerCraftingSystemSettings(systemSpec: CraftingSystemDefinition) {
         const globalGameObject = new GameProvider().globalGameObject();
-        globalGameObject.settings.register(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
+        globalGameObject.settings.register(Properties.module.id, Properties.settingsKeys.craftingSystem.enabled(systemSpec.id), {
             name: systemSpec.name,
             hint: systemSpec.summary,
             scope: "world",
@@ -76,6 +76,7 @@ class FabricateLifecycle {
             onChange: (enabled: boolean) => {FabricateApplication.systems.getSystemById(systemSpec.id).enabled = enabled; }
         });
     }
+
 }
 
 export {FabricateLifecycle}

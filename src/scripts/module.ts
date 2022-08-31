@@ -2,7 +2,7 @@ import Properties from "./Properties";
 import {FabricateLifecycle} from "./application/FabricateLifecycle";
 import FabricateApplication from "./application/FabricateApplication";
 import {CompendiumImporter} from "./system/CompendiumImporter";
-import {CraftingSystemDefinition} from "./system_definitions/interface/CraftingSystemDefinition";
+import {CraftingSystemDefinition} from "./system_definitions/CraftingSystemDefinition";
 import {GameSystem} from "./system/GameSystem";
 import {PartDictionary} from "./system/PartDictionary";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
@@ -10,6 +10,28 @@ import {CraftingSystem} from "./system/CraftingSystem";
 import {RollProvider5EFactory} from "./5e/RollProvider5E";
 import {GameProvider} from "./foundry/GameProvider";
 import {DiceRoller} from "./foundry/DiceRoller";
+
+Hooks.on("renderSidebarTab", (app: any, html: any) => {
+
+    const GAME = new GameProvider().globalGameObject();
+
+    if (!(app instanceof ItemDirectory) && !GAME.user.isGM) {
+        return;
+    }
+
+    const buttons = html.find(`.header-actions.action-buttons`);
+    const buttonClass = Properties.ui.buttons.openCraftingSystemManager.class;
+    const buttonText = GAME.i18n.localize(`${Properties.module.id}.ui.sidebar.buttons.openCraftingSystemManager`);
+    const button = $(
+        `<button class="${buttonClass}"><i class="fa-solid fa-flask-vial"></i> ${buttonText}</button>`
+    );
+    buttons.append(button);
+    button.on('click', async (event) => {
+        console.log("Clicky!");
+        console.log(event.target);
+    });
+
+});
 
 Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
@@ -46,7 +68,7 @@ async function loadCraftingSystem(systemDefinition: CraftingSystemDefinition): P
     }
     const compendiumImporter: CompendiumImporter = new CompendiumImporter();
     const partDictionary: PartDictionary = await compendiumImporter.import(systemDefinition.id, systemDefinition.compendia, systemDefinition.essences);
-    const enabled: boolean = <boolean> globalGameObject.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemDefinition.id));
+    const enabled: boolean = <boolean> globalGameObject.settings.get(Properties.module.id, Properties.settingsKeys.craftingSystem.enabled(systemDefinition.id));
     systemDefinition.enabled = enabled;
     const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
         specification: systemDefinition,

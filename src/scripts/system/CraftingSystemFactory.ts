@@ -1,7 +1,7 @@
 import {
     AlchemyFormulaDefinition,
     CraftingSystemDefinition
-} from "../system_definitions/interface/CraftingSystemDefinition";
+} from "../system_definitions/CraftingSystemDefinition";
 import {CraftingSystem} from "./CraftingSystem";
 import {PartDictionary} from "./PartDictionary";
 import {CraftingCheck, DefaultCraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
@@ -31,7 +31,7 @@ import {
     DnD5ECraftingCheckSpec, DnD5EDamageEffectSpec,
     DnD5EDamageMultiplierEffectSpec,
     DnD5ESaveModifierEffectSpec
-} from "../system_definitions/interface/DnD5e";
+} from "../system_definitions/DnD5e";
 
 class CraftingSystemFactory {
 
@@ -72,8 +72,8 @@ class CraftingSystemFactory {
 
         const gameSystem = <GameSystem> this._specification.gameSystem;
         return new CraftingSystem({
-            id: this._specification.id,
             name: this._specification.name,
+            id: this._specification.id,
             essences: essenceDefinitions,
             enabled: this._specification.enabled,
             gameSystem: gameSystem,

@@ -50,13 +50,7 @@ exports.coverageTest = runTestsWithCoverage;
 
 function runTests() {
     return src('test/**/*test.ts')
-        .pipe(jest({
-            preprocessorIgnorePatterns: [
-                "<rootDir>/dist/", "<rootDir>/node_modules/"
-            ],
-            automock: false,
-            reporters: ['default', 'github-actions']
-        }));
+        .pipe(jest());
 }
 
 exports.test = runTests;
@@ -77,8 +71,8 @@ function copyCompendiumPacks() {
 }
 
 function copyLanguages() {
-    return src("src/languages/!**")
-        .pipe(dest('dist/languages/'));
+    return src("src/lang/*.json")
+        .pipe(dest('dist/lang/'));
 }
 
 function copyTemplates() {
@@ -126,9 +120,10 @@ function foundryDirectoryPath(): string {
 function localInstall() {
     const relativePath = foundryDirectoryPath();
     const absolutePath = resolve(__dirname, relativePath);
-    log(`Installing to Foundry data dir: "${absolutePath}". `);
+    log(`Installing to Foundry data dir: "${relativePath}". `);
     return src('dist/**')
-        .pipe(dest(relativePath));
+        .pipe(dest(relativePath))
+        .on('end', () => log(`Installed Fabricate at: "${absolutePath}". `));
 }
 
 const deploy = series(build, localInstall);

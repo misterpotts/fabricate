@@ -62,7 +62,7 @@ class CraftingTabData {
     async prepareCraftingSystemData(craftingSystems: CraftingSystem[], actor: any): Promise<CraftingSystemData> {
         let enabledSystems: number = 0;
         const craftingSystemsInfo: CraftingSystemInfo[] = [];
-        const storedSystemId = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedCraftingSystem);
+        const storedSystemId = actor.getFlag(Properties.module.id, Properties.flagKeys.actor.selectedCraftingSystem);
         craftingSystems.forEach((system: CraftingSystem) => {
             if (system.enabled) {
                 enabledSystems++;
@@ -84,7 +84,7 @@ class CraftingTabData {
         } else if (hasEnabledSystems) {
             const firstEnabledSystem = craftingSystemsInfo.find((systemInfo: CraftingSystemInfo) => !systemInfo.disabled);
             firstEnabledSystem.selected = true;
-            await actor.setFlag(Properties.module.name, Properties.flagKeys.actor.selectedCraftingSystem, firstEnabledSystem.compendiumPackKey);
+            await actor.setFlag(Properties.module.id, Properties.flagKeys.actor.selectedCraftingSystem, firstEnabledSystem.compendiumPackKey);
             return {
                 systems: craftingSystemsInfo,
                 hasEnabledSystems: hasEnabledSystems,
@@ -94,7 +94,7 @@ class CraftingTabData {
     }
 
     async prepareRecipeDataForSystem(craftingSystem: CraftingSystem, actor: any, inventory: Inventory): Promise<RecipeCraftingData> {
-        const storedKnownRecipes: string[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.id));
+        const storedKnownRecipes: string[] = actor.getFlag(Properties.module.id, Properties.flagKeys.actor.knownRecipesForSystem(craftingSystem.id));
         const knownRecipes: string[] = storedKnownRecipes ? storedKnownRecipes : [];
         const enabledRecipes: Map<string, RecipeData> = new Map();
         const disabledRecipes: RecipeData[] = [];
@@ -122,7 +122,7 @@ class CraftingTabData {
                 });
             }
         });
-        const storedRecipeId: string = await this._actor.getFlag(Properties.module.name, Properties.flagKeys.actor.selectedRecipe);
+        const storedRecipeId: string = await this._actor.getFlag(Properties.module.id, Properties.flagKeys.actor.selectedRecipe);
         if (enabledRecipes.has(storedRecipeId)) {
             enabledRecipes.get(storedRecipeId).selected = true;
             return {
@@ -164,7 +164,7 @@ class CraftingTabData {
                     imageUrl: unit.part.imageUrl
                 }
             });
-        const savedHopperContents: InventoryRecordData[] = actor.getFlag(Properties.module.name, Properties.flagKeys.actor.hopperForSystem(craftingSystem.id));
+        const savedHopperContents: InventoryRecordData[] = actor.getFlag(Properties.module.id, Properties.flagKeys.actor.hopperForSystem(craftingSystem.id));
         if (savedHopperContents) {
             inventoryContents.preparedComponents = savedHopperContents;
             savedHopperContents.forEach((hopperItem: InventoryRecordData) => {

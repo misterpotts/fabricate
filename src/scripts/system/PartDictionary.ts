@@ -14,7 +14,7 @@ class PartDictionary {
     }
 
     public static typeOf(item: any): FabricateItemType | 'NONE' {
-        const itemType: FabricateItemType = <FabricateItemType> item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType);
+        const itemType: FabricateItemType = <FabricateItemType> item.getFlag(Properties.module.id, Properties.flagKeys.item.fabricateItemType);
         if (itemType) {
             return itemType;
         }
@@ -29,7 +29,7 @@ class PartDictionary {
     }
 
     private static getIdentifier(item: any): string {
-        const identity: CompendiumEntry = <CompendiumEntry>item.getFlag(Properties.module.name, Properties.flagKeys.item.identity);
+        const identity: CompendiumEntry = <CompendiumEntry>item.getFlag(Properties.module.id, Properties.flagKeys.item.identity);
         return FabricateItem.globalIdentifier(identity.partId, identity.systemId);
     }
 

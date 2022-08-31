@@ -1,5 +1,5 @@
-import {GameSystem} from "../../system/GameSystem";
-import {WastageType} from "../../common/ComponentConsumptionCalculator";
+import {GameSystem} from "../system/GameSystem";
+import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {
     DnD5EAlchemyEffectSpec,
     DnD5EAoEExtensionEffectSpec,

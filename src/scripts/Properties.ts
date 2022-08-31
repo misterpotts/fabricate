@@ -2,15 +2,22 @@ import {FabricateItemType} from "./compendium/CompendiumData";
 
 const Properties = {
     module: {
-        name: 'fabricate',
+        id: 'fabricate',
         label: 'Fabricate',
         templates: {
-            recipeTab: 'modules/fabricate/templates/recipe-tab.html',
-            craftingTab: 'modules/fabricate/templates/crafting-tab.html',
-            craftingMessage: 'modules/fabricate/templates/chat-message.html'
+            recipeTab: 'modules/fabricate/templates/recipe-tab.hbs',
+            craftingTab: 'modules/fabricate/templates/crafting-tab.hbs',
+            craftingMessage: 'modules/fabricate/templates/chat-message.hbs'
         },
         compendiums: {
             supportedTypes: ['Item']
+        }
+    },
+    ui: {
+        buttons: {
+            openCraftingSystemManager: {
+                class: "open-crafting-system-manager"
+            }
         }
     },
     types: {

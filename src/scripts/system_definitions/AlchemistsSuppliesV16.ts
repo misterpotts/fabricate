@@ -1,4 +1,4 @@
-import {CraftingSystemDefinition} from "./interface/CraftingSystemDefinition";
+import {CraftingSystemDefinition} from "./CraftingSystemDefinition";
 
 const SYSTEM_DEFINITION: CraftingSystemDefinition = {
     "id": "alchemists-supplies-v1.6",

@@ -1,1 +1,11 @@
-{}
+{
+  "fabricate": {
+    "ui": {
+      "sidebar": {
+        "buttons": {
+          "openCraftingSystemManager": "Crafting Systems"
+        }
+      }
+    }
+  }
+}

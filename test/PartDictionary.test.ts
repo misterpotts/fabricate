@@ -128,7 +128,7 @@ function mockOwnedItem(type: FabricateItemType, partId: string, systemId: string
         getFlag: () => {}
     };
     const stubGetFlagMethod = Sandbox.stub(result, 'getFlag');
-    stubGetFlagMethod.withArgs(Properties.module.name, Properties.flagKeys.item.fabricateItemType).returns(type);
-    stubGetFlagMethod.withArgs(Properties.module.name, Properties.flagKeys.item.identity).returns(identity);
+    stubGetFlagMethod.withArgs(Properties.module.id, Properties.flagKeys.item.fabricateItemType).returns(type);
+    stubGetFlagMethod.withArgs(Properties.module.id, Properties.flagKeys.item.identity).returns(identity);
     return result;
 }
