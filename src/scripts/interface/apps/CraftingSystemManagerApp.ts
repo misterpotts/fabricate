@@ -43,6 +43,30 @@ class CraftingSystemManagerApp extends FormApplication {
         return { craftingSystems, selectedSystem: this._selectedSystem };
     }
 
+    activateListeners(html: JQuery) {
+        super.activateListeners(html);
+        this._contextMenu(html);
+    }
+
+    protected _contextMenu(html: JQuery) {
+        new ContextMenu(html, ".fabricate-crafting-system", [
+            {
+                name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.export`,
+                icon: `<i class="fa-solid fa-file-export"></i>`,
+                callback: async () => {
+                    console.log("Clickety");
+                }
+            },
+            {
+                name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.delete`,
+                icon: `<i class="fa-solid fa-trash"></i>`,
+                callback: async () => {
+                    console.log("Clickety");
+                }
+            }
+        ]);
+    }
+
 }
 
 export { CraftingSystemManagerApp }
