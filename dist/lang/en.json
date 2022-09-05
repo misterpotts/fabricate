@@ -1,7 +1,11 @@
 {
   "fabricate": {
     "CraftingSystemManagerApp": {
-      "title": "Fabricate | Crafting System Manager"
+      "title": "Fabricate | Crafting System Manager",
+      "contextMenu": {
+        "create": "Create",
+        "search": "Find a System or Recipe"
+      }
     },
     "ui": {
       "sidebar": {

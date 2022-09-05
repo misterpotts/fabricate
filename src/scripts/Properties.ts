@@ -19,6 +19,13 @@ const Properties = {
             openCraftingSystemManager: {
                 class: "open-crafting-system-manager"
             }
+        },
+        apps: {
+            craftingSystemManager: {
+                contextMenu: {
+                    selector: ".crafting-system-sidebar"
+                }
+            }
         }
     },
     types: {

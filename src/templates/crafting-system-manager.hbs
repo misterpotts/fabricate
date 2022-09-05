@@ -1,5 +1,42 @@
-<div>
-    {{#each craftingSystems}}
-        <div></div>
-    {{/each}}
+<div class="journal-sheet-container crafting-system-manager">
+
+    <aside class="sidebar directory flexcol">
+
+        <header class="directory-header">
+            <div class="header-search flexrow flex0">
+                <input type="text" name="search" value="" autocomplete="off" placeholder="{{localize "fabricate.CraftingSystemManagerApp.contextMenu.search"}}">
+            </div>
+        </header>
+
+        <div class="action-buttons flexrow flex0">
+            <button class="create-crafting-system" type="button" data-action="createCraftingSystem">
+                <i class="fa-solid fa-circle-plus"></i> {{localize "fabricate.CraftingSystemManagerApp.contextMenu.create"}}
+            </button>
+        </div>
+
+        <nav class="pages-list" aria-label="Journal Entry Table of Contents" data-tooltip-direction="RIGHT">
+            <ul class="directory-list scrollable">
+                {{#each craftingSystems}}
+                <li class="directory-item level1" data-system-id="{{id}}">
+                    <div class="crafting-system">
+                        <img src="{{image}}" alt="{{name}}">
+                        <div>
+                            <span class="page-title crafting-system-name">{{name}}</span>
+                            <p class="crafting-system-summary">{{summary}}</p>
+                        </div>
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+        </nav>
+
+    </aside>
+
+    <section class="journal-entry-content flexcol" style="overflow: scroll;">
+
+
+
+    </section>
+
+
 </div>

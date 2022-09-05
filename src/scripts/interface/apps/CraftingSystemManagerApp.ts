@@ -3,6 +3,9 @@ import {GameProvider} from "../../foundry/GameProvider";
 
 class CraftingSystemManagerApp extends FormApplication {
 
+    // @ts-ignore
+    private _craftingSystemContextMenu: ContextMenu;
+
     constructor() {
         super(null);
     }
@@ -16,7 +19,7 @@ class CraftingSystemManagerApp extends FormApplication {
             classes: ["sheet", "journal-sheet", "journal-entry"],
             template: Properties.module.templates.craftingSystemManagementApp,
             resizable: true,
-            width: 600,
+            width: 800,
             height: 680,
             dragDrop: [{ dragSelector: <string> null, dropSelector: <string> null }],
         };
@@ -35,6 +38,18 @@ class CraftingSystemManagerApp extends FormApplication {
         const GAME = new GameProvider().globalGameObject();
         const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key);
         return { craftingSystems };
+    }
+
+    _contextMenu(html: JQuery) {
+        this._craftingSystemContextMenu = new ContextMenu(html, Properties.ui.apps.craftingSystemManager.contextMenu.selector, [
+            {
+                name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.create`,
+                icon: `<i class="fas fa-plus"></i>`,
+                callback: async (_element: JQuery) => {
+                    console.log("Clickety");
+                }
+            }
+        ]);
     }
 
 }

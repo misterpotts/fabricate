@@ -37,7 +37,7 @@ Hooks.once('init', () => {
         scope: "world",
         config: false,
         type: Array,
-        default: [],
+        default: FabricateApplication.systems.systemDefinitions,
         onChange: () => {
             const rApp = Object.values(ui.windows).find(w => w instanceof CraftingSystemManagerApp);
             if(rApp) rApp.render(true);

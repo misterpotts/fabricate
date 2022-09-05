@@ -2,6 +2,7 @@ import {CraftingSystemDefinition} from "./CraftingSystemDefinition";
 
 const SYSTEM_DEFINITION: CraftingSystemDefinition = {
     "id": "alchemists-supplies-v1.6",
+    "image": "icons/tools/laboratory/vials-blue-pink.webp",
     "gameSystem": "dnd5e",
     "name": "Alchemist\"s Supplies v1.6",
     "compendia": [ "fabricate.alchemists-supplies-v16" ],
