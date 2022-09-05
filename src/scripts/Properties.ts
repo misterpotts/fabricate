@@ -9,6 +9,7 @@ const Properties = {
             craftingTab: 'modules/fabricate/templates/crafting-tab.hbs',
             craftingMessage: 'modules/fabricate/templates/chat-message.hbs',
             craftingSystemManagementApp: 'modules/fabricate/templates/crafting-system-manager.hbs',
+            craftingSystemCreationDialog: 'modules/fabricate/templates/crafting-system-creation.hbs',
             partials: {
                 editableSystem: 'modules/fabricate/templates/partials/editable-crafting-system.hbs',
                 readOnlySystem: 'modules/fabricate/templates/partials/readonly-crafting-system.hbs'

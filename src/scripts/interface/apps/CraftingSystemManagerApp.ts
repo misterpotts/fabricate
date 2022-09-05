@@ -1,6 +1,7 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
+import {CreateCraftingSystemDialog} from "./CreateCraftingSystemDialog";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -51,7 +52,7 @@ class CraftingSystemManagerApp extends FormApplication {
     }
 
     async _onClick(event: any) {
-        const action = event?.target?.dataset?.action as string;
+        const action = event?.target?.dataset?.action || event?.target?.parentElement?.dataset?.action as string;
         if(!action) return;
         switch (action) {
             case "importCraftingSystem":
@@ -59,7 +60,11 @@ class CraftingSystemManagerApp extends FormApplication {
             break;
             case "createCraftingSystem":
                 console.log(event);
+                new CreateCraftingSystemDialog().render();
             break;
+            case "selectCraftingSystem":
+                console.log(event);
+                break;
             default:
                 console.error("An unrecognised action was triggered on the Fabricate Crafting System Manager App.");
         }

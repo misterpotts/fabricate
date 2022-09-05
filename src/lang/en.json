@@ -1,5 +1,8 @@
 {
   "fabricate": {
+    "CraftingSystemCreationDialog": {
+      "title": "Fabricate | Basic System Details"
+    },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",
       "sidebar": {

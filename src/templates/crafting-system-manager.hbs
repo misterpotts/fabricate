@@ -12,7 +12,7 @@
             <ul class="directory-list scrollable">
                 {{#each craftingSystems}}
                 <li class="directory-item level1">
-                    <div class="fabricate-crafting-system {{#ifEquals id ../selectedSystem.id}}selected{{/ifEquals}}" data-system-id="{{id}}">
+                    <div class="fabricate-crafting-system {{#ifEquals id ../selectedSystem.id}}selected{{/ifEquals}}" data-system-id="{{id}}" data-action="selectCraftingSystem">
                         <span class="page-title fabricate-crafting-system-name">{{name}}</span>
                         <p class="fabricate-crafting-system-summary">{{summary}}</p>
                     </div>
