@@ -10,11 +10,20 @@ import {GameProvider} from "../foundry/GameProvider";
 
 class FabricateLifecycle {
 
-    public static init() {
+    public static async init() {
+        await this.registerHandlebarsPartials();
         this.registerHandlebarsHelperFunctions();
         this.registerItemRecipeTab();
         this.registerActorCraftingTab();
         this.registerApplicationListeners()
+    }
+
+    private static async registerHandlebarsPartials() {
+
+        const editableSystemPartial = await getTemplate(Properties.module.templates.partials.editableSystem);
+        Handlebars.registerPartial('editableSystem', editableSystemPartial);
+        const readOnlySystemPartial = await getTemplate(Properties.module.templates.partials.readOnlySystem);
+        Handlebars.registerPartial('readOnlySystem', readOnlySystemPartial);
     }
 
     private static registerHandlebarsHelperFunctions() {

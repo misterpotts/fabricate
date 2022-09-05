@@ -43,12 +43,11 @@
 
             <div class="fabricate-crafting-system-details" data-crafting-system-id="{{selectedSystem.id}}">
 
-                <header class="fabricate-crafting-system-header">
-                    <h1>{{selectedSystem.name}}</h1>
-                    <h4>{{selectedSystem.summary}}</h4>
-                    <hr/>
-                    <p>{{selectedSystem.description}}</p>
-                </header>
+                {{#if selectedSystem.locked}}
+                    {{> readOnlySystem system=selectedSystem}}
+                {{else}}
+                    {{> editableSystem system=selectedSystem}}
+                {{/if}}
 
             </div>
 

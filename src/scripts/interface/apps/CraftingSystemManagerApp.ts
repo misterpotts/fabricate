@@ -46,6 +46,23 @@ class CraftingSystemManagerApp extends FormApplication {
     activateListeners(html: JQuery) {
         super.activateListeners(html);
         this._contextMenu(html);
+        const rootElement = html[0];
+        rootElement.addEventListener("click", this._onClick.bind(this));
+    }
+
+    async _onClick(event: any) {
+        const action = event?.target?.dataset?.action as string;
+        if(!action) return;
+        switch (action) {
+            case "importCraftingSystem":
+                console.log(event);
+            break;
+            case "createCraftingSystem":
+                console.log(event);
+            break;
+            default:
+                console.error("An unrecognised action was triggered on the Fabricate Crafting System Manager App.");
+        }
     }
 
     protected _contextMenu(html: JQuery) {
@@ -53,15 +70,15 @@ class CraftingSystemManagerApp extends FormApplication {
             {
                 name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.export`,
                 icon: `<i class="fa-solid fa-file-export"></i>`,
-                callback: async () => {
-                    console.log("Clickety");
+                callback: async (element: JQuery) => {
+                    console.log(element.data()["systemId"]);
                 }
             },
             {
                 name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.delete`,
                 icon: `<i class="fa-solid fa-trash"></i>`,
-                callback: async () => {
-                    console.log("Clickety");
+                callback: async (element: JQuery) => {
+                    console.log(element.data()["systemId"]);
                 }
             }
         ]);
