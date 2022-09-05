@@ -147,35 +147,46 @@
   background-color: #928d83;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23c1b496' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 }
-.crafting-system-manager aside {
+.fabricate-crafting-system-manager aside {
   padding: 0 3px;
 }
-.crafting-system-manager .header-search input {
+.fabricate-crafting-system-manager .header-search input {
   margin: 0 !important;
 }
-.crafting-system-manager .sidebar {
+.fabricate-crafting-system-manager .fabricate-crafting-system-editor {
+  padding: 10px;
+}
+.fabricate-crafting-system-manager .fabricate-crafting-system-editor p.fabricate-no-system-selected {
+  text-align: center;
+}
+.fabricate-crafting-system-manager .sidebar {
   min-width: 240px;
 }
-.crafting-system-manager .sidebar .create-crafting-system {
-  margin: 0;
+.fabricate-crafting-system-manager .sidebar button {
+  margin: 0 0 3px 0;
 }
-.crafting-system-manager .sidebar .pages-list .crafting-system {
-  display: flex;
+.fabricate-crafting-system-manager .sidebar .pages-list .directory-list {
+  padding-right: 0;
 }
-.crafting-system-manager .sidebar .pages-list .crafting-system .crafting-system-name {
+.fabricate-crafting-system-manager .sidebar .pages-list .fabricate-crafting-system.selected {
+  background: #402a2aed;
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+.fabricate-crafting-system-manager .sidebar .pages-list .fabricate-crafting-system .fabricate-crafting-system-name {
   padding: 5px;
   color: var(--color-text-light-highlight);
   font-size: var(--font-size-14);
   line-height: var(--line-height-12);
 }
-.crafting-system-manager .sidebar .pages-list .crafting-system .crafting-system-summary {
+.fabricate-crafting-system-manager .sidebar .pages-list .fabricate-crafting-system .fabricate-crafting-system-summary {
   padding: 0 5px 5px 5px;
   margin: -2px 0 0 0;
   line-height: var(--line-height-12);
   font-size: var(--font-size-12);
   color: var(--color-text-light-4);
 }
-.crafting-system-manager .sidebar .pages-list .crafting-system img {
+.fabricate-crafting-system-manager .sidebar .pages-list .fabricate-crafting-system img {
   margin: 5px;
   border-radius: 3px;
 }

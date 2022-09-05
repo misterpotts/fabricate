@@ -4,6 +4,7 @@
       "title": "Fabricate | Crafting System Manager",
       "contextMenu": {
         "create": "Create",
+        "import": "Import",
         "search": "Find a System or Recipe"
       }
     },

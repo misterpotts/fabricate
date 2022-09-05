@@ -21,11 +21,7 @@ const Properties = {
             }
         },
         apps: {
-            craftingSystemManager: {
-                contextMenu: {
-                    selector: ".crafting-system-sidebar"
-                }
-            }
+            craftingSystemManager: {}
         }
     },
     types: {

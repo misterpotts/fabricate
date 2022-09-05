@@ -14,7 +14,7 @@ import {CraftingSystemManagerApp} from "./interface/apps/CraftingSystemManagerAp
 
 Hooks.on("renderSidebarTab", (app: any, html: any) => {
     const GAME = new GameProvider().globalGameObject();
-    if (!(app instanceof ItemDirectory) && !GAME.user.isGM) {
+    if (!(app instanceof ItemDirectory) || !GAME.user.isGM) {
         return;
     }
     const buttons = html.find(`.header-actions.action-buttons`);

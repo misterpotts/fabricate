@@ -1,10 +1,10 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
+import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
 
 class CraftingSystemManagerApp extends FormApplication {
 
-    // @ts-ignore
-    private _craftingSystemContextMenu: ContextMenu;
+    private _selectedSystem: CraftingSystemDefinition;
 
     constructor() {
         super(null);
@@ -36,20 +36,11 @@ class CraftingSystemManagerApp extends FormApplication {
 
     async getData(): Promise<any> {
         const GAME = new GameProvider().globalGameObject();
-        const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key);
-        return { craftingSystems };
-    }
-
-    _contextMenu(html: JQuery) {
-        this._craftingSystemContextMenu = new ContextMenu(html, Properties.ui.apps.craftingSystemManager.contextMenu.selector, [
-            {
-                name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.create`,
-                icon: `<i class="fas fa-plus"></i>`,
-                callback: async (_element: JQuery) => {
-                    console.log("Clickety");
-                }
-            }
-        ]);
+        const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
+        if (!this._selectedSystem && craftingSystems.length > 0) {
+            this._selectedSystem = craftingSystems[0];
+        }
+        return { craftingSystems, selectedSystem: this._selectedSystem };
     }
 
 }

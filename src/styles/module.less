@@ -157,7 +157,7 @@
 // NEW UI ELEMENT STYLES
 // ========================================================
 
-.crafting-system-manager {
+.fabricate-crafting-system-manager {
 
   aside {
     padding: 0 3px;
@@ -171,26 +171,45 @@
 
   }
 
+  .fabricate-crafting-system-editor {
+
+    padding: 10px;
+
+    p.fabricate-no-system-selected {
+      text-align: center;
+    }
+
+  }
+
   .sidebar {
     min-width: 240px;
 
-    .create-crafting-system {
-      margin: 0;
+    button {
+      margin: 0 0 3px 0;
     }
 
     .pages-list {
 
-      .crafting-system {
-        display: flex;
+      .directory-list {
+        padding-right: 0;
+      }
 
-        .crafting-system-name {
+      .fabricate-crafting-system {
+
+        &.selected {
+          background: #262626ed;
+          border-radius: 5px;
+          padding: 2px 5px;
+        }
+
+        .fabricate-crafting-system-name {
           padding: 5px;
           color: var(--color-text-light-highlight);
           font-size: var(--font-size-14);
           line-height: var(--line-height-12);
         }
 
-        .crafting-system-summary {
+        .fabricate-crafting-system-summary {
           padding: 0 5px 5px 5px;
           margin: -2px 0 0 0;
           line-height: var(--line-height-12);
