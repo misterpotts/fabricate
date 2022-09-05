@@ -9,7 +9,14 @@
       },
       "contextMenu": {
         "export": "Export",
-        "delete": "Delete"
+        "delete": "Delete",
+        "duplicate": "Duplicate"
+      },
+      "editor": {
+        "enabled": {
+          "label": "Enabled",
+          "description": "Components in a a disabled system function as normal, but its recipe crafting and alchemy are deactivated."
+        }
       }
     },
     "ui": {

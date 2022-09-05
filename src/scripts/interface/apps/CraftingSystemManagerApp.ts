@@ -80,6 +80,13 @@ class CraftingSystemManagerApp extends FormApplication {
                 callback: async (element: JQuery) => {
                     console.log(element.data()["systemId"]);
                 }
+            },
+            {
+                name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.duplicate`,
+                icon: `<i class="fa-solid fa-paste"></i>`,
+                callback: async (element: JQuery) => {
+                    console.log(element.data()["systemId"]);
+                }
             }
         ]);
     }
