@@ -61,7 +61,7 @@ class EditCraftingSystemDetailDialog extends FormApplication {
         this._craftingSystem.name = formData.name;
         this._craftingSystem.summary = formData.summary;
         this._craftingSystem.description = formData.description;
-        return  this.saveCraftingSystem(this._craftingSystem);
+        return this.saveCraftingSystem(this._craftingSystem);
     }
 
     private async createCraftingSystem(formData: any) {
