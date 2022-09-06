@@ -59,15 +59,26 @@ class CraftingSystemManagerApp extends FormApplication {
                 console.log(event);
             break;
             case "createCraftingSystem":
-                console.log(event);
                 new CreateCraftingSystemDialog().render();
             break;
             case "selectCraftingSystem":
-                console.log(event);
+                const GAME = new GameProvider().globalGameObject();
+                const systemId = event?.target?.dataset?.systemId || event?.target?.parentElement?.dataset?.systemId as string;
+                const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
+                const targetSystem = craftingSystems.find(system => system.id === systemId);
+                if (!targetSystem) {
+                    console.error(`The crafting system "${systemId}" was not found`);
+                }
+                this._selectedSystem = targetSystem;
+                this.render();
                 break;
             default:
-                console.error("An unrecognised action was triggered on the Fabricate Crafting System Manager App.");
+                console.error("An unrecognised action was triggered on the Fabricate Crafting System Manager Form Application.");
         }
+    }
+
+    _saveState() {
+        console.log("Save state");
     }
 
     protected _contextMenu(html: JQuery) {

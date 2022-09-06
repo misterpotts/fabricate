@@ -63,10 +63,10 @@ interface CraftingSystemDefinition {
         slug: string;
         name: string;
     }[];
-    defaultCheck: DnD5ECraftingCheckSpec;
+    defaultCheck?: DnD5ECraftingCheckSpec;
     hasCraftingChecks: boolean;
-    recipes: RecipeDefinition;
-    alchemy: AlchemyDefinition;
+    recipes?: RecipeDefinition;
+    alchemy?: AlchemyDefinition;
 }
 
 export {

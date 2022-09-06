@@ -1,7 +1,25 @@
 {
   "fabricate": {
-    "CraftingSystemCreationDialog": {
-      "title": "Fabricate | Basic System Details"
+    "CreateCraftingSystemDialog": {
+      "title": "Fabricate | Basic System Details",
+      "description": {
+        "label": "Description (optional)",
+        "placeholder": "A more detailed description of the lore and mechanics of your new crafting system"
+      },
+      "summary": {
+        "label": "Summary",
+        "placeholder": "A short summary of the new crafting system for the sidebar"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "My new crafting system"
+      },
+      "submit": "Create Crafting System",
+      "errors": {
+        "nameRequired": "You must provide a crafting system name",
+        "summaryRequired": "You must provide a summary of the crafting system",
+        "invalidSystemDefinition": "Fabricate attempted to create an invalid Crafting System. Check the console (F12) for more information"
+      }
     },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",
@@ -18,7 +36,7 @@
       "editor": {
         "enabled": {
           "label": "Enabled",
-          "description": "Components in a a disabled system function as normal, but its recipe crafting and alchemy are deactivated."
+          "description": "Components in a disabled system function as normal, but its recipes cannot be crafted and alchemy cannot be performed."
         }
       }
     },
