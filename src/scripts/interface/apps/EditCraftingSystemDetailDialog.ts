@@ -50,8 +50,9 @@ class EditCraftingSystemDetailDialog extends FormApplication {
         }
         if (!this._craftingSystem) {
             await this.createCraftingSystem(formData);
+        } else {
+            await this.editCraftingSystemDetails(formData);
         }
-        await this.editCraftingSystemDetails(formData);
         await this.close();
         return formData;
     }
@@ -91,8 +92,13 @@ class EditCraftingSystemDetailDialog extends FormApplication {
             ui.notifications.error(message);
             return;
         }
-        craftingSystems.push(systemDefinition);
-        await GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, craftingSystems);
+        if (!craftingSystems.find(system => system.id === systemDefinition.id)) {
+            craftingSystems.push(systemDefinition);
+            return GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, craftingSystems);
+        }
+        const updatedCraftingSystems = craftingSystems.filter(system => system.id !== systemDefinition.id);
+        updatedCraftingSystems.push(systemDefinition);
+        return GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, updatedCraftingSystems);
     }
 
     validate(formData: any): Array<string> {
