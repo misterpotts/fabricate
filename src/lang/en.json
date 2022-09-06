@@ -1,6 +1,6 @@
 {
   "fabricate": {
-    "CreateCraftingSystemDialog": {
+    "EditCraftingSystemDetailDialog": {
       "title": "Fabricate | Basic System Details",
       "description": {
         "label": "Description (optional)",
@@ -14,7 +14,7 @@
         "label": "Name",
         "placeholder": "My new crafting system"
       },
-      "submit": "Create Crafting System",
+      "submit": "Submit",
       "errors": {
         "nameRequired": "You must provide a crafting system name",
         "summaryRequired": "You must provide a summary of the crafting system",
@@ -35,6 +35,7 @@
       },
       "editor": {
         "locked": "This crafting system is bundled with Fabricate and cannot be modified",
+        "editDetails": "Edit",
         "enabled": {
           "label": "Enabled",
           "description": "Components in a disabled system function as normal, but its recipes cannot be crafted and alchemy cannot be performed."
@@ -46,7 +47,8 @@
           "label":  "Summary"
         },
         "description": {
-          "label":  "Description"
+          "label":  "Description",
+          "noValue": "This system doesn't have a detailed description yet."
         }
       },
       "deleteSystemConfirm": {

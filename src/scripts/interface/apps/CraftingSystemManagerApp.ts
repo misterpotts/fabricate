@@ -1,7 +1,7 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
-import {CreateCraftingSystemDialog} from "./CreateCraftingSystemDialog";
+import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -53,23 +53,32 @@ class CraftingSystemManagerApp extends FormApplication {
 
     async _onClick(event: any) {
         const action = event?.target?.dataset?.action || event?.target?.parentElement?.dataset?.action as string;
-        if(!action) return;
+        if(!action) {
+            return;
+        }
+        const GAME = new GameProvider().globalGameObject();
+        const systemId = event?.target?.dataset?.systemId || event?.target?.parentElement?.dataset?.systemId as string;
+        const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
         switch (action) {
+            case "editDetails":
+                const systemToEdit = craftingSystems.find(system => system.id === systemId);
+                if (!systemToEdit) {
+                    console.error(`The crafting system "${systemId}" was not found`);
+                }
+                new EditCraftingSystemDetailDialog(systemToEdit).render();
+            break;
             case "importCraftingSystem":
                 console.log(event);
             break;
             case "createCraftingSystem":
-                new CreateCraftingSystemDialog().render();
+                new EditCraftingSystemDetailDialog().render();
             break;
             case "selectCraftingSystem":
-                const GAME = new GameProvider().globalGameObject();
-                const systemId = event?.target?.dataset?.systemId || event?.target?.parentElement?.dataset?.systemId as string;
-                const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
-                const targetSystem = craftingSystems.find(system => system.id === systemId);
-                if (!targetSystem) {
+                const systemToSelect = craftingSystems.find(system => system.id === systemId);
+                if (!systemToSelect) {
                     console.error(`The crafting system "${systemId}" was not found`);
                 }
-                this._selectedSystem = targetSystem;
+                this._selectedSystem = systemToSelect;
                 this.render();
                 break;
             default:

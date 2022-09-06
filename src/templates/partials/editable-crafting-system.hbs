@@ -1,10 +1,16 @@
 <header class="fabricate-crafting-system-header">
+    <button class="fabricate-edit-details" type="button" data-action="editDetails" data-system-id="{{system.id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.editor.editDetails"}}">
+        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+    </button>
     <h1>{{system.name}}</h1>
     <h4>{{system.summary}}</h4>
     <hr/>
     <h4>{{localize "fabricate.CraftingSystemManagerApp.editor.description.label"}}:</h4>
-    <p>{{system.description}}</p>
-    <hr/>
+    {{#if system.description}}
+        <p>{{system.description}}</p>
+    {{else}}
+        <p>{{localize "fabricate.CraftingSystemManagerApp.editor.description.noValue"}}</p>
+    {{/if}}
 </header>
 
 <hr/>

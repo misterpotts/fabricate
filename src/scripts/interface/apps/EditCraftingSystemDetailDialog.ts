@@ -3,18 +3,22 @@ import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
 import {CraftingSystemDefinitionValidator} from "../../system_definitions/CraftingSystemDefinitionValidator";
 
-class CreateCraftingSystemDialog extends FormApplication {
+class EditCraftingSystemDetailDialog extends FormApplication {
 
-    constructor() {
+    private readonly _craftingSystem: CraftingSystemDefinition;
+
+    constructor(craftingSystem?: CraftingSystemDefinition) {
         super(null);
+        this._craftingSystem = craftingSystem;
     }
+
     static get defaultOptions() {
         const GAME = new GameProvider().globalGameObject();
         return {
             ...super.defaultOptions,
-            title: GAME.i18n.localize(`${Properties.module.id}.CreateCraftingSystemDialog.title`),
+            title: GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.title`),
             id: `${Properties.module.id}-create-crafting-system-dialog`,
-            template: Properties.module.templates.CreateCraftingSystemDialog,
+            template: Properties.module.templates.EditCraftingSystemDetailDialog,
             width: 400,
         };
     }
@@ -30,10 +34,9 @@ class CreateCraftingSystemDialog extends FormApplication {
 
     async getData(): Promise<any> {
         return {
-            id: "",
-            name: "",
-            summary: "",
-            description: ""
+            name: this._craftingSystem?.name ?? "",
+            summary: this._craftingSystem?.summary ?? "",
+            description: this._craftingSystem?.description ?? ""
         };
     }
 
@@ -45,8 +48,23 @@ class CreateCraftingSystemDialog extends FormApplication {
             ui.notifications.error(this.formatErrorMessage(errors));
             return;
         }
+        if (!this._craftingSystem) {
+            await this.createCraftingSystem(formData);
+        }
+        await this.editCraftingSystemDetails(formData);
+        await this.close();
+        return formData;
+    }
+
+    private editCraftingSystemDetails(formData: any) {
+        this._craftingSystem.name = formData.name;
+        this._craftingSystem.summary = formData.summary;
+        this._craftingSystem.description = formData.description;
+        return  this.saveCraftingSystem(this._craftingSystem);
+    }
+
+    private async createCraftingSystem(formData: any) {
         const GAME = new GameProvider().globalGameObject();
-        const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
         const systemDefinition: CraftingSystemDefinition = {
             id: randomID(),
             name: formData.name,
@@ -60,27 +78,31 @@ class CreateCraftingSystemDialog extends FormApplication {
             essences: [],
             hasCraftingChecks: false
         };
+        return this.saveCraftingSystem(systemDefinition);
+    }
+
+    async saveCraftingSystem(systemDefinition: CraftingSystemDefinition) {
+        const GAME = new GameProvider().globalGameObject();
+        const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
         const validationResult = CraftingSystemDefinitionValidator.validate(systemDefinition);
         if (!validationResult.isValid) {
             console.error(`Crafting system validation errors: ${validationResult.errors}`);
-            const message = GAME.i18n.localize(`${Properties.module.id}.CreateCraftingSystemDialog.errors.invalidSystemDefinition`);
+            const message = GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.invalidSystemDefinition`);
             ui.notifications.error(message);
             return;
         }
         craftingSystems.push(systemDefinition);
         await GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, craftingSystems);
-        await this.close();
-        return formData;
     }
 
     validate(formData: any): Array<string> {
         const GAME = new GameProvider().globalGameObject();
         const errors: Array<string> = [];
         if (!formData.name || formData.name.length === 0) {
-            errors.push(GAME.i18n.localize(`${Properties.module.id}.CreateCraftingSystemDialog.errors.nameRequired`))
+            errors.push(GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.nameRequired`))
         }
         if (!formData.summary || formData.summary.length === 0) {
-            errors.push(GAME.i18n.localize(`${Properties.module.id}.CreateCraftingSystemDialog.errors.summaryRequired`))
+            errors.push(GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.summaryRequired`))
         }
         return errors;
     }
@@ -96,4 +118,4 @@ class CreateCraftingSystemDialog extends FormApplication {
 
 }
 
-export { CreateCraftingSystemDialog }
+export { EditCraftingSystemDetailDialog }

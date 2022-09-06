@@ -1,0 +1,26 @@
+<form>
+
+    <div class="form-group">
+        <label for="name">{{localize "fabricate.EditCraftingSystemDetailDialog.name.label"}}</label>
+        <div class="form-fields">
+            <input type="text" name="name" placeholder="{{localize "fabricate.EditCraftingSystemDetailDialog.name.placeholder"}}" value="{{name}}" autofocus="">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="summary">{{localize "fabricate.EditCraftingSystemDetailDialog.summary.label"}}</label>
+        <div class="form-fields">
+            <textarea name="summary" rows="3" cols="50" placeholder="{{localize "fabricate.EditCraftingSystemDetailDialog.summary.placeholder"}}">{{summary}}</textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="description">{{localize "fabricate.EditCraftingSystemDetailDialog.description.label"}}</label>
+        <div class="form-fields">
+            <textarea name="description" rows="10" cols="50" placeholder="{{localize "fabricate.EditCraftingSystemDetailDialog.description.placeholder"}}">{{description}}</textarea>
+        </div>
+    </div>
+
+    <button type="submit"><i class="fa-regular fa-circle-check"></i> {{localize "fabricate.EditCraftingSystemDetailDialog.submit"}}</button>
+
+</form>
