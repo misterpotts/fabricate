@@ -1,10 +1,14 @@
 <header class="fabricate-crafting-system-header">
-    <h1 contenteditable="true">{{system.name}}</h1>
-    <h4 contenteditable="true">{{system.summary}}</h4>
+    <h1>{{system.name}}</h1>
+    <h4>{{system.summary}}</h4>
     <hr/>
-    <p contenteditable="true">{{system.description}}</p>
+    <h4>{{localize "fabricate.CraftingSystemManagerApp.editor.description.label"}}:</h4>
+    <p>{{system.description}}</p>
+    <hr/>
 </header>
+
 <hr/>
+
 <div class="fabricate-system-toggle">
     <form>
         <div class="form-group">
@@ -16,3 +20,4 @@
         <div class="form-group"><p>{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.description"}}</p></div>
     </form>
 </div>
+<hr/>

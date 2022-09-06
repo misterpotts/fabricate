@@ -122,7 +122,7 @@ class CraftingSystemManagerApp extends FormApplication {
                         title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.deleteSystemConfirm.title`),
                         content: `<p>${GAME.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.deleteSystemConfirm.content", {systemName: systemToDelete.name})}</p>`,
                         yes: () => {
-                            const survivingSystems = craftingSystems.filter(system => system.id !== systemId && system.locked);
+                            const survivingSystems = craftingSystems.filter(system => system.id !== systemId || system.locked);
                             GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, survivingSystems);
                         }
                     });
