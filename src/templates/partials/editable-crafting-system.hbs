@@ -4,3 +4,15 @@
     <hr/>
     <p contenteditable="true">{{system.description}}</p>
 </header>
+<hr/>
+<div class="fabricate-system-toggle">
+    <form>
+        <div class="form-group">
+            <label for="enabled">{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.label"}}</label>
+            <div class="form-fields">
+                <input name="enabled" type="checkbox" checked="{{system.enabled}}">
+            </div>
+        </div>
+        <div class="form-group"><p>{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.description"}}</p></div>
+    </form>
+</div>

@@ -38,6 +38,10 @@
           "label": "Enabled",
           "description": "Components in a disabled system function as normal, but its recipes cannot be crafted and alchemy cannot be performed."
         }
+      },
+      "deleteSystemConfirm": {
+        "content": "Delete {systemName}? This action cannot be undone.",
+        "title": "Fabricate | Delete crafting system"
       }
     },
     "ui": {
