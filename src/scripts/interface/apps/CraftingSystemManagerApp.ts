@@ -27,6 +27,7 @@ class CraftingSystemManagerApp extends FormApplication {
     }
 
     protected async _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
+        console.log("update object");
         this.render();
         return undefined;
     }
@@ -59,13 +60,13 @@ class CraftingSystemManagerApp extends FormApplication {
         const GAME = new GameProvider().globalGameObject();
         const systemId = event?.target?.dataset?.systemId || event?.target?.parentElement?.dataset?.systemId as string;
         const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
+        const targetSystem = craftingSystems.find(system => system.id === systemId);
         switch (action) {
             case "editDetails":
-                const systemToEdit = craftingSystems.find(system => system.id === systemId);
-                if (!systemToEdit) {
+                if (!targetSystem) {
                     console.error(`The crafting system "${systemId}" was not found`);
                 }
-                new EditCraftingSystemDetailDialog(systemToEdit).render();
+                new EditCraftingSystemDetailDialog(targetSystem).render();
             break;
             case "importCraftingSystem":
                 console.log(event);
@@ -73,12 +74,29 @@ class CraftingSystemManagerApp extends FormApplication {
             case "createCraftingSystem":
                 new EditCraftingSystemDetailDialog().render();
             break;
-            case "selectCraftingSystem":
-                const systemToSelect = craftingSystems.find(system => system.id === systemId);
-                if (!systemToSelect) {
+            case "toggleSystemEnabled":
+                if (!targetSystem) {
                     console.error(`The crafting system "${systemId}" was not found`);
                 }
-                this._selectedSystem = systemToSelect;
+                const isEnabled = event.target.checked;
+                if (targetSystem.enabled === isEnabled) {
+                    return;
+                }
+                targetSystem.enabled = isEnabled;
+                const updatedSystems = craftingSystems.map(system => {
+                    if (system.id !== systemId) {
+                        return system;
+                    }
+                    return targetSystem;
+                });
+                await GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, updatedSystems);
+                this.render();
+            break;
+            case "selectCraftingSystem":
+                if (!targetSystem) {
+                    console.error(`The crafting system "${systemId}" was not found`);
+                }
+                this._selectedSystem = targetSystem;
                 this.render();
                 break;
             default:

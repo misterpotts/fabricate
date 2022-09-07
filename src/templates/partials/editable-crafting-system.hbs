@@ -20,7 +20,7 @@
         <div class="form-group">
             <label for="enabled">{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.label"}}</label>
             <div class="form-fields">
-                <input name="enabled" type="checkbox" checked="{{system.enabled}}">
+                <input name="enabled" type="checkbox" {{#if system.enabled}}checked{{/if}} data-action="toggleSystemEnabled" data-system-id="{{system.id}}">
             </div>
         </div>
         <div class="form-group"><p>{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.description"}}</p></div>
