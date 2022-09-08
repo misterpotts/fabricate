@@ -24,6 +24,7 @@ class EditCraftingSystemDetailDialog extends FormApplication {
     }
 
     protected async _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
+        console.log("Update object");
         this.render();
         return undefined;
     }

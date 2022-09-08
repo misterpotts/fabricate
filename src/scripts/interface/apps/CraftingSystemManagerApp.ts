@@ -50,6 +50,12 @@ class CraftingSystemManagerApp extends FormApplication {
         this._contextMenu(html);
         const rootElement = html[0];
         rootElement.addEventListener("click", this._onClick.bind(this));
+        const tabs = new Tabs({
+            navSelector: ".fabricate-crafting-system-navigation",
+            contentSelector: ".fabricate-crafting-system-body",
+            initial: "recipes"
+        });
+        tabs.bind(rootElement);
     }
 
     async _onClick(event: any) {
