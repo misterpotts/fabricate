@@ -145,7 +145,7 @@
     <div class="tab" data-group="fabricate" data-tab="components">
         <div class="fabricate-components">
             <div class="fabricate-create-component" data-action="createComponent">
-                <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> Import a component
+                <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> Add a component
             </div>
             <div class="fabricate-component">
                 <div class="fabricate-info">
@@ -174,7 +174,32 @@
         </div>
     </div>
     <div class="tab" data-group="fabricate" data-tab="essences">
-        Essences
+        <button type="submit"><i class="fa-solid fa-circle-plus" data-action="createEssence" data-system-id="1"></i> Create an Essence</button>
+        <div class="flexcol">
+            <div class="flexrow">
+                <h3>Name</h3>
+                <h3>Description</h3>
+                <h3>Tooltip</h3>
+                <h3>Slug</h3>
+                <h3>Icon Class</h3>
+                <h3></h3>
+            </div>
+            <div class="flexrow">
+                <span>Name</span>
+                <span>Description</span>
+                <span>Tooltip</span>
+                <span>Slug</span>
+                <span>Icon Class</span>
+                <div class="fabricate-edit-recipe">
+                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
+                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                    </button>
+                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
+                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                    </button>
+                </div class="fabricate-edit-recipe">
+            </div>
+        </div>
     </div>
     <div class="tab" data-group="fabricate" data-tab="alchemy">
         Alchemy
