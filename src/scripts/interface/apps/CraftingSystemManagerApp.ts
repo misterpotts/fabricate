@@ -53,7 +53,8 @@ class CraftingSystemManagerApp extends FormApplication {
         const tabs = new Tabs({
             navSelector: ".fabricate-crafting-system-navigation",
             contentSelector: ".fabricate-crafting-system-body",
-            initial: "recipes"
+            initial: "recipes",
+            callback: () => {}
         });
         tabs.bind(rootElement);
     }

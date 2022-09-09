@@ -34,6 +34,7 @@
     <a class="item" data-tab="components">Components</a>
     <a class="item" data-tab="essences">Essences</a>
     <a class="item" data-tab="alchemy">Alchemy</a>
+    <a class="item" data-tab="checks">Checks</a>
 </nav>
 <section class="fabricate-crafting-system-body">
     <div class="tab active" data-group="fabricate" data-tab="recipes">
@@ -41,105 +42,132 @@
             <div class="fabricate-create-recipe" data-action="createRecipe">
                 <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> Create a recipe
             </div>
-            <div class="fabricate-recipe">
-                <img src="icons/sundries/documents/blueprint-recipe-magic.webp">
-                <span class="fabricate-recipe-name">Recipe name</span>
-                <div class="fabricate-inline-component-list">
-                    <span class="fabricate-recipe-results">Produces:</span>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="fabricate-edit-recipe">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="fabricate-recipe ">
-                <img src="icons/sundries/documents/blueprint-recipe-magic.webp">
-                <span class="fabricate-recipe-name">Recipe name</span>
-                <div class="fabricate-inline-component-list">
-                    <span class="fabricate-recipe-results">Produces:</span>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="fabricate-edit-recipe">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="fabricate-recipe ">
-                <img src="icons/sundries/documents/blueprint-recipe-magic.webp">
-                <span class="fabricate-recipe-name">Recipe name</span>
-                <div class="fabricate-inline-component-list">
-                    <span class="fabricate-recipe-results">Produces:</span>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="fabricate-edit-recipe">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </div>
+            <table class="fabricate-item-table">
+                <thead class="fabricate-item-table-header">
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Produces</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="fabricate-item-table-body">
+                    <tr class="fabricate-item-table-row">
+                        <td class="fabricate-item-image">
+                            <img src="icons/sundries/documents/blueprint-recipe-magic.webp" data-action="editRecipe">
+                        </td>
+                        <td class="fabricate-item-name">
+                            Recipe name
+                        </td>
+                        <td>
+                            <div class="fabricate-inline-component-list">
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="fabricate-edit-item">
+                            <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
+                                <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                            </button>
+                            <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
+                                <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="fabricate-item-table-row">
+                        <td class="fabricate-item-image">
+                            <img src="icons/sundries/documents/blueprint-recipe-magic.webp" data-action="editRecipe">
+                        </td>
+                        <td class="fabricate-item-name">
+                            Recipe name
+                        </td>
+                        <td>
+                            <div class="fabricate-inline-component-list">
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="fabricate-edit-item">
+                            <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
+                                <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                            </button>
+                            <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
+                                <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="fabricate-item-table-row">
+                        <td class="fabricate-item-image">
+                            <img src="icons/sundries/documents/blueprint-recipe-magic.webp"  data-action="editRecipe">
+                        </td>
+                        <td class="fabricate-item-name">
+                            Recipe name
+                        </td>
+                        <td>
+                            <div class="fabricate-inline-component-list">
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                                <div class="fabricate-component" data-tooltip="Component Name">
+                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">3</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="fabricate-edit-item">
+                            <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
+                                <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                            </button>
+                            <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete recipe">
+                                <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="tab" data-group="fabricate" data-tab="components">
@@ -147,91 +175,92 @@
             <div class="fabricate-create-component" data-action="createComponent">
                 <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> Add a component
             </div>
-            <div class="fabricate-component">
-                <div class="fabricate-info">
-                    <span class="fabricate-button"><i class="fa-solid fa-xmark" data-tooltip="Delete" style="pointer-events: none"></i></span>
-                    <span class="fabricate-button"><i class="fa-solid fa-pen-to-square" data-tooltip="Edit" style="pointer-events: none"></i></span>
+            <div class="fabricate-component-list">
+                <div class="fabricate-component">
+                    <div class="fabricate-info">
+                        <span class="fabricate-button" data-tooltip="Delete" data-action="deleteComponent"><i class="fa-solid fa-xmark" style="pointer-events: none"></i></span>
+                        <span class="fabricate-button" data-tooltip="Edit" data-action="editComponent"><i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i></span>
+                    </div>
+                    <span class="fabricate-component-name">Component name</span>
+                    <img src="/icons/commodities/materials/bowl-liquid-red.webp" data-action="editComponent">
                 </div>
-                <span class="fabricate-component-name">Component name</span>
-                <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-            </div>
-            <div class="fabricate-component">
-                <div class="fabricate-info">
-                    <span class="fabricate-button"><i class="fa-solid fa-xmark" data-tooltip="Delete" style="pointer-events: none"></i></span>
-                    <span class="fabricate-button"><i class="fa-solid fa-pen-to-square" data-tooltip="Edit" style="pointer-events: none"></i></span>
+                <div class="fabricate-component">
+                    <div class="fabricate-info">
+                        <span class="fabricate-button" data-tooltip="Delete" data-action="deleteComponent"><i class="fa-solid fa-xmark" style="pointer-events: none"></i></span>
+                        <span class="fabricate-button" data-tooltip="Edit" data-action="editComponent"><i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i></span>
+                    </div>
+                    <span class="fabricate-component-name">Component name</span>
+                    <img src="/icons/commodities/materials/bowl-liquid-red.webp" data-action="editComponent">
                 </div>
-                <span class="fabricate-component-name">Component name</span>
-                <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-            </div>
-            <div class="fabricate-component">
-                <div class="fabricate-info">
-                    <span class="fabricate-button"><i class="fa-solid fa-xmark" data-tooltip="Delete" style="pointer-events: none"></i></span>
-                    <span class="fabricate-button"><i class="fa-solid fa-pen-to-square" data-tooltip="Edit" style="pointer-events: none"></i></span>
+                <div class="fabricate-component">
+                    <div class="fabricate-info">
+                        <span class="fabricate-button" data-tooltip="Delete" data-action="deleteComponent"><i class="fa-solid fa-xmark" style="pointer-events: none"></i></span>
+                        <span class="fabricate-button" data-tooltip="Edit" data-action="editComponent"><i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i></span>
+                    </div>
+                    <span class="fabricate-component-name">Component name</span>
+                    <img src="/icons/commodities/materials/bowl-liquid-red.webp" data-action="editComponent">
                 </div>
-                <span class="fabricate-component-name">Component name</span>
-                <img src="/icons/commodities/materials/bowl-liquid-red.webp">
             </div>
         </div>
     </div>
     <div class="tab" data-group="fabricate" data-tab="essences">
         <button type="submit"><i class="fa-solid fa-circle-plus" data-action="createEssence" data-system-id="1"></i> Create an Essence</button>
-        <div class="fabricate-essence-table flexcol">
-            <div class="fabricate-essence-table-header flexrow">
-                <h4>Name</h4>
-                <h4>Description</h4>
-                <h4>Tooltip</h4>
-                <h4>Slug</h4>
-                <h4>Icon Class</h4>
-                <h4></h4>
-            </div>
-            <div class="fabricate-essence-table-row flexrow">
-                <span>Name</span>
-                <span>Description</span>
-                <span>Tooltip</span>
-                <span>Slug</span>
-                <span>Icon Class</span>
-                <div class="fabricate-edit-essence">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit essence">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete essence">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="fabricate-essence-table-row flexrow">
-                <span>Name</span>
-                <span>Description</span>
-                <span>Tooltip</span>
-                <span>Slug</span>
-                <span>Icon Class</span>
-                <div class="fabricate-edit-essence">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit essence">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete essence">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="fabricate-essence-table-row flexrow">
-                <span>Name</span>
-                <span>Description</span>
-                <span>Tooltip</span>
-                <span>Slug</span>
-                <span>Icon Class</span>
-                <div class="fabricate-edit-essence">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit essence">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id" data-tooltip="Delete essence">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+        <table class="fabricate-item-table">
+            <thead class="fabricate-item-table-header">
+                <tr>
+                    <th>Preview</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="fabricate-item-table-body">
+                <tr class="fabricate-item-table-row">
+                    <td class="fabricate-essence-preview"><i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i></td>
+                    <td>Essence name</td>
+                    <td>Essence description</td>
+                    <td class="fabricate-edit-item">
+                        <button type="button" data-action="editEssence" data-recipe-id="essence-id" data-tooltip="Edit essence">
+                            <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                        </button>
+                        <button type="button" data-action="deleteEssence" data-recipe-id="essence-id" data-tooltip="Delete essence">
+                            <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="fabricate-item-table-row">
+                    <td class="fabricate-essence-preview"><i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i></td>
+                    <td>Essence name</td>
+                    <td>Essence description</td>
+                    <td class="fabricate-edit-item">
+                        <button type="button" data-action="editEssence" data-recipe-id="essence-id" data-tooltip="Edit essence">
+                            <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                        </button>
+                        <button type="button" data-action="deleteEssence" data-recipe-id="essence-id" data-tooltip="Delete essence">
+                            <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="fabricate-item-table-row">
+                    <td class="fabricate-essence-preview"><i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i></td>
+                    <td>Essence name</td>
+                    <td>Essence description</td>
+                    <td class="fabricate-edit-item">
+                        <button type="button" data-action="editEssence" data-recipe-id="essence-id" data-tooltip="Edit essence">
+                            <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                        </button>
+                        <button type="button" data-action="deleteEssence" data-recipe-id="essence-id" data-tooltip="Delete essence">
+                            <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
     <div class="tab" data-group="fabricate" data-tab="alchemy">
         Alchemy
+    </div>
+    <div class="tab" data-group="fabricate" data-tab="checks">
+        Checks
     </div>
 </section>

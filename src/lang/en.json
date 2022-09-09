@@ -38,7 +38,7 @@
         "editDetails": "Edit",
         "enabled": {
           "label": "Enabled",
-          "description": "Components in a disabled system function as normal, but its recipes cannot be crafted and alchemy cannot be performed."
+          "description": "Components in a disabled system cannot be salvaged, the system's recipes cannot be crafted, and its alchemy cannot be performed."
         },
         "name": {
           "label":  "Name"

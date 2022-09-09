@@ -203,8 +203,52 @@
 
 .fabricate-inline-component-list {
   display: inline-flex;
+  position: relative;
+  width: 100%;
 }
 
+.fabricate-component-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fabricate-item-table {
+
+  margin-top: 18px;
+
+  .fabricate-item-table-header {
+
+    min-height: 28px;
+
+  }
+
+  .fabricate-item-table-body {
+
+    .fabricate-item-table-row {
+
+      min-height: 34px;
+
+      .fabricate-item-image {
+        height: 40px;
+        width: 40px;
+      }
+
+      .fabricate-edit-item {
+        display: flex;
+        justify-content: right;
+
+        button {
+          height: 30px;
+          width: 30px;
+        }
+
+      }
+
+    }
+
+  }
+
+}
 
 .fabricate-crafting-system-manager {
 
@@ -242,38 +286,8 @@
 
     .fabricate-crafting-system-details {
 
-      .fabricate-essence-table {
-
-        .fabricate-essence-table-header {
-          height: 28px;
-          margin: 10px 0;
-          h4 {
-            font-weight: bold;
-          }
-        }
-
-        .fabricate-essence-table-row {
-          min-height: 28px;
-          border-top: 1px solid grey;
-
-          span {
-            display: inline-flex;
-            min-height: 28px;
-            margin-top: 10px;
-          }
-
-          .fabricate-edit-essence {
-
-            button {
-              height: 28px;
-              width: 28px;
-              margin-top: 5px;
-            }
-
-          }
-
-        }
-
+      .fabricate-essence-preview {
+        text-align: center;
       }
 
       .fabricate-crafting-system-navigation {
@@ -296,7 +310,7 @@
         text-align: center;
         height: 68px;
         margin-bottom: 20px;
-        background: #d1d1d19c;
+        background: #d1d1d138;
         padding-top: 26px;
         border: 1px dashed #7a78788c;
         border-radius: 3px;
@@ -304,52 +318,25 @@
 
       .fabricate-recipes {
 
-        .fabricate-recipe {
-          display: inline-flex;
-          position: relative;
-          margin-bottom: 10px;
-          width: 100%;
+        .fabricate-item-image {
+          cursor: pointer;
+        }
 
-          .fabricate-edit-recipe {
-            position: absolute;
-            right: 0;
-            top: 6px;
+        .fabricate-item-name {
+          text-align: center;
+          font-weight: bold;
+        }
 
-            button {
-              width: 28px;
-              height: 28px;
-            }
+        .fabricate-inline-component-list {
+          margin-top: 10px;
+        }
 
-          }
+        .fabricate-edit-item {
+          margin-top: 12px;
+        }
 
-          .fabricate-recipe-name, .fabricate-recipe-results {
-            display: inline-flex;
-            margin-left: 10px;
-          }
-
-          .fabricate-recipe-name {
-            margin-top: 12px;
-            font-weight: bold;
-            font-size: var(--font-size-14);
-          }
-
-          .fabricate-recipe-results {
-            margin-top: 14px;
-            margin-right: 10px;
-            font-size: var(--font-size-12);
-          }
-
-          img {
-            width: 40px;
-            height: 40px;
-          }
-
-          .fabricate-component {
-
-            .fabricate-component-tile(40px; 20px;);
-
-          }
-
+        .fabricate-component {
+          .fabricate-component-tile(40px; 20px;);
         }
 
       }
