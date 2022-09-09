@@ -2,6 +2,7 @@ import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
 import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
+import {ComponentManagerApp} from "./ComponentManagerApp";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -53,10 +54,22 @@ class CraftingSystemManagerApp extends FormApplication {
         const tabs = new Tabs({
             navSelector: ".fabricate-crafting-system-navigation",
             contentSelector: ".fabricate-crafting-system-body",
-            initial: "recipes",
+            initial: "components",
             callback: () => {}
         });
         tabs.bind(rootElement);
+    }
+
+    _onDrop(event: any) {
+        if (!event.target.classList.contains("fabricate-drop-zone")) {
+            return;
+        }
+        const action = event?.target?.dataset?.action;
+        if (!action) {
+            return;
+        }
+        const systemId = event?.target?.dataset?.systemId as string;
+        return this.handleUserAction(systemId, action, event);
     }
 
     async _onClick(event: any) {
@@ -64,8 +77,12 @@ class CraftingSystemManagerApp extends FormApplication {
         if(!action) {
             return;
         }
-        const GAME = new GameProvider().globalGameObject();
         const systemId = event?.target?.dataset?.systemId || event?.target?.parentElement?.dataset?.systemId as string;
+        return this.handleUserAction(systemId, action, event);
+    }
+
+    private async handleUserAction(systemId: string, action: string, event: any) {
+        const GAME = new GameProvider().globalGameObject();
         const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
         const targetSystem = craftingSystems.find(system => system.id === systemId);
         switch (action) {
@@ -74,13 +91,13 @@ class CraftingSystemManagerApp extends FormApplication {
                     console.error(`The crafting system "${systemId}" was not found`);
                 }
                 new EditCraftingSystemDetailDialog(targetSystem).render();
-            break;
+                break;
             case "importCraftingSystem":
                 console.log(event);
-            break;
+                break;
             case "createCraftingSystem":
                 new EditCraftingSystemDetailDialog().render();
-            break;
+                break;
             case "toggleSystemEnabled":
                 if (!targetSystem) {
                     console.error(`The crafting system "${systemId}" was not found`);
@@ -98,13 +115,30 @@ class CraftingSystemManagerApp extends FormApplication {
                 });
                 await GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, updatedSystems);
                 this.render();
-            break;
+                break;
             case "selectCraftingSystem":
                 if (!targetSystem) {
                     console.error(`The crafting system "${systemId}" was not found`);
                 }
                 this._selectedSystem = targetSystem;
                 this.render();
+                break;
+            case "createComponent":
+                if (event instanceof PointerEvent) {
+                    new ComponentManagerApp().render();
+                    return;
+                }
+                try {
+                    const data: any = JSON.parse(event.dataTransfer?.getData("text/plain"));
+                    if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
+                        return;
+                    }
+                    new ComponentManagerApp(data.uuid).render();
+                } catch (e: any) {
+                    console.warn(`Something was dropped onto a Fabricate drop zone, 
+                        but the drop event was not able to be processed. 
+                        Caused by: ${e.message ?? e}`);
+                }
                 break;
             default:
                 console.error("An unrecognised action was triggered on the Fabricate Crafting System Manager Form Application.");
