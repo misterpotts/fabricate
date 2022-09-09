@@ -39,8 +39,8 @@
 <section class="fabricate-crafting-system-body">
     <div class="tab active" data-group="fabricate" data-tab="recipes">
         <div class="fabricate-recipes">
-            <div class="fabricate-create-recipe" data-action="createRecipe">
-                <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> Create a recipe
+            <div class="fabricate-drop-zone" data-action="createRecipe">
+                <i class="fa-solid fa-plus" style="pointer-events: none"></i> Drop an item or click to create a recipe
             </div>
             <table class="fabricate-item-table">
                 <thead class="fabricate-item-table-header">
@@ -172,8 +172,8 @@
     </div>
     <div class="tab" data-group="fabricate" data-tab="components">
         <div class="fabricate-components">
-            <div class="fabricate-create-component" data-action="createComponent">
-                <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> Add a component
+            <div class="fabricate-drop-zone" data-action="createComponent">
+                <i class="fa-solid fa-plus" style="pointer-events: none"></i> Drop an item or click to create a component
             </div>
             <div class="fabricate-component-list">
                 <div class="fabricate-component">
@@ -204,7 +204,7 @@
         </div>
     </div>
     <div class="tab" data-group="fabricate" data-tab="essences">
-        <button type="submit"><i class="fa-solid fa-circle-plus" data-action="createEssence" data-system-id="1"></i> Create an Essence</button>
+        <button type="submit"><i class="fa-solid fa-circle-plus" data-action="createEssence" data-system-id="1"></i> Add a new Essence</button>
         <table class="fabricate-item-table">
             <thead class="fabricate-item-table-header">
                 <tr>
@@ -258,9 +258,43 @@
         </table>
     </div>
     <div class="tab" data-group="fabricate" data-tab="alchemy">
-        Alchemy
+        <div class="fabricate-alchemy-formulae">
+            <p>
+                Alchemy is a process by which an item is modified by combining specific ingredients to produce one or more
+                effects. Not every crafting system includes alchemy. In fact, most crafting systems don't!
+            </p>
+            <hr/>
+            <div class="fabricate-alchemy-toggle">
+                <form>
+                    <div class="form-group">
+                        <label for="alchemyEnabled">Enable alchemy for this crafting system?</label>
+                        <div class="form-fields">
+                            <input name="alchemyEnabled" type="checkbox" data-action="toggleAlchemyEnabled" data-system-id="{{system.id}}">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     <div class="tab" data-group="fabricate" data-tab="checks">
-        Checks
+        <div class="fabricate-crafting-checks">
+            <p>
+                Crafting checks are performed when there is a chance of failure in the crafting process.
+                The difficulty of crafting checks can be modified by things such as the skills of the crafter,
+                the challenge level of the recipe, the components used and more.
+            </p>
+            <p>If your crafting system does not have a chance of failure, you don't need to enable crafting checks.</p>
+            <hr/>
+            <div class="fabricate-crafting-check-toggle">
+                <form>
+                    <div class="form-group">
+                        <label for="craftingChecksEnabled">Enable alchemy for this crafting system?</label>
+                        <div class="form-fields">
+                            <input name="craftingChecksEnabled" type="checkbox" data-action="toggleCraftingChecksEnabled" data-system-id="{{system.id}}">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </section>
