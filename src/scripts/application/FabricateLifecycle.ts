@@ -20,10 +20,24 @@ class FabricateLifecycle {
 
     private static async registerHandlebarsPartials() {
 
-        const editableSystemPartial = await getTemplate(Properties.module.templates.partials.editableSystem);
-        Handlebars.registerPartial('editableSystem', editableSystemPartial);
-        const readOnlySystemPartial = await getTemplate(Properties.module.templates.partials.readOnlySystem);
-        Handlebars.registerPartial('readOnlySystem', readOnlySystemPartial);
+        Promise.all([
+            getTemplate(Properties.module.templates.partials.editableSystem),
+            getTemplate(Properties.module.templates.partials.readOnlySystem),
+            getTemplate(Properties.module.templates.partials.recipesTab),
+            getTemplate(Properties.module.templates.partials.componentsTab),
+            getTemplate(Properties.module.templates.partials.essencesTab),
+            getTemplate(Properties.module.templates.partials.alchemyTab),
+            getTemplate(Properties.module.templates.partials.checksTab),
+        ]).then(templates => {
+            Handlebars.registerPartial('editableSystem', templates[0]);
+            Handlebars.registerPartial('readOnlySystem', templates[1]);
+            Handlebars.registerPartial('recipesTab', templates[2]);
+            Handlebars.registerPartial('componentsTab', templates[3]);
+            Handlebars.registerPartial('essencesTab', templates[4]);
+            Handlebars.registerPartial('alchemyTab', templates[5]);
+            Handlebars.registerPartial('checksTab', templates[6]);
+        });
+
     }
 
     private static registerHandlebarsHelperFunctions() {

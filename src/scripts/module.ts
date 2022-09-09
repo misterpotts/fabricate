@@ -39,13 +39,14 @@ Hooks.once('init', () => {
         type: Array,
         default: FabricateApplication.systems.systemDefinitions,
         onChange: () => {
-            const rApp = Object.values(ui.windows).find(w => w instanceof CraftingSystemManagerApp);
-            if(rApp) rApp.render(true);
+            Object.values(ui.windows)
+                .find(w => w instanceof CraftingSystemManagerApp)
+                ?.render(true);
         }
     });
 });
 
-Hooks.once('ready', loadCraftingSystems);
+// Hooks.once('ready', loadCraftingSystems);
 Hooks.once('ready', () => {
     FabricateLifecycle.init();
 });
@@ -53,6 +54,7 @@ Hooks.once('ready', () => {
 /**
  * Loads all Crafting Systems with a System Specification declared with the Crafting System Registry.
  * */
+// @ts-ignore
 async function loadCraftingSystems(): Promise<void> {
     const systemSpecifications = FabricateApplication.systems.systemDefinitions;
     console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);

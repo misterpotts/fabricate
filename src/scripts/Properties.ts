@@ -12,7 +12,12 @@ const Properties = {
             EditCraftingSystemDetailDialog: 'modules/fabricate/templates/edit-crafting-system-detail.hbs',
             partials: {
                 editableSystem: 'modules/fabricate/templates/partials/editable-crafting-system.hbs',
-                readOnlySystem: 'modules/fabricate/templates/partials/readonly-crafting-system.hbs'
+                readOnlySystem: 'modules/fabricate/templates/partials/readonly-crafting-system.hbs',
+                recipesTab: 'modules/fabricate/templates/partials/recipes-tab.hbs',
+                componentsTab: 'modules/fabricate/templates/partials/components-tab.hbs',
+                essencesTab: 'modules/fabricate/templates/partials/essences-tab.hbs',
+                alchemyTab: 'modules/fabricate/templates/partials/alchemy-tab.hbs',
+                checksTab: 'modules/fabricate/templates/partials/checks-tab.hbs',
             }
         },
         compendiums: {
