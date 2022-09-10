@@ -23,7 +23,7 @@ class CraftingSystem implements Identifiable {
     private readonly _recipeCraftingCheck: CraftingCheck<Actor>;
     private readonly _alchemyCraftingCheck: CraftingCheck<Actor>;
     private readonly _partDictionary: PartDictionary;
-    private readonly _essencesBySlug: Map<string, EssenceDefinition>;
+    private readonly _essencesById: Map<string, EssenceDefinition>;
     private readonly _alchemyAttemptFactory: AlchemyAttemptFactory;
     private readonly _craftingAttemptFactory: CraftingAttemptFactory;
 
@@ -62,7 +62,7 @@ class CraftingSystem implements Identifiable {
         this._alchemyCraftingCheck = craftingChecks?.alchemy ?? new NoCraftingCheck();
         this._recipeCraftingCheck = craftingChecks?.recipe ?? new NoCraftingCheck();
         this._partDictionary = partDictionary;
-        this._essencesBySlug = new Map(essences.map((essence: EssenceDefinition) => [essence.slug, essence]));
+        this._essencesById = new Map(essences.map((essence: EssenceDefinition) => [essence.id, essence]));
         this._craftingAttemptFactory = craftingAttemptFactory;
         this._alchemyAttemptFactory = alchemyAttemptFactory ?? new DisabledAlchemyAttemptFactory();
         this._enabled = enabled;
@@ -81,11 +81,11 @@ class CraftingSystem implements Identifiable {
     }
 
     get essences(): EssenceDefinition[] {
-        return Array.from(this._essencesBySlug.values());
+        return Array.from(this._essencesById.values());
     }
 
-    getEssenceBySlug(slug: string) {
-        return this._essencesBySlug.get(slug);
+    getEssenceById(id: string) {
+        return this._essencesById.get(id);
     }
 
     get hasRecipeCraftingCheck(): boolean {

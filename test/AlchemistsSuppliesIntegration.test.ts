@@ -67,7 +67,7 @@ describe('A Crafting System Factory', () => {
         expect(craftingSystem.enabled).toEqual(true);
         expect(craftingSystem.gameSystem).toEqual(GameSystem.DND5E);
         expect(craftingSystem.essences.length).toEqual(6);
-        expect(craftingSystem.essences.map(essence => essence.slug))
+        expect(craftingSystem.essences.map(essence => essence.id))
             .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
         expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);
         expect(craftingSystem.hasAlchemyCraftingCheck).toEqual(true);

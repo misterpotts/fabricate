@@ -102,7 +102,7 @@ const copy = parallel(
 
 exports.copy = copy;
 
-const build = series(runTests, compile, copy);
+const build = series(compile, runTests, copy);
 
 exports.build = build;
 

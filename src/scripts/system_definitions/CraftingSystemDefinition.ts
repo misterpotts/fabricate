@@ -60,7 +60,7 @@ interface CraftingSystemDefinition {
         iconCode: string;
         tooltip: string;
         description: string;
-        slug: string;
+        id: string;
         name: string;
     }[];
     defaultCheck?: DnD5ECraftingCheckSpec;

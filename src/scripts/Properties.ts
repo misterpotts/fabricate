@@ -10,6 +10,7 @@ const Properties = {
             craftingMessage: "modules/fabricate/templates/chat-message.hbs",
             craftingSystemManagementApp: "modules/fabricate/templates/crafting-system-manager.hbs",
             ComponentManagerApp: "modules/fabricate/templates/component-manager.hbs",
+            EssenceManagerApp: "modules/fabricate/templates/essence-manager.hbs",
             EditCraftingSystemDetailDialog: "modules/fabricate/templates/edit-crafting-system-detail.hbs",
             partials: {
                 editableSystem: "modules/fabricate/templates/partials/editable-crafting-system.hbs",

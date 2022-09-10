@@ -5,28 +5,28 @@ const elementalEarth = new EssenceDefinition({
     iconCode: "mountain",
     name: "Earth",
     tooltip: "Elemental Earth",
-    slug: "earth"
+    id: "earth"
 })
 const elementalWater = new EssenceDefinition({
     description: "One of the four fundamental forces, Elemental Water.",
     iconCode: "water",
     name: "Water",
     tooltip: "Elemental Water",
-    slug: "water"
+    id: "water"
 });
 const elementalAir = new EssenceDefinition({
     description: "One of the four fundamental forces, Elemental Air.",
     iconCode: "air",
     name: "Air",
     tooltip: "Elemental Air",
-    slug: "air"
+    id: "air"
 });
 const elementalFire = new EssenceDefinition({
     description: "One of the four fundamental forces, Elemental Fire.",
     iconCode: "fire",
     name: "Fire",
     tooltip: "Elemental Fire",
-    slug: "fire"
+    id: "fire"
 });
 
 export { elementalEarth, elementalWater, elementalAir, elementalFire }

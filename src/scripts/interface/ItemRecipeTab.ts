@@ -38,7 +38,7 @@ class ItemRecipeTab {
         if (fabricateFlags.type === Properties.types.component && fabricateFlags.component.essences && fabricateFlags.component.essences.length > 0) {
             const essences: Record<string, number> = fabricateFlags.component.essences;
             const craftingSystem = FabricateApplication.systems.getSystemById(fabricateFlags.identity.systemId);
-            const essenceDescription = Object.keys(essences).map((essence: string) => craftingSystem.getEssenceBySlug(essence).icon)
+            const essenceDescription = Object.keys(essences).map((essence: string) => craftingSystem.getEssenceById(essence).icon)
                 .join(', ');
             sheetHtml.find('ol.properties-list').append($(`<li>${essenceDescription}</li>`));
         }

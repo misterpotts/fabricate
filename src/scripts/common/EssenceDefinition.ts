@@ -4,7 +4,7 @@ import {Identifiable} from "./FabricateItem";
 class EssenceDefinition implements Identifiable {
 
     private readonly _name: string;
-    private readonly _slug: string;
+    private readonly _id: string;
     private readonly _description: string;
     private readonly _tooltip: string;
     private readonly _iconCode: string;
@@ -13,24 +13,24 @@ class EssenceDefinition implements Identifiable {
         iconCode,
         tooltip,
         description,
-        slug,
+        id,
         name,
     }: {
         iconCode: string;
         tooltip: string;
         description: string;
-        slug: string;
+        id: string;
         name: string;
     }) {
         this._name = name;
-        this._slug = slug;
+        this._id = id;
         this._description = description;
         this._tooltip = tooltip;
         this._iconCode = iconCode;
     }
 
     get id(): string {
-        return this._slug;
+        return this._id;
     }
 
     get name(): string {
@@ -54,10 +54,6 @@ class EssenceDefinition implements Identifiable {
             return `<i class="fas fa-${this._iconCode}" title="${this.description}"></i>`;
         }
         return this.name;
-    }
-
-    get slug(): string {
-        return this._slug;
     }
 
 }
@@ -89,13 +85,13 @@ class EssenceIdentityProvider {
     }
 
     public getForEssenceCombination(combination: Combination<EssenceDefinition>): number {
-        return combination.members.map((essence => this.getEssenceIdentityBySlug(essence.slug) * combination.amountFor(essence)))
+        return combination.members.map((essence => this.getEssenceIdentityBySlug(essence.id) * combination.amountFor(essence)))
             .reduce((left: number, right: number) => left * right, 1);
     }
 
     public static for(essences: EssenceDefinition[]) {
         const essenceIdentities = EssenceIdentityProvider.assignEssenceIdentities(essences);
-        const essencesBySlug = new Map(essences.map(essence => [essence.slug, essence]));
+        const essencesBySlug = new Map(essences.map(essence => [essence.id, essence]));
         return new EssenceIdentityProvider({
             essenceIdentities: essenceIdentities,
             essencesBySlug: essencesBySlug
@@ -105,7 +101,7 @@ class EssenceIdentityProvider {
     private static assignEssenceIdentities(essences: EssenceDefinition[]): Map<string, number> {
         const primes: number[] = this.generatePrimes(essences.length);
         const essenceIdentities: Map<string, number> = new Map();
-        essences.forEach((definition: EssenceDefinition, index: number) => essenceIdentities.set(definition.slug, primes[index]));
+        essences.forEach((definition: EssenceDefinition, index: number) => essenceIdentities.set(definition.id, primes[index]));
         return essenceIdentities;
     }
 

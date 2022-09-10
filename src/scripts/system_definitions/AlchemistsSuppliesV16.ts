@@ -13,42 +13,42 @@ const SYSTEM_DEFINITION: CraftingSystemDefinition = {
     "essences": [
         {
             "name": "Water",
-            "slug": "water",
+            "id": "water",
             "description": "Elemental water, one of the fundamental forces of nature",
             "iconCode": "tint",
             "tooltip": "Elemental water"
         },
         {
             "name": "Earth",
-            "slug": "earth",
+            "id": "earth",
             "description": "Elemental earth, one of the fundamental forces of nature",
             "iconCode": "mountain",
             "tooltip": "Elemental earth"
         },
         {
             "name": "Air",
-            "slug": "air",
+            "id": "air",
             "description": "Elemental air, one of the fundamental forces of nature",
             "iconCode": "wind",
             "tooltip": "Elemental air"
         },
         {
             "name": "Fire",
-            "slug": "fire",
+            "id": "fire",
             "description": "Elemental fire, one of the fundamental forces of nature",
             "iconCode": "fire",
             "tooltip": "Elemental fire"
         },
         {
             "name": "Negative Energy",
-            "slug": "negative-energy",
+            "id": "negative-energy",
             "description": "Negative Energy - The essence of death and destruction",
             "iconCode": "moon",
             "tooltip": "Negative energy"
         },
         {
             "name": "Positive Energy",
-            "slug": "positive-energy",
+            "id": "positive-energy",
             "description": "Positive Energy - The essence of life and creation",
             "iconCode": "sun",
             "tooltip": "Positive energy"

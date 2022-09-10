@@ -1,60 +1,33 @@
 <div class="fabricate-essences">
-    <p>
-        Essences are a quality of a component. They define something that the component has, not something that it is.
-        components might have multiple Essences in different quantities, all of which you can define for your system.
-        Not every crafting system needs essences.
-        However, if you do want to add them to components, you'll need to define them here first.
-    </p>
-    <button type="submit"><i class="fa-solid fa-circle-plus" data-action="createEssence" data-system-id="1"></i> Add a new Essence</button>
+    <p>{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.description"}}</p>
+    <button type="submit" data-action="createEssence" data-system-id="{{system.id}}">
+        <i class="fa-solid fa-circle-plus" style="pointer-events: none"></i> {{localize "fabricate.CraftingSystemManagerApp.tabs.essences.create"}}
+    </button>
     <table class="fabricate-item-table">
         <thead class="fabricate-item-table-header">
         <tr>
-            <th>Preview</th>
-            <th>Name</th>
-            <th>Description</th>
+            <th>{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.tableHeadings.preview"}}</th>
+            <th>{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.tableHeadings.name"}}</th>
+            <th>{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.tableHeadings.description"}}</th>
             <th></th>
         </tr>
         </thead>
         <tbody class="fabricate-item-table-body">
-        <tr class="fabricate-item-table-row">
-            <td class="fabricate-essence-preview"><i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i></td>
-            <td>Essence name</td>
-            <td>Essence description</td>
-            <td class="fabricate-edit-item">
-                <button type="button" data-action="editEssence" data-recipe-id="essence-id" data-tooltip="Edit essence">
-                    <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                </button>
-                <button type="button" data-action="deleteEssence" data-recipe-id="essence-id" data-tooltip="Delete essence">
-                    <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                </button>
-            </td>
-        </tr>
-        <tr class="fabricate-item-table-row">
-            <td class="fabricate-essence-preview"><i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i></td>
-            <td>Essence name</td>
-            <td>Essence description</td>
-            <td class="fabricate-edit-item">
-                <button type="button" data-action="editEssence" data-recipe-id="essence-id" data-tooltip="Edit essence">
-                    <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                </button>
-                <button type="button" data-action="deleteEssence" data-recipe-id="essence-id" data-tooltip="Delete essence">
-                    <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                </button>
-            </td>
-        </tr>
-        <tr class="fabricate-item-table-row">
-            <td class="fabricate-essence-preview"><i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i></td>
-            <td>Essence name</td>
-            <td>Essence description</td>
-            <td class="fabricate-edit-item">
-                <button type="button" data-action="editEssence" data-recipe-id="essence-id" data-tooltip="Edit essence">
-                    <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                </button>
-                <button type="button" data-action="deleteEssence" data-recipe-id="essence-id" data-tooltip="Delete essence">
-                    <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                </button>
-            </td>
-        </tr>
+        {{#each system.essences}}
+            <tr class="fabricate-item-table-row">
+                <td class="fabricate-essence-preview"><i class="{{iconCode}}" data-tooltip="{{tooltip}}"></i></td>
+                <td>{{name}}</td>
+                <td>{{description}}</td>
+                <td class="fabricate-edit-item">
+                    <button type="button" data-action="editEssence" data-essence-id="{{id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.buttons.edit"}}">
+                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                    </button>
+                    <button type="button" data-action="deleteEssence" data-essence-id="{{id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.buttons.delete"}}">
+                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                    </button>
+                </td>
+            </tr>
+        {{/each}}
         </tbody>
     </table>
 </div>

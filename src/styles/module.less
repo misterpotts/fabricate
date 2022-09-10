@@ -166,6 +166,9 @@
   width: @tile-size;
   margin-right: calc(@tile-size / 6);
   margin-bottom: calc(@tile-size / 6);
+  image {
+    border-radius: 5px;
+  }
   .fabricate-component-name {
     position: absolute;
     width: @tile-size;
@@ -176,7 +179,9 @@
     background: var(--color-border-dark-2);
     font-size: calc(@tile-size / 8);
     text-align: center;
+
     padding: 2px 5px;
+    border-radius: 0 0 5px 5px;
   }
   .fabricate-info {
     width: @info-size;
@@ -212,28 +217,57 @@
   flex-wrap: wrap;
 }
 
-.fabricate-item-table {
+.fabricate-essence-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  span {
+    display: inline-flex;
+    margin-right: 12px;
+    i {
+      margin-left: 2px;
+    }
+  }
+}
 
+.fabricate-item-table {
   margin-top: 18px;
 
+  .fabricate-component {
+    .fabricate-component-tile(40px; 20px;);
+  }
+
   .fabricate-item-table-header {
-
     min-height: 28px;
-
   }
 
   .fabricate-item-table-body {
 
     .fabricate-item-table-row {
-
       min-height: 34px;
 
+      td.fabricate-centered {
+        text-align: center;
+      }
+
+      .fabricate-inline-component-list {
+        margin-top: 10px;
+        justify-content: center;
+      }
+
       .fabricate-item-image {
+        cursor: pointer;
         height: 40px;
         width: 40px;
       }
 
+      .fabricate-item-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
       .fabricate-edit-item {
+        margin-top: 12px;
         display: flex;
         justify-content: right;
 
@@ -310,45 +344,11 @@
         text-align: center;
         height: 68px;
         margin-bottom: 20px;
+        margin-top: 20px;
         background: #d1d1d138;
         padding-top: 26px;
         border: 1px dashed #7a78788c;
         border-radius: 3px;
-      }
-
-      .fabricate-recipes {
-
-        .fabricate-item-image {
-          cursor: pointer;
-        }
-
-        .fabricate-item-name {
-          text-align: center;
-          font-weight: bold;
-        }
-
-        .fabricate-inline-component-list {
-          margin-top: 10px;
-        }
-
-        .fabricate-edit-item {
-          margin-top: 12px;
-        }
-
-        .fabricate-component {
-          .fabricate-component-tile(40px; 20px;);
-        }
-
-      }
-
-      .fabricate-components {
-
-        .fabricate-component {
-
-          .fabricate-component-tile(100px; 24px;);
-
-        }
-
       }
 
       .fabricate-basic-system-details {
@@ -368,6 +368,7 @@
           flex: 3;
         }
       }
+
     }
 
   }

@@ -26,7 +26,7 @@ class CompendiumImporter {
                             iconCode: string;
                             tooltip: string;
                             description: string;
-                            slug: string;
+                            id: string;
                             name: string;
                         }[]): Promise<PartDictionary> {
         const compendiums: CompendiumCollection<CompendiumCollection.Metadata>[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
@@ -34,9 +34,9 @@ class CompendiumImporter {
             iconCode: string;
             tooltip: string;
             description: string;
-            slug: string;
+            id: string;
             name: string;
-        }) => [essence.slug, essence] as [string, EssenceDefinition])) : new Map();
+        }) => [essence.id, essence] as [string, EssenceDefinition])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
             const partDictionary: PartDictionary = await this.importCompendiumContents(systemId, compendium, essencesBySlug);
@@ -179,16 +179,17 @@ class CompendiumImporter {
         if (!essenceRecord) {
             return Combination.EMPTY();
         }
-        const essenceSlugs: string[] = Object.keys(essenceRecord);
-        if (essenceSlugs.length === 0) {
+        const essenceIds: string[] = Object.keys(essenceRecord);
+        if (essenceIds.length === 0) {
             return Combination.EMPTY();
         }
-        const essenceUnits: Unit<EssenceDefinition>[] = essenceSlugs.map((slug: string) => {
-            if (!essenceDefinitions.has(slug)) {
-                throw new Error(`Essence '${slug}' does not exist in the Crafting System Specification. The available Essences are ${Array.from(essenceDefinitions.values()).map(essence => `'${essence.slug}'`).join(', ')}`);
+        const essenceUnits: Unit<EssenceDefinition>[] = essenceIds.map((id: string) => {
+            if (!essenceDefinitions.has(id)) {
+                throw new Error(`Essence '${id}' does not exist in the Crafting System Specification. 
+                The available Essences are ${Array.from(essenceDefinitions.values()).map(essence => `'${essence.id}'`).join(', ')}`);
             }
-            const essence: EssenceDefinition = essenceDefinitions.get(slug);
-            const amount: number = essenceRecord[slug];
+            const essence: EssenceDefinition = essenceDefinitions.get(id);
+            const amount: number = essenceRecord[id];
             return new Unit<EssenceDefinition>(essence, amount);
         });
         return Combination.ofUnits(essenceUnits);

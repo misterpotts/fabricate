@@ -3,6 +3,7 @@ import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
 import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
 import {ComponentManagerApp} from "./ComponentManagerApp";
+import {EssenceManagerApp} from "./EssenceManagerApp";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -21,8 +22,8 @@ class CraftingSystemManagerApp extends FormApplication {
             classes: ["sheet", "journal-sheet", "journal-entry"],
             template: Properties.module.templates.craftingSystemManagementApp,
             resizable: true,
-            width: 800,
-            height: 680,
+            width: 940,
+            height: 720,
             dragDrop: [{ dragSelector: <string> null, dropSelector: <string> null }],
         };
     }
@@ -64,12 +65,12 @@ class CraftingSystemManagerApp extends FormApplication {
         if (!event.target.classList.contains("fabricate-drop-zone")) {
             return;
         }
-        const action = event?.target?.dataset?.action;
-        if (!action) {
+        const dropTrigger = event?.target?.dataset?.dropTrigger;
+        if (!dropTrigger) {
             return;
         }
         const systemId = event?.target?.dataset?.systemId as string;
-        return this.handleUserAction(systemId, action, event);
+        return this.handleUserAction(systemId, dropTrigger, event);
     }
 
     async _onClick(event: any) {
@@ -124,10 +125,6 @@ class CraftingSystemManagerApp extends FormApplication {
                 this.render();
                 break;
             case "createComponent":
-                if (event instanceof PointerEvent) {
-                    new ComponentManagerApp().render();
-                    return;
-                }
                 try {
                     const data: any = JSON.parse(event.dataTransfer?.getData("text/plain"));
                     if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
@@ -140,8 +137,11 @@ class CraftingSystemManagerApp extends FormApplication {
                         Caused by: ${e.message ?? e}`);
                 }
                 break;
+            case "createEssence":
+                new EssenceManagerApp().render();
+                break;
             default:
-                console.error("An unrecognised action was triggered on the Fabricate Crafting System Manager Form Application.");
+                console.error(`An unrecognised action ("${action}") was triggered on the Fabricate Crafting System Manager Form Application.`);
         }
     }
 
