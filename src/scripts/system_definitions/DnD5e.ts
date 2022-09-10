@@ -1,13 +1,14 @@
 import {Dnd5EAlchemicalEffectName} from "../5e/AlchemicalEffect5E";
 import {ThresholdType} from "../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
+import {WastageType} from "../common/ComponentConsumptionCalculator";
 
 interface DnD5EToolSpecification {
     name: string;
     skillProficiency: string;
 }
 
-interface DnD5EThresholdSpecification {
+interface ThresholdSpecification {
     baseValue: number;
     type: keyof typeof ThresholdType;
     contributions: {
@@ -46,10 +47,11 @@ interface DnD5ESaveModifierEffectSpec extends DnD5EAlchemyEffectSpec {
 }
 
 interface DnD5ECraftingCheckSpec {
+    wastage: keyof typeof WastageType;
     ability: AbilityType;
     addToolProficiency: boolean;
     tool: DnD5EToolSpecification;
-    threshold: DnD5EThresholdSpecification
+    threshold: ThresholdSpecification;
 }
 
 export {

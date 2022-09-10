@@ -1,5 +1,25 @@
 {
   "fabricate": {
+    "EditEssenceDialog": {
+      "title": "Fabricate | Edit Essence",
+      "description": {
+        "label": "Description",
+        "placeholder": "A description of the nature of the essence"
+      },
+      "iconCode": {
+        "label": "FontAwesome icon class",
+        "placeholder": "fa-solid fa-mortar-pestle"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "The essence name"
+      },
+      "tooltip": {
+        "label": "Tooltip text",
+        "placeholder": "The tooltip text to display on the essence icon"
+      },
+      "submit": "Submit"
+    },
     "EditCraftingSystemDetailDialog": {
       "title": "Fabricate | Basic System Details",
       "description": {
@@ -13,6 +33,10 @@
       "name": {
         "label": "Name",
         "placeholder": "My new crafting system"
+      },
+      "author": {
+        "label": "Author",
+        "placeholder": "Your name"
       },
       "submit": "Submit",
       "errors": {
@@ -72,6 +96,11 @@
       }
     },
     "ui": {
+      "notifications": {
+        "submissionError": {
+          "prefix": "There were some problems with your form"
+        }
+      },
       "sidebar": {
         "buttons": {
           "openCraftingSystemManager": "Crafting Systems"

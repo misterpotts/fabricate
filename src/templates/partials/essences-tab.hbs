@@ -19,10 +19,10 @@
                 <td>{{name}}</td>
                 <td>{{description}}</td>
                 <td class="fabricate-edit-item">
-                    <button type="button" data-action="editEssence" data-essence-id="{{id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.buttons.edit"}}">
+                    <button type="button" data-action="editEssence" data-essence-id="{{id}}" data-system-id="{{../system.id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.buttons.edit"}}">
                         <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
                     </button>
-                    <button type="button" data-action="deleteEssence" data-essence-id="{{id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.buttons.delete"}}">
+                    <button type="button" data-action="deleteEssence" data-essence-id="{{id}}" data-system-id="{{../system.id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.buttons.delete"}}">
                         <i class="fa-solid fa-trash" style="pointer-events: none"></i>
                     </button>
                 </td>

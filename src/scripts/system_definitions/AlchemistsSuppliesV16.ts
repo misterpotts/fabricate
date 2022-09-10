@@ -3,88 +3,84 @@ import {CraftingSystemDefinition} from "./CraftingSystemDefinition";
 const SYSTEM_DEFINITION: CraftingSystemDefinition = {
     "id": "alchemists-supplies-v1.6",
     "locked": true,
-    "gameSystem": "dnd5e",
     "name": "Alchemist's Supplies v1.6",
-    "compendia": [ "fabricate.alchemists-supplies-v16" ],
+    "compendiumIds": ["fabricate.alchemists-supplies-v16"],
     "description": "Alchemy is the skill of exploiting unique properties of certain plants, minerals, and creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic minor magical effects, although the creations themselves are non-magical.",
     "summary": "A crafting system for 5th Edition by u/calculusChild",
     "author": "u/calculusChild",
     "enabled": true,
-    "essences": [
-        {
+    "essences": {
+        "water": {
             "name": "Water",
             "id": "water",
             "description": "Elemental water, one of the fundamental forces of nature",
             "iconCode": "tint",
             "tooltip": "Elemental water"
         },
-        {
+        "earth": {
             "name": "Earth",
             "id": "earth",
             "description": "Elemental earth, one of the fundamental forces of nature",
             "iconCode": "mountain",
             "tooltip": "Elemental earth"
         },
-        {
+        "air": {
             "name": "Air",
             "id": "air",
             "description": "Elemental air, one of the fundamental forces of nature",
             "iconCode": "wind",
             "tooltip": "Elemental air"
         },
-        {
+        "fire": {
             "name": "Fire",
             "id": "fire",
             "description": "Elemental fire, one of the fundamental forces of nature",
             "iconCode": "fire",
             "tooltip": "Elemental fire"
         },
-        {
+        "negative-energy": {
             "name": "Negative Energy",
             "id": "negative-energy",
             "description": "Negative Energy - The essence of death and destruction",
             "iconCode": "moon",
             "tooltip": "Negative energy"
         },
-        {
+        "positive-energy": {
             "name": "Positive Energy",
             "id": "positive-energy",
             "description": "Positive Energy - The essence of life and creation",
             "iconCode": "sun",
             "tooltip": "Positive energy"
         }
-    ],
-    "hasCraftingChecks": true,
-    "defaultCheck": {
-        "ability": "int",
-        "addToolProficiency": true,
-        "tool": {
-            "name": "Alchemist's Supplies",
-            "skillProficiency": "Alchemy"
-        },
-        "threshold": {
-            "baseValue": 6,
-            "type": "MEET",
-            "contributions": {
-                "ingredient": 1,
-                "essence": 0
+    },
+    "checks": {
+        "enabled": true,
+        "hasCustomAlchemyCheck": false,
+        "recipe": {
+            "wastage": "PUNITIVE",
+            "ability": "int",
+            "addToolProficiency": true,
+            "tool": {
+                "name": "Alchemist's Supplies",
+                "skillProficiency": "Alchemy"
+            },
+            "threshold": {
+                "baseValue": 6,
+                "type": "MEET",
+                "contributions": {
+                    "ingredient": 1,
+                    "essence": 0
+                }
             }
-        }
+        },
     },
-    "recipes": {
-        "performCheck": true,
-        "wastage": "PUNITIVE",
-        "useCustomCheck": false,
-        "customCheck": null
-    },
+    "recipeIds": [],
+    "componentIds": [],
     "alchemy": {
         "enabled": true,
         "performCheck": true,
-        "wastage": "PUNITIVE",
-        "useCustomCheck": false,
-        "customCheck": null,
-        "formulae": [
-            {
+        "formulae": {
+            "90z9nOwmGnP4aUUk": {
                 "basePartId": "90z9nOwmGnP4aUUk",
                 "constraints": {
                     "components": {
@@ -205,7 +201,7 @@ const SYSTEM_DEFINITION: CraftingSystemDefinition = {
                     }
                 ]
             }
-        ],
+        },
         "constraints": {
             "components": {
                 "min": 1,
@@ -219,4 +215,4 @@ const SYSTEM_DEFINITION: CraftingSystemDefinition = {
     }
 }
 
-export { SYSTEM_DEFINITION }
+export {SYSTEM_DEFINITION}

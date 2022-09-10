@@ -1,19 +1,19 @@
 import {FabricateItem, FabricateItemConfig} from "./FabricateItem";
 import {Combination} from "./Combination";
-import {EssenceDefinition} from "./EssenceDefinition";
+import {Essence} from "./Essence";
 
 interface CraftingComponentMutation {
     item?: {
         imageUrl?: string;
         name?: string;
     }
-    essences?: Combination<EssenceDefinition>;
+    essences?: Combination<Essence>;
     salvage?: Combination<CraftingComponent>;
 }
 
 class CraftingComponent extends FabricateItem {
 
-    private readonly _essences: Combination<EssenceDefinition>;
+    private readonly _essences: Combination<Essence>;
     private readonly _salvage: Combination<CraftingComponent>;
 
     constructor({
@@ -22,7 +22,7 @@ class CraftingComponent extends FabricateItem {
         salvage
     }: {
         gameItem: FabricateItemConfig,
-        essences?: Combination<EssenceDefinition>;
+        essences?: Combination<Essence>;
         salvage?: Combination<CraftingComponent>;
     }) {
         super(gameItem);
@@ -48,7 +48,7 @@ class CraftingComponent extends FabricateItem {
         });
     }
 
-    get essences(): Combination<EssenceDefinition> {
+    get essences(): Combination<Essence> {
         return this._essences;
     }
 

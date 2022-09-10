@@ -1,10 +1,9 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {EssenceDefinition} from "../src/scripts/common/EssenceDefinition";
+import {Essence} from "../src/scripts/common/Essence";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
-import {GameSystem} from "../src/scripts/system/GameSystem";
 import {Inventory} from "../src/scripts/actor/Inventory";
 import {testRecipeOne} from "./test_data/TestRecipes";
 import {testComponentFive, testComponentOne, testComponentThree} from "./test_data/TestCraftingComponents";
@@ -28,7 +27,7 @@ import {AlchemicalCombiner5e} from "../src/scripts/5e/AlchemicalEffect5E";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
-const essences: EssenceDefinition[] = [elementalAir, elementalEarth, elementalFire, elementalWater];
+const essences: Essence[] = [elementalAir, elementalEarth, elementalFire, elementalWater];
 
 const stubDiceRoller: DiceRoller = <DiceRoller><unknown>{
     roll: () => {},
@@ -68,7 +67,10 @@ describe('Create and configure', () => {
             name: "Test System",
             id: testSystemId,
             enabled: true,
-            gameSystem: GameSystem.DND5E,
+            author: "",
+            description: "",
+            locked: false,
+            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory
@@ -81,7 +83,6 @@ describe('Create and configure', () => {
         expect(underTest.hasRecipeCraftingCheck).toEqual(false);
         expect(underTest.supportsAlchemy).toEqual(false);
         expect(underTest.essences).toEqual(expect.arrayContaining(essences));
-        expect(underTest.gameSystem).toEqual(GameSystem.DND5E);
 
     });
 
@@ -105,7 +106,10 @@ describe('Create and configure', () => {
             name: "Test System",
             id: testSystemId,
             enabled: true,
-            gameSystem: GameSystem.DND5E,
+            author: "",
+            description: "",
+            locked: false,
+            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory,
@@ -137,7 +141,6 @@ describe('Create and configure', () => {
         expect(underTest.hasRecipeCraftingCheck).toEqual(true);
         expect(underTest.supportsAlchemy).toEqual(true);
         expect(underTest.essences).toEqual(expect.arrayContaining(essences));
-        expect(underTest.gameSystem).toEqual(GameSystem.DND5E);
 
     });
 
@@ -152,7 +155,10 @@ describe('Crafting ', () => {
             name: "Test System",
             id: testSystemId,
             enabled: true,
-            gameSystem: GameSystem.DND5E,
+            author: "",
+            description: "",
+            locked: false,
+            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory
@@ -215,7 +221,10 @@ describe('Crafting ', () => {
             name: "Test System",
             id: testSystemId,
             enabled: true,
-            gameSystem: GameSystem.DND5E,
+            author: "",
+            description: "",
+            locked: false,
+            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingChecks: {

@@ -1,5 +1,3 @@
-import {GameSystem} from "../system/GameSystem";
-import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {
     DnD5EAlchemyEffectSpec,
     DnD5EAoEExtensionEffectSpec,
@@ -8,6 +6,7 @@ import {
     DnD5EDamageMultiplierEffectSpec,
     DnD5ESaveModifierEffectSpec
 } from "./DnD5e";
+import {EssenceDefinition} from "../common/Essence";
 
 interface ComponentConstraintDefinition {
     min: number
@@ -29,44 +28,32 @@ interface AlchemyFormulaDefinition {
         | DnD5ESaveModifierEffectSpec)[]
 }
 
-interface RecipeDefinition {
-    performCheck: boolean;
-    wastage: keyof typeof WastageType;
-    useCustomCheck: boolean;
-    customCheck?: DnD5ECraftingCheckSpec;
-}
-
 interface AlchemyDefinition {
     enabled: boolean;
     performCheck: boolean;
-    wastage: keyof typeof WastageType;
-    useCustomCheck: boolean;
-    customCheck?: DnD5ECraftingCheckSpec;
-    formulae: AlchemyFormulaDefinition[];
-    constraints: AlchemyConstraintDefinition;
+    formulae?: Record<string, AlchemyFormulaDefinition>;
+    constraints?: AlchemyConstraintDefinition;
 }
 
 interface CraftingSystemDefinition {
     id: string;
-    locked: boolean;
-    gameSystem: `${GameSystem}`;
     name: string;
-    compendia: string[];
-    description: string;
     summary: string;
+    description: string;
     author: string;
+    locked: boolean;
     enabled: boolean;
-    essences: {
-        iconCode: string;
-        tooltip: string;
-        description: string;
-        id: string;
-        name: string;
-    }[];
-    defaultCheck?: DnD5ECraftingCheckSpec;
-    hasCraftingChecks: boolean;
-    recipes?: RecipeDefinition;
-    alchemy?: AlchemyDefinition;
+    compendiumIds: string[];
+    componentIds: string[];
+    recipeIds: string[];
+    checks: {
+        enabled: boolean;
+        hasCustomAlchemyCheck: boolean;
+        recipe?: DnD5ECraftingCheckSpec;
+        alchemy?: DnD5ECraftingCheckSpec;
+    }
+    essences: Record<string, EssenceDefinition>;
+    alchemy: AlchemyDefinition;
 }
 
 export {

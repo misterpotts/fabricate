@@ -19,7 +19,7 @@ beforeEach(() => {
 describe('Create', () => {
 
     test('Should construct empty Part Dictionary', () => {
-        const underTest: PartDictionary = new PartDictionary();
+        const underTest: PartDictionary = new PartDictionary({});
 
         expect(underTest).not.toBeNull();
         expect(underTest.size()).toBe(0);
@@ -30,7 +30,7 @@ describe('Create', () => {
 describe('Index and Retrieve', () => {
 
     test('Should add and Get Recipes and Components', () => {
-        const underTest: PartDictionary = new PartDictionary();
+        const underTest: PartDictionary = new PartDictionary({});
 
         underTest.addComponent(testComponentOne);
         underTest.addComponent(testComponentTwo);
@@ -60,7 +60,7 @@ describe('Index and Retrieve', () => {
 
     test('Should get parts from Item flags', () => {
 
-        const underTest: PartDictionary = new PartDictionary();
+        const underTest: PartDictionary = new PartDictionary({});
 
         underTest.addComponent(testComponentOne);
         underTest.addComponent(testComponentTwo);
@@ -90,7 +90,7 @@ describe('Index and Retrieve', () => {
 
     test('Should throw errors when parts are not found', () => {
 
-        const underTest: PartDictionary = new PartDictionary();
+        const underTest: PartDictionary = new PartDictionary({});
 
         underTest.addComponent(testComponentOne);
         underTest.addComponent(testComponentThree);

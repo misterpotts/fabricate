@@ -1,4 +1,4 @@
-import {FabricateItemType} from "./compendium/CompendiumData";
+import {FabricateItemType} from "./common/FabricateItem";
 
 const Properties = {
     module: {
@@ -30,6 +30,9 @@ const Properties = {
         }
     },
     ui: {
+        defaults: {
+            essenceIconCode: "fa-solid fa-mortar-pestle"
+        },
         buttons: {
             openCraftingSystemManager: {
                 class: "open-crafting-system-manager"
@@ -42,7 +45,6 @@ const Properties = {
     types: {
         recipe: FabricateItemType.RECIPE,
         component: FabricateItemType.COMPONENT,
-        allowableItems: ["consumable", "loot", "scroll", "trinket"]
     },
     flagKeys: {
         actor: {
@@ -61,9 +63,6 @@ const Properties = {
     settings: {
         craftingSystems: {
             key: "craftingSystems"
-        },
-        craftingSystem: {
-            enabled: (systemId: string) => `${systemId}.enabled`
         }
     }
 };

@@ -3,6 +3,7 @@
         <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
     </button>
     <h1>{{system.name}}</h1>
+    <h4>{{system.author}}</h4>
     <h4>{{system.summary}}</h4>
     <hr/>
     <h4>{{localize "fabricate.CraftingSystemManagerApp.editor.description.label"}}:</h4>
@@ -30,17 +31,17 @@
 <hr/>
 
 <nav data-group="fabricate" class="fabricate-crafting-system-navigation tabs">
-    <a class="item" data-tab="components">Components</a>
-    <a class="item" data-tab="recipes">Recipes</a>
+    <a class="item" data-tab="componentIds">Components</a>
+    <a class="item" data-tab="recipeIds">Recipes</a>
     <a class="item" data-tab="checks">Checks</a>
     <a class="item" data-tab="essences">Essences</a>
     <a class="item" data-tab="alchemy">Alchemy</a>
 </nav>
 <section class="fabricate-crafting-system-body">
-    <div class="tab" data-group="fabricate" data-tab="components">
+    <div class="tab" data-group="fabricate" data-tab="componentIds">
         {{> componentsTab}}
     </div>
-    <div class="tab active" data-group="fabricate" data-tab="recipes">
+    <div class="tab active" data-group="fabricate" data-tab="recipeIds">
         {{> recipesTab}}
     </div>
     <div class="tab" data-group="fabricate" data-tab="checks">

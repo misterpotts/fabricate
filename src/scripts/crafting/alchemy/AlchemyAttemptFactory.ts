@@ -10,6 +10,7 @@ import {
 } from "./AlchemyAttempt";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 import {AlchemicalCombination, AlchemicalCombiner} from "./AlchemicalEffect";
+import {AlchemyDefinition} from "../../system_definitions/CraftingSystemDefinition";
 
 interface AlchemyAttemptFactory {
 
@@ -19,6 +20,7 @@ interface AlchemyAttemptFactory {
 
     isEnabled(): boolean;
 
+    toAlchemyDefinition(): AlchemyDefinition;
 }
 
 class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
@@ -74,6 +76,10 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
     }
 
+    toAlchemyDefinition(): AlchemyDefinition {
+        return undefined;
+    }
+
 }
 
 class DisabledAlchemyAttemptFactory implements AlchemyAttemptFactory {
@@ -88,6 +94,10 @@ class DisabledAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
     get formulaeByBasePartId(): Map<string, AlchemyFormula> {
         return new Map();
+    }
+
+    toAlchemyDefinition(): AlchemyDefinition {
+        return undefined;
     }
 
 }

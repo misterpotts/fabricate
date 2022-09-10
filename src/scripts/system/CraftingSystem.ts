@@ -1,11 +1,9 @@
 import {Identifiable} from "../common/FabricateItem";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
-import {EssenceDefinition} from "../common/EssenceDefinition";
+import {Essence, EssenceDefinition} from "../common/Essence";
 import {Inventory} from "../actor/Inventory";
 import {Combination} from "../common/Combination";
-import {GameSystem} from "./GameSystem";
-import {PartDictionary} from "./PartDictionary";
 import {CraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
 import {CraftingAttempt} from "../crafting/attempt/CraftingAttempt";
@@ -14,58 +12,114 @@ import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
+import {CraftingSystemDefinition} from "../system_definitions/CraftingSystemDefinition";
+import {PartDictionary} from "./PartDictionary";
+
+interface CraftingSystemMutation {
+    author?: string;
+    name?: string;
+    summary?: string;
+    description?: string;
+    enabled?: boolean;
+    essences?: Essence[];
+    alchemyCraftingCheck?: CraftingCheck<Actor>;
+    recipeCraftingCheck?: CraftingCheck<Actor>;
+}
 
 class CraftingSystem implements Identifiable {
 
     private readonly _id: string;
     private readonly _name: string;
-    private readonly _gameSystem: GameSystem;
+    private readonly _summary: string;
+    private readonly _description: string;
+    private readonly _author: string;
+
+    private readonly _enabled: boolean;
+    private readonly _locked: boolean;
+
+    private readonly _essencesById: Map<string, Essence>;
+    private readonly _partDictionary: PartDictionary;
+
     private readonly _recipeCraftingCheck: CraftingCheck<Actor>;
     private readonly _alchemyCraftingCheck: CraftingCheck<Actor>;
-    private readonly _partDictionary: PartDictionary;
-    private readonly _essencesById: Map<string, EssenceDefinition>;
+
     private readonly _alchemyAttemptFactory: AlchemyAttemptFactory;
     private readonly _craftingAttemptFactory: CraftingAttemptFactory;
 
-    private _enabled: boolean;
 
     constructor({
         id,
         name,
-        gameSystem,
+        summary,
+        description,
+        author,
+        locked,
         craftingChecks = {
             recipe: new NoCraftingCheck(),
             alchemy: new NoCraftingCheck()
         },
-        partDictionary,
         essences,
         alchemyAttemptFactory,
         craftingAttemptFactory,
-        enabled
+        enabled,
+        partDictionary
     }: {
         id: string;
         name: string;
-        gameSystem: GameSystem;
+        summary: string;
+        description: string;
+        author: string;
+        locked: boolean;
         craftingChecks?: {
             recipe?: CraftingCheck<Actor>;
             alchemy?: CraftingCheck<Actor>;
         };
-        partDictionary: PartDictionary;
-        essences: EssenceDefinition[],
+        essences: Essence[];
         alchemyAttemptFactory?: AlchemyAttemptFactory;
         craftingAttemptFactory: CraftingAttemptFactory;
         enabled: boolean;
+        partDictionary: PartDictionary;
     }) {
         this._id = id;
         this._name = name;
-        this._gameSystem = gameSystem;
+        this._summary = summary;
+        this._description = description;
+        this._author = author;
+        this._locked = locked;
         this._alchemyCraftingCheck = craftingChecks?.alchemy ?? new NoCraftingCheck();
         this._recipeCraftingCheck = craftingChecks?.recipe ?? new NoCraftingCheck();
-        this._partDictionary = partDictionary;
-        this._essencesById = new Map(essences.map((essence: EssenceDefinition) => [essence.id, essence]));
+        this._essencesById = new Map(essences.map((essence: Essence) => [essence.id, essence]));
         this._craftingAttemptFactory = craftingAttemptFactory;
         this._alchemyAttemptFactory = alchemyAttemptFactory ?? new DisabledAlchemyAttemptFactory();
         this._enabled = enabled;
+        this._partDictionary = partDictionary;
+    }
+
+    public mutate(craftingSystemMutation: CraftingSystemMutation): CraftingSystem {
+        if (this._locked) {
+            throw new Error(`${this._name} is locked and cannot be edited. `);
+        }
+        return new CraftingSystem({
+            id: this._id,
+            locked: this._locked,
+            alchemyAttemptFactory: this._alchemyAttemptFactory,
+            craftingAttemptFactory: this._craftingAttemptFactory,
+            partDictionary: this._partDictionary,
+            name: craftingSystemMutation.name ?? this._name,
+            summary: craftingSystemMutation.summary ?? this._summary,
+            description: craftingSystemMutation.description ?? this._description,
+            enabled: craftingSystemMutation.enabled ?? this.enabled,
+            author: craftingSystemMutation.author ?? this._author,
+            essences: craftingSystemMutation.essences ?? this.essences,
+            craftingChecks: {
+                recipe: craftingSystemMutation.recipeCraftingCheck ?? this._recipeCraftingCheck,
+                alchemy: craftingSystemMutation.alchemyCraftingCheck ?? this._alchemyCraftingCheck
+            },
+        });
+    }
+
+    get locked(): boolean {
+        return this._locked;
     }
 
     get alchemyFormulae(): Map<string, AlchemyFormula> {
@@ -76,12 +130,21 @@ class CraftingSystem implements Identifiable {
         return this._enabled;
     }
 
-    set enabled(value: boolean) {
-        this._enabled = value;
+    get essences(): Essence[] {
+        return Array.from(this._essencesById.values());
     }
 
-    get essences(): EssenceDefinition[] {
-        return Array.from(this._essencesById.values());
+
+    get summary(): string {
+        return this._summary;
+    }
+
+    get description(): string {
+        return this._description;
+    }
+
+    get author(): string {
+        return this._author;
     }
 
     getEssenceById(id: string) {
@@ -106,6 +169,10 @@ class CraftingSystem implements Identifiable {
 
     get name(): string {
         return this._name;
+    }
+
+    get partDictionary(): PartDictionary {
+        return this._partDictionary;
     }
 
     /**
@@ -153,26 +220,30 @@ class CraftingSystem implements Identifiable {
 
     }
 
-    get gameSystem(): GameSystem {
-        return this._gameSystem;
+    toSystemDefinition(): CraftingSystemDefinition {
+        const essences: Record<string, EssenceDefinition> = {};
+        this._essencesById.forEach((essence) => essences[essence.id] = essence.toEssenceDefinition());
+        return {
+            id: this._id,
+            name: this._name,
+            summary: this._summary,
+            description: this._description,
+            enabled: this.enabled,
+            locked: this._locked,
+            alchemy: this._alchemyAttemptFactory.toAlchemyDefinition(),
+            checks: {
+                alchemy: this._alchemyCraftingCheck.toCheckDefinition(),
+                hasCustomAlchemyCheck: true,
+                recipe: this._recipeCraftingCheck.toCheckDefinition(),
+                enabled: true
+            },
+            essences: essences,
+            author: this._author,
+            componentIds: this._partDictionary.getComponents().map(component => component.partId),
+            recipeIds: this._partDictionary.getRecipes().map(recipe => recipe.partId),
+            compendiumIds: this._partDictionary.getCompendiumIds()
+        };
     }
-
-    get recipes(): Recipe[] {
-        return this._partDictionary.getRecipes();
-    }
-
-    get components(): CraftingComponent[] {
-        return this._partDictionary.getComponents();
-    }
-
-    public getComponentByPartId(partId: string): CraftingComponent {
-        return this._partDictionary.getComponent(partId, this.id);
-    }
-
-    getRecipeByPartId(partId: string): Recipe {
-        return this._partDictionary.getRecipe(partId, this.id);
-    }
-
 }
 
 export {CraftingSystem};

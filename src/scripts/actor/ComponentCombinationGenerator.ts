@@ -1,14 +1,14 @@
 import {ComponentCombinationNode} from "./ComponentCombinationNode";
 import {Combination, Unit} from "../common/Combination";
-import {EssenceDefinition} from "../common/EssenceDefinition";
+import {Essence} from "../common/Essence";
 import {CraftingComponent} from "../common/CraftingComponent";
 
 export class ComponentCombinationGenerator {
 
     private readonly _roots: ComponentCombinationNode[];
-    private readonly _requiredEssences: Combination<EssenceDefinition>;
+    private readonly _requiredEssences: Combination<Essence>;
 
-    constructor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<EssenceDefinition>) {
+    constructor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<Essence>) {
         this._requiredEssences = requiredEssences;
         this._roots = availableComponents.members
             .map((component: CraftingComponent) => Combination.ofUnit(new Unit<CraftingComponent>(component, 1)))
@@ -29,19 +29,19 @@ export class ComponentCombinationGenerator {
         return generatedCombinations;
     }
 
-    private excludeInsufficient(allCombinations: ComponentCombinationNode[], requiredEssences: Combination<EssenceDefinition>): ComponentCombinationNode[] {
+    private excludeInsufficient(allCombinations: ComponentCombinationNode[], requiredEssences: Combination<Essence>): ComponentCombinationNode[] {
         return allCombinations.filter((node: ComponentCombinationNode) => node.essenceCombination.size() >= requiredEssences.size()
             && requiredEssences.isIn(node.essenceCombination));
     }
 
-    private excludeDuplicates(sufficientCombinations: ComponentCombinationNode[]): [Combination<CraftingComponent>, Combination<EssenceDefinition>][] {
-        const suitableCombinationsBySize: Map<number, [Combination<CraftingComponent>, Combination<EssenceDefinition>][]> = new Map();
+    private excludeDuplicates(sufficientCombinations: ComponentCombinationNode[]): [Combination<CraftingComponent>, Combination<Essence>][] {
+        const suitableCombinationsBySize: Map<number, [Combination<CraftingComponent>, Combination<Essence>][]> = new Map();
         sufficientCombinations.forEach((node: ComponentCombinationNode) => {
             if (!suitableCombinationsBySize.has(node.componentCombination.size())) {
                 suitableCombinationsBySize.set(node.componentCombination.size(), [[node.componentCombination, node.essenceCombination]]);
             } else {
                 let isDuplicate: boolean = false;
-                const existing: [Combination<CraftingComponent>, Combination<EssenceDefinition>][] = suitableCombinationsBySize.get(node.componentCombination.size());
+                const existing: [Combination<CraftingComponent>, Combination<Essence>][] = suitableCombinationsBySize.get(node.componentCombination.size());
                 for (const existingCombination of existing) {
                     if (existingCombination[0].equals(node.componentCombination)) {
                         isDuplicate = true;
@@ -53,11 +53,11 @@ export class ComponentCombinationGenerator {
                 }
             }
         });
-        return Array.from(suitableCombinationsBySize.values(), (combinations: [Combination<CraftingComponent>, Combination<EssenceDefinition>][]) => combinations)
-            .reduce((left: [Combination<CraftingComponent>, Combination<EssenceDefinition>][], right: [Combination<CraftingComponent>, Combination<EssenceDefinition>][]) => left.concat(right), []);
+        return Array.from(suitableCombinationsBySize.values(), (combinations: [Combination<CraftingComponent>, Combination<Essence>][]) => combinations)
+            .reduce((left: [Combination<CraftingComponent>, Combination<Essence>][], right: [Combination<CraftingComponent>, Combination<Essence>][]) => left.concat(right), []);
     }
 
-    public generate(): [Combination<CraftingComponent>, Combination<EssenceDefinition>][] {
+    public generate(): [Combination<CraftingComponent>, Combination<Essence>][] {
         this._roots.forEach((node: ComponentCombinationNode) => node.populate());
         const generatedCombinations: ComponentCombinationNode[] = this.allCombinations(this._roots);
         const suitableCombinations: ComponentCombinationNode[] = this.excludeInsufficient(generatedCombinations, this._requiredEssences);

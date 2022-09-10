@@ -1,6 +1,6 @@
 import {CraftingComponent} from "../../src/scripts/common/CraftingComponent";
 import {Combination, Unit} from "../../src/scripts/common/Combination";
-import {EssenceDefinition} from "../../src/scripts/common/EssenceDefinition";
+import {Essence} from "../../src/scripts/common/Essence";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
@@ -15,7 +15,7 @@ const testComponentOne: CraftingComponent = new CraftingComponent({
         systemId: testSystemId,
         compendiumId: testCompendiumId,
     },
-    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalEarth, 2)])
+    essences: Combination.ofUnits([new Unit<Essence>(elementalEarth, 2)])
 });
 
 const testComponentTwo: CraftingComponent = new CraftingComponent({
@@ -26,7 +26,7 @@ const testComponentTwo: CraftingComponent = new CraftingComponent({
         systemId: testSystemId,
         compendiumId: testCompendiumId,
     },
-    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1)])
+    essences: Combination.ofUnits([new Unit<Essence>(elementalFire, 1)])
 });
 
 const testComponentThree: CraftingComponent = new CraftingComponent({
@@ -37,7 +37,7 @@ const testComponentThree: CraftingComponent = new CraftingComponent({
         systemId: testSystemId,
         compendiumId: testCompendiumId,
     },
-    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalWater, 2), new Unit<EssenceDefinition>(elementalAir, 2)])
+    essences: Combination.ofUnits([new Unit<Essence>(elementalWater, 2), new Unit<Essence>(elementalAir, 2)])
 });
 
 const testComponentFour: CraftingComponent = new CraftingComponent({
@@ -48,7 +48,7 @@ const testComponentFour: CraftingComponent = new CraftingComponent({
         systemId: testSystemId,
         compendiumId: testCompendiumId,
     },
-    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalAir, 2)])
+    essences: Combination.ofUnits([new Unit<Essence>(elementalAir, 2)])
 });
 
 const testComponentFive: CraftingComponent = new CraftingComponent({
@@ -59,7 +59,7 @@ const testComponentFive: CraftingComponent = new CraftingComponent({
         systemId: testSystemId,
         compendiumId: testCompendiumId,
     },
-    essences: Combination.ofUnits([new Unit<EssenceDefinition>(elementalFire, 1), new Unit<EssenceDefinition>(elementalEarth, 3)])
+    essences: Combination.ofUnits([new Unit<Essence>(elementalFire, 1), new Unit<Essence>(elementalEarth, 3)])
 });
 
 export {testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive}

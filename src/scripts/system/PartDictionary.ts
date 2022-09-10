@@ -5,13 +5,25 @@ import {Recipe} from "../crafting/Recipe";
 import {CompendiumEntry, FabricateItemType} from "../compendium/CompendiumData";
 
 class PartDictionary {
+
     private readonly _components: Map<string, CraftingComponent> = new Map();
     private readonly _recipes: Map<string, Recipe> = new Map();
+    private readonly _compendiumIds: string[];
 
-    constructor(components: Map<string, CraftingComponent> = new Map(), recipes: Map<string, Recipe> = new Map()) {
+    constructor({
+        components = new Map(),
+        recipes = new Map(),
+        compendiumIds = []
+    }: {
+        components?: Map<string, CraftingComponent>,
+        recipes?: Map<string, Recipe>,
+        compendiumIds?: string[]
+    }) {
         this._components = components;
         this._recipes = recipes;
+        this._compendiumIds = compendiumIds;
     }
+
 
     public static typeOf(item: any): FabricateItemType | 'NONE' {
         const itemType: FabricateItemType = <FabricateItemType> item.getFlag(Properties.module.id, Properties.flagKeys.item.fabricateItemType);
@@ -99,6 +111,9 @@ class PartDictionary {
         return recipes;
     }
 
+    getCompendiumIds(): string[] {
+        return this._compendiumIds;
+    }
 }
 
 export {PartDictionary}

@@ -1,11 +1,7 @@
 import {beforeEach, describe, expect, jest, test} from '@jest/globals';
-import * as fs from 'fs/promises';
 
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
-import {CompendiumImporter} from "../src/scripts/system/CompendiumImporter";
-import {JsonCompendiumProvider} from "./stubs/JsonCompendiumProvider";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
-import {GameSystem} from "../src/scripts/system/GameSystem";
 import * as Sinon from "sinon";
 import {RollModifierProviderFactory} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {
@@ -34,45 +30,28 @@ describe('A Crafting System Factory', () => {
     test('should create a new Crafting System from a valid specification', async () => {
 
         const systemSpec = AlchemistsSupplies;
-        const rawCompendiumData = await fs.readFile('./src/packs/alchemists-supplies-v16.db', {encoding: 'utf8'});
-        const jsonDocuments: {}[] = rawCompendiumData.split("\n")
-            .map((line, index) => {
-                try {
-                    return JSON.parse(line);
-                } catch (e) {
-                    const error: Error = e as Error;
-                    console.log(`Error parsing compendium entry on line ${index + 1}. Caused by: ${error.message} `);
-                    expect(error).toBeNull();
-                }
-            });
-        const jsonCompendiumProvider = new JsonCompendiumProvider(new Map<string, {}[]>([["fabricate.alchemists-supplies-v16", jsonDocuments]]));
-        const compendiumImporter = new CompendiumImporter(jsonCompendiumProvider);
-        const partDictionary = await compendiumImporter.import(systemSpec.id, systemSpec.compendia, systemSpec.essences);
 
         const stubDiceRoller: DiceRoller = <DiceRoller><unknown> {
             fromExpression: () => {}
         }
 
         const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
-            specification: systemSpec,
-            partDictionary: partDictionary,
             rollProviderFactory: stubRollProviderFactory,
             diceRoller: stubDiceRoller
         });
 
-        const craftingSystem: CraftingSystem = craftingSystemFactory.make();
+        const craftingSystem: CraftingSystem = craftingSystemFactory.make(systemSpec);
 
         expect(craftingSystem).not.toBeNull();
         expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");
         expect(craftingSystem.enabled).toEqual(true);
-        expect(craftingSystem.gameSystem).toEqual(GameSystem.DND5E);
         expect(craftingSystem.essences.length).toEqual(6);
         expect(craftingSystem.essences.map(essence => essence.id))
             .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
         expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);
         expect(craftingSystem.hasAlchemyCraftingCheck).toEqual(true);
-        expect(craftingSystem.components.length).toEqual(30);
-        expect(craftingSystem.recipes.length).toEqual(15);
+        //expect(craftingSystem.partDictionary.getComponents().length).toEqual(30); // todo: figure out a good way to test this in the new world where the bundled compendium isn't the only authority
+        //expect(craftingSystem.partDictionary.getRecipes().length).toEqual(15);
         expect(craftingSystem.supportsAlchemy).toEqual(true);
         expect(craftingSystem.alchemyFormulae.size).toEqual(1);
 

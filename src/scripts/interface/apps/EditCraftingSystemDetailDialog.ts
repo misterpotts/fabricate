@@ -1,13 +1,14 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
-import {CraftingSystemDefinitionValidator} from "../../system_definitions/CraftingSystemDefinitionValidator";
+import {CraftingSystem} from "../../system/CraftingSystem";
+import {FabricateRegistry} from "../../registries/FabricateRegistry";
 
 class EditCraftingSystemDetailDialog extends FormApplication {
 
-    private readonly _craftingSystem: CraftingSystemDefinition;
+    private readonly _craftingSystem: CraftingSystem;
 
-    constructor(craftingSystem?: CraftingSystemDefinition) {
+    constructor(craftingSystem?: CraftingSystem) {
         super(null);
         this._craftingSystem = craftingSystem;
     }
@@ -34,10 +35,12 @@ class EditCraftingSystemDetailDialog extends FormApplication {
     }
 
     async getData(): Promise<any> {
+        const GAME = new GameProvider().globalGameObject();
         return {
             name: this._craftingSystem?.name ?? "",
             summary: this._craftingSystem?.summary ?? "",
-            description: this._craftingSystem?.description ?? ""
+            description: this._craftingSystem?.description ?? "",
+            author: this._craftingSystem?.author ?? GAME.user.name
         };
     }
 
@@ -58,48 +61,37 @@ class EditCraftingSystemDetailDialog extends FormApplication {
         return formData;
     }
 
-    private editCraftingSystemDetails(formData: any) {
-        this._craftingSystem.name = formData.name;
-        this._craftingSystem.summary = formData.summary;
-        this._craftingSystem.description = formData.description;
-        return this.saveCraftingSystem(this._craftingSystem);
+    private editCraftingSystemDetails({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
+        const modifiedCraftingSystem = this._craftingSystem.mutate({ name, summary, description, author });
+        const fabricateRegistry = new FabricateRegistry(new GameProvider());
+        return fabricateRegistry.saveCraftingSystem(modifiedCraftingSystem);
     }
 
-    private async createCraftingSystem(formData: any) {
-        const GAME = new GameProvider().globalGameObject();
+    private async createCraftingSystem({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
+        const gameProvider = new GameProvider();
         const systemDefinition: CraftingSystemDefinition = {
             id: randomID(),
-            name: formData.name,
-            summary: formData.summary,
-            description: formData.description,
+            name: name,
+            summary: summary,
+            description: description,
+            author: author ?? gameProvider.globalGameObject().user.name,
             locked: false,
-            gameSystem: "NONE",
-            compendia: [],
-            author: GAME.user.name,
             enabled: true,
-            essences: [],
-            hasCraftingChecks: false
+            essences: {},
+            checks: {
+                enabled: false,
+                hasCustomAlchemyCheck: false
+            },
+            alchemy: {
+                enabled: false,
+                performCheck: false
+            },
+            compendiumIds: [],
+            recipeIds: [],
+            componentIds: []
         };
-        return this.saveCraftingSystem(systemDefinition);
-    }
-
-    async saveCraftingSystem(systemDefinition: CraftingSystemDefinition) {
-        const GAME = new GameProvider().globalGameObject();
-        const craftingSystems = GAME.settings.get(Properties.module.id, Properties.settings.craftingSystems.key) as CraftingSystemDefinition[];
-        const validationResult = CraftingSystemDefinitionValidator.validate(systemDefinition);
-        if (!validationResult.isValid) {
-            console.error(`Crafting system validation errors: ${validationResult.errors}`);
-            const message = GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.invalidSystemDefinition`);
-            ui.notifications.error(message);
-            return;
-        }
-        if (!craftingSystems.find(system => system.id === systemDefinition.id)) {
-            craftingSystems.push(systemDefinition);
-            return GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, craftingSystems);
-        }
-        const updatedCraftingSystems = craftingSystems.filter(system => system.id !== systemDefinition.id);
-        updatedCraftingSystems.push(systemDefinition);
-        return GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, updatedCraftingSystems);
+        const fabricateRegistry = new FabricateRegistry(gameProvider);
+        return fabricateRegistry.defineCraftingSystem(systemDefinition);
     }
 
     validate(formData: any): Array<string> {
@@ -120,7 +112,9 @@ class EditCraftingSystemDetailDialog extends FormApplication {
         }
         const errorDetail = errors.map((error, index) => `${index + 1}) ${error}`)
             .join(", ");
-        return `${Properties.module.label} | There were some problems with your form: ${errorDetail}`
+        const GAME = new GameProvider().globalGameObject();
+        const localizationPath = `${Properties.module.id}.ui.notifications.submissionError.prefix`
+        return `${Properties.module.label} | ${GAME.i18n.localize(localizationPath)}: ${errorDetail}`
     }
 
 }

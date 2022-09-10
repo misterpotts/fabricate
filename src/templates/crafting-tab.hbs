@@ -31,7 +31,7 @@
             <label>Select an available recipe</label>
             <div class="form-fields" style="flex: 6">
                 <select name="fabricate.crafting.selectedRecipe">
-                    {{#each recipeCrafting.recipes}}
+                    {{#each recipeCrafting.recipeIds}}
                         {{#if known}}
                             {{#if craftable}}
                                 {{#if selected}}
@@ -66,7 +66,7 @@
         <div>
             <div class="description">
                 <h2>Craftable Recipes</h2>
-                <p>You do not know or own any recipes with sufficient ingredients to craft. </p>
+                <p>You do not know or own any recipeIds with sufficient ingredients to craft. </p>
             </div>
         </div>
         {{/if}}
@@ -76,7 +76,7 @@
     <div class="inventory">
         <div class="description">
             <h2>Alchemy</h2>
-            <p>You have the following components in your inventory. Left click to add one to the mix. </p>
+            <p>You have the following componentIds in your inventory. Left click to add one to the mix. </p>
         </div>
         <div class="fabricate-components">
             <ul>

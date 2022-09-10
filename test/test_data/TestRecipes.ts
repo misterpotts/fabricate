@@ -2,7 +2,7 @@ import {Recipe} from "../../src/scripts/crafting/Recipe";
 import {Combination, Unit} from "../../src/scripts/common/Combination";
 import {CraftingComponent} from "../../src/scripts/common/CraftingComponent";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
-import {EssenceDefinition} from "../../src/scripts/common/EssenceDefinition";
+import {Essence} from "../../src/scripts/common/Essence";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
 const testCompendiumId: string = "fabricate.test-compendium";
@@ -44,8 +44,8 @@ const testRecipeThree: Recipe = new Recipe({
         imageUrl: "/img/3.jpg"
     },
     essences: Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalEarth, 3),
-        new Unit<EssenceDefinition>(elementalFire, 1)
+        new Unit<Essence>(elementalEarth, 3),
+        new Unit<Essence>(elementalFire, 1)
     ]),
     results: Combination.of(testComponentOne, 3)
 });
@@ -59,8 +59,8 @@ const testRecipeFour: Recipe = new Recipe({
         imageUrl: "/img/4.jpg"
     },
     essences: Combination.ofUnits([
-        new Unit<EssenceDefinition>(elementalEarth, 1),
-        new Unit<EssenceDefinition>(elementalWater, 2)
+        new Unit<Essence>(elementalEarth, 1),
+        new Unit<Essence>(elementalWater, 2)
     ]),
     ingredients: Combination.of(testComponentTwo, 3),
     catalysts: Combination.of(testComponentThree, 1),

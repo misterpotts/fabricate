@@ -10,11 +10,13 @@ import {DiceRoller} from "../../foundry/DiceRoller";
 import {OutcomeType} from "../result/OutcomeType";
 import {ThresholdCalculator} from "./Threshold";
 import {GameSystemRollModifierProvider} from "./GameSystemRollModifierProvider";
+import {DnD5ECraftingCheckSpec} from "../../system_definitions/DnD5e";
 
 interface CraftingCheck<A extends Actor> {
 
     perform(actor: A, components: Combination<CraftingComponent>): CraftingCheckResult;
 
+    toCheckDefinition(): DnD5ECraftingCheckSpec;
 }
 
 interface CraftingCheckConfig<A extends Actor> {
@@ -62,6 +64,10 @@ class DefaultCraftingCheck<A extends Actor> implements CraftingCheck<A> {
 
     }
 
+    toCheckDefinition(): DnD5ECraftingCheckSpec {
+        return undefined;
+    }
+
 }
 
 export {CraftingCheck, CraftingCheckConfig, DefaultCraftingCheck}
@@ -72,6 +78,10 @@ class NoCraftingCheck implements CraftingCheck<Actor> {
 
     perform(_actor: Actor, _components: Combination<CraftingComponent>): CraftingCheckResult {
         return new NoCraftingCheckResult();
+    }
+
+    toCheckDefinition(): DnD5ECraftingCheckSpec {
+        return undefined;
     }
 
 }

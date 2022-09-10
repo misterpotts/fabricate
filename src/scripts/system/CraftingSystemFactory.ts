@@ -1,11 +1,10 @@
 import {
+    AlchemyDefinition,
     AlchemyFormulaDefinition,
     CraftingSystemDefinition
 } from "../system_definitions/CraftingSystemDefinition";
 import {CraftingSystem} from "./CraftingSystem";
-import {PartDictionary} from "./PartDictionary";
 import {CraftingCheck, DefaultCraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
-import {GameSystem} from "./GameSystem";
 import {ContributionCounter, ContributionCounterFactory} from "../crafting/check/ContributionCounter";
 import {DiceRoller} from "../foundry/DiceRoller";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
@@ -13,7 +12,7 @@ import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultCo
 import {DefaultThresholdCalculator, ThresholdCalculator, ThresholdType} from "../crafting/check/Threshold";
 import {DefaultAlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula, DefaultAlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
-import {EssenceDefinition, EssenceIdentityProvider} from "../common/EssenceDefinition";
+import {Essence, EssenceIdentityProvider} from "../common/Essence";
 import {ComponentConsumptionCalculatorFactory, WastageType} from "../common/ComponentConsumptionCalculator";
 import {
     AlchemicalCombination5e,
@@ -32,77 +31,71 @@ import {
     DnD5EDamageMultiplierEffectSpec,
     DnD5ESaveModifierEffectSpec
 } from "../system_definitions/DnD5e";
+import {PartDictionary} from "./PartDictionary";
 
 class CraftingSystemFactory {
-
-    private readonly _specification: CraftingSystemDefinition;
-    private readonly _partDictionary: PartDictionary;
+    
     private readonly _rollProviderFactory: RollModifierProviderFactory<Actor>;
     private readonly _diceRoller: DiceRoller;
+    private readonly _consumptionCalculatorFactory;
 
     constructor({
-        specification,
-        partDictionary,
         rollProviderFactory,
-        diceRoller
+        diceRoller,
+        consumptionCalculatorFactory
     }: {
-        specification: CraftingSystemDefinition;
-        partDictionary: PartDictionary;
-        rollProviderFactory: RollModifierProviderFactory<Actor>;
-        diceRoller: DiceRoller;
+        rollProviderFactory?: RollModifierProviderFactory<Actor>;
+        diceRoller?: DiceRoller;
+        consumptionCalculatorFactory?: ComponentConsumptionCalculatorFactory;
     }) {
-        this._specification = specification;
-        this._partDictionary = partDictionary;
         this._rollProviderFactory = rollProviderFactory;
         this._diceRoller = diceRoller;
+        this._consumptionCalculatorFactory = consumptionCalculatorFactory ?? new ComponentConsumptionCalculatorFactory();
     }
 
-    public make(): CraftingSystem {
-        if (this._specification.gameSystem !== GameSystem.DND5E) {
-            throw new Error("Fabricate only currently supports DnD 5th Edition. ");
-        }
+    public make(systemDefinition: CraftingSystemDefinition): CraftingSystem {
 
-        const essenceDefinitions = this._specification.essences.map(essenceConfig => new EssenceDefinition(essenceConfig));
+        const essenceDefinitions = Object.values(systemDefinition.essences).map(essenceConfig => new Essence(essenceConfig));
         const essenceIdentityProvider = EssenceIdentityProvider.for(essenceDefinitions);
-        const consumptionCalculatorFactory = new ComponentConsumptionCalculatorFactory();
 
-        const defaultCraftingCheck = this._specification.hasCraftingChecks ? this.buildCraftingCheck(this._specification.defaultCheck) : new NoCraftingCheck();
-        const recipeCraftingCheck = this._specification.recipes.useCustomCheck ? this.buildCraftingCheck(this._specification.recipes.customCheck) : defaultCraftingCheck;
-        const alchemyCraftingCheck = this._specification.alchemy.useCustomCheck ? this.buildCraftingCheck(this._specification.alchemy.customCheck) : defaultCraftingCheck;
+        const recipeCraftingCheck = systemDefinition.checks.enabled ? this.buildCraftingCheck(systemDefinition.checks.recipe) : new NoCraftingCheck();
+        const alchemyCraftingCheck = systemDefinition.checks.hasCustomAlchemyCheck ? this.buildCraftingCheck(systemDefinition.checks.alchemy) : recipeCraftingCheck;
 
-        const gameSystem = <GameSystem> this._specification.gameSystem;
         return new CraftingSystem({
-            name: this._specification.name,
-            id: this._specification.id,
+            name: systemDefinition.name,
+            id: systemDefinition.id,
+            locked: systemDefinition.locked,
+            author: systemDefinition.author,
+            description: systemDefinition.description,
+            partDictionary: new PartDictionary({}),
+            summary: systemDefinition.summary,
             essences: essenceDefinitions,
-            enabled: this._specification.enabled,
-            gameSystem: gameSystem,
+            enabled: systemDefinition.enabled,
             craftingChecks: {
                 alchemy: alchemyCraftingCheck,
                 recipe: recipeCraftingCheck
             },
-            partDictionary: this._partDictionary,
             craftingAttemptFactory: new CraftingAttemptFactory({
                 selectionStrategy: new DefaultComponentSelectionStrategy(),
-                wastageType: WastageType[this._specification.recipes.wastage]
+                wastageType: WastageType["PUNITIVE"] // todo: this belongs in the checks, not in the attempts
             }),
-            alchemyAttemptFactory: this.buildAlchemyAttemptFactory(this._specification.alchemy.enabled,
-                consumptionCalculatorFactory,
+            alchemyAttemptFactory: this.buildAlchemyAttemptFactory(systemDefinition.alchemy,
+                this._consumptionCalculatorFactory,
                 essenceIdentityProvider)
         });
     }
 
-    private buildAlchemyAttemptFactory(enabled: boolean,
+    private buildAlchemyAttemptFactory(alchemyDefinition: AlchemyDefinition,
                                        componentConsumptionCalculatorFactory: ComponentConsumptionCalculatorFactory,
                                        essenceIdentityProvider: EssenceIdentityProvider) {
-        if (!enabled) {
+        if (!alchemyDefinition?.enabled) {
             return new DisabledAlchemyAttemptFactory()
         }
         return new DefaultAlchemyAttemptFactory({
-            componentConsumptionCalculator: componentConsumptionCalculatorFactory.make(WastageType[this._specification.alchemy.wastage]),
+            componentConsumptionCalculator: componentConsumptionCalculatorFactory.make(WastageType["PUNITIVE"]), // Todo : attempts don't need to be punitive/nonpunitive as they might auto succeed
             alchemicalCombiner: new AlchemicalCombiner5e(),
-            constraints: this._specification.alchemy.constraints,
-            alchemyFormulae: this._specification.alchemy.formulae.map(formula => this.buildAlchemyFormula(essenceIdentityProvider, formula))
+            constraints: alchemyDefinition.constraints,
+            alchemyFormulae: Object.values(alchemyDefinition.formulae).map(formula => this.buildAlchemyFormula(essenceIdentityProvider, formula))
         });
     }
 
@@ -114,7 +107,7 @@ class CraftingSystemFactory {
         });
         alchemyFormulaSpec.effects.map(alchemyEffectSpec => {
             let result: {
-                essenceCombination: Combination<EssenceDefinition>,
+                essenceCombination: Combination<Essence>,
                 alchemicalEffect: AlchemicalEffect<AlchemicalCombination5e>
             } = {
                 alchemicalEffect: null,

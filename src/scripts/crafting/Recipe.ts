@@ -1,12 +1,12 @@
 import {FabricateItem, FabricateItemConfig} from "../common/FabricateItem";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
-import {EssenceDefinition} from "../common/EssenceDefinition";
+import {Essence} from "../common/Essence";
 
 interface RecipeMutation {
     ingredients?: Combination<CraftingComponent>;
     catalysts?: Combination<CraftingComponent>;
-    essences?: Combination<EssenceDefinition>;
+    essences?: Combination<Essence>;
     results?: Combination<CraftingComponent>;
 }
 
@@ -14,7 +14,7 @@ class Recipe extends FabricateItem {
 
     private readonly _ingredients: Combination<CraftingComponent>;
     private readonly _catalysts: Combination<CraftingComponent>;
-    private readonly _essences: Combination<EssenceDefinition>;
+    private readonly _essences: Combination<Essence>;
     private readonly _results: Combination<CraftingComponent>;
 
     constructor({
@@ -27,7 +27,7 @@ class Recipe extends FabricateItem {
         gameItem: FabricateItemConfig,
         ingredients?: Combination<CraftingComponent>;
         catalysts?: Combination<CraftingComponent>;
-        essences?: Combination<EssenceDefinition>;
+        essences?: Combination<Essence>;
         results: Combination<CraftingComponent>;
     }) {
         super(gameItem);
@@ -46,10 +46,10 @@ class Recipe extends FabricateItem {
                 name: this.name,
                 imageUrl: this.imageUrl
             },
-            ingredients: mutation.ingredients ? mutation.ingredients : this._ingredients,
-            catalysts: mutation.catalysts ? mutation.catalysts : this._catalysts,
-            essences: mutation.essences ? mutation.essences : this._essences,
-            results: mutation.results ? mutation.results : this._results,
+            ingredients: mutation.ingredients ?? this._ingredients,
+            catalysts: mutation.catalysts ?? this._catalysts,
+            essences: mutation.essences ?? this._essences,
+            results: mutation.results ?? this._results,
         })
     }
 
@@ -81,7 +81,7 @@ class Recipe extends FabricateItem {
         return !!this._essences;
     }
 
-    get essences(): Combination<EssenceDefinition> {
+    get essences(): Combination<Essence> {
         return this._essences;
     }
 

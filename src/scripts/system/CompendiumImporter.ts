@@ -1,5 +1,5 @@
 import {PartDictionary} from "./PartDictionary";
-import {EssenceDefinition} from "../common/EssenceDefinition";
+import {Essence} from "../common/Essence";
 import {CompendiumProvider, DefaultCompendiumProvider} from "../compendium/CompendiumProvider";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Recipe} from "../crafting/Recipe";
@@ -30,13 +30,13 @@ class CompendiumImporter {
                             name: string;
                         }[]): Promise<PartDictionary> {
         const compendiums: CompendiumCollection<CompendiumCollection.Metadata>[] = compendiumPackKeys.map((packKey: string) => this._compendiumProvider.getCompendium(packKey));
-        const essencesBySlug: Map<string, EssenceDefinition> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: {
+        const essencesBySlug: Map<string, Essence> = essenceDefinitions ? new Map(essenceDefinitions.map((essence: {
             iconCode: string;
             tooltip: string;
             description: string;
             id: string;
             name: string;
-        }) => [essence.id, essence] as [string, EssenceDefinition])) : new Map();
+        }) => [essence.id, essence] as [string, Essence])) : new Map();
         const partialPartDictionaries: PartDictionary[] = [];
         for (const compendium of compendiums) {
             const partDictionary: PartDictionary = await this.importCompendiumContents(systemId, compendium, essencesBySlug);
@@ -47,7 +47,7 @@ class CompendiumImporter {
 
     private async importCompendiumContents(systemId: string,
                                            compendium:  CompendiumCollection<CompendiumCollection.Metadata>,
-                                           essencesBySlug: Map<string, EssenceDefinition>): Promise<PartDictionary> {
+                                           essencesBySlug: Map<string, Essence>): Promise<PartDictionary> {
         if (!Properties.module.compendiums.supportedTypes.includes(compendium.metadata.type)) {
             throw new Error(`Compendium ${compendium.collection} has an unsupported Document type: ${compendium.metadata.type}. Supported Compendium Document types are: ${Properties.module.compendiums.supportedTypes}. `);
         }
@@ -78,7 +78,7 @@ class CompendiumImporter {
                       fabricateCompendiumData: FabricateCompendiumData,
                       compendium: CompendiumCollection<CompendiumCollection.Metadata>,
                       systemId: string,
-                      essencesBySlug: Map<string, EssenceDefinition>) {
+                      essencesBySlug: Map<string, Essence>) {
         try {
             return new Recipe({
                 gameItem: {
@@ -103,7 +103,7 @@ class CompendiumImporter {
                          fabricateCompendiumData: FabricateCompendiumData,
                          compendium: CompendiumCollection<CompendiumCollection.Metadata>,
                          systemId: string,
-                         essencesBySlug: Map<string, EssenceDefinition>) {
+                         essencesBySlug: Map<string, Essence>) {
         try {
             return new CraftingComponent({
                 gameItem: {
@@ -175,7 +175,7 @@ class CompendiumImporter {
         return new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    private essencesFromCompendiumData(essenceRecord: Record<string, number>, essenceDefinitions: Map<string, EssenceDefinition>): Combination<EssenceDefinition> {
+    private essencesFromCompendiumData(essenceRecord: Record<string, number>, essenceDefinitions: Map<string, Essence>): Combination<Essence> {
         if (!essenceRecord) {
             return Combination.EMPTY();
         }
@@ -183,14 +183,14 @@ class CompendiumImporter {
         if (essenceIds.length === 0) {
             return Combination.EMPTY();
         }
-        const essenceUnits: Unit<EssenceDefinition>[] = essenceIds.map((id: string) => {
+        const essenceUnits: Unit<Essence>[] = essenceIds.map((id: string) => {
             if (!essenceDefinitions.has(id)) {
                 throw new Error(`Essence '${id}' does not exist in the Crafting System Specification. 
                 The available Essences are ${Array.from(essenceDefinitions.values()).map(essence => `'${essence.id}'`).join(', ')}`);
             }
-            const essence: EssenceDefinition = essenceDefinitions.get(id);
+            const essence: Essence = essenceDefinitions.get(id);
             const amount: number = essenceRecord[id];
-            return new Unit<EssenceDefinition>(essence, amount);
+            return new Unit<Essence>(essence, amount);
         });
         return Combination.ofUnits(essenceUnits);
     }

@@ -6,7 +6,6 @@ import {ContributionCounter} from "../crafting/check/ContributionCounter";
 import {Tool} from "../crafting/Tool";
 import {CraftingCheck} from "../crafting/check/CraftingCheck";
 import AbilityType = DND5e.AbilityType;
-import Character = Actor5e.Data.Character;
 import {CraftingCheckResult} from "../crafting/check/CraftingCheckResult";
 
 interface PatchAbility5e {

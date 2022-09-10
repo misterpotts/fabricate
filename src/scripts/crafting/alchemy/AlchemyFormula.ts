@@ -1,5 +1,5 @@
 import {AlchemicalCombination, AlchemicalEffect, NoAlchemicalEffect} from "./AlchemicalEffect";
-import {EssenceDefinition, EssenceIdentityProvider} from "../../common/EssenceDefinition";
+import {Essence, EssenceIdentityProvider} from "../../common/Essence";
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 
@@ -7,15 +7,15 @@ interface AlchemyFormula {
 
     basePartId: string;
 
-    registerEffect(essences: Combination<EssenceDefinition>, effect: AlchemicalEffect<AlchemicalCombination>): AlchemicalEffect<AlchemicalCombination>;
+    registerEffect(essences: Combination<Essence>, effect: AlchemicalEffect<AlchemicalCombination>): AlchemicalEffect<AlchemicalCombination>;
 
-    getEffect(essences: Combination<EssenceDefinition>): AlchemicalEffect<AlchemicalCombination>;
+    getEffect(essences: Combination<Essence>): AlchemicalEffect<AlchemicalCombination>;
 
     getAllEffects(): AlchemicalEffect<AlchemicalCombination>[];
 
     getEffectsForComponents(components: Combination<CraftingComponent>): AlchemicalEffect<AlchemicalCombination>[];
 
-    hasEffectFor(essences: Combination<EssenceDefinition>): boolean;
+    hasEffectFor(essences: Combination<Essence>): boolean;
 
 }
 
@@ -47,7 +47,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         return Array.from(this._effectsByEssenceIdentity.values())
     }
 
-    getEffect(essences: Combination<EssenceDefinition>): AlchemicalEffect<AlchemicalCombination> {
+    getEffect(essences: Combination<Essence>): AlchemicalEffect<AlchemicalCombination> {
         if (essences.isEmpty()) {
             return new NoAlchemicalEffect();
         }
@@ -58,7 +58,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         return this._effectsByEssenceIdentity.get(combinationIdentity);
     }
 
-    hasEffectFor(essences: Combination<EssenceDefinition>): boolean {
+    hasEffectFor(essences: Combination<Essence>): boolean {
         if (essences.isEmpty()) {
             return false;
         }
@@ -66,7 +66,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         return this._effectsByEssenceIdentity.has(combinationIdentity);
     }
 
-    registerEffect(essences: Combination<EssenceDefinition>, effect: AlchemicalEffect<AlchemicalCombination>): AlchemicalEffect<AlchemicalCombination> {
+    registerEffect(essences: Combination<Essence>, effect: AlchemicalEffect<AlchemicalCombination>): AlchemicalEffect<AlchemicalCombination> {
         if (essences.isEmpty()) {
             return new NoAlchemicalEffect();
         }
