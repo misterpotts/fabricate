@@ -1,7 +1,10 @@
 {
   "fabricate": {
+    "EditComponentDialog": {
+      "title": "Fabricate | Component"
+    },
     "EditEssenceDialog": {
-      "title": "Fabricate | Edit Essence",
+      "title": "Fabricate | Essence",
       "errors": {
         "nameRequired": "You must provide an essence name"
       },

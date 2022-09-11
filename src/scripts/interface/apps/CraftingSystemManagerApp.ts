@@ -1,7 +1,7 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
-import {ComponentManagerApp} from "./ComponentManagerApp";
+import {EditComponentDialog} from "./EditComponentDialog";
 import {EditEssenceDialog} from "./EditEssenceDialog";
 import {FabricateRegistry} from "../../registries/FabricateRegistry";
 import {CraftingSystem} from "../../system/CraftingSystem";
@@ -25,8 +25,8 @@ class CraftingSystemManagerApp extends FormApplication {
             classes: ["sheet", "journal-sheet", "journal-entry"],
             template: Properties.module.templates.craftingSystemManagementApp,
             resizable: true,
-            width: 980,
-            height: 840,
+            width: 920,
+            height: 740,
             dragDrop: [{ dragSelector: <string> null, dropSelector: <string> null }],
         };
     }
@@ -93,13 +93,9 @@ class CraftingSystemManagerApp extends FormApplication {
 
     private async handleUserAction(systemId: string, action: string, event: any) {
         const fabricateRegistry = new FabricateRegistry(new GameProvider());
-        const targetSystem = fabricateRegistry.getCraftingSystemById(systemId); // todo: just use this._selectedSystem !
         switch (action) {
             case "editDetails":
-                if (!targetSystem) {
-                    console.error(`The crafting system "${systemId}" was not found`);
-                }
-                new EditCraftingSystemDetailDialog(targetSystem).render();
+                new EditCraftingSystemDetailDialog(this._selectedSystem).render();
                 break;
             case "importCraftingSystem":
                 console.log(event);
@@ -108,21 +104,21 @@ class CraftingSystemManagerApp extends FormApplication {
                 new EditCraftingSystemDetailDialog().render();
                 break;
             case "toggleSystemEnabled":
-                if (!targetSystem) {
-                    console.error(`The crafting system "${systemId}" was not found`);
-                }
                 const isEnabled = event.target.checked;
-                if (targetSystem.enabled === isEnabled) {
+                if (this._selectedSystem.enabled === isEnabled) {
                     return;
                 }
-                await fabricateRegistry.saveCraftingSystem(targetSystem.mutate({enabled: true}));
+                await fabricateRegistry.saveCraftingSystem(
+                    this._selectedSystem.mutate({enabled: true})
+                );
                 this.render();
                 break;
             case "selectCraftingSystem":
-                if (!targetSystem) {
-                    console.error(`The crafting system "${systemId}" was not found`);
+                const systemToSelect = fabricateRegistry.getCraftingSystemById(systemId);
+                if (!systemToSelect) {
+                    throw new Error(`Cannot select system. Crafting system with ID "${systemId}" not found. `);
                 }
-                this._selectedSystem = targetSystem;
+                this._selectedSystem = systemToSelect;
                 this.render();
                 break;
             case "createComponent":
@@ -131,7 +127,8 @@ class CraftingSystemManagerApp extends FormApplication {
                     if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
                         return;
                     }
-                    new ComponentManagerApp(data.uuid).render();
+                    const document: any = await new GameProvider().getDocumentById(data.uuid);
+                    new EditComponentDialog(document, this._selectedSystem).render();
                 } catch (e: any) {
                     console.warn(`Something was dropped onto a Fabricate drop zone, 
                         but the drop event was not able to be processed. 
@@ -139,23 +136,23 @@ class CraftingSystemManagerApp extends FormApplication {
                 }
                 break;
             case "createEssence":
-                new EditEssenceDialog(targetSystem).render();
+                new EditEssenceDialog(this._selectedSystem).render();
                 break;
             case "editEssence":
                 const essenceIdToEdit = event?.target?.dataset?.essenceId;
-                const essenceToEdit = targetSystem.essences.find(essence => essence.id === essenceIdToEdit);
+                const essenceToEdit = this._selectedSystem.essences.find(essence => essence.id === essenceIdToEdit);
                 if (!essenceToEdit) {
                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
                 }
-                new EditEssenceDialog(targetSystem, essenceToEdit.toEssenceDefinition()).render(); // todo: second arg can be essence, not essencedef
+                new EditEssenceDialog(this._selectedSystem, essenceToEdit.toEssenceDefinition()).render(); // todo: second arg can be essence, not essencedef
                 break;
             case "deleteEssence":
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;
-                const essenceToDelete = targetSystem.essences.find(essence => essence.id === essenceIdToDelete);
+                const essenceToDelete = this._selectedSystem.essences.find(essence => essence.id === essenceIdToDelete);
                 if (!essenceToDelete) {
                     throw new Error(`Essence with ID "${essenceToDelete}" does not exist.`);
                 }
-                const craftingSystemDefinition = targetSystem.toSystemDefinition();
+                const craftingSystemDefinition = this._selectedSystem.toSystemDefinition();
                 delete craftingSystemDefinition.essences[essenceIdToDelete];
                 await fabricateRegistry.defineCraftingSystem(craftingSystemDefinition);
                 break;

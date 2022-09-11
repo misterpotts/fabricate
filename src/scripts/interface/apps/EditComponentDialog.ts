@@ -1,20 +1,23 @@
 import {GameProvider} from "../../foundry/GameProvider";
 import Properties from "../../Properties";
+import {CraftingSystem} from "../../system/CraftingSystem";
 
-class ComponentManagerApp extends FormApplication {
+class EditComponentDialog extends FormApplication {
 
-    private _itemId: string;
+    private readonly _item: any;
+    private readonly _craftingSystem: CraftingSystem;
 
-    constructor(itemId?: string) {
+    constructor(item: any, selectedSystem: CraftingSystem) {
         super(null);
-        this._itemId = itemId;
+        this._item = item;
+        this._craftingSystem = selectedSystem;
     }
 
     static get defaultOptions() {
         const GAME = new GameProvider().globalGameObject();
         return {
             ...super.defaultOptions,
-            title: GAME.i18n.localize(`${Properties.module.id}.ComponentManagerApp.title`),
+            title: GAME.i18n.localize(`${Properties.module.id}.EditComponentDialog.title`),
             id: `${Properties.module.id}-component-manager`,
             template: Properties.module.templates.ComponentManagerApp,
             width: 500,
@@ -33,12 +36,12 @@ class ComponentManagerApp extends FormApplication {
 
     async getData(): Promise<any> {
         return {
-            gameItem: {
-                systemId: "",
-                partId: this._itemId,
-                compendiumId: "",
-                imageUrl: "",
-                name: "",
+            systemId: this._craftingSystem.id,
+            item: {
+                partId: this._item.id,
+                compendiumId: this._item.compendium,
+                imageUrl: this._item.img,
+                name: this._item.name,
             },
             salvage: {},
             essences: {}
@@ -47,4 +50,4 @@ class ComponentManagerApp extends FormApplication {
 
 }
 
-export { ComponentManagerApp }
+export { EditComponentDialog }

@@ -9,7 +9,7 @@ const Properties = {
             craftingTab: "modules/fabricate/templates/crafting-tab.hbs",
             craftingMessage: "modules/fabricate/templates/chat-message.hbs",
             craftingSystemManagementApp: "modules/fabricate/templates/crafting-system-manager.hbs",
-            ComponentManagerApp: "modules/fabricate/templates/component-manager.hbs",
+            ComponentManagerApp: "modules/fabricate/templates/edit-component-dialog.hbs",
             EssenceManagerApp: "modules/fabricate/templates/edit-essence-details.hbs",
             EditCraftingSystemDetailDialog: "modules/fabricate/templates/edit-crafting-system-detail.hbs",
             partials: {

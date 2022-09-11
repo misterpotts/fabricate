@@ -1,5 +1,3 @@
-import {Document} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/module.mjs";
-
 class GameProvider {
 
     public globalGameObject(): Game {
@@ -10,7 +8,7 @@ class GameProvider {
         return <Game> game;
     }
 
-    public async getDocumentById(id: string): Promise<Document<any>> {
+    public async getDocumentById(id: string): Promise<any> {
         return await fromUuid(id);
     }
 
