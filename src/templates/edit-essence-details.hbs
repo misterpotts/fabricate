@@ -9,7 +9,7 @@
         <div class="form-group">
             <label for="description">{{localize "fabricate.EditEssenceDialog.description.label"}}</label>
             <div class="form-fields">
-                <input type="text" name="description" placeholder="{{localize "fabricate.EditEssenceDialog.description.placeholder"}}" value="{{description}}">
+                <textarea name="description" rows="3" cols="40" placeholder="{{localize "fabricate.EditEssenceDialog.description.placeholder"}}">{{description}}</textarea>
             </div>
         </div>
         <div class="form-group">
@@ -21,7 +21,7 @@
         <div class="form-group">
             <label for="tooltip">{{localize "fabricate.EditEssenceDialog.tooltip.label"}}</label>
             <div class="form-fields">
-                <input type="text" name="tooltip" placeholder="{{localize "fabricate.EditEssenceDialog.tooltip.placeholder"}}" value="{{tooltip}}">
+                <textarea name="tooltip" rows="3" cols="40" placeholder="{{localize "fabricate.EditEssenceDialog.tooltip.placeholder"}}">{{tooltip}}</textarea>
             </div>
         </div>
         <button type="submit"><i class="fa-regular fa-circle-check"></i> {{localize "fabricate.EditEssenceDialog.submit"}}</button>

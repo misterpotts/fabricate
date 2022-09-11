@@ -25,8 +25,8 @@ class CraftingSystemManagerApp extends FormApplication {
             classes: ["sheet", "journal-sheet", "journal-entry"],
             template: Properties.module.templates.craftingSystemManagementApp,
             resizable: true,
-            width: 940,
-            height: 720,
+            width: 980,
+            height: 840,
             dragDrop: [{ dragSelector: <string> null, dropSelector: <string> null }],
         };
     }

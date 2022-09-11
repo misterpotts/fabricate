@@ -2,12 +2,15 @@
   "fabricate": {
     "EditEssenceDialog": {
       "title": "Fabricate | Edit Essence",
+      "errors": {
+        "nameRequired": "You must provide an essence name"
+      },
       "description": {
         "label": "Description",
         "placeholder": "A description of the nature of the essence"
       },
       "iconCode": {
-        "label": "FontAwesome icon class",
+        "label": "FontAwesome icon",
         "placeholder": "fa-solid fa-mortar-pestle"
       },
       "name": {

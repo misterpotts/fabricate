@@ -22,7 +22,7 @@ class EditEssenceDialog extends FormApplication {
             title: GAME.i18n.localize(`${Properties.module.id}.EditEssenceDialog.title`),
             id: `${Properties.module.id}-essence-manager`,
             template: Properties.module.templates.EssenceManagerApp,
-            width: 500,
+            width: 380,
         };
     }
 
