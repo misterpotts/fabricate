@@ -5,6 +5,7 @@ import {EditComponentDialog} from "./EditComponentDialog";
 import {EditEssenceDialog} from "./EditEssenceDialog";
 import {FabricateRegistry} from "../../registries/FabricateRegistry";
 import {CraftingSystem} from "../../system/CraftingSystem";
+import {CraftingComponent} from "../../common/CraftingComponent";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -104,12 +105,12 @@ class CraftingSystemManagerApp extends FormApplication {
                 new EditCraftingSystemDetailDialog().render();
                 break;
             case "toggleSystemEnabled":
-                const isEnabled = event.target.checked;
-                if (this._selectedSystem.enabled === isEnabled) {
+                const checked = event.target.checked;
+                if (this._selectedSystem.enabled === checked) {
                     return;
                 }
                 await fabricateRegistry.saveCraftingSystem(
-                    this._selectedSystem.mutate({enabled: true})
+                    this._selectedSystem.setEnabled(checked)
                 );
                 this.render();
                 break;
@@ -128,6 +129,10 @@ class CraftingSystemManagerApp extends FormApplication {
                         return;
                     }
                     const document: any = await new GameProvider().getDocumentById(data.uuid);
+                    const fabricateIdentity = document.getFlag(Properties.module.id, Properties.flagKeys.item.id);
+                    if (!fabricateIdentity) {
+                        this._selectedSystem.addComponent(new CraftingComponent({}))
+                    }
                     new EditComponentDialog(document, this._selectedSystem).render();
                 } catch (e: any) {
                     console.warn(`Something was dropped onto a Fabricate drop zone, 

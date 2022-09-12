@@ -4,7 +4,7 @@ import * as Sinon from "sinon";
 import {PartDictionary} from "../src/scripts/system/PartDictionary";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
-import {FabricateItem} from "../src/scripts/common/FabricateItem";
+import {FabricateItem} from "../src/scripts/common/Identifiable";
 import {FabricateItemType} from "../src/scripts/compendium/CompendiumData";
 import Properties from "../src/scripts/Properties";
 import {AnyDocumentData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/data.mjs";

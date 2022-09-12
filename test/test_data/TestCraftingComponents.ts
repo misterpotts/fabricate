@@ -4,61 +4,28 @@ import {Essence} from "../../src/scripts/common/Essence";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
-const testCompendiumId: string = "fabricate.test-compendium";
-const testSystemId = "fabricate.test-system";
-
 const testComponentOne: CraftingComponent = new CraftingComponent({
-    gameItem: {
-        partId: "iyeUGBbSts0ij92X",
-        imageUrl: "/img/picture-1.png",
-        name: "Test Component One",
-        systemId: testSystemId,
-        compendiumId: testCompendiumId,
-    },
+    id: "iyeUGBbSts0ij92X",
     essences: Combination.ofUnits([new Unit<Essence>(elementalEarth, 2)])
 });
 
 const testComponentTwo: CraftingComponent = new CraftingComponent({
-    gameItem: {
-        partId: "Ie7NoXMja9wI6xya",
-        imageUrl: "/img/picture-2.png",
-        name: "Test Component Two",
-        systemId: testSystemId,
-        compendiumId: testCompendiumId,
-    },
+    id: "Ie7NoXMja9wI6xya",
     essences: Combination.ofUnits([new Unit<Essence>(elementalFire, 1)])
 });
 
 const testComponentThree: CraftingComponent = new CraftingComponent({
-    gameItem: {
-        partId: "tdyV4AWuTMkXbepw",
-        imageUrl: "/img/picture-3.png",
-        name: "Test Component Three",
-        systemId: testSystemId,
-        compendiumId: testCompendiumId,
-    },
+    id: "tdyV4AWuTMkXbepw",
     essences: Combination.ofUnits([new Unit<Essence>(elementalWater, 2), new Unit<Essence>(elementalAir, 2)])
 });
 
 const testComponentFour: CraftingComponent = new CraftingComponent({
-    gameItem: {
-        partId: "Ra2Z1ujre76weR0i",
-        imageUrl: "/img/picture-4.png",
-        name: "Test Component Four",
-        systemId: testSystemId,
-        compendiumId: testCompendiumId,
-    },
+    id: "Ra2Z1ujre76weR0i",
     essences: Combination.ofUnits([new Unit<Essence>(elementalAir, 2)])
 });
 
 const testComponentFive: CraftingComponent = new CraftingComponent({
-    gameItem: {
-        partId: "74K6TAuSg2xzd209",
-        imageUrl: "/img/picture-5.png",
-        name: "Test Component Five",
-        systemId: testSystemId,
-        compendiumId: testCompendiumId,
-    },
+    id: "74K6TAuSg2xzd209",
     essences: Combination.ofUnits([new Unit<Essence>(elementalFire, 1), new Unit<Essence>(elementalEarth, 3)])
 });
 

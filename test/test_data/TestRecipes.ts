@@ -10,7 +10,7 @@ const testCompendiumId: string = "fabricate.test-compendium";
 const testRecipeOne: Recipe = new Recipe({
     gameItem: {
         name: "Recipe: 1 x Test Component One + 2 x Test Component Three = 1 x Test Component Five",
-        partId: "tdyV4AWuTMkXbepw",
+        id: "tdyV4AWuTMkXbepw",
         systemId: "fabricate.test-system",
         compendiumId: testCompendiumId,
         imageUrl: "/img/1.jpg"
@@ -25,7 +25,7 @@ const testRecipeOne: Recipe = new Recipe({
 const testRecipeTwo: Recipe = new Recipe({
     gameItem: {
         name: "Recipe: 2 x Test Component four + 1 x Test Component Five (Catalyst) = 2 x Test Component Two",
-        partId: "QBmv3SSCaae2xxzT",
+        id: "QBmv3SSCaae2xxzT",
         systemId: "fabricate.test-system",
         compendiumId: testCompendiumId,
         imageUrl: "/img/2.jpg"
@@ -38,7 +38,7 @@ const testRecipeTwo: Recipe = new Recipe({
 const testRecipeThree: Recipe = new Recipe({
     gameItem: {
         name: "Recipe: 3 x Elemental Earth + 1 x Elemental Fire = 3 Test Component One",
-        partId: "eT4j7mNbZGHIUOtT",
+        id: "eT4j7mNbZGHIUOtT",
         systemId: "fabricate.test-system",
         compendiumId: testCompendiumId,
         imageUrl: "/img/3.jpg"
@@ -53,7 +53,7 @@ const testRecipeThree: Recipe = new Recipe({
 const testRecipeFour: Recipe = new Recipe({
     gameItem: {
         name: "Recipe: 1 x Elemental Earth + 2 x Elemental Water + 3 x Test Component Two + 1 x Test Component Three (Catalyst) = 10 Test Component Five",
-        partId: "l46uaz805Fr9lZvU",
+        id: "l46uaz805Fr9lZvU",
         systemId: "fabricate.test-system",
         compendiumId: testCompendiumId,
         imageUrl: "/img/4.jpg"

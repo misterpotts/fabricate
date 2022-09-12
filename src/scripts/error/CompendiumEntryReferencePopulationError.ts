@@ -1,4 +1,4 @@
-import {FabricateItem} from "../common/FabricateItem";
+import {FabricateItem} from "../common/Identifiable";
 
 class CompendiumEntryReferencePopulationError extends Error {
 

@@ -16,13 +16,7 @@ test('Should create an empty Combination',() => {
     expect(underTest.isEmpty()).toBe(true);
     expect(underTest.has(testComponentOne)).toBe(false);
     expect(underTest.has(new CraftingComponent({
-        gameItem: {
-            partId: 'XYZ345',
-            compendiumId: 'system-two',
-            imageUrl: '/img/picture.png',
-            name: 'Test Component 2',
-            systemId: 'fabricate.test-system'
-        },
+        id: 'XYZ345',
         salvage: Combination.EMPTY(),
         essences: Combination.EMPTY()
     }))).toBe(false);
@@ -38,26 +32,14 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
     let equivalentComponent = new CraftingComponent({
-        gameItem: {
-            partId: testComponentOne.partId,
-            compendiumId: testComponentOne.compendiumId,
-            imageUrl: testComponentOne.imageUrl,
-            name: testComponentOne.name,
-            systemId: testComponentOne.systemId
-        },
+        id: testComponentOne.id,
         salvage:testComponentOne.salvage,
         essences: testComponentOne.essences
     });
     expect(underTest.has(equivalentComponent))
         .toBe(true);
     let nonEquivalentComponent = new CraftingComponent({
-        gameItem: {
-            partId: 'XYZ345',
-            compendiumId: 'system-two',
-            imageUrl: '/img/picture.png',
-            name: 'Test Component 2',
-            systemId: 'fabricate.test-system'
-        },
+        id: 'XYZ345',
         salvage: Combination.EMPTY(),
         essences: Combination.EMPTY()
     });
@@ -84,24 +66,12 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.has(testComponentTwo)).toBe(true);
     expect(underTest.has(testComponentThree)).toBe(true);
     expect(underTest.has(new CraftingComponent({
-        gameItem: {
-            partId: testComponentOne.partId,
-            compendiumId: testComponentOne.compendiumId,
-            imageUrl: testComponentOne.imageUrl,
-            name: testComponentOne.name,
-            systemId: testComponentOne.systemId
-        },
+        id: testComponentOne.id,
         salvage:testComponentOne.salvage,
         essences: testComponentOne.essences
     }))).toBe(true);
     expect(underTest.has(new CraftingComponent({
-        gameItem: {
-            partId: 'XYZ345',
-            compendiumId: 'system-two',
-            imageUrl: '/img/picture.png',
-            name: 'Test Component 2',
-            systemId: 'fabricate.test-system'
-        },
+        id: 'XYZ345',
         salvage: Combination.EMPTY(),
         essences: Combination.EMPTY()
     }))).toBe(false);

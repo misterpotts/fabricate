@@ -35,22 +35,22 @@
                         {{#if known}}
                             {{#if craftable}}
                                 {{#if selected}}
-                                <option value="{{partId}}" selected>{{name}}</option>
+                                <option value="{{id}}" selected>{{name}}</option>
                                 {{else}}
-                                <option value="{{partId}}">{{name}}</option>
+                                <option value="{{id}}">{{name}}</option>
                                 {{/if}}
                             {{else}}
-                            <option value="{{partId}}" disabled>{{name}} (insufficient ingredients)</option>
+                            <option value="{{id}}" disabled>{{name}} (insufficient ingredients)</option>
                             {{/if}}
                         {{else if owned}}
                             {{#if craftable}}
                                 {{#if selected}}
-                                    <option value="{{partId}}" selected>{{name}}</option>
+                                    <option value="{{id}}" selected>{{name}}</option>
                                 {{else}}
-                                    <option value="{{partId}}">{{name}}</option>
+                                    <option value="{{id}}">{{name}}</option>
                                 {{/if}}
                             {{else}}
-                            <option value="{{partId}}" disabled>{{name}} (insufficient ingredients)</option>
+                            <option value="{{id}}" disabled>{{name}} (insufficient ingredients)</option>
                             {{/if}}
                         {{/if}}
                     {{else}}

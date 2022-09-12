@@ -12,25 +12,7 @@ export enum FabricateItemType {
     COMPONENT = 'COMPONENT'
 }
 
-/**
- * The structure of a configuration data object found in Fabricate flags that describes the unique identity of a
- * Compendium Entry for a Fabricate Item
- * */
-export interface CompendiumEntry {
-    /**
-     * The ID of the Crafting System this Compendium Entry belongs to
-     * */
-    systemId: string;
-    /**
-     * The ID of the part this Compendium Entry represents within the Crafting System
-     * */
-    partId: string;
-}
-
-/**
- * The structure of a configuration data object found in Fabricate flags that describes a Crafting Component
- * */
-export interface ComponentFlags {
+export interface ComponentData {
     /**
      * Essence Slugs (e.g. 'water' or 'negative-energy') and their quantities for the Essences this Component contains
      * */
@@ -41,25 +23,20 @@ export interface ComponentFlags {
     salvage: Record<string, number>;
 }
 
-/**
- * The structure of a configuration data object found in Fabricate flags that describes a Recipe
- * */
-export interface RecipeFlags {
-    /**
-     * Essence Slugs (e.g. 'water' or 'negative-energy') and their quantities for the Essences this Recipe Requires
-     * */
-    essences?: Record<string, number>;
-    ingredients?: Record<string, number>;
-    catalysts?: Record<string, number>;
-    results: Record<string, number>;
+export interface RecipeData {
+    essences: Record<string, number>;
+    catalysts: Record<string, number>;
+    ingredients: Record<string, number>[];
+    results: Record<string, number>[];
 }
+
+export declare type CraftingSystemData = RecipeData | ComponentData;
 
 /**
  * The structure of the Fabricate module-scoped flags that can exist on an Item, typically found in a Compendium
  * */
 export interface FabricateCompendiumData {
+    id: string;
     type: FabricateItemType;
-    identity: CompendiumEntry;
-    recipe?: RecipeFlags;
-    component?: ComponentFlags;
+    systemData: Record<string, CraftingSystemData>;
 }

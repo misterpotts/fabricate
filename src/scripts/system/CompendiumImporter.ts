@@ -82,7 +82,7 @@ class CompendiumImporter {
         try {
             return new Recipe({
                 gameItem: {
-                    partId: fabricateCompendiumData.identity.partId,
+                    id: fabricateCompendiumData.identity.partId,
                     systemId: systemId,
                     compendiumId: compendium.collection,
                     name: document.name,
@@ -106,8 +106,8 @@ class CompendiumImporter {
                          essencesBySlug: Map<string, Essence>) {
         try {
             return new CraftingComponent({
-                gameItem: {
-                    partId: fabricateCompendiumData.identity.partId,
+                documentData: {
+                    id: fabricateCompendiumData.identity.partId,
                     systemId: systemId,
                     compendiumId: compendium.collection,
                     name: document.name,
@@ -205,8 +205,8 @@ class CompendiumImporter {
         }
         const componentUnits: Unit<CraftingComponent>[] = componentIds.map((partId: string) => {
             const component: CraftingComponent = new CraftingComponent({
-                gameItem: {
-                    partId: partId,
+                documentData: {
+                    id: partId,
                     compendiumId: packKey,
                     systemId: systemId,
                     name: "",
@@ -234,7 +234,7 @@ class CompendiumImporter {
     private populateRecipeReferences(recipe: Recipe, componentsById: Map<string, CraftingComponent>): Recipe {
         try {
             return recipe.mutate({
-                ingredients: this.populateCombination(recipe.ingredients, componentsById),
+                ingredients: this.populateCombination(recipe.selectedIngredients, componentsById),
                 catalysts: this.populateCombination(recipe.catalysts, componentsById),
                 results: this.populateCombination(recipe.results, componentsById)
             });

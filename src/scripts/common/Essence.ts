@@ -1,5 +1,5 @@
 import {Combination} from "./Combination";
-import {Identifiable} from "./FabricateItem";
+import {Identifiable} from "./Identifiable";
 
 interface EssenceDefinition {
     iconCode: string;

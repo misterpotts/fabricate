@@ -1,4 +1,4 @@
-import {FabricateItemType} from "./common/FabricateItem";
+import {FabricateItemType} from "./common/Identifiable";
 
 const Properties = {
     module: {
@@ -54,10 +54,8 @@ const Properties = {
             knownRecipesForSystem: (systemId: string) => `crafting.${systemId}.knownRecipes`,
         },
         item: {
-            identity: "identity",
-            partId: "identity.partId",
-            systemId: "identity.systemId",
-            fabricateItemType: "type",
+            id: "id",
+            fabricateItemType: "type"
         }
     },
     settings: {

@@ -1,11 +1,11 @@
-import {Identifiable} from "./FabricateItem";
+import {Identifiable} from "./Identifiable";
 
 class Unit<T extends Identifiable> {
     private readonly _part: T;
     private readonly _quantity: number;
 
-    constructor(type: T, quantity: number) {
-        this._part = type;
+    constructor(part: T, quantity: number) {
+        this._part = part;
         this._quantity = quantity;
     }
 
@@ -105,6 +105,10 @@ class Combination<T extends Identifiable> {
             size += unit.quantity;
         });
         return size;
+    }
+
+    public distinct(): number {
+        return this.amounts.size;
     }
 
     public clone(): Combination<T> {

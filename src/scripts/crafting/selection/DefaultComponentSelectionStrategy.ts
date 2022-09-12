@@ -35,7 +35,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
         const essenceSelection = new EssenceSelection(recipe.essences);
         const essenceContribution: Combination<CraftingComponent> = essenceSelection.perform(remainingComponents);
 
-        const selectedComponents = recipe.ingredients.combineWith(essenceContribution);
+        const selectedComponents = recipe.selectedIngredients.combineWith(essenceContribution);
 
         return new CompleteComponentSelection({
             recipe: recipe,

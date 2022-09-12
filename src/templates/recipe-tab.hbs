@@ -9,7 +9,7 @@
             <ul>
                 {{#each recipe.ingredients}}
                 <li>
-                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{partId}}" data-system-id="{{systemId}}">
+                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{id}}" data-system-id="{{systemId}}">
                         <div class="component">
                             <span class="quantity">{{quantity}}</span>
                             <span class="name">{{name}}</span>
@@ -43,7 +43,7 @@
                 {{#each recipe.results}}
                 {{#ifEquals actionType "ADD"}}
                 <li>
-                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{partId}}" data-system-id="{{systemId}}">
+                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{id}}" data-system-id="{{systemId}}">
                         <div class="component">
                             <span class="quantity">{{quantity}}</span>
                             <span class="name">{{name}}</span>

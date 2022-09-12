@@ -4,7 +4,6 @@ const SYSTEM_DEFINITION: CraftingSystemDefinition = {
     "id": "alchemists-supplies-v1.6",
     "locked": true,
     "name": "Alchemist's Supplies v1.6",
-    "compendiumIds": ["fabricate.alchemists-supplies-v16"],
     "description": "Alchemy is the skill of exploiting unique properties of certain plants, minerals, and creature parts, combining them to produce fantastic substances. This allows even non-spellcasters to mimic minor magical effects, although the creations themselves are non-magical.",
     "summary": "A crafting system for 5th Edition by u/calculusChild",
     "author": "u/calculusChild",

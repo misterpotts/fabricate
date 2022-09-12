@@ -43,7 +43,6 @@ interface CraftingSystemDefinition {
     author: string;
     locked: boolean;
     enabled: boolean;
-    compendiumIds: string[];
     componentIds: string[];
     recipeIds: string[];
     checks: {

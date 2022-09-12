@@ -1,51 +1,39 @@
-import {FabricateItem, FabricateItemConfig} from "./FabricateItem";
+import {Identifiable} from "./Identifiable";
 import {Combination} from "./Combination";
 import {Essence} from "./Essence";
 
-interface CraftingComponentMutation {
-    item?: {
-        imageUrl?: string;
-        name?: string;
-    }
-    essences?: Combination<Essence>;
-    salvage?: Combination<CraftingComponent>;
-}
+class CraftingComponent implements Identifiable {
 
-class CraftingComponent extends FabricateItem {
+    private static readonly _NONE: CraftingComponent = new CraftingComponent({
+        id: "NO_ID",
+        essences: Combination.EMPTY(),
+        salvage: Combination.EMPTY()
+    });
 
+    private readonly _id: string;
     private readonly _essences: Combination<Essence>;
     private readonly _salvage: Combination<CraftingComponent>;
 
     constructor({
-        gameItem,
+        id,
         essences,
         salvage
     }: {
-        gameItem: FabricateItemConfig,
+        id: string;
         essences?: Combination<Essence>;
         salvage?: Combination<CraftingComponent>;
     }) {
-        super(gameItem);
+        this._id = id;
         this._essences = essences ?? Combination.EMPTY();
         this._salvage = salvage ?? Combination.EMPTY();
     }
 
-    public mutate(mutation: CraftingComponentMutation): CraftingComponent {
-        if (!mutation.essences && !mutation.salvage && !mutation.item) {
-            console.warn(`A no-op mutation was performed on Component ID: "${this.id}". This should not happen. `);
-            return this;
-        }
-        return new CraftingComponent({
-            gameItem: {
-                systemId: this.systemId,
-                partId: this.partId,
-                compendiumId: this.compendiumId,
-                name: mutation.item?.name ? mutation.item.name : this.name,
-                imageUrl: mutation.item?.imageUrl ? mutation.item.imageUrl : this.imageUrl
-            },
-            salvage: mutation.salvage ? mutation.salvage : this._salvage,
-            essences: mutation.essences ? mutation.essences : this._essences
-        });
+    public static NONE() {
+        return this._NONE;
+    }
+
+    get id(): string {
+        return this._id;
     }
 
     get essences(): Combination<Essence> {
@@ -55,6 +43,7 @@ class CraftingComponent extends FabricateItem {
     get salvage(): Combination<CraftingComponent> {
         return this._salvage;
     }
+
 }
 
 export {CraftingComponent}
