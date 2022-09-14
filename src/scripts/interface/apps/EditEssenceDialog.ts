@@ -58,7 +58,7 @@ class EditEssenceDialog extends FormApplication {
         if (!this._craftingSystem) {
             throw new Error(`The crafting system with ID "${this._craftingSystem?.id}" does not exist.`)
         }
-        const craftingSystemDefinition = this._craftingSystem.toSystemDefinition();
+        const craftingSystemDefinition = this._craftingSystem.toDefinition();
         const id = this._essenceDefinition?.id ? this._essenceDefinition.id : randomID();
         craftingSystemDefinition.essences[id] = {
             id,

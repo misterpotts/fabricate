@@ -65,15 +65,23 @@ class ComponentGroup {
         return this._members.isEmpty();
     }
 
-    public getSelectedMember(): Combination<CraftingComponent> {
-        if (!this._selectedComponent) {
-            return Combination.EMPTY();
+    public requiresChoice(): boolean {
+        return !(this.isEmpty() || this.isSingleton());
+    }
+
+    public isReady(): boolean {
+        if (!this.requiresChoice()) {
+            return true;
         }
+        return this._selectedComponent !== CraftingComponent.NONE();
+    }
+
+    public getSelectedMember(): Combination<CraftingComponent> {
         if (this._members.distinct() === 1) {
             return this.members;
         }
         if (!this._selectedComponent || this.selectedComponent === CraftingComponent.NONE()) {
-            throw new Error("No member has been selected. ");
+            return Combination.EMPTY();
         }
         return this._members.just(this._selectedComponent);
     }
@@ -144,15 +152,9 @@ class Recipe implements Identifiable {
     *  Instance Functions
     *  =========================== */
 
-    public hasSpecificIngredients() {
-        return Array.from(this._ingredientGroups)
-            .map(group => !group.isEmpty())
-            .reduce((left, right) => left && right);
-    }
-
     public hasOptions(): boolean {
-        return Array.from(this._ingredientGroups)
-            .map(group => !group.isSingleton())
+        return Array.from(this._ingredientGroups.concat(this._resultGroups))
+            .map(group => group.requiresChoice())
             .reduce((left,right) => left || right);
     }
 
@@ -160,24 +162,38 @@ class Recipe implements Identifiable {
         if (!this.hasOptions()) {
             return true;
         }
-        return !Array.from(this._ingredientGroups)
-            .filter(group => !group.isSingleton())
+        return !Array.from(this._ingredientGroups.concat(this._resultGroups))
+            .filter(group => !group.isReady())
             .map(group => group.selectedComponent)
             .find(selected => selected === CraftingComponent.NONE())
     }
 
     public getSelectedIngredients(): Combination<CraftingComponent> {
-        return Array.from(this._ingredientGroups)
+        return this.makeSelections(this._ingredientGroups);
+    }
+
+    public getSelectedResults(): Combination<CraftingComponent> {
+        return this.makeSelections(this._resultGroups);
+    }
+
+    private makeSelections(componentGroups: ComponentGroup[]): Combination<CraftingComponent> {
+        return Array.from(componentGroups)
             .map(group => group.getSelectedMember())
             .reduce((left, right) => left.combineWith(right));
+    }
+
+    public hasIngredients() {
+        return Array.from(this._ingredientGroups)
+            .map(group => !group.isEmpty())
+            .reduce((left, right) => left && right);
     }
 
     public requiresCatalysts() {
         return this._catalysts && !this._catalysts.isEmpty();
     }
 
-    public hasNamedComponents(): boolean {
-        return this.requiresCatalysts() || this.hasSpecificIngredients();
+    public requiresNamedComponents(): boolean {
+        return this.requiresCatalysts() || this.hasIngredients();
     }
 
     public getNamedComponents(): Combination<CraftingComponent> {
@@ -188,11 +204,19 @@ class Recipe implements Identifiable {
         return !this._essences || !this._essences.isEmpty();
     }
     
-    public select(index: number, component: CraftingComponent) {
-        if (index < 0 || index >= this._ingredientGroups.length) {
-            throw new Error(`"${index}" is not a valid ingredient group.`);
+    public selectIngredient(index: number, component: CraftingComponent) {
+        return this.select(this._ingredientGroups, index, component, "ingredient");
+    }
+
+    public selectResult(index: number, component: CraftingComponent) {
+        return this.select(this._resultGroups, index, component, "result");
+    }
+
+    private select(groups: ComponentGroup[], index: number, component: CraftingComponent, groupType: string): void {
+        if (index < 0 || index >= groups.length) {
+            throw new Error(`"${index}" is not a valid ${groupType} group.`);
         }
-        this._ingredientGroups[index] = this._ingredientGroups[index].select(component);
+        groups[index] = groups[index].select(component);
     }
     
 }

@@ -20,9 +20,9 @@ class CraftingSystem implements Identifiable {
 
     private readonly _id: string;
 
-    private readonly _craftingSystemDetails: CraftingSystemDetails;
+    private readonly _details: CraftingSystemDetails;
 
-    private readonly _enabled: boolean;
+    private _enabled: boolean;
     private readonly _locked: boolean;
 
     private readonly _partDictionary: PartDictionary;
@@ -35,46 +35,34 @@ class CraftingSystem implements Identifiable {
 
     constructor({
         id,
-        name,
-        summary,
-        description,
-        author,
+        details,
         locked,
         craftingChecks = {
             recipe: new NoCraftingCheck(),
             alchemy: new NoCraftingCheck()
         },
-        essences,
         alchemyAttemptFactory,
         craftingAttemptFactory,
         enabled,
         partDictionary
     }: {
         id: string;
-        name: string;
-        summary: string;
-        description: string;
-        author: string;
+        details: CraftingSystemDetails,
         locked: boolean;
         enabled: boolean;
         craftingChecks?: {
             recipe?: CraftingCheck<Actor>;
             alchemy?: CraftingCheck<Actor>;
         };
-        essences: Essence[];
         alchemyAttemptFactory?: AlchemyAttemptFactory;
         craftingAttemptFactory: CraftingAttemptFactory;
         partDictionary: PartDictionary;
     }) {
         this._id = id;
-        this._name = name;
-        this._summary = summary;
-        this._description = description;
-        this._author = author;
+        this._details = details;
         this._locked = locked;
         this._alchemyCraftingCheck = craftingChecks?.alchemy ?? new NoCraftingCheck();
         this._recipeCraftingCheck = craftingChecks?.recipe ?? new NoCraftingCheck();
-        this._essencesById = new Map(essences.map((essence: Essence) => [essence.id, essence]));
         this._craftingAttemptFactory = craftingAttemptFactory;
         this._alchemyAttemptFactory = alchemyAttemptFactory ?? new DisabledAlchemyAttemptFactory();
         this._enabled = enabled;
@@ -90,7 +78,7 @@ class CraftingSystem implements Identifiable {
     }
 
     public setEnabled(value: boolean): CraftingSystem {
-        this.enabled = value;
+        this._enabled = value;
         return this;
     }
 
@@ -107,23 +95,23 @@ class CraftingSystem implements Identifiable {
     }
 
     get essences(): Essence[] {
-        return Array.from(this._essencesById.values());
+        return this._partDictionary.getEssences();
     }
 
     get summary(): string {
-        return this._summary;
+        return this._details.summary;
     }
 
     get description(): string {
-        return this._description;
+        return this._details.description;
     }
 
     get author(): string {
-        return this._author;
+        return this._details.author;
     }
 
     getEssenceById(id: string) {
-        return this._essencesById.get(id);
+        return this._partDictionary.getEssence(id);
     }
 
     get hasRecipeCraftingCheck(): boolean {
@@ -143,7 +131,7 @@ class CraftingSystem implements Identifiable {
     }
 
     get name(): string {
-        return this._name;
+        return this._details.name;
     }
 
     get partDictionary(): PartDictionary {
@@ -172,14 +160,13 @@ class CraftingSystem implements Identifiable {
 
     }
 
-    toSystemDefinition(): CraftingSystemDefinition {
+    toDefinition(): CraftingSystemDefinition {
         const essences: Record<string, EssenceDefinition> = {};
-        this._essencesById.forEach((essence) => essences[essence.id] = essence.toEssenceDefinition());
+        this._partDictionary.getEssences()
+            .forEach((essence) => essences[essence.id] = essence.toEssenceDefinition());
         return {
             id: this._id,
-            name: this._name,
-            summary: this._summary,
-            description: this._description,
+            details: this._details.toDefinition(),
             enabled: this.enabled,
             locked: this._locked,
             alchemy: this._alchemyAttemptFactory.toAlchemyDefinition(),
@@ -190,7 +177,6 @@ class CraftingSystem implements Identifiable {
                 enabled: true
             },
             essences: essences,
-            author: this._author,
             componentIds: this._partDictionary.getComponents().map(component => component.id),
             recipeIds: this._partDictionary.getRecipes().map(recipe => recipe.id)
         };

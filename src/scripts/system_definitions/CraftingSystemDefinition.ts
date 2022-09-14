@@ -37,10 +37,12 @@ interface AlchemyDefinition {
 
 interface CraftingSystemDefinition {
     id: string;
-    name: string;
-    summary: string;
-    description: string;
-    author: string;
+    details: {
+        name: string,
+        summary: string,
+        description: string,
+        author: string
+    };
     locked: boolean;
     enabled: boolean;
     componentIds: string[];

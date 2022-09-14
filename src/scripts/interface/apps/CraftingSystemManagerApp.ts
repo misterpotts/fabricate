@@ -157,7 +157,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!essenceToDelete) {
                     throw new Error(`Essence with ID "${essenceToDelete}" does not exist.`);
                 }
-                const craftingSystemDefinition = this._selectedSystem.toSystemDefinition();
+                const craftingSystemDefinition = this._selectedSystem.toDefinition();
                 delete craftingSystemDefinition.essences[essenceIdToDelete];
                 await fabricateRegistry.defineCraftingSystem(craftingSystemDefinition);
                 break;

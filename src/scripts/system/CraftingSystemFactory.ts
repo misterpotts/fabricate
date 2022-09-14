@@ -32,6 +32,7 @@ import {
     DnD5ESaveModifierEffectSpec
 } from "../system_definitions/DnD5e";
 import {PartDictionary} from "./PartDictionary";
+import {CraftingSystemDetails} from "./CraftingSystemDetails";
 
 class CraftingSystemFactory {
     
@@ -55,21 +56,20 @@ class CraftingSystemFactory {
 
     public make(systemDefinition: CraftingSystemDefinition): CraftingSystem {
 
-        const essenceDefinitions = Object.values(systemDefinition.essences).map(essenceConfig => new Essence(essenceConfig));
+        const essenceDefinitions = Object.values(systemDefinition.essences)
+            .map(essenceConfig => new Essence(essenceConfig));
         const essenceIdentityProvider = EssenceIdentityProvider.for(essenceDefinitions);
 
         const recipeCraftingCheck = systemDefinition.checks.enabled ? this.buildCraftingCheck(systemDefinition.checks.recipe) : new NoCraftingCheck();
         const alchemyCraftingCheck = systemDefinition.checks.hasCustomAlchemyCheck ? this.buildCraftingCheck(systemDefinition.checks.alchemy) : recipeCraftingCheck;
 
         return new CraftingSystem({
-            name: systemDefinition.name,
+            details: new CraftingSystemDetails(systemDefinition.details),
             id: systemDefinition.id,
             locked: systemDefinition.locked,
-            author: systemDefinition.author,
-            description: systemDefinition.description,
-            partDictionary: new PartDictionary({}),
-            summary: systemDefinition.summary,
-            essences: essenceDefinitions,
+            partDictionary: new PartDictionary({
+                essences: new Map(essenceDefinitions.map(essence => [essence.id, essence]))
+            }), // todo implement
             enabled: systemDefinition.enabled,
             craftingChecks: {
                 alchemy: alchemyCraftingCheck,

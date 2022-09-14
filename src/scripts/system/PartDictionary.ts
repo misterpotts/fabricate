@@ -1,7 +1,5 @@
 import {CraftingComponent} from "../common/CraftingComponent";
-import Properties from "../Properties";
 import {Recipe} from "../crafting/Recipe";
-import {FabricateItemType} from "../compendium/CompendiumData";
 import {Essence} from "../common/Essence";
 
 class PartDictionary {
@@ -13,7 +11,7 @@ class PartDictionary {
     constructor({
         components = new Map(),
         recipes = new Map(),
-        essences = new Map();
+        essences = new Map()
     }: {
         components?: Map<string, CraftingComponent>,
         recipes?: Map<string, Recipe>,
@@ -32,46 +30,53 @@ class PartDictionary {
         this._components.set(component.id, component);
     }
 
-    public hasComponent(partId: string): boolean {
-        return this._components.has(partId);
+    public addEssence(essence: Essence): void {
+        this._essences.set(essence.id, essence);
     }
 
-    public hasRecipe(partId: string): boolean {
-        return this._recipes.has(partId);
+    public hasComponent(id: string): boolean {
+        return this._components.has(id);
     }
 
-    public getRecipe(partId: string): Recipe {
-        if (this._recipes.has(partId)) {
-            return this._recipes.get(partId);
+    public hasRecipe(id: string): boolean {
+        return this._recipes.has(id);
+    }
+
+    public getRecipe(id: string): Recipe {
+        if (this._recipes.has(id)) {
+            return this._recipes.get(id);
         }
-        throw new Error(`No Recipe was found with the identifier ${partId}. `);
+        throw new Error(`No Recipe was found with the identifier ${id}. `);
     }
 
-    public getComponent(partId: string): CraftingComponent {
-        if (this._components.has(partId)) {
-            return this._components.get(partId);
+    public getComponent(id: string): CraftingComponent {
+        if (this._components.has(id)) {
+            return this._components.get(id);
         }
-        throw new Error(`No Component was found with the identifier ${partId}. `);
+        throw new Error(`No Component was found with the identifier ${id}. `);
+    }
+
+    public getEssence(id: string): Essence {
+        if (this._essences.has(id)) {
+            return this._essences.get(id);
+        }
+        throw new Error(`No Essence was found with the identifier ${id}. `);
     }
 
     public size(): number {
-        return this._recipes.size + this._components.size;
+        return this._recipes.size + this._components.size +this._essences.size;
     }
 
     public getComponents(): CraftingComponent[] {
-        const components: CraftingComponent[] = [];
-        for (const component of this._components.values()) {
-            components.push(component);
-        }
-        return components;
+        return Array.from(this._components.values());
     }
 
     public getRecipes(): Recipe[] {
-        const recipes: Recipe[] = [];
-        for (const recipe of this._recipes.values()) {
-            recipes.push(recipe);
-        }
-        return recipes;
+        return Array.from(this._recipes.values());
+    }
+
+    public getEssences(): Essence[] {
+        return Array.from(this._essences.values());
     }
 
 }

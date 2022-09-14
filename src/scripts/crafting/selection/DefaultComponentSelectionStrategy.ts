@@ -13,7 +13,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
     perform(recipe: Recipe, availableComponents: Combination<CraftingComponent>): ComponentSelection {
 
-        const ingredientSearch = new IngredientSearch(recipe.namedComponents);
+        const ingredientSearch = new IngredientSearch(recipe.getSelectedIngredients());
         const namedComponentsSatisfied = ingredientSearch.perform(availableComponents);
 
         if (!namedComponentsSatisfied) {
@@ -23,7 +23,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
             });
         }
 
-        const remainingComponents: Combination<CraftingComponent> = availableComponents.subtract(recipe.namedComponents);
+        const remainingComponents: Combination<CraftingComponent> = availableComponents.subtract(recipe.getSelectedIngredients());
         const essenceSearch = new EssenceSearch(recipe.essences);
         const essencesSatisfied = essenceSearch.perform(remainingComponents);
         if (!essencesSatisfied) {
@@ -35,7 +35,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
         const essenceSelection = new EssenceSelection(recipe.essences);
         const essenceContribution: Combination<CraftingComponent> = essenceSelection.perform(remainingComponents);
 
-        const selectedComponents = recipe.selectedIngredients.combineWith(essenceContribution);
+        const selectedComponents = recipe.getSelectedIngredients().combineWith(essenceContribution);
 
         return new CompleteComponentSelection({
             recipe: recipe,

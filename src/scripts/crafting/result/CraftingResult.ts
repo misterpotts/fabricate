@@ -84,7 +84,7 @@ class SuccessfulCraftingResult implements CraftingResult {
             iconType: IconType.RANDOM,
             consumedItems: this._consumed,
             createdItems: this._created,
-            description: `Successfully crafted ${this._recipe.name}. Rolled a ${this._checkResult.result}, needed a ${this._checkResult.successThreshold}. `
+            description: `Successfully crafted ${this._recipe.id}. Rolled a ${this._checkResult.result}, needed a ${this._checkResult.successThreshold}. `
         });
     }
 
@@ -123,7 +123,7 @@ class UnsuccessfulCraftingResult implements CraftingResult {
     describe(): CraftingChatMessage {
         return new CraftingChatMessage({
             iconType: IconType.FAILURE,
-            description: `Failed to craft ${this._recipe.name}. Rolled a ${this._checkResult.result}, but needed a ${this._checkResult.successThreshold}. `
+            description: `Failed to craft ${this._recipe.id}. Rolled a ${this._checkResult.result}, but needed a ${this._checkResult.successThreshold}. `
         });
     }
 

@@ -29,7 +29,7 @@ class FabricateRegistry {
     }
 
     public async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<Record<string, CraftingSystemDefinition>> {
-        return this.defineCraftingSystem(craftingSystem.toSystemDefinition());
+        return this.defineCraftingSystem(craftingSystem.toDefinition());
     }
 
     public getCraftingSystemById(id: string): CraftingSystem {
@@ -72,7 +72,7 @@ class FabricateRegistry {
 
     async cloneSystem(systemId: string) {
         const sourceCraftingSystem = this.getCraftingSystemById(systemId);
-        const clonedDefinition = sourceCraftingSystem.toSystemDefinition();
+        const clonedDefinition = sourceCraftingSystem.toDefinition();
         clonedDefinition.id = randomID();
         clonedDefinition.name = `${sourceCraftingSystem.name} (copy)`
         clonedDefinition.locked = false;

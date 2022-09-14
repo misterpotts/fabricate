@@ -44,7 +44,7 @@ class WastefulCraftingAttempt implements CraftingAttempt {
         }
         return new SuccessfulCraftingResult({
             checkResult: craftingCheckResult,
-            created: this._recipe.results,
+            created: this._recipe.getSelectedResults(),
             consumed: this._components,
             recipe: this._recipe
         });
@@ -80,7 +80,7 @@ class GenerousCraftingAttempt implements CraftingAttempt {
         }
         return new SuccessfulCraftingResult({
             checkResult: craftingCheckResult,
-            created: this._recipe.results,
+            created: this._recipe.getSelectedResults(),
             consumed: this._components,
             recipe: this._recipe
         });
@@ -117,7 +117,7 @@ class AbandonedCraftingAttempt implements CraftingAttempt {
     }
 
     private getResultDetail(): string {
-        return `Unable to craft ${this._recipe.name}. ${this._reason}. `;
+        return `Unable to craft recipe ${this._recipe.id}. ${this._reason}. `; // todo Recipes can have names passed in on construction from the document in the ui
     }
 
 }

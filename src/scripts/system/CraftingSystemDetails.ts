@@ -38,6 +38,20 @@ class CraftingSystemDetails {
         return this._author;
     }
 
+    public toDefinition(): {
+        name: string,
+        summary: string,
+        description: string,
+        author: string
+    } {
+        return {
+            name: this._name,
+            summary: this._summary,
+            description: this._description,
+            author: this._author
+        }
+    }
+
 }
 
 export { CraftingSystemDetails }

@@ -24,6 +24,7 @@ import {
 import {ComponentConsumptionCalculatorFactory, WastageType} from "../src/scripts/common/ComponentConsumptionCalculator";
 import {DefaultAlchemyAttemptFactory} from "../src/scripts/crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemicalCombiner5e} from "../src/scripts/5e/AlchemicalEffect5E";
+import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -64,13 +65,15 @@ describe('Create and configure', () => {
         const testSystemId = `fabricate-test-system`;
 
         const underTest = new CraftingSystem({
-            name: "Test System",
+            details: new CraftingSystemDetails({
+                name: "Test System",
+                author: "",
+                summary: "",
+                description: ""
+            }),
             id: testSystemId,
             enabled: true,
-            author: "",
-            description: "",
             locked: false,
-            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory
@@ -103,13 +106,15 @@ describe('Create and configure', () => {
             })
         });
         const underTest = new CraftingSystem({
-            name: "Test System",
+            details: new CraftingSystemDetails({
+                name: "Test System",
+                author: "",
+                summary: "",
+                description: ""
+            }),
             id: testSystemId,
             enabled: true,
-            author: "",
-            description: "",
             locked: false,
-            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory,
@@ -152,13 +157,15 @@ describe('Crafting ', () => {
 
         const testSystemId = `fabricate-test-system`;
         const underTest = new CraftingSystem({
-            name: "Test System",
+            details: new CraftingSystemDetails({
+                name: "Test System",
+                author: "",
+                summary: "",
+                description: ""
+            }),
             id: testSystemId,
             enabled: true,
-            author: "",
-            description: "",
             locked: false,
-            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory
@@ -166,7 +173,7 @@ describe('Crafting ', () => {
 
         test('should succeed for recipe with sufficient ingredients',async () => {
 
-            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.getSelectedIngredients());
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
 
@@ -218,13 +225,15 @@ describe('Crafting ', () => {
 
         const testSystemId = `fabricate-test-system`;
         const underTest = new CraftingSystem({
-            name: "Test System",
+            details: new CraftingSystemDetails({
+                name: "Test System",
+                author: "",
+                summary: "",
+                description: ""
+            }),
             id: testSystemId,
             enabled: true,
-            author: "",
-            description: "",
             locked: false,
-            summary: "",
             essences: essences,
             partDictionary: testPartDictionary,
             craftingChecks: {
@@ -235,7 +244,7 @@ describe('Crafting ', () => {
 
         test('should succeed for recipe with sufficient ingredients and successful check',async () => {
 
-            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.getSelectedIngredients());
             stubEvaluateMethod.returns(new RollResult(11, "dummy dice expression"));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
@@ -252,7 +261,7 @@ describe('Crafting ', () => {
 
         test('should fail for recipe with sufficient ingredients and unsuccessful check',async () => {
 
-            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.namedComponents);
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeOne.getSelectedIngredients());
             stubEvaluateMethod.returns(new RollResult(9, "dummy dice expression"));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeOne);
