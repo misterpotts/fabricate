@@ -6,6 +6,7 @@ import {EditEssenceDialog} from "./EditEssenceDialog";
 import {FabricateRegistry} from "../../registries/FabricateRegistry";
 import {CraftingSystem} from "../../system/CraftingSystem";
 import {CraftingComponent} from "../../common/CraftingComponent";
+import {Combination} from "../../common/Combination";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -131,7 +132,11 @@ class CraftingSystemManagerApp extends FormApplication {
                     const document: any = await new GameProvider().getDocumentById(data.uuid);
                     const fabricateIdentity = document.getFlag(Properties.module.id, Properties.flagKeys.item.id);
                     if (!fabricateIdentity) {
-                        this._selectedSystem.addComponent(new CraftingComponent({}))
+                        this._selectedSystem.addComponent(new CraftingComponent({
+                            id: systemId,
+                            essences: Combination.EMPTY(),
+                            salvage: Combination.EMPTY()
+                        }))
                     }
                     new EditComponentDialog(document, this._selectedSystem).render();
                 } catch (e: any) {
