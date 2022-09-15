@@ -19,7 +19,14 @@ class FabricateRegistry {
             rollProviderFactory: new RollProvider5EFactory(),
             diceRoller: new DiceRoller("1d20")
         }); // todo fix these typed values
+    }
 
+    public async resetAllBundledSystems() {
+        const craftingSystemSettings = this._GAME.settings.storage.get("world").getSetting(`${Properties.module.id}.${Properties.settings.craftingSystems.key}`);
+        const bundledSystemSpecifications = this.bundledSystemSpecifications();
+        Object.keys(bundledSystemSpecifications)
+            .forEach(id => craftingSystemSettings[id] = bundledSystemSpecifications[id]);
+        await this._GAME.settings.set(Properties.module.id, Properties.settings.craftingSystems.key, craftingSystemSettings);
     }
 
     public async resetAllSystems() {
@@ -74,7 +81,7 @@ class FabricateRegistry {
         const sourceCraftingSystem = this.getCraftingSystemById(systemId);
         const clonedDefinition = sourceCraftingSystem.toDefinition();
         clonedDefinition.id = randomID();
-        clonedDefinition.name = `${sourceCraftingSystem.name} (copy)`
+        clonedDefinition.details.name = `${sourceCraftingSystem.name} (copy)`
         clonedDefinition.locked = false;
         return this.defineCraftingSystem(clonedDefinition);
     }

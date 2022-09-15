@@ -19,7 +19,7 @@ Hooks.on("renderSidebarTab", (app: any, html: any) => {
     buttons.append(button);
 });
 
-Hooks.once('init', () => {
+Hooks.once('init', async () => {
     const GAME = new GameProvider().globalGameObject();
     const fabricateRegistry = new FabricateRegistry(new GameProvider());
     // @ts-ignore

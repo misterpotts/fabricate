@@ -61,20 +61,23 @@ class EditCraftingSystemDetailDialog extends FormApplication {
         return formData;
     }
 
-    private editCraftingSystemDetails({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
-        const modifiedCraftingSystem = this._craftingSystem.mutate({ name, summary, description, author });
+    private editCraftingSystemDetails(editedDetails: {name: string, summary: string, description: string, author: string}) {
+        const modifiedCraftingSystem = this._craftingSystem.toDefinition()
+        modifiedCraftingSystem.details = editedDetails;
         const fabricateRegistry = new FabricateRegistry(new GameProvider());
-        return fabricateRegistry.saveCraftingSystem(modifiedCraftingSystem);
+        return fabricateRegistry.defineCraftingSystem(modifiedCraftingSystem);
     }
 
     private async createCraftingSystem({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
         const gameProvider = new GameProvider();
         const systemDefinition: CraftingSystemDefinition = {
             id: randomID(),
-            name: name,
-            summary: summary,
-            description: description,
-            author: author ?? gameProvider.globalGameObject().user.name,
+            details: {
+                name,
+                summary,
+                description,
+                author: author ?? gameProvider.globalGameObject().user.name,
+            },
             locked: false,
             enabled: true,
             essences: {},
@@ -86,7 +89,6 @@ class EditCraftingSystemDetailDialog extends FormApplication {
                 enabled: false,
                 performCheck: false
             },
-            compendiumIds: [],
             recipeIds: [],
             componentIds: []
         };
