@@ -1,6 +1,6 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
-import {CraftingSystemDefinition} from "../../system_definitions/CraftingSystemDefinition";
+import {CraftingSystemSettingsValueV1} from "../settings/values/CraftingSystemSettingsValueV1";
 import {CraftingSystem} from "../../system/CraftingSystem";
 import {FabricateRegistry} from "../../registries/FabricateRegistry";
 
@@ -70,7 +70,7 @@ class EditCraftingSystemDetailDialog extends FormApplication {
 
     private async createCraftingSystem({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
         const gameProvider = new GameProvider();
-        const systemDefinition: CraftingSystemDefinition = {
+        const systemDefinition: CraftingSystemSettingsValueV1 = {
             id: randomID(),
             details: {
                 name,

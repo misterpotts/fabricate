@@ -12,9 +12,9 @@ import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
-import {CraftingSystemDefinition} from "../system_definitions/CraftingSystemDefinition";
 import {PartDictionary} from "./PartDictionary";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
+import {CraftingSystemSettingsValueV2} from "../interface/settings/values/CraftingSystemSettingsValueV2";
 
 class CraftingSystem implements Identifiable {
 
@@ -98,6 +98,10 @@ class CraftingSystem implements Identifiable {
         return this._partDictionary.getEssences();
     }
 
+    get components(): CraftingComponent[] {
+        return this._partDictionary.getComponents();
+    }
+
     get summary(): string {
         return this._details.summary;
     }
@@ -160,7 +164,7 @@ class CraftingSystem implements Identifiable {
 
     }
 
-    toDefinition(): CraftingSystemDefinition {
+    toDefinition(): CraftingSystemSettingsValueV2 {
         const essences: Record<string, EssenceDefinition> = {};
         this._partDictionary.getEssences()
             .forEach((essence) => essences[essence.id] = essence.toEssenceDefinition());

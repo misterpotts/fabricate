@@ -36,9 +36,13 @@ class EditComponentDialog extends FormApplication {
 
     async getData(): Promise<any> {
         return {
-            systemId: this._craftingSystem.id,
+            system: {
+                id: this._craftingSystem.id,
+                essences: this._craftingSystem.essences,
+                components: this._craftingSystem.components.filter(component => component.id !== this._item.id)
+            },
             item: {
-                partId: this._item.id,
+                id: this._item.id,
                 compendiumId: this._item.compendium,
                 imageUrl: this._item.img,
                 name: this._item.name,

@@ -1,4 +1,13 @@
 <div class="fabricate-component-manager">
-    <h1>{{item.name}}</h1>
-    <img src="{{item.imageUrl}}" />
+    <div class="flexcol">
+        <div class="fabricate-component-preview flexrow flex3">
+            <img class="fabricate-component-img" src="{{item.imageUrl}}" />
+            <span class="fabricate-component-name">{{item.name}}</span>
+        </div>
+        <div class="fabricate-component-essence-editor flexrow flex2">
+            {{#each system.essences}}
+
+            {{/each}}
+        </div>
+    </div>
 </div>

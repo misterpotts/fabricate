@@ -52,6 +52,7 @@ class Unit<T extends Identifiable> {
 }
 
 class Combination<T extends Identifiable> {
+
     private readonly _amounts: Map<string, Unit<T>>;
 
     private constructor(amounts: Map<string, Unit<T>>) {
@@ -329,6 +330,14 @@ class Combination<T extends Identifiable> {
         }
         const unit = this._amounts.get(partId);
         return quantity >= unit.quantity;
+    }
+
+    public toJson(): Record<string, number> {
+        return this.units
+            .map(unit => {return {[unit.part.id]: unit.quantity}})
+            .reduce((left, right) => {
+                return { ...left, ...right}
+            }, {});
     }
 }
 

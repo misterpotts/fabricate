@@ -1,8 +1,3 @@
-import {
-    AlchemyDefinition,
-    AlchemyFormulaDefinition,
-    CraftingSystemDefinition
-} from "../system_definitions/CraftingSystemDefinition";
 import {CraftingSystem} from "./CraftingSystem";
 import {CraftingCheck, DefaultCraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {ContributionCounter, ContributionCounterFactory} from "../crafting/check/ContributionCounter";
@@ -31,30 +26,36 @@ import {
     DnD5EDamageMultiplierEffectSpec,
     DnD5ESaveModifierEffectSpec
 } from "../system_definitions/DnD5e";
-import {PartDictionary} from "./PartDictionary";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
+import {CraftingSystemSettingsValueV2, AlchemyDefinition, AlchemyFormulaDefinition} from "../interface/settings/values/CraftingSystemSettingsValueV2";
+import {GameProvider} from "../foundry/GameProvider";
+import {PartDictionaryFactory} from "./PartDictionary";
 
 class CraftingSystemFactory {
     
     private readonly _rollProviderFactory: RollModifierProviderFactory<Actor>;
     private readonly _diceRoller: DiceRoller;
     private readonly _consumptionCalculatorFactory;
+    private readonly _gameProvider;
 
     constructor({
         rollProviderFactory,
         diceRoller,
-        consumptionCalculatorFactory
+        consumptionCalculatorFactory,
+        gameProvider
     }: {
         rollProviderFactory?: RollModifierProviderFactory<Actor>;
         diceRoller?: DiceRoller;
         consumptionCalculatorFactory?: ComponentConsumptionCalculatorFactory;
+        gameProvider?: GameProvider;
     }) {
         this._rollProviderFactory = rollProviderFactory;
         this._diceRoller = diceRoller;
         this._consumptionCalculatorFactory = consumptionCalculatorFactory ?? new ComponentConsumptionCalculatorFactory();
+        this._gameProvider = gameProvider ?? new GameProvider();
     }
 
-    public make(systemDefinition: CraftingSystemDefinition): CraftingSystem {
+    public async make(systemDefinition: CraftingSystemSettingsValueV2): Promise<CraftingSystem> {
 
         const essenceDefinitions = Object.values(systemDefinition.essences)
             .map(essenceConfig => new Essence(essenceConfig));
@@ -62,14 +63,19 @@ class CraftingSystemFactory {
 
         const recipeCraftingCheck = systemDefinition.checks.enabled ? this.buildCraftingCheck(systemDefinition.checks.recipe) : new NoCraftingCheck();
         const alchemyCraftingCheck = systemDefinition.checks.hasCustomAlchemyCheck ? this.buildCraftingCheck(systemDefinition.checks.alchemy) : recipeCraftingCheck;
+        const partDictionaryFactory = new PartDictionaryFactory({
+            systemId: systemDefinition.id,
+            componentIds: systemDefinition.componentIds,
+            recipeIds: systemDefinition.recipeIds,
+            essences: new Map(essenceDefinitions.map(essence => [essence.id, essence])),
+            gameProvider: this._gameProvider
+        });
 
         return new CraftingSystem({
             details: new CraftingSystemDetails(systemDefinition.details),
             id: systemDefinition.id,
             locked: systemDefinition.locked,
-            partDictionary: new PartDictionary({
-                essences: new Map(essenceDefinitions.map(essence => [essence.id, essence]))
-            }), // todo implement
+            partDictionary: await partDictionaryFactory.make(),
             enabled: systemDefinition.enabled,
             craftingChecks: {
                 alchemy: alchemyCraftingCheck,

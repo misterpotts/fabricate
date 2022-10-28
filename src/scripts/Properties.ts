@@ -46,21 +46,29 @@ const Properties = {
         recipe: FabricateItemType.RECIPE,
         component: FabricateItemType.COMPONENT,
     },
-    flagKeys: {
-        actor: {
-            selectedCraftingSystem: "crafting.selectedSystemId",
-            selectedRecipe: "crafting.selectedRecipeId",
-            hopperForSystem: (systemId: string) => `crafting.${systemId}.hopper`,
-            knownRecipesForSystem: (systemId: string) => `crafting.${systemId}.knownRecipes`,
-        },
-        item: {
-            id: "id",
-            fabricateItemType: "type"
+    flags: {
+        keys: {
+            actor: {
+                hopperForSystem: (systemId: string) => `craftingSystems.${systemId}.hopper`,
+                knownRecipesForSystem: (systemId: string) => `craftingSystems.${systemId}.knownRecipes`,
+            },
+            item: {
+                id: "id",
+                type: (systemId: string) => `craftingSystemData.${systemId}.type`,
+                recipe: (systemId: string) => `craftingSystemData.${systemId}.recipeData`,
+                componentData: (systemId: string) => `craftingSystemData.${systemId}.componentData`,
+            }
         }
     },
     settings: {
-        craftingSystems: {
-            key: "craftingSystems"
+        defaultImageUrl: "icons/svg/item-bag.svg",
+        keys: {
+            craftingSystems: "craftingSystems",
+            craftingSystem: (id: string) => `craftingSystems.${id}`,
+            components: (systemId: string) => `craftingSystems.${systemId}.components`,
+            component: (systemId: string, componentId: string) => `craftingSystems.${systemId}.components.${componentId}`,
+            recipes: (systemId: string) => `craftingSystems.${systemId}.components`,
+            recipe: (systemId: string, recipeId: string) => `craftingSystems.${systemId}.components.${recipeId}`
         }
     }
 };

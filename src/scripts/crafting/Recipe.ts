@@ -86,6 +86,17 @@ class ComponentGroup {
         return this._members.just(this._selectedComponent);
     }
 
+    public toJson(): Record<string, number> {
+        return this._members.toJson();
+    }
+
+}
+
+interface RecipeJson {
+    essences: Record<string, number>,
+    catalysts: Record<string, number>,
+    resultGroups: Record<string, number>[],
+    ingredientGroups: Record<string, number>[]
 }
 
 class Recipe implements Identifiable {
@@ -95,6 +106,8 @@ class Recipe implements Identifiable {
     *  =========================== */
 
     private readonly _id: string;
+    private readonly _name?: string;
+    private readonly _imageUrl?: string;
     private readonly _ingredientGroups: ComponentGroup[];
     private readonly _catalysts: Combination<CraftingComponent>;
     private readonly _essences: Combination<Essence>;
@@ -106,18 +119,24 @@ class Recipe implements Identifiable {
 
     constructor({
         id,
+        name,
+        imageUrl,
         ingredientGroups,
         catalysts,
         essences, 
         resultGroups
     }: {
         id: string;
+        name?: string;
+        imageUrl?: string;
         ingredientGroups?: ComponentGroup[];
         catalysts?: Combination<CraftingComponent>;
         essences?: Combination<Essence>;
         resultGroups: ComponentGroup[];
     }) {
         this._id = id;
+        this._name = name;
+        this._imageUrl = imageUrl;
         this._ingredientGroups = ingredientGroups ?? [ComponentGroup.EMPTY()];
         this._catalysts = catalysts ?? Combination.EMPTY();
         this._essences = essences ?? Combination.EMPTY();
@@ -130,6 +149,14 @@ class Recipe implements Identifiable {
 
     get id(): string {
         return this._id;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get imageUrl(): string {
+        return this._imageUrl;
     }
 
     get ingredientGroups(): ComponentGroup[] {
@@ -218,7 +245,16 @@ class Recipe implements Identifiable {
         }
         groups[index] = groups[index].select(component);
     }
+
+    public toJson(): RecipeJson {
+        return {
+            essences: this._essences.toJson(),
+            catalysts: this._catalysts.toJson(),
+            resultGroups: this._resultGroups.map(group => group.toJson()),
+            ingredientGroups: this._ingredientGroups.map(group => group.toJson())
+        };
+    }
     
 }
 
-export { Recipe, ComponentGroup }
+export { Recipe, ComponentGroup, RecipeJson }

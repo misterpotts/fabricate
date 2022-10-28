@@ -5,8 +5,8 @@ import {
     DnD5EDamageEffectSpec,
     DnD5EDamageMultiplierEffectSpec,
     DnD5ESaveModifierEffectSpec
-} from "./DnD5e";
-import {EssenceDefinition} from "../common/Essence";
+} from "../../../system_definitions/DnD5e";
+import {EssenceDefinition} from "../../../common/Essence";
 
 interface ComponentConstraintDefinition {
     min: number
@@ -18,7 +18,7 @@ interface AlchemyConstraintDefinition {
     effects: ComponentConstraintDefinition;
 }
 
-interface AlchemyFormulaDefinition {
+export interface AlchemyFormulaDefinition {
     basePartId: string;
     constraints: AlchemyConstraintDefinition;
     effects: (DnD5EAlchemyEffectSpec
@@ -28,14 +28,14 @@ interface AlchemyFormulaDefinition {
         | DnD5ESaveModifierEffectSpec)[]
 }
 
-interface AlchemyDefinition {
+export interface AlchemyDefinition {
     enabled: boolean;
     performCheck: boolean;
     formulae?: Record<string, AlchemyFormulaDefinition>;
     constraints?: AlchemyConstraintDefinition;
 }
 
-interface CraftingSystemDefinition {
+interface CraftingSystemSettingsValueV2 {
     id: string;
     details: {
         name: string,
@@ -57,8 +57,4 @@ interface CraftingSystemDefinition {
     alchemy: AlchemyDefinition;
 }
 
-export {
-    CraftingSystemDefinition,
-    AlchemyDefinition,
-    AlchemyFormulaDefinition
-}
+export { CraftingSystemSettingsValueV2 }

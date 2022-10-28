@@ -1,6 +1,6 @@
-import {CraftingSystemDefinition} from "./CraftingSystemDefinition";
+import {CraftingSystemSettingsValueV2} from "../interface/settings/values/CraftingSystemSettingsValueV2";
 
-const SYSTEM_DEFINITION: CraftingSystemDefinition = {
+const SYSTEM_DEFINITION: CraftingSystemSettingsValueV2 = {
     "id": "alchemists-supplies-v1.6",
     "locked": true,
     "details": {

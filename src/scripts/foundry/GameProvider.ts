@@ -9,7 +9,11 @@ class GameProvider {
     }
 
     public async getDocumentById(id: string): Promise<any> {
-        return await fromUuid(id);
+        return fromUuid(id);
+    }
+
+    public async getDocumentsById(ids: string[]): Promise<any[]> {
+        return Promise.all(ids.map(id => fromUuid(id)));
     }
 
 }

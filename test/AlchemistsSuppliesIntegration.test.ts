@@ -40,7 +40,7 @@ describe('A Crafting System Factory', () => {
             diceRoller: stubDiceRoller
         });
 
-        const craftingSystem: CraftingSystem = craftingSystemFactory.make(systemSpec);
+        const craftingSystem: CraftingSystem = await craftingSystemFactory.make(systemSpec);
 
         expect(craftingSystem).not.toBeNull();
         expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");

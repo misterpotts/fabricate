@@ -10,7 +10,7 @@ import {
 } from "./AlchemyAttempt";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 import {AlchemicalCombination, AlchemicalCombiner} from "./AlchemicalEffect";
-import {AlchemyDefinition} from "../../system_definitions/CraftingSystemDefinition";
+import {AlchemyDefinition} from "../../interface/settings/values/CraftingSystemSettingsValueV1";
 
 interface AlchemyAttemptFactory {
 
