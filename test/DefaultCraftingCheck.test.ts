@@ -195,7 +195,7 @@ describe("Perform", () => {
 
             expect(result.result).toEqual(11);
             expect(result.expression).toEqual("1d20");
-            expect(result.successThreshold).toEqual(baseValue + 7);
+            expect(result.successThreshold).toEqual(baseValue + 8);
             expect(result.isSuccessful).toEqual(false);
 
         });
@@ -227,7 +227,7 @@ describe("Perform", () => {
 
             expect(result.result).toEqual(11);
             expect(result.expression).toEqual("1d20");
-            expect(result.successThreshold).toEqual(baseValue + 8);
+            expect(result.successThreshold).toEqual(baseValue + 9);
             expect(result.isSuccessful).toEqual(false);
 
         });

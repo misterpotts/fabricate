@@ -1,3 +1,10 @@
+interface CraftingSystemDetailsJson {
+    name: string;
+    summary: string;
+    description: string;
+    author: string;
+}
+
 class CraftingSystemDetails {
 
     private readonly _name: string;
@@ -38,12 +45,7 @@ class CraftingSystemDetails {
         return this._author;
     }
 
-    public toDefinition(): {
-        name: string,
-        summary: string,
-        description: string,
-        author: string
-    } {
+    public toJson(): CraftingSystemDetailsJson {
         return {
             name: this._name,
             summary: this._summary,
@@ -54,4 +56,4 @@ class CraftingSystemDetails {
 
 }
 
-export { CraftingSystemDetails }
+export { CraftingSystemDetails, CraftingSystemDetailsJson }

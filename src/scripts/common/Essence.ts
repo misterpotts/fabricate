@@ -1,53 +1,78 @@
-import {Combination} from "./Combination";
-import {Identifiable} from "./Identifiable";
+import {Combinable, Combination} from "./Combination";
+import {Identifiable, Identity} from "./Identifiable";
+import Properties from "../Properties";
 
-interface EssenceDefinition {
-    iconCode: string;
-    tooltip: string;
-    description: string;
+interface EssenceJson {
     id: string;
     name: string;
+    description: string;
+    tooltip: string;
+    iconCode: string;
 }
 
-class Essence implements Identifiable {
+class EssenceId implements Identity, Combinable {
+
+    private static readonly _NO_ID: EssenceId = new EssenceId("");
+
+    private readonly _value: string;
+
+    constructor(value: string) {
+        this._value = value;
+    }
+
+    public static NO_ID() {
+        return this._NO_ID;
+    }
+
+    get value(): string {
+        return this._value;
+    }
+
+    get elementId(): string {
+        return this.value;
+    }
+
+}
+
+class Essence implements Identifiable<EssenceId>, Combinable {
 
     private readonly _name: string;
-    private readonly _id: string;
+    private readonly _id: EssenceId;
     private readonly _description: string;
     private readonly _tooltip: string;
     private readonly _iconCode: string;
 
     constructor({
-        iconCode,
-        tooltip,
-        description,
         id,
         name,
+        tooltip,
+        iconCode = Properties.ui.defaults.essenceIconCode,
+        description
     }: {
-        iconCode: string;
-        tooltip: string;
-        description: string;
-        id: string;
+        id: EssenceId;
         name: string;
+        tooltip: string;
+        iconCode?: string;
+        description: string;
     }) {
-        this._name = name;
         this._id = id;
-        this._description = description;
+        this._name = name;
         this._tooltip = tooltip;
         this._iconCode = iconCode;
+        this._description = description;
     }
 
-    toEssenceDefinition(): EssenceDefinition {
+    toJson(): EssenceJson {
         return {
-            id: this._id,
+            id: this._id.value,
             name: this._name,
-            description: this._description,
+            tooltip: this._tooltip,
             iconCode: this._iconCode,
-            tooltip: this._tooltip
+            description: this._description
         }
     }
 
-    get id(): string {
+    get id(): EssenceId {
         return this._id;
     }
 
@@ -74,36 +99,40 @@ class Essence implements Identifiable {
         return this.name;
     }
 
+    get elementId(): string {
+        return this._id.elementId;
+    }
+
 }
 
 class EssenceIdentityProvider {
 
     private static readonly _primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
-    private readonly _essenceIdentities: Map<string, number>;
-    private readonly _essencesBySlug: Map<string, Essence>;
+    private readonly _essenceIdentities: Map<EssenceId, number>;
+    private readonly _essencesById: Map<EssenceId, Essence>;
 
     private constructor({
         essenceIdentities = new Map(),
         essencesBySlug = new Map()
     }: {
-        essenceIdentities?: Map<string, number>,
-        essencesBySlug?: Map<string, Essence>
+        essenceIdentities?: Map<EssenceId, number>,
+        essencesBySlug?: Map<EssenceId, Essence>
     }) {
         this._essenceIdentities = essenceIdentities;
-        this._essencesBySlug = essencesBySlug;
+        this._essencesById = essencesBySlug;
     }
 
-    public getEssenceIdentityBySlug(slug: string): number {
-        return this._essenceIdentities.get(slug);
+    public getNumericIdentityByEssenceId(id: EssenceId): number {
+        return this._essenceIdentities.get(id);
     }
 
-    public getEssenceDefinitionBySlug(slug: string): Essence {
-        return this._essencesBySlug.get(slug);
+    public getEssenceDefinitionById(id: EssenceId): Essence {
+        return this._essencesById.get(id);
     }
 
     public getForEssenceCombination(combination: Combination<Essence>): number {
-        return combination.members.map((essence => this.getEssenceIdentityBySlug(essence.id) * combination.amountFor(essence)))
+        return combination.members.map((essence => this.getNumericIdentityByEssenceId(essence.id) * combination.amountFor(essence)))
             .reduce((left: number, right: number) => left * right, 1);
     }
 
@@ -116,10 +145,10 @@ class EssenceIdentityProvider {
         });
     }
 
-    private static assignEssenceIdentities(essences: Essence[]): Map<string, number> {
+    private static assignEssenceIdentities(essences: Essence[]): Map<EssenceId, number> {
         const primes: number[] = this.generatePrimes(essences.length);
-        const essenceIdentities: Map<string, number> = new Map();
-        essences.forEach((definition: Essence, index: number) => essenceIdentities.set(definition.id, primes[index]));
+        const essenceIdentities: Map<EssenceId, number> = new Map();
+        essences.forEach((essence: Essence, index: number) => essenceIdentities.set(essence.id, primes[index]));
         return essenceIdentities;
     }
 
@@ -139,4 +168,4 @@ class EssenceIdentityProvider {
 
 }
 
-export { EssenceDefinition, Essence, EssenceIdentityProvider }
+export { EssenceJson, Essence, EssenceId, EssenceIdentityProvider }

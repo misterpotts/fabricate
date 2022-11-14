@@ -1,18 +1,18 @@
 import {GameProvider} from "../../foundry/GameProvider";
 import Properties from "../../Properties";
-import {EssenceDefinition} from "../../common/Essence";
-import {FabricateRegistry} from "../../registries/FabricateRegistry";
+import {Essence} from "../../common/Essence";
 import {CraftingSystem} from "../../system/CraftingSystem";
+import FabricateApplication from "../FabricateApplication";
 
 class EditEssenceDialog extends FormApplication {
 
     private readonly _craftingSystem: CraftingSystem;
-    private readonly _essenceDefinition: EssenceDefinition;
+    private readonly _essence?: Essence;
 
-    constructor(craftingSystem: CraftingSystem, essenceDefinition?: EssenceDefinition) {
+    constructor(craftingSystem: CraftingSystem, essence?: Essence) {
         super(null);
         this._craftingSystem = craftingSystem;
-        this._essenceDefinition = essenceDefinition;
+        this._essence = essence;
     }
 
     static get defaultOptions() {
@@ -50,25 +50,29 @@ class EditEssenceDialog extends FormApplication {
         return formData;
     }
 
-    modifyEssenceDefinition({
-        name, description, iconCode, tooltip
+    async modifyEssenceDefinition({
+        name,
+        description,
+        iconCode,
+        tooltip
     }: {
-        name: string, description?: string, iconCode: string, tooltip?: string
-    }) {
+        name: string,
+        description?: string,
+        iconCode: string,
+        tooltip?: string
+    }): Promise<CraftingSystem> {
         if (!this._craftingSystem) {
             throw new Error(`The crafting system with ID "${this._craftingSystem?.id}" does not exist.`)
         }
-        const craftingSystemDefinition = this._craftingSystem.toDefinition();
-        const id = this._essenceDefinition?.id ? this._essenceDefinition.id : randomID();
-        craftingSystemDefinition.essences[id] = {
-            id,
+        const modifiedEssence = new Essence({
+            id: this._essence.id,
             name,
             description,
-            iconCode: iconCode?.length > 0 ? iconCode : Properties.ui.defaults.essenceIconCode,
-            tooltip: tooltip?.length > 0 ? tooltip : name
-        };
-        const fabricateRegistry = new FabricateRegistry(new GameProvider());
-        return fabricateRegistry.defineCraftingSystem(craftingSystemDefinition);
+            iconCode,
+            tooltip
+        });
+        this._craftingSystem.partDictionary.editEssence(modifiedEssence);
+        return FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
     }
 
     validate(formData: any): Array<string> {
@@ -93,10 +97,10 @@ class EditEssenceDialog extends FormApplication {
 
     async getData(): Promise<any> {
         return {
-            name: this._essenceDefinition?.name ?? "",
-            description: this._essenceDefinition?.description ?? "",
-            iconCode: this._essenceDefinition?.iconCode ?? "",
-            tooltip: this._essenceDefinition?.tooltip ??  ""
+            name: this._essence?.name ?? "",
+            description: this._essence?.description ?? "",
+            iconCode: this._essence?.iconCode ?? "",
+            tooltip: this._essence?.tooltip ??  ""
         };
     }
 

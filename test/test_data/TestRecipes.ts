@@ -1,43 +1,75 @@
-import {ComponentGroup, Recipe} from "../../src/scripts/crafting/Recipe";
+import {ComponentGroup, Recipe, RecipeId} from "../../src/scripts/crafting/Recipe";
 import {Combination, Unit} from "../../src/scripts/common/Combination";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
-import {Essence} from "../../src/scripts/common/Essence";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
 
 const testRecipeOne: Recipe = new Recipe({
-    id: "tdyV4AWuTMkXbepw",
+    id: new RecipeId("tdyV4AWuTMkXbepw"),
+    name: "Test Recipe One",
     ingredientGroups: [
-        new ComponentGroup(Combination.of(testComponentOne, 1)),
-        new ComponentGroup(Combination.of(testComponentThree, 2))
+        new ComponentGroup(Combination.of(testComponentOne.id, 1)),
+        new ComponentGroup(Combination.of(testComponentThree.id, 2))
     ],
-    resultGroups: [new ComponentGroup(Combination.of(testComponentFive, 1))]
+    resultGroups: [new ComponentGroup(Combination.of(testComponentFive.id, 1))]
 });
 
 const testRecipeTwo: Recipe = new Recipe({
-    id: "QBmv3SSCaae2xxzT",
-    ingredientGroups: [new ComponentGroup(Combination.of(testComponentFour, 1))],
-    catalysts: Combination.of(testComponentFive, 1),
-    resultGroups: [new ComponentGroup(Combination.of(testComponentTwo, 2))]
+    id: new RecipeId("QBmv3SSCaae2xxzT"),
+    name: "Test Recipe Two",
+    ingredientGroups: [new ComponentGroup(Combination.of(testComponentFour.id, 1))],
+    catalysts: Combination.of(testComponentFive.id, 1),
+    resultGroups: [new ComponentGroup(Combination.of(testComponentTwo.id, 2))]
 })
 
 const testRecipeThree: Recipe = new Recipe({
-    id: "eT4j7mNbZGHIUOtT",
+    id: new RecipeId("eT4j7mNbZGHIUOtT"),
+    name: "Test Recipe Three",
     essences: Combination.ofUnits([
-        new Unit<Essence>(elementalEarth, 3),
-        new Unit<Essence>(elementalFire, 1)
+        new Unit(elementalEarth.id, 3),
+        new Unit(elementalFire.id, 1)
     ]),
-    resultGroups: [new ComponentGroup(Combination.of(testComponentOne, 3))]
+    resultGroups: [new ComponentGroup(Combination.of(testComponentOne.id, 3))]
 });
 
 const testRecipeFour: Recipe = new Recipe({
-    id: "l46uaz805Fr9lZvU",
+    id: new RecipeId("l46uaz805Fr9lZvU"),
+    name: "Test Recipe Four",
     essences: Combination.ofUnits([
-        new Unit<Essence>(elementalEarth, 1),
-        new Unit<Essence>(elementalWater, 2)
+        new Unit(elementalEarth.id, 1),
+        new Unit(elementalWater.id, 2)
     ]),
-    ingredientGroups: [new ComponentGroup(Combination.of(testComponentTwo, 3))],
-    catalysts: Combination.of(testComponentThree, 1),
-    resultGroups: [new ComponentGroup(Combination.of(testComponentFive, 10))]
+    ingredientGroups: [new ComponentGroup(Combination.of(testComponentTwo.id, 3))],
+    catalysts: Combination.of(testComponentThree.id, 1),
+    resultGroups: [new ComponentGroup(Combination.of(testComponentFive.id, 10))]
 });
 
-export { testRecipeOne, testRecipeTwo, testRecipeThree, testRecipeFour }
+const testRecipeFive: Recipe = new Recipe({
+    id: new RecipeId("jLAVDWQdUUYr56Eo"),
+    name: "Test Recipe Five",
+    essences: Combination.ofUnits([
+        new Unit(elementalFire.id, 1),
+        new Unit(elementalWater.id, 1)
+    ]),
+    catalysts: Combination.of(testComponentFour.id, 1),
+    resultGroups: [new ComponentGroup(Combination.of(testComponentFive.id, 10))]
+});
+
+const testRecipeSix: Recipe = new Recipe({
+    id: new RecipeId("jLAVDWQdUUYr56Eo"),
+    name: "Test Recipe Six",
+    essences: Combination.ofUnits([
+        new Unit(elementalEarth.id, 3),
+        new Unit(elementalWater.id, 1)
+    ]),
+    ingredientGroups: [
+        new ComponentGroup(Combination.ofUnits([
+            new Unit(testComponentOne.id, 1),
+            new Unit(testComponentThree.id, 2)
+        ])),
+        new ComponentGroup(Combination.of(testComponentTwo.id, 1))
+    ],
+    resultGroups: [new ComponentGroup(Combination.of(testComponentThree.id, 2))]
+});
+
+
+export { testRecipeOne, testRecipeTwo, testRecipeThree, testRecipeFour, testRecipeFive, testRecipeSix }

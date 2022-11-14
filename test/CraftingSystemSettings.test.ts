@@ -1,7 +1,8 @@
 import {expect, test, describe, beforeEach} from "@jest/globals";
-import {FabricateSettingsManager} from "../src/scripts/interface/settings/FabricateSettings";
+import {DefaultSettingsManager, FabricateSettingMigrator} from "../src/scripts/interface/settings/FabricateSettings";
 import * as Sinon from "sinon";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
+import {CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -28,64 +29,137 @@ beforeEach(() => {
 
 describe("Settings Manager", () => {
 
+    const targetVersion = "2";
+    const craftingSystemsKey = "craftingSystems";
+
     test("Should load current version without mapping", async () => {
-        const underTest = new FabricateSettingsManager({
-            gameProvider: stubGameProvider
+        const underTest = new DefaultSettingsManager({
+            gameProvider: stubGameProvider,
+            targetVersionsByRootSettingKey: new Map([[craftingSystemsKey, targetVersion]])
         });
         const testSystemId = "abc123";
         const name = "Name";
         const summary = "Summary";
         const description = "Description";
         const author = "Author";
-        stubGetSettingsMethod.withArgs("fabricate", `craftingSystems.${testSystemId}`)
+        stubGetSettingsMethod.withArgs("fabricate", craftingSystemsKey)
             .returns({
-                type: "CraftingSystem",
-                version: "2",
+                version: targetVersion,
                 value: {
-                    details: {
-                        name: name,
-                        summary: summary,
-                        description: description,
-                        author: author
+                    [testSystemId]: <CraftingSystemJson>{
+                        id: testSystemId,
+                        details: {
+                            name: name,
+                            summary: summary,
+                            description: description,
+                            author: author
+                        },
+                        parts: {
+                            essences: {},
+                            recipes: {},
+                            components: {}
+                        },
+                        enabled: true,
+                        locked: false
                     }
                 }
             })
-        const result = await underTest.loadCraftingSystem(testSystemId);
-        expect(result.details.name).toEqual(name);
-        expect(result.details.summary).toEqual(summary);
-        expect(result.details.description).toEqual(description);
-        expect(result.details.author).toEqual(author);
+        const result: Record<string, CraftingSystemJson> = await underTest.read(craftingSystemsKey);
+        const resultValue = result[testSystemId];
+        expect(resultValue.details.name).toEqual(name);
+        expect(resultValue.details.summary).toEqual(summary);
+        expect(resultValue.details.description).toEqual(description);
+        expect(resultValue.details.author).toEqual(author);
     });
 
+    interface OldVersion {
+        id: string,
+        name: string,
+        description: string;
+        author: string;
+        summary: string;
+        essences: {},
+        recipes: {},
+        components: {}
+        config: {
+            enabled: boolean;
+            locked: boolean;
+        };
+    }
+
     test("Should map to new version when loading old version", async () => {
-        const underTest = new FabricateSettingsManager({
-            gameProvider: stubGameProvider
+        const stubSettingMigrator: FabricateSettingMigrator<Record<string, OldVersion>, Record<string, CraftingSystemJson>> = {
+            fromVersion: "1",
+            toVersion: "2",
+            perform: from => {
+                const mappedEntries = Object.values(from)
+                    .map(oldVersion => {
+                        const mapped = <CraftingSystemJson>{
+                            id: oldVersion.id,
+                            details: {
+                                name: oldVersion.name,
+                                description: oldVersion.description,
+                                author: oldVersion.author,
+                                summary: oldVersion.summary
+                            },
+                            parts: {
+                                components: oldVersion.components,
+                                recipes: oldVersion.recipes,
+                                essences: oldVersion.essences
+                            },
+                            enabled: oldVersion.config.enabled,
+                            locked: oldVersion.config.locked
+                        }
+                        return [mapped.id, mapped];
+                    });
+                return Object.fromEntries(mappedEntries);
+            }
+        };
+        const noOpSettingsMigrator: FabricateSettingMigrator<any, any> = {
+            fromVersion: "0",
+            toVersion: "1",
+            perform: (input) => input
+        }
+        const underTest = new DefaultSettingsManager({
+            gameProvider: stubGameProvider,
+            targetVersionsByRootSettingKey: new Map([[craftingSystemsKey, targetVersion]]),
+            settingsMigrators: new Map([["1", stubSettingMigrator], ["0", noOpSettingsMigrator]])
         });
         const testSystemId = "abc123";
         const name = "Name";
         const summary = "Summary";
         const description = "Description";
         const author = "Author";
-        stubGetSettingsMethod.withArgs("fabricate", `craftingSystems.${testSystemId}`)
+        stubGetSettingsMethod.withArgs("fabricate", "craftingSystems")
             .returns({
-                type: "CraftingSystem",
-                version: "1",
+                version: "0",
                 value: {
-                    name: name,
-                    summary: summary,
-                    description: description,
-                    author: author
+                    [testSystemId]: <OldVersion>{
+                        id: testSystemId,
+                        name: name,
+                        summary: summary,
+                        description: description,
+                        author: author,
+                        essences: {},
+                        recipes: {},
+                        components: {},
+                        config: {
+                            enabled: true,
+                            locked: false
+                        }
+                    }
                 }
             })
-        const result = await underTest.loadCraftingSystem(testSystemId);
-        expect(result.details.name).toEqual(name);
-        expect(result.details.summary).toEqual(summary);
-        expect(result.details.description).toEqual(description);
-        expect(result.details.author).toEqual(author);
+        const result: Record<string, CraftingSystemJson> = await underTest.read(craftingSystemsKey);
+        const resultValue = result[testSystemId];
+        expect(resultValue.details.name).toEqual(name);
+        expect(resultValue.details.summary).toEqual(summary);
+        expect(resultValue.details.description).toEqual(description);
+        expect(resultValue.details.author).toEqual(author);
     });
 
     test("Should drop unversioned settings", async () => {
-        const underTest = new FabricateSettingsManager({
+        const underTest = new DefaultSettingsManager({
             gameProvider: stubGameProvider
         });
         const testSystemId = "abc123";
@@ -103,11 +177,13 @@ describe("Settings Manager", () => {
             .returns(testSystem)
         stubGetSettingsMethod.withArgs("fabricate", `craftingSystems`)
             .returns({
-                [testSystemId]: testSystem
+                value: {
+                    [testSystemId]: testSystem
+                }
             })
-        await expect(() => underTest.loadCraftingSystem(testSystemId))
+        await expect(() => underTest.read(craftingSystemsKey))
             .rejects
-            .toThrow("Could not read crafting system settings for system ID \"" + testSystemId + "\". ");
+            .toThrow(`Unable to read the setting for the key "${craftingSystemsKey}". Caused by: Expected a non-null, non-empty setting version. `);
     });
 
 });

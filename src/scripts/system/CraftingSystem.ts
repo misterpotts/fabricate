@@ -1,7 +1,7 @@
-import {Identifiable} from "../common/Identifiable";
+import {Identifiable, Identity} from "../common/Identifiable";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
-import {Essence, EssenceDefinition} from "../common/Essence";
+import {Essence} from "../common/Essence";
 import {Inventory} from "../actor/Inventory";
 import {Combination} from "../common/Combination";
 import {CraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
@@ -12,15 +12,46 @@ import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
-import {PartDictionary} from "./PartDictionary";
-import {CraftingSystemDetails} from "./CraftingSystemDetails";
-import {CraftingSystemSettingsValueV2} from "../interface/settings/values/CraftingSystemSettingsValueV2";
+import {PartDictionary, PartDictionaryJson} from "./PartDictionary";
+import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystemDetails";
 
-class CraftingSystem implements Identifiable {
+class CraftingSystemId implements Identity {
 
-    private readonly _id: string;
+    private static readonly _NO_ID: CraftingSystemId = new CraftingSystemId("");
 
-    private readonly _details: CraftingSystemDetails;
+    private readonly _value: string;
+
+    constructor(value: string) {
+        this._value = value;
+    }
+
+    public static NO_ID() {
+        return this._NO_ID;
+    }
+
+    get value(): string {
+        return this._value;
+    }
+
+    get elementId(): string {
+        return this.value;
+    }
+
+}
+
+interface CraftingSystemJson {
+    id: string,
+    details: CraftingSystemDetailsJson,
+    locked: boolean,
+    enabled: boolean,
+    parts: PartDictionaryJson
+}
+
+class CraftingSystem implements Identifiable<CraftingSystemId> {
+
+    private readonly _id: CraftingSystemId;
+
+    private _details: CraftingSystemDetails;
 
     private _enabled: boolean;
     private readonly _locked: boolean;
@@ -41,12 +72,12 @@ class CraftingSystem implements Identifiable {
             recipe: new NoCraftingCheck(),
             alchemy: new NoCraftingCheck()
         },
-        alchemyAttemptFactory,
+        alchemyAttemptFactory = new DisabledAlchemyAttemptFactory(),
         craftingAttemptFactory,
         enabled,
         partDictionary
     }: {
-        id: string;
+        id: CraftingSystemId;
         details: CraftingSystemDetails,
         locked: boolean;
         enabled: boolean;
@@ -61,20 +92,12 @@ class CraftingSystem implements Identifiable {
         this._id = id;
         this._details = details;
         this._locked = locked;
-        this._alchemyCraftingCheck = craftingChecks?.alchemy ?? new NoCraftingCheck();
-        this._recipeCraftingCheck = craftingChecks?.recipe ?? new NoCraftingCheck();
+        this._alchemyCraftingCheck = craftingChecks.alchemy;
+        this._recipeCraftingCheck = craftingChecks.recipe;
         this._craftingAttemptFactory = craftingAttemptFactory;
-        this._alchemyAttemptFactory = alchemyAttemptFactory ?? new DisabledAlchemyAttemptFactory();
+        this._alchemyAttemptFactory = alchemyAttemptFactory;
         this._enabled = enabled;
         this._partDictionary = partDictionary;
-    }
-
-    public addComponent(component: CraftingComponent): CraftingSystem {
-        if (this._partDictionary.hasComponent(component.id)) {
-            return this;
-        }
-        this._partDictionary.addComponent(component);
-        return this;
     }
 
     public setEnabled(value: boolean): CraftingSystem {
@@ -130,7 +153,7 @@ class CraftingSystem implements Identifiable {
         return this._alchemyAttemptFactory.isEnabled();
     }
 
-    get id(): string {
+    get id(): CraftingSystemId {
         return this._id;
     }
 
@@ -140,6 +163,10 @@ class CraftingSystem implements Identifiable {
 
     get partDictionary(): PartDictionary {
         return this._partDictionary;
+    }
+
+    setDetails(value: CraftingSystemDetails): void {
+        this._details = value;
     }
 
     public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<CraftingResult> {
@@ -164,27 +191,16 @@ class CraftingSystem implements Identifiable {
 
     }
 
-    toDefinition(): CraftingSystemSettingsValueV2 {
-        const essences: Record<string, EssenceDefinition> = {};
-        this._partDictionary.getEssences()
-            .forEach((essence) => essences[essence.id] = essence.toEssenceDefinition());
+    toJson(): CraftingSystemJson {
         return {
-            id: this._id,
-            details: this._details.toDefinition(),
-            enabled: this.enabled,
+            id: this._id.value,
+            details: this._details.toJson(),
+            enabled: this._enabled,
             locked: this._locked,
-            alchemy: this._alchemyAttemptFactory.toAlchemyDefinition(),
-            checks: {
-                alchemy: this._alchemyCraftingCheck.toCheckDefinition(),
-                hasCustomAlchemyCheck: true,
-                recipe: this._recipeCraftingCheck.toCheckDefinition(),
-                enabled: true
-            },
-            essences: essences,
-            componentIds: this._partDictionary.getComponents().map(component => component.id),
-            recipeIds: this._partDictionary.getRecipes().map(recipe => recipe.id)
+            parts: this._partDictionary.toJson()
         };
     }
+
 }
 
-export {CraftingSystem};
+export { CraftingSystem, CraftingSystemId, CraftingSystemJson };

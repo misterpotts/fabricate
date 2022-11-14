@@ -3,12 +3,16 @@ import {GameProvider} from "../../foundry/GameProvider";
 import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
 import {EditComponentDialog} from "./EditComponentDialog";
 import {EditEssenceDialog} from "./EditEssenceDialog";
-import {FabricateRegistry} from "../../registries/FabricateRegistry";
 import {CraftingSystem} from "../../system/CraftingSystem";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {Combination} from "../../common/Combination";
+import {SystemRegistry} from "../../registries/SystemRegistry";
+import {DefaultDocumentManager} from "../../foundry/DocumentManager";
+import FabricateApplication from "../FabricateApplication";
 
 class CraftingSystemManagerApp extends FormApplication {
+
+    private readonly systemRegistry: SystemRegistry;
 
     private _selectedSystem: CraftingSystem;
     private _activeTab: string;
@@ -16,6 +20,7 @@ class CraftingSystemManagerApp extends FormApplication {
 
     constructor() {
         super(null);
+        this.systemRegistry = FabricateApplication.systemRegistry;
     }
 
     static get defaultOptions() {
@@ -41,19 +46,16 @@ class CraftingSystemManagerApp extends FormApplication {
 
     async render(force: boolean = true) {
         if (this._selectedSystem?.id) {
-            const fabricateRegistry = new FabricateRegistry(new GameProvider());
-            this._selectedSystem = await fabricateRegistry.getCraftingSystemById(this._selectedSystem.id);
+            this._selectedSystem = await this.systemRegistry.getCraftingSystemById(this._selectedSystem.id.value);
         }
         super.render(force);
     }
 
     async getData(): Promise<any> {
-        const fabricateRegistry = new FabricateRegistry(new GameProvider());
-        const craftingSystems = await fabricateRegistry.getAllCraftingSystems();
-        if (!this._selectedSystem && craftingSystems.length > 0) {
-            this._selectedSystem = craftingSystems[0];
+        const craftingSystems = await this.systemRegistry.getAllCraftingSystems();
+        if (!this._selectedSystem && craftingSystems.size > 0) {
+            [this._selectedSystem] = craftingSystems.values();
         }
-        await this._selectedSystem?.partDictionary.load();
         return { craftingSystems: craftingSystems, selectedSystem: this._selectedSystem };
     }
 
@@ -95,7 +97,6 @@ class CraftingSystemManagerApp extends FormApplication {
     }
 
     private async handleUserAction(systemId: string, action: string, event: any) {
-        const fabricateRegistry = new FabricateRegistry(new GameProvider());
         switch (action) {
             case "editDetails":
                 new EditCraftingSystemDetailDialog(this._selectedSystem).render();
@@ -111,18 +112,18 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (this._selectedSystem.enabled === checked) {
                     return;
                 }
-                await fabricateRegistry.saveCraftingSystem(
+                await this.systemRegistry.saveCraftingSystem(
                     this._selectedSystem.setEnabled(checked)
                 );
-                this.render();
+                await this.render();
                 break;
             case "selectCraftingSystem":
-                const systemToSelect = await fabricateRegistry.getCraftingSystemById(systemId);
+                const systemToSelect = await this.systemRegistry.getCraftingSystemById(systemId);
                 if (!systemToSelect) {
                     throw new Error(`Cannot select system. Crafting system with ID "${systemId}" not found. `);
                 }
                 this._selectedSystem = systemToSelect;
-                this.render();
+                await this.render();
                 break;
             case "createComponent":
                 try {
@@ -130,20 +131,20 @@ class CraftingSystemManagerApp extends FormApplication {
                     if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
                         return;
                     }
-                    const document: any = await new GameProvider().getDocumentById(data.uuid);
-                    //const fabricateIdentity = document.getFlag(Properties.module.id, Properties.flags.keys.item.id);
-                    //if (!fabricateIdentity) {
+                    const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
+                    const fabricateIdentity = document.getFlag(Properties.module.id, Properties.flags.keys.item.id);
+                    if (!fabricateIdentity) {
                         await document.setFlag(Properties.module.id, Properties.flags.keys.item.id, document.uuid);
-                    //}
-                    if (!this._selectedSystem.partDictionary.hasComponent(document.id)) {
-                        this._selectedSystem.addComponent(new CraftingComponent({
+                    }
+                    if (!this._selectedSystem.partDictionary.hasComponent(document.uuid)) {
+                        this._selectedSystem.partDictionary.addComponent(new CraftingComponent({
                             id: document.uuid,
                             name: document.name,
                             imageUrl: document.img,
                             essences: Combination.EMPTY(),
                             salvage: Combination.EMPTY()
                         }));
-                        await fabricateRegistry.saveCraftingSystem(this._selectedSystem);
+                        await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                     }
                     new EditComponentDialog(document, this._selectedSystem)
                         .render();
@@ -162,17 +163,12 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!essenceToEdit) {
                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
                 }
-                new EditEssenceDialog(this._selectedSystem, essenceToEdit.toEssenceDefinition()).render(); // todo: second arg can be essence, not essencedef
+                new EditEssenceDialog(this._selectedSystem, essenceToEdit.toJson()).render(); // todo: second arg can be essence, not essencedef
                 break;
             case "deleteEssence":
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;
-                const essenceToDelete = this._selectedSystem.essences.find(essence => essence.id === essenceIdToDelete);
-                if (!essenceToDelete) {
-                    throw new Error(`Essence with ID "${essenceToDelete}" does not exist.`);
-                }
-                const craftingSystemDefinition = this._selectedSystem.toDefinition();
-                delete craftingSystemDefinition.essences[essenceIdToDelete];
-                await fabricateRegistry.defineCraftingSystem(craftingSystemDefinition);
+                this._selectedSystem.partDictionary.deleteEssenceById(essenceIdToDelete);
+                await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                 break;
             default:
                 console.error(`An unrecognised action ("${action}") was triggered on the Fabricate Crafting System Manager Form Application.`);
@@ -203,8 +199,7 @@ class CraftingSystemManagerApp extends FormApplication {
                         return;
                     }
                     const gameProvider = new GameProvider();
-                    const fabricateRegistry = new FabricateRegistry(gameProvider);
-                    const systemToDelete = await fabricateRegistry.getCraftingSystemById(systemId);
+                    const systemToDelete = await craftingSystemManagerApp.systemRegistry.getCraftingSystemById(systemId);
                     if (!systemToDelete) {
                         console.error(`Could not find system ${systemId}`);
                         return;
@@ -214,7 +209,7 @@ class CraftingSystemManagerApp extends FormApplication {
                         title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.deleteSystemConfirm.title`),
                         content: `<p>${GAME.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.deleteSystemConfirm.content", {systemName: systemToDelete.name})}</p>`,
                         yes: () => {
-                            fabricateRegistry.deleteSystem(systemId);
+                            craftingSystemManagerApp.systemRegistry.deleteCraftingSystemById(systemId);
                         }
                     });
                     craftingSystemManagerApp._selectedSystem = null;
@@ -229,8 +224,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 icon: `<i class="fa-solid fa-paste"></i>`,
                 callback: async (element: JQuery) => {
                     const systemId = element.data()["systemId"] as string;
-                    const fabricateRegistry = new FabricateRegistry(new GameProvider());
-                    await fabricateRegistry.cloneSystem(systemId);
+                    await craftingSystemManagerApp.systemRegistry.cloneCraftingSystemById(systemId)
                     return;
                 }
             }

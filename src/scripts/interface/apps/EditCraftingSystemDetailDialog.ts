@@ -1,8 +1,8 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
-import {CraftingSystemSettingsValueV1} from "../settings/values/CraftingSystemSettingsValueV1";
-import {CraftingSystem} from "../../system/CraftingSystem";
-import {FabricateRegistry} from "../../registries/FabricateRegistry";
+import {CraftingSystem, CraftingSystemJson} from "../../system/CraftingSystem";
+import FabricateApplication from "../FabricateApplication";
+import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
 
 class EditCraftingSystemDetailDialog extends FormApplication {
 
@@ -61,16 +61,15 @@ class EditCraftingSystemDetailDialog extends FormApplication {
         return formData;
     }
 
-    private editCraftingSystemDetails(editedDetails: {name: string, summary: string, description: string, author: string}) {
-        const modifiedCraftingSystem = this._craftingSystem.toDefinition()
-        modifiedCraftingSystem.details = editedDetails;
-        const fabricateRegistry = new FabricateRegistry(new GameProvider());
-        return fabricateRegistry.defineCraftingSystem(modifiedCraftingSystem);
+    private async editCraftingSystemDetails(editedDetails: { name: string, summary: string, description: string, author: string }) {
+        this._craftingSystem.setDetails(new CraftingSystemDetails(editedDetails));
+        await FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
     }
 
     private async createCraftingSystem({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
         const gameProvider = new GameProvider();
-        const systemDefinition: CraftingSystemSettingsValueV1 = {
+        // todo: add more detail;s for checks and alchemy as those are defined in the UI with macros
+        const systemDefinition: CraftingSystemJson = {
             id: randomID(),
             details: {
                 name,
@@ -80,20 +79,13 @@ class EditCraftingSystemDetailDialog extends FormApplication {
             },
             locked: false,
             enabled: true,
-            essences: {},
-            checks: {
-                enabled: false,
-                hasCustomAlchemyCheck: false
-            },
-            alchemy: {
-                enabled: false,
-                performCheck: false
-            },
-            recipeIds: [],
-            componentIds: []
+            parts: {
+                essences: {},
+                components: {},
+                recipes: {}
+            }
         };
-        const fabricateRegistry = new FabricateRegistry(gameProvider);
-        return fabricateRegistry.defineCraftingSystem(systemDefinition);
+        await FabricateApplication.systemRegistry.createCraftingSystem(systemDefinition);
     }
 
     validate(formData: any): Array<string> {

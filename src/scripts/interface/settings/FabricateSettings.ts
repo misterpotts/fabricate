@@ -1,132 +1,110 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
-import {CraftingSystemSettingsValueV2} from "./values/CraftingSystemSettingsValueV2";
-import {CraftingSystemSettingsValueV1} from "./values/CraftingSystemSettingsValueV1";
-
-const craftingSystemType = "CraftingSystem";
 
 interface FabricateSetting<V> {
     version: string;
-    type: string;
     value: V;
 }
 
-interface SettingMigrator<F, T> {
+interface FabricateSettingMigrator<F, T> {
     fromVersion: string;
     toVersion: string;
-    perform: (from: FabricateSetting<F>) => FabricateSetting<T>;
+    perform: (from: F) => T;
 }
 
-class CraftingSystemSettingV1Migrator implements SettingMigrator<CraftingSystemSettingsValueV1, CraftingSystemSettingsValueV2> {
+interface SettingsManager {
 
-    get fromVersion(): string {
-        return "1"
-    };
+    read<T>(key: string): Promise<T>;
 
-    get toVersion(): string {
-        return "2"
-    };
+    write<T>(key: string, value: T): Promise<void>;
 
-    perform(from: FabricateSetting<CraftingSystemSettingsValueV1>): FabricateSetting<CraftingSystemSettingsValueV2> {
-        const inValue = from.value;
-        const outValue: CraftingSystemSettingsValueV2 = {
-            id: inValue.id,
-            details: {
-                name: inValue.name,
-                author: inValue.author,
-                summary: inValue.summary,
-                description: inValue.description
-            },
-            alchemy: inValue.alchemy,
-            checks: inValue.checks,
-            essences: inValue.essences,
-            componentIds: inValue.componentIds,
-            enabled: inValue.enabled,
-            locked: inValue.locked,
-            recipeIds: inValue.recipeIds
-        };
-        return {
-            value: outValue,
-            version: this.toVersion,
-            type: craftingSystemType
-        }
-    }
+    delete<T>(key: string): Promise<T>;
 
+    asVersionedSetting<T>(value: T, key: string): FabricateSetting<T>;
 }
 
-class FabricateSettingsManager {
+class DefaultSettingsManager implements SettingsManager {
 
     private readonly _moduleId: string;
     private readonly _gameProvider: GameProvider;
-    private readonly _settingsMigrators: Map<string, SettingMigrator<any, any>>;
+    private readonly _settingsMigrators: Map<string, FabricateSettingMigrator<any, any>>;
+    private readonly _targetVersionsByRootSettingKey: Map<string, string>;
 
     constructor({
-        gameProvider,
-        moduleId,
-        settingsMigrators
+        moduleId = Properties.module.id,
+        gameProvider = new GameProvider(),
+        settingsMigrators = new Map(),
+        targetVersionsByRootSettingKey = new Map()
     }: {
-        gameProvider?: GameProvider,
-        moduleId?: string,
-        settingsMigrators?: Map<string, SettingMigrator<any, any>>
+        moduleId?: string;
+        gameProvider?: GameProvider;
+        settingsMigrators?: Map<string, FabricateSettingMigrator<any, any>>;
+        targetVersionsByRootSettingKey?: Map<string, string>;
     }) {
-        this._moduleId = moduleId ?? Properties.module.id;
-        this._gameProvider = gameProvider ?? new GameProvider();
-        this._settingsMigrators = settingsMigrators ?? FabricateSettingsManager.defaultSettingsMigrators();
+        this._moduleId = moduleId;
+        this._gameProvider = gameProvider;
+        this._settingsMigrators = settingsMigrators;
+        this._targetVersionsByRootSettingKey = targetVersionsByRootSettingKey;
     }
 
-    static defaultSettingsMigrators(): Map<string, SettingMigrator<any, any>> {
-        const defaultValue = new Map<string, SettingMigrator<any, any>>();
-        defaultValue.set("1", new CraftingSystemSettingV1Migrator());
-        return defaultValue;
+    asVersionedSetting<T>(value: T, key: string): FabricateSetting<T> {
+        return {
+            value,
+            version: this._targetVersionsByRootSettingKey.get(key)
+        };
     }
 
-    get moduleId(): string {
-        return this._moduleId;
-    }
-
-    async loadCraftingSystem(id: string): Promise<CraftingSystemSettingsValueV2> {
-        const storedSetting: FabricateSetting<any> = this.load(Properties.settings.keys.craftingSystem(id));
+    async read<T>(key: string): Promise<T> {
+        const storedSetting: FabricateSetting<T> = this.load(key);
         if (!storedSetting) {
-            throw new Error(`No Crafting System Setting was found for the system with ID "${id}". `);
+            throw new Error(`No Setting was found for the key "${key}". `);
         }
-        const errors = this.validateSystemSetting(storedSetting, craftingSystemType);
+        const errors = this.validateSetting(storedSetting);
         if (errors.length !== 0) {
-            console.error(`Unable to read the stored Crafting System Setting for the system with ID "${id}". `);
-            console.error(`Caused by: ${errors.join(", ")} `);
-            await this.deleteCraftingSystemSetting(id);
-            throw new Error(`Could not read crafting system settings for system ID "${id}". `);
+            throw new Error(`Unable to read the setting for the key "${key}". Caused by: ${errors.join(", ")}`);
         }
-        return this.migrateCraftingSystemSetting(storedSetting);
+        const targetVersion = this._targetVersionsByRootSettingKey.get(key);
+        if (storedSetting.version === targetVersion) {
+            return storedSetting.value;
+        }
+        return this.migrateSetting(storedSetting,
+            targetVersion,
+            this._settingsMigrators);
     }
 
+    async write<T>(key: string, value: T): Promise<void> {
+        await this.save(key, {
+            version: this._targetVersionsByRootSettingKey.get(key),
+            value: value
+        });
+        return;
+    }
 
-    private migrateCraftingSystemSetting(storedSetting: FabricateSetting<any>): CraftingSystemSettingsValueV2 {
-        let setting = storedSetting;
-        while (this._settingsMigrators.has(setting.version)) {
-            setting = this._settingsMigrators.get(setting.version)
-                .perform(setting);
+    private migrateSetting<T>(storedSetting: FabricateSetting<T>,
+                              targetVersion: string,
+                              settingsMigratorsByInputVersion: Map<string, FabricateSettingMigrator<any, any>>): T {
+        let setting: FabricateSetting<any> = storedSetting;
+        while (settingsMigratorsByInputVersion.has(setting.version)) {
+            const settingMigrator = settingsMigratorsByInputVersion.get(setting.version);
+            const value = settingMigrator.perform(setting.value);
+            setting = {
+                version: settingMigrator.toVersion,
+                value
+            }
         }
-        if (setting.version === "2") {
-            return setting.value as CraftingSystemSettingsValueV2;
+        if (setting.version === targetVersion) {
+            return setting.value as T;
         }
         throw new Error(`Could not migrate stored setting value: \n ${storedSetting}. `);
     }
 
-    private async deleteCraftingSystemSetting(id: string): Promise<void> {
-        console.error(`Dumping stored value to console and deleting setting. `);
-        const allSystems = this.load(Properties.settings.keys.craftingSystems);
-        console.error(allSystems[id]);
-        delete allSystems[id];
-        await this.save(Properties.settings.keys.craftingSystems, allSystems);
-    }
-
-    private validateSystemSetting(setting: FabricateSetting<any>, expectedType: string): string[] {
+    private validateSetting(setting: FabricateSetting<any>): string[] {
         const errors: string[] = [];
-        if (setting.type !== expectedType) {
-            errors.push(`Expected a type of "${expectedType}", but was "${setting.type}". `);
-        }
         if (!setting.version) {
-            errors.push(`Setting value has no version. `);
+            errors.push(`Expected a non-null, non-empty setting version. `);
+        }
+        if (!setting.value) {
+            errors.push(`Expected a non-null, non-empty setting value. `);
         }
         return errors;
     }
@@ -139,8 +117,14 @@ class FabricateSettingsManager {
         return this._gameProvider.globalGameObject().settings.get(this._moduleId, key);
     }
 
+    async delete<T>(key: string): Promise<T> {
+        const setting = this._gameProvider.globalGameObject().settings.storage.get("world").getSetting(`${this._moduleId}.${key}`);
+        await setting.delete();
+        return setting;
+    }
+
 }
 
 
 
-export { FabricateSettingsManager }
+export { SettingsManager, DefaultSettingsManager, FabricateSetting, FabricateSettingMigrator }

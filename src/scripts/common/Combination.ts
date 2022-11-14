@@ -1,6 +1,8 @@
-import {Identifiable} from "./Identifiable";
+interface Combinable {
+    elementId: string;
+}
 
-class Unit<T extends Identifiable> {
+class Unit<T extends Combinable> {
     private readonly _part: T;
     private readonly _quantity: number;
 
@@ -51,7 +53,7 @@ class Unit<T extends Identifiable> {
 
 }
 
-class Combination<T extends Identifiable> {
+class Combination<T extends Combinable> {
 
     private readonly _amounts: Map<string, Unit<T>>;
 
@@ -62,7 +64,7 @@ class Combination<T extends Identifiable> {
     /**
      * Constructs and returns an empty Combination
      * */
-    public static EMPTY<T extends Identifiable>() {
+    public static EMPTY<T extends Combinable>() {
         return new Combination<T>(new Map());
     }
 
@@ -70,30 +72,30 @@ class Combination<T extends Identifiable> {
      * Create a Combination from an array of Units. Normalizes any duplicate Units into a single entry for an amount
      * within the Combination.
     * */
-    public static ofUnits<T extends Identifiable>(units: Unit<T>[]): Combination<T> {
+    public static ofUnits<T extends Combinable>(units: Unit<T>[]): Combination<T> {
         const amounts: Map<string, Unit<T>> = new Map();
         units.forEach((unit => {
-            if (!amounts.has(unit.part.id)) {
-                amounts.set(unit.part.id, unit);
+            if (!amounts.has(unit.part.elementId)) {
+                amounts.set(unit.part.elementId, unit);
             } else {
-                const current: Unit<T> = amounts.get(unit.part.id);
-                amounts.set(unit.part.id, current.add(unit.quantity));
+                const current: Unit<T> = amounts.get(unit.part.elementId);
+                amounts.set(unit.part.elementId, current.add(unit.quantity));
             }
         }));
         return new Combination(amounts);
     }
 
-    public static of<T extends Identifiable>(member: T, quantity: number): Combination<T> {
+    public static of<T extends Combinable>(member: T, quantity: number): Combination<T> {
         const unit: Unit<T> = new Unit<T>(member, quantity);
         return Combination.ofUnit(unit);
     }
 
-    public static ofUnit<T extends Identifiable>(unit: Unit<T>): Combination<T> {
-        return new Combination<T>(new Map([[unit.part.id, unit]]));
+    public static ofUnit<T extends Combinable>(unit: Unit<T>): Combination<T> {
+        return new Combination<T>(new Map([[unit.part.elementId, unit]]));
     }
 
     public just(member: T): Combination<T> {
-        return new Combination<T>(new Map([[member.id, new Unit<T>(member, this.amountFor(member))]]));
+        return new Combination<T>(new Map([[member.elementId, new Unit<T>(member, this.amountFor(member))]]));
     }
 
     get amounts(): Map<string, Unit<T>> {
@@ -117,15 +119,15 @@ class Combination<T extends Identifiable> {
     }
 
     public has(member: T): boolean {
-        return this.amounts.has(member.id);
+        return this.amounts.has(member.elementId);
     }
 
     public containsAll(unit: Unit<T>): boolean {
-        return this.amounts.get(unit.part.id).quantity >= unit.quantity;
+        return this.amounts.get(unit.part.elementId).quantity >= unit.quantity;
     }
 
     public amountFor(member: T): number {
-        return this._amounts.has(member.id) ? this._amounts.get(member.id).quantity : 0;
+        return this._amounts.has(member.elementId) ? this._amounts.get(member.elementId).quantity : 0;
     }
 
     public isEmpty(): boolean {
@@ -170,12 +172,12 @@ class Combination<T extends Identifiable> {
     public combineWith(other: Combination<T>): Combination<T> {
         const combination: Map<string, Unit<T>> = new Map(this.amounts);
         other.units.forEach((otherUnit: Unit<T>) => {
-            if (!combination.has(otherUnit.part.id)) {
-                combination.set(otherUnit.part.id, otherUnit);
+            if (!combination.has(otherUnit.part.elementId)) {
+                combination.set(otherUnit.part.elementId, otherUnit);
             } else {
-                const current: Unit<T> = combination.get(otherUnit.part.id);
+                const current: Unit<T> = combination.get(otherUnit.part.elementId);
                 const updated: Unit<T> = current.add(otherUnit.quantity);
-                combination.set(otherUnit.part.id, updated);
+                combination.set(otherUnit.part.elementId, updated);
             }
         });
         return new Combination<T>(combination);
@@ -190,12 +192,12 @@ class Combination<T extends Identifiable> {
      * */
     accept(other: Combination<T>): Combination<T> {
         other.members.forEach((otherMember: T) => {
-            if (this.amounts.has(otherMember.id)) {
-                const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
+            if (this.amounts.has(otherMember.elementId)) {
+                const currentAmount: Unit<T> = this.amounts.get(otherMember.elementId);
                 const modifiedAmount: Unit<T> = currentAmount.add(other.amountFor(otherMember));
-                this.amounts.set(otherMember.id, modifiedAmount);
+                this.amounts.set(otherMember.elementId, modifiedAmount);
             } else {
-                this.amounts.set(otherMember.id, new Unit(otherMember, other.amountFor(otherMember)));
+                this.amounts.set(otherMember.elementId, new Unit(otherMember, other.amountFor(otherMember)));
             }
         });
         return this;
@@ -210,12 +212,12 @@ class Combination<T extends Identifiable> {
      * */
     public add(additionalUnit: Unit<T>): Combination<T> {
         const amounts: Map<string, Unit<T>> = new Map(this.amounts);
-        if (amounts.has(additionalUnit.part.id)) {
-            const currentAmount: Unit<T> =  amounts.get(additionalUnit.part.id);
+        if (amounts.has(additionalUnit.part.elementId)) {
+            const currentAmount: Unit<T> =  amounts.get(additionalUnit.part.elementId);
             const updatedAmount: Unit<T> = currentAmount.add(additionalUnit.quantity);
-            amounts.set(additionalUnit.part.id, updatedAmount);
+            amounts.set(additionalUnit.part.elementId, updatedAmount);
         } else {
-            amounts.set(additionalUnit.part.id, additionalUnit);
+            amounts.set(additionalUnit.part.elementId, additionalUnit);
         }
         return new Combination<T>(amounts);
     }
@@ -229,15 +231,15 @@ class Combination<T extends Identifiable> {
      * */
     public minus(subtractedUnit: Unit<T>): Combination<T> {
         const amounts: Map<string, Unit<T>> = new Map(this.amounts);
-        if (!amounts.has(subtractedUnit.part.id)) {
+        if (!amounts.has(subtractedUnit.part.elementId)) {
             return this.clone();
         }
-        const currentAmount: Unit<T> =  amounts.get(subtractedUnit.part.id);
+        const currentAmount: Unit<T> =  amounts.get(subtractedUnit.part.elementId);
         const updatedAmount: Unit<T> = currentAmount.minus(subtractedUnit.quantity, 0);
         if (updatedAmount.quantity <= 0) {
-            amounts.delete(subtractedUnit.part.id);
+            amounts.delete(subtractedUnit.part.elementId);
         } else {
-            amounts.set(subtractedUnit.part.id, updatedAmount);
+            amounts.set(subtractedUnit.part.elementId, updatedAmount);
         }
         return new Combination<T>(amounts);
     }
@@ -256,11 +258,11 @@ class Combination<T extends Identifiable> {
         const combination: Map<string, Unit<T>> = new Map();
         for (const thisElement of this._amounts.values()) {
             if (!other.has(thisElement.part)) {
-                combination.set(thisElement.part.id, thisElement);
+                combination.set(thisElement.part.elementId, thisElement);
             } else {
                 const resultingAmount = thisElement.quantity - other.amountFor(thisElement.part);
                 if (resultingAmount > 0) {
-                    combination.set(thisElement.part.id, thisElement.withQuantity(resultingAmount));
+                    combination.set(thisElement.part.elementId, thisElement.withQuantity(resultingAmount));
                 }
             }
         }
@@ -276,16 +278,16 @@ class Combination<T extends Identifiable> {
      * */
     drop(other: Combination<T>): Combination<T> {
         other.members.forEach((otherMember: T) => {
-            if (this.amounts.has(otherMember.id)) {
-                const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
+            if (this.amounts.has(otherMember.elementId)) {
+                const currentAmount: Unit<T> = this.amounts.get(otherMember.elementId);
                 const deleteUnit: boolean = currentAmount.quantity <= other.amountFor(otherMember);
                 switch (deleteUnit) {
                     case true:
-                        this.amounts.delete(otherMember.id);
+                        this.amounts.delete(otherMember.elementId);
                         break;
                     case false:
                         const modifiedAmount: Unit<T> = currentAmount.withQuantity(currentAmount.quantity - other.amountFor(otherMember));
-                        this.amounts.set(otherMember.id, modifiedAmount);
+                        this.amounts.set(otherMember.elementId, modifiedAmount);
                         break;
                 }
             }
@@ -296,8 +298,8 @@ class Combination<T extends Identifiable> {
     public multiply(factor: number) {
         const modifiedAmounts: Map<string, Unit<T>> = new Map(this._amounts);
         this.members.forEach((member: T) => {
-            const unit: Unit<T> = modifiedAmounts.get(member.id);
-            modifiedAmounts.set(member.id, unit.multiply(factor));
+            const unit: Unit<T> = modifiedAmounts.get(member.elementId);
+            modifiedAmounts.set(member.elementId, unit.multiply(factor));
         });
         return new Combination(modifiedAmounts);
     }
@@ -306,7 +308,7 @@ class Combination<T extends Identifiable> {
         return other.members.some((otherMember: T) => this.members.includes(otherMember));
     }
 
-    explode <R extends Identifiable>(transformFunction: (thisType: T) => Combination<R>): Combination<R> {
+    explode <R extends Combinable>(transformFunction: (thisType: T) => Combination<R>): Combination<R> {
         let exploded: Combination<R> = Combination.EMPTY<R>();
         this.amounts.forEach((unit: Unit<T>) => {
             exploded = exploded.combineWith(transformFunction(unit.part).multiply(unit.quantity));
@@ -334,11 +336,11 @@ class Combination<T extends Identifiable> {
 
     public toJson(): Record<string, number> {
         return this.units
-            .map(unit => {return {[unit.part.id]: unit.quantity}})
+            .map(unit => {return {[unit.part.elementId]: unit.quantity}})
             .reduce((left, right) => {
                 return { ...left, ...right}
             }, {});
     }
 }
 
-export {Unit, Combination}
+export { Unit, Combination, Combinable }

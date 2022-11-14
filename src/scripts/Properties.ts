@@ -1,5 +1,3 @@
-import {FabricateItemType} from "./common/Identifiable";
-
 const Properties = {
     module: {
         id: "fabricate",
@@ -31,7 +29,9 @@ const Properties = {
     },
     ui: {
         defaults: {
-            essenceIconCode: "fa-solid fa-mortar-pestle"
+            essenceIconCode: "fa-solid fa-mortar-pestle",
+            itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
+            recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp"
         },
         buttons: {
             openCraftingSystemManager: {
@@ -41,10 +41,6 @@ const Properties = {
         apps: {
             craftingSystemManager: {}
         }
-    },
-    types: {
-        recipe: FabricateItemType.RECIPE,
-        component: FabricateItemType.COMPONENT,
     },
     flags: {
         keys: {
@@ -61,14 +57,9 @@ const Properties = {
         }
     },
     settings: {
-        defaultImageUrl: "icons/svg/item-bag.svg",
-        keys: {
-            craftingSystems: "craftingSystems",
-            craftingSystem: (id: string) => `craftingSystems.${id}`,
-            components: (systemId: string) => `craftingSystems.${systemId}.components`,
-            component: (systemId: string, componentId: string) => `craftingSystems.${systemId}.components.${componentId}`,
-            recipes: (systemId: string) => `craftingSystems.${systemId}.components`,
-            recipe: (systemId: string, recipeId: string) => `craftingSystems.${systemId}.components.${recipeId}`
+        craftingSystems: {
+            key: "craftingSystems",
+            targetVersion: "1"
         }
     }
 };

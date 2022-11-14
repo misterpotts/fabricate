@@ -3,16 +3,9 @@ import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {RollModifierProviderFactory} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
-import {
-    AoeExtension5e,
-    Damage5e,
-    DescriptiveEffect5e,
-    DiceMultiplier5e,
-    SavingThrowModifier5e
-} from "../src/scripts/5e/AlchemicalEffect5E";
-import {DiceRoller} from "../src/scripts/foundry/DiceRoller";
 import {SYSTEM_DEFINITION as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
+import {PartDictionaryFactory, PartLoader} from "../src/scripts/system/PartDictionary";
+import {DocumentManager} from "../src/scripts/foundry/DocumentManager";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -21,9 +14,21 @@ beforeEach(() => {
     Sandbox.reset();
 });
 
-const stubRollProviderFactory: RollModifierProviderFactory<Actor> = <RollModifierProviderFactory<Actor>><unknown>{
-    make: () => {}
-};
+class StubDocumentManager implements DocumentManager {
+
+    getDocumentByUuid(_id: string): Promise<any> {
+        return Promise.resolve({
+            name: "Item name",
+            img: "path/to/image/webp",
+            uuid: "NOT_A_UUID"
+        });
+    }
+
+    getDocumentsByUuid(ids: string[]): Promise<any[]> {
+        return Promise.all(ids.map(id => this.getDocumentByUuid(id)));
+    }
+
+}
 
 describe('A Crafting System Factory', () => {
 
@@ -31,47 +36,66 @@ describe('A Crafting System Factory', () => {
 
         const systemSpec = AlchemistsSupplies;
 
-        const stubDiceRoller: DiceRoller = <DiceRoller><unknown> {
-            fromExpression: () => {}
-        }
-
         const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
-            rollProviderFactory: stubRollProviderFactory,
-            diceRoller: stubDiceRoller
+            partDictionaryFactory: new PartDictionaryFactory(new PartLoader(new StubDocumentManager()))
         });
 
         const craftingSystem: CraftingSystem = await craftingSystemFactory.make(systemSpec);
 
         expect(craftingSystem).not.toBeNull();
-        expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");
+        expect(craftingSystem.id.value).toEqual("alchemists-supplies-v1.6");
         expect(craftingSystem.enabled).toEqual(true);
         expect(craftingSystem.essences.length).toEqual(6);
-        expect(craftingSystem.essences.map(essence => essence.id))
+        expect(craftingSystem.essences.map(essence => essence.id.value))
             .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
-        expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);
-        expect(craftingSystem.hasAlchemyCraftingCheck).toEqual(true);
-        //expect(craftingSystem.partDictionary.getComponents().length).toEqual(30); // todo: figure out a good way to test this in the new world where the bundled compendium isn't the only authority
-        //expect(craftingSystem.partDictionary.getRecipes().length).toEqual(15);
-        expect(craftingSystem.supportsAlchemy).toEqual(true);
-        expect(craftingSystem.alchemyFormulae.size).toEqual(1);
+        const components = craftingSystem.partDictionary.getComponents();
+        expect(components.length).toEqual(30);
+        components.forEach(component => {
+            const retrieved = craftingSystem.partDictionary.getComponent(component.id.value)
+            expect(retrieved.id.value).toEqual(component.id.value);
+            component.essences.members.forEach(essenceId => {
+                expect(craftingSystem.partDictionary.hasEssence(essenceId.value)).toEqual(true);
+            });
+        })
+        const recipes = craftingSystem.partDictionary.getRecipes();
+        expect(recipes.length).toEqual(15);
+        recipes.forEach(recipe => {
+            const retrieved = craftingSystem.partDictionary.getRecipe(recipe.id.value)
+            expect(retrieved.id.value).toEqual(recipe.id.value);
+            recipe.essences.members.forEach(essenceId => {
+                expect(craftingSystem.partDictionary.hasEssence(essenceId.value)).toEqual(true);
+            });
+            recipe.resultGroups.forEach(resultGroup => {
+                resultGroup.members.members.forEach(componentId => {
+                    expect(craftingSystem.partDictionary.hasComponent(componentId.value)).toEqual(true);
+                });
+            });
+        })
 
-        const alchemicalBombPartId = "90z9nOwmGnP4aUUk";
-        expect(craftingSystem.alchemyFormulae.has(alchemicalBombPartId)).toEqual(true);
+        // todo: enable when implemented with new logic
+        // expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);
+        // expect(craftingSystem.hasAlchemyCraftingCheck).toEqual(true);
+        // expect(craftingSystem.supportsAlchemy).toEqual(true);
+        // expect(craftingSystem.alchemyFormulae.size).toEqual(1);
 
-        const alchemyFormula = craftingSystem.alchemyFormulae.get(alchemicalBombPartId);
-        const allEffects = alchemyFormula.getAllEffects();
+        // const alchemicalBombPartId = "90z9nOwmGnP4aUUk";
+        // expect(craftingSystem.alchemyFormulae.has(alchemicalBombPartId)).toEqual(true);
 
-        const damageEffectCount = allEffects.filter(effect => effect instanceof Damage5e).length;
-        const descriptiveEffectCount = allEffects.filter(effect => effect instanceof DescriptiveEffect5e).length;
-        const savingThrowEffectCount = allEffects.filter(effect => effect instanceof SavingThrowModifier5e).length;
-        const diceMultiplierEffectCount = allEffects.filter(effect => effect instanceof DiceMultiplier5e).length;
-        const aoeExtensionEffectCount = allEffects.filter(effect => effect instanceof AoeExtension5e).length;
-        expect(allEffects.length).toEqual(8);
-        expect(damageEffectCount).toEqual(3);
-        expect(descriptiveEffectCount).toEqual(2);
-        expect(savingThrowEffectCount).toEqual(1);
-        expect(diceMultiplierEffectCount).toEqual(1);
-        expect(aoeExtensionEffectCount).toEqual(1);
+        //const alchemyFormula = craftingSystem.alchemyFormulae.get(alchemicalBombPartId);
+        // const allEffects = alchemyFormula.getAllEffects();
+
+        // const damageEffectCount = allEffects.filter(effect => effect instanceof Damage5e).length;
+        // const descriptiveEffectCount = allEffects.filter(effect => effect instanceof DescriptiveEffect5e).length;
+        // const savingThrowEffectCount = allEffects.filter(effect => effect instanceof SavingThrowModifier5e).length;
+        // const diceMultiplierEffectCount = allEffects.filter(effect => effect instanceof DiceMultiplier5e).length;
+        // const aoeExtensionEffectCount = allEffects.filter(effect => effect instanceof AoeExtension5e).length;
+        // expect(allEffects.length).toEqual(8);
+        // expect(damageEffectCount).toEqual(3);
+        // expect(descriptiveEffectCount).toEqual(2);
+        // expect(savingThrowEffectCount).toEqual(1);
+        // expect(diceMultiplierEffectCount).toEqual(1);
+        // expect(aoeExtensionEffectCount).toEqual(1);
+
     });
 
 });

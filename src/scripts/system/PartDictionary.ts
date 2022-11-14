@@ -1,183 +1,129 @@
-import {CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
-import {ComponentGroup, Recipe, RecipeJson} from "../crafting/Recipe";
-import {Essence} from "../common/Essence";
-import {GameProvider} from "../foundry/GameProvider";
+import {CraftingComponent, CraftingComponentId, CraftingComponentJson} from "../common/CraftingComponent";
+import {ComponentGroup, Recipe, RecipeId, RecipeJson} from "../crafting/Recipe";
+import {Essence, EssenceId, EssenceJson} from "../common/Essence";
+import {DocumentManager} from "../foundry/DocumentManager";
+import {Combinable, Combination} from "../common/Combination";
 import Properties from "../Properties";
-import {Combination} from "../common/Combination";
-import {Identifiable} from "../common/Identifiable";
 
-interface LoadResult {
-    components: Map<string, CraftingComponent>;
-    recipes: Map<string, Recipe>;
+interface ItemData {
+    uuid: string;
+    name: string;
+    imageUrl: string;
 }
 
 class PartDictionaryFactory {
 
-    private readonly _systemId: string;
-    private readonly _componentIds: string[];
-    private readonly _recipeIds: string[];
-    private readonly _essences: Map<string, Essence>;
-    private readonly _gameProvider: GameProvider;
+    private readonly _partLoader: PartLoader;
 
-    constructor({
-        systemId,
-        componentIds,
-        recipeIds,
-        essences,
-        gameProvider
-                }: {
-        systemId: string,
-        componentIds: string[],
-        recipeIds: string[],
-        essences: Map<string, Essence>,
-        gameProvider: GameProvider
-    }) {
-        this._systemId = systemId;
-        this._componentIds = componentIds;
-        this._recipeIds = recipeIds;
-        this._essences = essences;
-        this._gameProvider = gameProvider;
+    constructor(partLoader: PartLoader) {
+        this._partLoader = partLoader;
     }
 
-    public make(): PartDictionary {
-        const partLoader = new PartLoader({
-            systemId: this._systemId,
-            componentIds: this._componentIds,
-            recipeIds: this._recipeIds,
-            essences: this._essences,
-            gameProvider: this._gameProvider
-        });
-        return new PartDictionary({partLoader, essences: this._essences});
+    public async make(partDictionaryJson: PartDictionaryJson): Promise<PartDictionary> {
+        const essences = await this._partLoader.loadEssences(partDictionaryJson.essences);
+        const components = await this._partLoader.loadComponents(partDictionaryJson.components);
+        const recipes = await this._partLoader.loadRecipes(partDictionaryJson.recipes);
+        return new PartDictionary({components, recipes, essences});
     }
 
 }
 
 class PartLoader {
 
-    private readonly _systemId: string;
-    private readonly _componentIds: string[];
-    private readonly _recipeIds: string[];
-    private readonly _essences: Map<string, Essence>;
-    private readonly _gameProvider: GameProvider;
+    private readonly _documentManager: DocumentManager;
 
-    constructor({
-        systemId,
-        componentIds,
-        recipeIds,
-        essences,
-        gameProvider
-    }: {
-        systemId: string,
-        componentIds: string[],
-        recipeIds: string[],
-        essences: Map<string, Essence>,
-        gameProvider: GameProvider
-    }) {
-        this._systemId = systemId;
-        this._componentIds = componentIds;
-        this._recipeIds = recipeIds;
-        this._essences = essences;
-        this._gameProvider = gameProvider;
+    constructor(documentManager: DocumentManager) {
+        this._documentManager = documentManager;
     }
 
-    async loadItems(): Promise<LoadResult> {
-        const allPartIds = this._recipeIds.concat(this._componentIds);
-        const allItems = await this._gameProvider.getDocumentsById(allPartIds);
-
-        // todo: convert items individually and remove any that error
-        const allItemsById = new Map<string, any>(allItems.filter(item => !!item).map(item => [item.uuid, item]));
-
-        const components = this.loadCraftingComponents(this.filterDocumentsById(allItemsById, this._componentIds), this._essences);
-        const recipes = this.loadRecipes(this.filterDocumentsById(allItemsById, this._recipeIds), components, this._essences);
-
-        return {
-            recipes,
-            components
-        };
+    public loadEssences(essences: Record<string, EssenceJson>): Map<string, Essence> {
+        return new Map(Object.values(essences)
+            .map(essenceJson => [essenceJson.id, this.loadEssence(essenceJson)])
+        );
     }
 
-    private filterDocumentsById(allDocumentsById: Map<string, any>, ids: string[]): any[] {
-        return ids.filter(id => allDocumentsById.has(id))
-            .map(id => allDocumentsById.get(id));
+    public loadEssence(essenceJson: EssenceJson): Essence {
+        return new Essence({
+            id: new EssenceId(essenceJson.id),
+            name: essenceJson.name,
+            description: essenceJson.description,
+            iconCode: essenceJson.iconCode,
+            tooltip: essenceJson.tooltip
+        })
     }
 
-    public loadCraftingComponents(componentDocuments: any[],
-                                   essencesById: Map<string, Essence>): Map<string, CraftingComponent> {
-        const unpopulatedComponents = componentDocuments
-            .map(document => {
-                const componentJson = document.getFlag(Properties.module.id, Properties.flags.keys.item.componentData(this._systemId)) as CraftingComponentJson;
-                return {
-                    component: new CraftingComponent({
-                        id: document.uuid,
-                        name: document.name,
-                        imageUrl: document.img,
-                        essences: this.combinationFromRecord(essencesById, componentJson?.essences ?? {}),
-                        salvage: Combination.EMPTY()
-                    }),
-                    unpopulatedSalvage: componentJson?.salvage ?? {}
-                }
-            });
-
-        const componentsById = new Map<string, CraftingComponent>(unpopulatedComponents.map(unpopulated => [unpopulated.component.id, unpopulated.component]));
-
-        unpopulatedComponents
-            .filter(unpopulatedComponent => Object.keys(unpopulatedComponent.unpopulatedSalvage).length > 0)
-            .forEach(unpopulatedComponent => {
-                const componentToPopulate = componentsById.get(unpopulatedComponent.component.id);
-                const populatedSalvage = Object.keys(unpopulatedComponent.unpopulatedSalvage)
-                    .map(id => componentsById.get(id))
-                    .map(component => Combination.of(component, unpopulatedComponent.unpopulatedSalvage[component.id]))
-                    .reduce((left, right) => left.combineWith(right), Combination.EMPTY());
-                componentsById.set(componentToPopulate.id, componentToPopulate.setSalvage(populatedSalvage));
-            });
-        return componentsById;
+    public async loadComponents(componentsJson: Record<string, CraftingComponentJson>): Promise<Map<string, CraftingComponent>> {
+        const loadedComponents = await Promise.all(
+            Array.from(Object.values(componentsJson))
+                .map(componentJson => this.loadComponent(componentJson))
+        );
+        return new Map(loadedComponents.map(component => [component.id.value, component]));
     }
 
-    public loadRecipes(recipeDocuments: any[],
-                        craftingComponentsById: Map<string, CraftingComponent>,
-                        essencesById: Map<string, Essence>): Map<string, Recipe> {
-        const recipes = recipeDocuments.map(document => {
-                return {
-                    recipe: document.getFlag(Properties.module.id, Properties.flags.keys.item.recipe(this._systemId)) as RecipeJson,
-                    id: document.uuid,
-                    name: document.name,
-                    imageUrl: document.img
-                }
-            })
-            .map(storedData => new Recipe({
-                id: storedData.id,
-                name: storedData.name,
-                imageUrl: storedData.imageUrl,
-                ingredientGroups: this.componentGroupsFromRecords(craftingComponentsById, storedData?.recipe?.ingredientGroups),
-                essences: this.combinationFromRecord(essencesById, storedData?.recipe?.essences),
-                resultGroups: this.componentGroupsFromRecords(craftingComponentsById, storedData?.recipe?.resultGroups),
-                catalysts: this.combinationFromRecord(craftingComponentsById, storedData?.recipe?.catalysts)
-            }));
-        return new Map<string, Recipe>(recipes.map(recipe => [recipe.id, recipe]));
+    public async loadComponent(componentJson: CraftingComponentJson): Promise<CraftingComponent> {
+        const document = await this._documentManager.getDocumentByUuid(componentJson.itemUuid);
+        const itemData = this.extractItemData(document);
+        return new CraftingComponent({
+            id: new CraftingComponentId(componentJson.itemUuid),
+            name: itemData.name,
+            imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
+            essences: this.identityCombinationFromRecord(componentJson.essences, EssenceId),
+            salvage: this.identityCombinationFromRecord(componentJson.salvage, CraftingComponentId),
+        });
     }
 
-    private componentGroupsFromRecords(craftingComponentsById: Map<string, CraftingComponent>, values: Record<string, number>[]): ComponentGroup[] {
-        if (!values) {
+    public async loadRecipes(recipesJson: Record<string, RecipeJson>): Promise<Map<string, Recipe>> {
+        const loadedRecipes = await Promise.all(
+            Array.from(Object.values(recipesJson))
+                .map(recipeJson => this.loadRecipe(recipeJson))
+        );
+        return new Map(loadedRecipes.map(recipe => [recipe.id.value, recipe]));
+    }
+
+    public async loadRecipe(recipeJson: RecipeJson): Promise<Recipe> {
+        const document = await this._documentManager.getDocumentByUuid(recipeJson.itemUuid);
+        const itemData = this.extractItemData(document);
+        return new Recipe({
+            id: new RecipeId(recipeJson.itemUuid),
+            name: itemData.name,
+            imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
+            essences: this.identityCombinationFromRecord(recipeJson.essences, EssenceId),
+            catalysts: this.identityCombinationFromRecord(recipeJson.catalysts, CraftingComponentId),
+            ingredientGroups: this.componentIdentityGroupsFromRecords(recipeJson.ingredientGroups),
+            resultGroups: this.componentIdentityGroupsFromRecords(recipeJson.resultGroups)
+        });
+    }
+
+    public extractManyItemsData(documents: any[]): Map<string, ItemData> {
+        return new Map(documents.map(document => [document.id, this.extractItemData(document)]));
+    }
+
+    public extractItemData(document: any): ItemData {
+        return <ItemData>{
+            uuid: document.uuid,
+            name: document.name,
+            imageUrl: document.img
+        }
+    }
+
+    private identityCombinationFromRecord<T extends Combinable>(record: Record<string, number>,
+                                                                constructorFunction: new (...args: any[]) => T): Combination<T> {
+        return Array.from(Object.keys(record))
+            .map(key => Combination.of(new constructorFunction(key), record[key]))
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
+    }
+
+    private componentIdentityGroupsFromRecords(componentGroupsValues: Record<string, number>[]): ComponentGroup[] {
+        if (!componentGroupsValues) {
             return [];
         }
-        return values.map(value => this.combinationFromRecord(craftingComponentsById, value))
+        return componentGroupsValues.map(value => this.identityCombinationFromRecord(value, CraftingComponentId))
             .map(combination => new ComponentGroup(combination));
-    }
-
-    private combinationFromRecord<T extends Identifiable>(identifiables: Map<string, T>, values: Record<string, number>): Combination<T> {
-        if (!values) {
-            return Combination.EMPTY();
-        }
-        return Object.keys(values)
-            .map(id => Combination.of(identifiables.get(id), values[id]))
-            .reduce((left, right) => left.combineWith(right), Combination.EMPTY());
     }
 
 }
 
 class PartDictionary {
-
-    private readonly _partLoader: PartLoader;
 
     private readonly _components: Map<string, CraftingComponent>;
     private readonly _recipes: Map<string, Recipe>;
@@ -186,38 +132,19 @@ class PartDictionary {
     constructor({
         components = new Map(),
         recipes = new Map(),
-        essences = new Map(),
-        partLoader
+        essences = new Map()
     }: {
         components?: Map<string, CraftingComponent>,
         recipes?: Map<string, Recipe>,
-        essences?: Map<string, Essence>,
-        partLoader: PartLoader
+        essences?: Map<string, Essence>
     }) {
         this._components = components;
         this._recipes = recipes;
         this._essences = essences;
-        this._partLoader = partLoader;
     }
 
-    public async load(): Promise<void> {
-        const loadResult = await this._partLoader.loadItems();
-        this._components.clear();
-        loadResult.components.forEach((value, key) => this._components.set(key, value));
-        this._recipes.clear();
-        loadResult.recipes.forEach((value, key) => this._recipes.set(key, value));
-    }
-
-    public addRecipe(recipe: Recipe): void {
-        this._recipes.set(recipe.id, recipe);
-    }
-
-    public addComponent(component: CraftingComponent): void {
-        this._components.set(component.id, component);
-    }
-
-    public addEssence(essence: Essence): void {
-        this._essences.set(essence.id, essence);
+    public hasEssence(id: string): boolean {
+        return this._essences.has(id);
     }
 
     public hasComponent(id: string): boolean {
@@ -265,6 +192,61 @@ class PartDictionary {
         return Array.from(this._essences.values());
     }
 
+    public toJson(): PartDictionaryJson {
+        const componentsJson: Record<string, CraftingComponentJson> = {};
+        this._components.forEach((component, id) => componentsJson[id] = component.toJson());
+
+        const recipesJson: Record<string, RecipeJson> = {};
+        this._recipes.forEach((recipe, id) => recipesJson[id] = recipe.toJson());
+
+        const essencesJson: Record<string, EssenceJson> = {};
+        this._essences.forEach((essence, id) => essencesJson[id] = essence.toJson());
+
+        return {
+            components: componentsJson,
+            recipes: recipesJson,
+            essences: essencesJson
+        }
+    }
+
+    addComponent(craftingComponent: CraftingComponent) {
+        this._components.set(craftingComponent.id.value, craftingComponent);
+    }
+
+    addRecipe(recipe: Recipe) {
+        this._recipes.set(recipe.id.value, recipe);
+    }
+
+    addEssence(essence: Essence) {
+        this._essences.set(essence.id.value, essence);
+    }
+
+    deleteComponentById(id: string) {
+        this._components.delete(id);
+    }
+
+    deleteRecipeById(id: string) {
+        this._recipes.delete(id);
+    }
+
+    deleteEssenceById(id: string) {
+        this._essences.delete(id);
+    }
+
+    editEssence(modified: Essence): Essence {
+        if (this._essences.has(modified.id.value)) {
+            const previous = this._essences.get(modified.id.value);
+            this._essences.set(modified.id.value, modified);
+            return previous;
+        }
+        return null;
+    }
 }
 
-export { PartDictionary, PartDictionaryFactory }
+interface PartDictionaryJson {
+    components: Record<string, CraftingComponentJson>,
+    recipes: Record<string, RecipeJson>,
+    essences: Record<string, EssenceJson>
+}
+
+export { PartDictionary, PartDictionaryJson, PartDictionaryFactory, PartLoader }

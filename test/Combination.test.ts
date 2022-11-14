@@ -1,7 +1,7 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
 
 import {Combination, Unit} from "../src/scripts/common/Combination";
-import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {CraftingComponent, CraftingComponentId} from "../src/scripts/common/CraftingComponent";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 
@@ -16,9 +16,10 @@ test('Should create an empty Combination',() => {
     expect(underTest.isEmpty()).toBe(true);
     expect(underTest.has(testComponentOne)).toBe(false);
     expect(underTest.has(new CraftingComponent({
-        id: 'XYZ345',
+        id: new CraftingComponentId('XYZ345'),
         salvage: Combination.EMPTY(),
-        essences: Combination.EMPTY()
+        essences: Combination.EMPTY(),
+        name: "Test Component"
     }))).toBe(false);
 
     const underTestAsUnits: Unit<CraftingComponent>[] = underTest.units;
@@ -34,14 +35,17 @@ test('Should create a Combination from a single Unit',() => {
     let equivalentComponent = new CraftingComponent({
         id: testComponentOne.id,
         salvage:testComponentOne.salvage,
-        essences: testComponentOne.essences
+        essences: testComponentOne.essences,
+        name: testComponentOne.name,
+        imageUrl: testComponentOne.imageUrl
     });
     expect(underTest.has(equivalentComponent))
         .toBe(true);
     let nonEquivalentComponent = new CraftingComponent({
-        id: 'XYZ345',
+        id: new CraftingComponentId('XYZ345'),
         salvage: Combination.EMPTY(),
-        essences: Combination.EMPTY()
+        essences: Combination.EMPTY(),
+        name: "Test Component"
     });
     expect(underTest.has(nonEquivalentComponent))
         .toBe(false);
@@ -68,12 +72,15 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.has(new CraftingComponent({
         id: testComponentOne.id,
         salvage:testComponentOne.salvage,
-        essences: testComponentOne.essences
+        essences: testComponentOne.essences,
+        name: testComponentOne.name,
+        imageUrl: testComponentOne.imageUrl
     }))).toBe(true);
     expect(underTest.has(new CraftingComponent({
-        id: 'XYZ345',
+        id: new CraftingComponentId('XYZ345'),
         salvage: Combination.EMPTY(),
-        essences: Combination.EMPTY()
+        essences: Combination.EMPTY(),
+        name: "Test Component"
     }))).toBe(false);
     expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree]));
 });

@@ -8,14 +8,6 @@ class GameProvider {
         return <Game> game;
     }
 
-    public async getDocumentById(id: string): Promise<any> {
-        return fromUuid(id);
-    }
-
-    public async getDocumentsById(ids: string[]): Promise<any[]> {
-        return Promise.all(ids.map(id => fromUuid(id)));
-    }
-
 }
 
 export { GameProvider }
