@@ -1,7 +1,4 @@
-import {Identifiable, Identity} from "../common/Identifiable";
-import {Combination} from "../common/Combination";
-import {CraftingComponentId} from "../common/CraftingComponent";
-import {EssenceId} from "../common/Essence";
+import {CombinableString, Combination} from "../common/Combination";
 import Properties from "../Properties";
 
 class ComponentGroup {
@@ -10,27 +7,27 @@ class ComponentGroup {
     *  Instance members
     *  ============================ */
 
-    private readonly _members: Combination<CraftingComponentId>;
-    private readonly _selectedComponentId: CraftingComponentId;
+    private readonly _members: Combination<CombinableString>;
+    private readonly _selectedComponentId: CombinableString;
 
     /* ===========================
     *  Constructor
     *  =========================== */
 
-    constructor(members: Combination<CraftingComponentId>, selectedMember?: CraftingComponentId) {
+    constructor(members: Combination<CombinableString>, selectedMember?: CombinableString) {
         this._members = members;
-        this._selectedComponentId = selectedMember ?? CraftingComponentId.NO_ID();
+        this._selectedComponentId = selectedMember ?? CombinableString.NO_VALUE();
     }
 
     /* ===========================
     *  Getters
     *  =========================== */
 
-    get members(): Combination<CraftingComponentId> {
+    get members(): Combination<CombinableString> {
         return this._members.clone();
     }
 
-    get selectedComponentId(): CraftingComponentId {
+    get selectedComponentId(): CombinableString {
         return this._selectedComponentId;
     }
 
@@ -39,22 +36,23 @@ class ComponentGroup {
     *  =========================== */
     
     public static EMPTY(): ComponentGroup {
-        return new ComponentGroup(Combination.EMPTY(), CraftingComponentId.NO_ID());
+        return new ComponentGroup(Combination.EMPTY(), CombinableString.NO_VALUE());
     }
 
     /* ===========================
     *  Instance functions
     *  =========================== */
     
-    public select(craftingComponentId: CraftingComponentId): ComponentGroup {
+    public select(craftingComponentId: string): ComponentGroup {
         if (!craftingComponentId) {
-            return new ComponentGroup(this._members, CraftingComponentId.NO_ID());
+            return new ComponentGroup(this._members, CombinableString.NO_VALUE());
         }
-        if (this._members.has(craftingComponentId)) {
-            return new ComponentGroup(this._members, craftingComponentId);
+        const asCombinable = new CombinableString(craftingComponentId);
+        if (this._members.has(asCombinable)) {
+            return new ComponentGroup(this._members, asCombinable);
         }
         const allowableValues: string = this._members.units.map(unit => unit.part.elementId).join(", ");
-        throw new Error(`Cannot select component with ID "${craftingComponentId.value}". It does not exist in this component group.
+        throw new Error(`Cannot select component with ID "${craftingComponentId}". It does not exist in this component group.
             Allowable values are: [${allowableValues}]`);
     }
 
@@ -74,14 +72,14 @@ class ComponentGroup {
         if (!this.requiresChoice()) {
             return true;
         }
-        return this._selectedComponentId !== CraftingComponentId.NO_ID();
+        return this._selectedComponentId !== CombinableString.NO_VALUE();
     }
 
-    public getSelectedMember(): Combination<CraftingComponentId> {
+    public getSelectedMember(): Combination<CombinableString> {
         if (this._members.distinct() === 1) {
             return this.members;
         }
-        if (!this._selectedComponentId || this.selectedComponentId === CraftingComponentId.NO_ID()) {
+        if (!this._selectedComponentId || this._selectedComponentId === CombinableString.NO_VALUE()) {
             return Combination.EMPTY();
         }
         return this._members.just(this._selectedComponentId);
@@ -101,42 +99,17 @@ interface RecipeJson {
     ingredientGroups: Record<string, number>[]
 }
 
-class RecipeId implements Identity {
-
-    private static readonly _NO_ID: RecipeId = new RecipeId("");
-
-    private readonly _value: string;
-
-    constructor(value: string) {
-        this._value = value;
-    }
-
-    public static NO_ID() {
-        return this._NO_ID;
-    }
-
-    get value(): string {
-        return this._value;
-    }
-
-    get elementId(): string {
-        return this.value;
-    }
-
-}
-
-
-class Recipe implements Identifiable<RecipeId> {
+class Recipe {
 
     /* ===========================
     *  Instance members
     *  =========================== */
 
-    private readonly _id: RecipeId;
+    private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private readonly _catalysts: Combination<CraftingComponentId>;
-    private readonly _essences: Combination<EssenceId>;
+    private readonly _catalysts: Combination<CombinableString>;
+    private readonly _essences: Combination<CombinableString>;
     private readonly _ingredientGroups: ComponentGroup[];
     private readonly _resultGroups: ComponentGroup[];
 
@@ -153,11 +126,11 @@ class Recipe implements Identifiable<RecipeId> {
         resultGroups = [ComponentGroup.EMPTY()],
         ingredientGroups = [ComponentGroup.EMPTY()]
     }: {
-        id: RecipeId;
+        id: string;
         name: string;
         imageUrl?: string;
-        essences?: Combination<EssenceId>;
-        catalysts?: Combination<CraftingComponentId>;
+        essences?: Combination<CombinableString>;
+        catalysts?: Combination<CombinableString>;
         resultGroups?: ComponentGroup[];
         ingredientGroups?: ComponentGroup[];
     }) {
@@ -174,7 +147,7 @@ class Recipe implements Identifiable<RecipeId> {
     *  Getters
     *  =========================== */
 
-    get id(): RecipeId {
+    get id(): string {
         return this._id;
     }
 
@@ -190,7 +163,7 @@ class Recipe implements Identifiable<RecipeId> {
         return this._ingredientGroups;
     }
 
-    get essences(): Combination<EssenceId> {
+    get essences(): Combination<CombinableString> {
         return this._essences;
     }
 
@@ -198,7 +171,7 @@ class Recipe implements Identifiable<RecipeId> {
         return this._resultGroups;
     }
 
-    get catalysts(): Combination<CraftingComponentId> {
+    get catalysts(): Combination<CombinableString> {
         return this._catalysts;
     }
 
@@ -219,18 +192,18 @@ class Recipe implements Identifiable<RecipeId> {
         return !Array.from(this._ingredientGroups.concat(this._resultGroups))
             .filter(group => !group.isReady())
             .map(group => group.selectedComponentId)
-            .find(selected => selected === CraftingComponentId.NO_ID())
+            .find(selected => selected === CombinableString.NO_VALUE())
     }
 
-    public getSelectedIngredients(): Combination<CraftingComponentId> {
+    public getSelectedIngredients(): Combination<CombinableString> {
         return this.makeSelections(this._ingredientGroups);
     }
 
-    public getSelectedResults(): Combination<CraftingComponentId> {
+    public getSelectedResults(): Combination<CombinableString> {
         return this.makeSelections(this._resultGroups);
     }
 
-    private makeSelections(componentGroups: ComponentGroup[]): Combination<CraftingComponentId> {
+    private makeSelections(componentGroups: ComponentGroup[]): Combination<CombinableString> {
         return Array.from(componentGroups)
             .map(group => group.getSelectedMember())
             .reduce((left, right) => left.combineWith(right));
@@ -250,7 +223,7 @@ class Recipe implements Identifiable<RecipeId> {
         return this.requiresCatalysts() || this.hasIngredients();
     }
 
-    public getNamedComponents(): Combination<CraftingComponentId> {
+    public getNamedComponents(): Combination<CombinableString> {
         return this.getSelectedIngredients().combineWith(this._catalysts);
     }
 
@@ -258,15 +231,15 @@ class Recipe implements Identifiable<RecipeId> {
         return !this._essences || !this._essences.isEmpty();
     }
     
-    public selectIngredient(index: number, component: CraftingComponentId) {
+    public selectIngredient(index: number, component: string) {
         return this.select(this._ingredientGroups, index, component, "ingredient");
     }
 
-    public selectResult(index: number, component: CraftingComponentId) {
+    public selectResult(index: number, component: string) {
         return this.select(this._resultGroups, index, component, "result");
     }
 
-    private select(groups: ComponentGroup[], index: number, component: CraftingComponentId, groupType: string): void {
+    private select(groups: ComponentGroup[], index: number, component: string, groupType: string): void {
         if (index < 0 || index >= groups.length) {
             throw new Error(`"${index}" is not a valid ${groupType} group.`);
         }
@@ -275,7 +248,7 @@ class Recipe implements Identifiable<RecipeId> {
 
     public toJson(): RecipeJson {
         return {
-            itemUuid: this._id.value,
+            itemUuid: this._id,
             essences: this._essences.toJson(),
             catalysts: this._catalysts.toJson(),
             resultGroups: this._resultGroups.map(group => group.toJson()),
@@ -285,4 +258,4 @@ class Recipe implements Identifiable<RecipeId> {
     
 }
 
-export { Recipe, RecipeId, ComponentGroup, RecipeJson }
+export { Recipe, ComponentGroup, RecipeJson }

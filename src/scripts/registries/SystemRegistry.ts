@@ -48,11 +48,30 @@ class DefaultSystemRegistry implements SystemRegistry {
         await this._settingsManager.write(Properties.settings.craftingSystems.key, allCraftingSystemSettings);
     }
 
+    /**
+     * Currently loads all parts in all crafting systems. This can be reduced to just the selected system by pulling
+     * loading into part dictionary instances and out of the factory method
+     * todo: only load the selected system's parts
+    */
     async getAllCraftingSystems(): Promise<Map<string, CraftingSystem>> {
-        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        let allCraftingSystemSettings: Record<string, CraftingSystemJson> = {};
+        try {
+            allCraftingSystemSettings = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        } catch (e: any) {
+            const error: Error = e instanceof Error ? <Error> e : null;
+            if (error) {
+                console.error(error);
+            } else {
+                console.error(error.message ?? `An unexpected error occurred when reading crafting systems: \n ${e}`);
+            }
+            // todo: make this a prompt and give them the options to dump the current value to console
+            console.error("Resetting crafting system settings to defaults. Any saved crafting systems except bundled systems will be lost. ");
+            await this.reset();
+            allCraftingSystemSettings = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        }
         const craftingSystems = await Promise.all(Object.values(allCraftingSystemSettings)
             .map(craftingSystemJson => this._craftingSystemFactory.make(craftingSystemJson)));
-        return new Map(craftingSystems.map(craftingSystem => [craftingSystem.id.value, craftingSystem]));
+        return new Map(craftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
     }
 
     async getCraftingSystemById(id: string): Promise<CraftingSystem> {
@@ -76,7 +95,7 @@ class DefaultSystemRegistry implements SystemRegistry {
     async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
         const craftingSystemJson = craftingSystem.toJson();
         const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read(Properties.settings.craftingSystems.key);
-        allCraftingSystemSettings[craftingSystem.id.value] = craftingSystemJson;
+        allCraftingSystemSettings[craftingSystem.id] = craftingSystemJson;
         await this._settingsManager.write(Properties.settings.craftingSystems.key, allCraftingSystemSettings);
         return craftingSystem;
     }

@@ -1,4 +1,3 @@
-import {Identifiable, Identity} from "../common/Identifiable";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Essence} from "../common/Essence";
@@ -15,30 +14,6 @@ import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
 import {PartDictionary, PartDictionaryJson} from "./PartDictionary";
 import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystemDetails";
 
-class CraftingSystemId implements Identity {
-
-    private static readonly _NO_ID: CraftingSystemId = new CraftingSystemId("");
-
-    private readonly _value: string;
-
-    constructor(value: string) {
-        this._value = value;
-    }
-
-    public static NO_ID() {
-        return this._NO_ID;
-    }
-
-    get value(): string {
-        return this._value;
-    }
-
-    get elementId(): string {
-        return this.value;
-    }
-
-}
-
 interface CraftingSystemJson {
     id: string,
     details: CraftingSystemDetailsJson,
@@ -47,9 +22,9 @@ interface CraftingSystemJson {
     parts: PartDictionaryJson
 }
 
-class CraftingSystem implements Identifiable<CraftingSystemId> {
+class CraftingSystem {
 
-    private readonly _id: CraftingSystemId;
+    private readonly _id: string;
 
     private _details: CraftingSystemDetails;
 
@@ -77,7 +52,7 @@ class CraftingSystem implements Identifiable<CraftingSystemId> {
         enabled,
         partDictionary
     }: {
-        id: CraftingSystemId;
+        id: string;
         details: CraftingSystemDetails,
         locked: boolean;
         enabled: boolean;
@@ -153,7 +128,7 @@ class CraftingSystem implements Identifiable<CraftingSystemId> {
         return this._alchemyAttemptFactory.isEnabled();
     }
 
-    get id(): CraftingSystemId {
+    get id(): string {
         return this._id;
     }
 
@@ -193,7 +168,7 @@ class CraftingSystem implements Identifiable<CraftingSystemId> {
 
     toJson(): CraftingSystemJson {
         return {
-            id: this._id.value,
+            id: this._id,
             details: this._details.toJson(),
             enabled: this._enabled,
             locked: this._locked,
@@ -203,4 +178,4 @@ class CraftingSystem implements Identifiable<CraftingSystemId> {
 
 }
 
-export { CraftingSystem, CraftingSystemId, CraftingSystemJson };
+export { CraftingSystem, CraftingSystemJson };

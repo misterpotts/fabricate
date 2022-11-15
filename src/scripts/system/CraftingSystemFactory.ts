@@ -1,4 +1,4 @@
-import {CraftingSystem, CraftingSystemId, CraftingSystemJson} from "./CraftingSystem";
+import {CraftingSystem, CraftingSystemJson} from "./CraftingSystem";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
 import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 import {WastageType} from "../common/ComponentConsumptionCalculator";
@@ -23,7 +23,7 @@ class CraftingSystemFactory {
     public async make(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
 
         return new CraftingSystem({
-            id: new CraftingSystemId(craftingSystemJson.id),
+            id: craftingSystemJson.id,
             details: new CraftingSystemDetails(craftingSystemJson.details),
             locked: craftingSystemJson.locked,
             enabled: craftingSystemJson.enabled,

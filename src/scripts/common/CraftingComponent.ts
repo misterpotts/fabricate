@@ -1,6 +1,4 @@
-import {Identifiable, Identity} from "./Identifiable";
-import {Combinable, Combination} from "./Combination";
-import {EssenceId} from "./Essence";
+import {Combinable, CombinableString, Combination} from "./Combination";
 import Properties from "../Properties";
 
 interface CraftingComponentJson {
@@ -9,45 +7,21 @@ interface CraftingComponentJson {
     salvage: Record<string, number>;
 }
 
-class CraftingComponentId implements Identity, Combinable {
-
-    private static readonly _NO_ID: CraftingComponentId = new CraftingComponentId("");
-
-    private readonly _value: string;
-
-    constructor(value: string) {
-        this._value = value;
-    }
-
-    public static NO_ID() {
-        return this._NO_ID;
-    }
-
-    get value(): string {
-        return this._value;
-    }
-
-    get elementId(): string {
-        return this.value;
-    }
-
-}
-
-class CraftingComponent implements Identifiable<CraftingComponentId>, Combinable {
+class CraftingComponent implements Combinable {
 
     private static readonly _NONE: CraftingComponent = new CraftingComponent({
-        id: CraftingComponentId.NO_ID(),
+        id: "NO_ID",
         name: "NO_NAME",
         imageUrl: Properties.ui.defaults.itemImageUrl,
         essences: Combination.EMPTY(),
         salvage: Combination.EMPTY()
     });
 
-    private readonly _id: CraftingComponentId;
+    private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private readonly _essences: Combination<EssenceId>;
-    private readonly _salvage: Combination<CraftingComponentId>;
+    private readonly _essences: Combination<CombinableString>;
+    private readonly _salvage: Combination<CombinableString>;
 
     constructor({
         id,
@@ -56,11 +30,11 @@ class CraftingComponent implements Identifiable<CraftingComponentId>, Combinable
         essences = Combination.EMPTY(),
         salvage = Combination.EMPTY()
     }: {
-        id: CraftingComponentId;
+        id: string;
         name: string;
         imageUrl?: string;
-        essences?: Combination<EssenceId>;
-        salvage?: Combination<CraftingComponentId>;
+        essences?: Combination<CombinableString>;
+        salvage?: Combination<CombinableString>;
     }) {
         this._id = id;
         this._name = name;
@@ -70,14 +44,14 @@ class CraftingComponent implements Identifiable<CraftingComponentId>, Combinable
     }
 
     get elementId(): string {
-        return this._id.elementId;
+        return this._id;
     }
 
     public static NONE() {
         return this._NONE;
     }
 
-    get id(): CraftingComponentId {
+    get id(): string {
         return this._id;
     }
 
@@ -89,17 +63,17 @@ class CraftingComponent implements Identifiable<CraftingComponentId>, Combinable
         return this._imageUrl;
     }
 
-    get essences(): Combination<EssenceId> {
+    get essences(): Combination<CombinableString> {
         return this._essences;
     }
 
-    get salvage(): Combination<CraftingComponentId> {
+    get salvage(): Combination<CombinableString> {
         return this._salvage;
     }
 
     public toJson(): CraftingComponentJson {
         return {
-            itemUuid: this._id.value,
+            itemUuid: this._id,
             essences: this._essences.toJson(),
             salvage: this._salvage.toJson()
         }
@@ -107,4 +81,4 @@ class CraftingComponent implements Identifiable<CraftingComponentId>, Combinable
 
 }
 
-export { CraftingComponent, CraftingComponentId, CraftingComponentJson }
+export { CraftingComponent, CombinableString, CraftingComponentJson }

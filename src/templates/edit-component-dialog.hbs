@@ -1,12 +1,17 @@
 <div class="fabricate-component-manager">
+    <h2 class="fabricate-component-name">{{component.name}}</h2>
     <div class="flexcol">
-        <div class="fabricate-component-preview flexrow flex3">
-            <img class="fabricate-component-img" src="{{item.imageUrl}}" />
-            <span class="fabricate-component-name">{{item.name}}</span>
+        <div class="fabricate-component-preview flexrow">
+            <img class="fabricate-component-img" src="{{component.imageUrl}}" />
+            <div class="fabricate-component-essence-editor">
+                {{#each component.essences}}
+                    <span>{{essence.name}} {{amount}}</span>
+                {{/each}}
+            </div>
         </div>
-        <div class="fabricate-component-essence-editor flexrow flex2">
-            {{#each system.essences}}
-
+        <div class="fabricate-component-salvage-editor">
+            {{#each component.salvage}}
+                <span>{{component.name}} {{amount}}</span>
             {{/each}}
         </div>
     </div>

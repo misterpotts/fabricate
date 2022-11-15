@@ -46,7 +46,7 @@ class CraftingSystemManagerApp extends FormApplication {
 
     async render(force: boolean = true) {
         if (this._selectedSystem?.id) {
-            this._selectedSystem = await this.systemRegistry.getCraftingSystemById(this._selectedSystem.id.value);
+            this._selectedSystem = await this.systemRegistry.getCraftingSystemById(this._selectedSystem.id);
         }
         super.render(force);
     }
@@ -56,7 +56,7 @@ class CraftingSystemManagerApp extends FormApplication {
         if (!this._selectedSystem && craftingSystems.size > 0) {
             [this._selectedSystem] = craftingSystems.values();
         }
-        return { craftingSystems: craftingSystems, selectedSystem: this._selectedSystem };
+        return { craftingSystems: Array.from(craftingSystems.values()), selectedSystem: this._selectedSystem };
     }
 
     activateListeners(html: JQuery) {
@@ -125,6 +125,23 @@ class CraftingSystemManagerApp extends FormApplication {
                 this._selectedSystem = systemToSelect;
                 await this.render();
                 break;
+            case "removeComponent":
+                const componentIdToDelete = event?.target?.dataset?.componentId;
+                if (!componentIdToDelete) {
+                    throw new Error("Cannot delete component. No ID was provided. ");
+                }
+                this._selectedSystem.partDictionary.deleteComponentById(componentIdToDelete);
+                await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                break;
+            case "editComponent":
+                const componentIdToEdit = event?.target?.dataset?.componentId;
+                const componentToEdit = this._selectedSystem.partDictionary.getComponent(componentIdToEdit);
+                if (!componentToEdit) {
+                    throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
+                }
+                new EditComponentDialog(componentToEdit, this._selectedSystem)
+                    .render();
+                break;
             case "createComponent":
                 try {
                     const data: any = JSON.parse(event.dataTransfer?.getData("text/plain"));
@@ -132,10 +149,6 @@ class CraftingSystemManagerApp extends FormApplication {
                         return;
                     }
                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
-                    const fabricateIdentity = document.getFlag(Properties.module.id, Properties.flags.keys.item.id);
-                    if (!fabricateIdentity) {
-                        await document.setFlag(Properties.module.id, Properties.flags.keys.item.id, document.uuid);
-                    }
                     if (!this._selectedSystem.partDictionary.hasComponent(document.uuid)) {
                         this._selectedSystem.partDictionary.addComponent(new CraftingComponent({
                             id: document.uuid,
@@ -146,7 +159,7 @@ class CraftingSystemManagerApp extends FormApplication {
                         }));
                         await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                     }
-                    new EditComponentDialog(document, this._selectedSystem)
+                    new EditComponentDialog(this._selectedSystem.partDictionary.getComponent(document.uuid), this._selectedSystem)
                         .render();
                 } catch (e: any) {
                     console.warn(`Something was dropped onto a Fabricate drop zone, 
@@ -163,7 +176,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!essenceToEdit) {
                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
                 }
-                new EditEssenceDialog(this._selectedSystem, essenceToEdit.toJson()).render(); // todo: second arg can be essence, not essencedef
+                new EditEssenceDialog(this._selectedSystem, essenceToEdit).render(); // todo: second arg can be essence, not essencedef
                 break;
             case "deleteEssence":
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;

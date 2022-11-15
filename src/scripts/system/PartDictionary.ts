@@ -1,6 +1,6 @@
-import {CraftingComponent, CraftingComponentId, CraftingComponentJson} from "../common/CraftingComponent";
-import {ComponentGroup, Recipe, RecipeId, RecipeJson} from "../crafting/Recipe";
-import {Essence, EssenceId, EssenceJson} from "../common/Essence";
+import {CombinableString, CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
+import {ComponentGroup, Recipe, RecipeJson} from "../crafting/Recipe";
+import {Essence, EssenceJson} from "../common/Essence";
 import {DocumentManager} from "../foundry/DocumentManager";
 import {Combinable, Combination} from "../common/Combination";
 import Properties from "../Properties";
@@ -44,7 +44,7 @@ class PartLoader {
 
     public loadEssence(essenceJson: EssenceJson): Essence {
         return new Essence({
-            id: new EssenceId(essenceJson.id),
+            id: essenceJson.id,
             name: essenceJson.name,
             description: essenceJson.description,
             iconCode: essenceJson.iconCode,
@@ -57,18 +57,18 @@ class PartLoader {
             Array.from(Object.values(componentsJson))
                 .map(componentJson => this.loadComponent(componentJson))
         );
-        return new Map(loadedComponents.map(component => [component.id.value, component]));
+        return new Map(loadedComponents.map(component => [component.id, component]));
     }
 
     public async loadComponent(componentJson: CraftingComponentJson): Promise<CraftingComponent> {
         const document = await this._documentManager.getDocumentByUuid(componentJson.itemUuid);
         const itemData = this.extractItemData(document);
         return new CraftingComponent({
-            id: new CraftingComponentId(componentJson.itemUuid),
+            id: componentJson.itemUuid,
             name: itemData.name,
             imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
-            essences: this.identityCombinationFromRecord(componentJson.essences, EssenceId),
-            salvage: this.identityCombinationFromRecord(componentJson.salvage, CraftingComponentId),
+            essences: this.identityCombinationFromRecord(componentJson.essences, CombinableString),
+            salvage: this.identityCombinationFromRecord(componentJson.salvage, CombinableString),
         });
     }
 
@@ -77,18 +77,18 @@ class PartLoader {
             Array.from(Object.values(recipesJson))
                 .map(recipeJson => this.loadRecipe(recipeJson))
         );
-        return new Map(loadedRecipes.map(recipe => [recipe.id.value, recipe]));
+        return new Map(loadedRecipes.map(recipe => [recipe.id, recipe]));
     }
 
     public async loadRecipe(recipeJson: RecipeJson): Promise<Recipe> {
         const document = await this._documentManager.getDocumentByUuid(recipeJson.itemUuid);
         const itemData = this.extractItemData(document);
         return new Recipe({
-            id: new RecipeId(recipeJson.itemUuid),
+            id: recipeJson.itemUuid,
             name: itemData.name,
             imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
-            essences: this.identityCombinationFromRecord(recipeJson.essences, EssenceId),
-            catalysts: this.identityCombinationFromRecord(recipeJson.catalysts, CraftingComponentId),
+            essences: this.identityCombinationFromRecord(recipeJson.essences, CombinableString),
+            catalysts: this.identityCombinationFromRecord(recipeJson.catalysts, CombinableString),
             ingredientGroups: this.componentIdentityGroupsFromRecords(recipeJson.ingredientGroups),
             resultGroups: this.componentIdentityGroupsFromRecords(recipeJson.resultGroups)
         });
@@ -117,7 +117,7 @@ class PartLoader {
         if (!componentGroupsValues) {
             return [];
         }
-        return componentGroupsValues.map(value => this.identityCombinationFromRecord(value, CraftingComponentId))
+        return componentGroupsValues.map(value => this.identityCombinationFromRecord(value, CombinableString))
             .map(combination => new ComponentGroup(combination));
     }
 
@@ -210,15 +210,15 @@ class PartDictionary {
     }
 
     addComponent(craftingComponent: CraftingComponent) {
-        this._components.set(craftingComponent.id.value, craftingComponent);
+        this._components.set(craftingComponent.id, craftingComponent);
     }
 
     addRecipe(recipe: Recipe) {
-        this._recipes.set(recipe.id.value, recipe);
+        this._recipes.set(recipe.id, recipe);
     }
 
     addEssence(essence: Essence) {
-        this._essences.set(essence.id.value, essence);
+        this._essences.set(essence.id, essence);
     }
 
     deleteComponentById(id: string) {
@@ -234,12 +234,14 @@ class PartDictionary {
     }
 
     editEssence(modified: Essence): Essence {
-        if (this._essences.has(modified.id.value)) {
-            const previous = this._essences.get(modified.id.value);
-            this._essences.set(modified.id.value, modified);
-            return previous;
+        if (!this._essences.has(modified.id)) {
+            this._essences.set(modified.id, modified);
+            return null;
         }
-        return null;
+        const previous = this._essences.get(modified.id);
+        this._essences.set(modified.id, modified);
+        return previous;
+
     }
 }
 

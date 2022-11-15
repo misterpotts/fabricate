@@ -2,6 +2,26 @@ interface Combinable {
     elementId: string;
 }
 
+class CombinableString implements Combinable {
+
+    private static readonly _NO_VALUE: CombinableString = new CombinableString("");
+
+    private readonly _value: string;
+
+    constructor(value: string) {
+        this._value = value;
+    }
+
+    public static NO_VALUE(): CombinableString {
+        return CombinableString._NO_VALUE;
+    }
+
+    get elementId(): string {
+        return this._value;
+    }
+
+}
+
 class Unit<T extends Combinable> {
     private readonly _part: T;
     private readonly _quantity: number;
@@ -343,4 +363,4 @@ class Combination<T extends Combinable> {
     }
 }
 
-export { Unit, Combination, Combinable }
+export { Unit, Combination, Combinable, CombinableString }

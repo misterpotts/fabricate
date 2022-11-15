@@ -43,31 +43,31 @@ describe('A Crafting System Factory', () => {
         const craftingSystem: CraftingSystem = await craftingSystemFactory.make(systemSpec);
 
         expect(craftingSystem).not.toBeNull();
-        expect(craftingSystem.id.value).toEqual("alchemists-supplies-v1.6");
+        expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");
         expect(craftingSystem.enabled).toEqual(true);
         expect(craftingSystem.essences.length).toEqual(6);
-        expect(craftingSystem.essences.map(essence => essence.id.value))
+        expect(craftingSystem.essences.map(essence => essence.id))
             .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
         const components = craftingSystem.partDictionary.getComponents();
         expect(components.length).toEqual(30);
         components.forEach(component => {
-            const retrieved = craftingSystem.partDictionary.getComponent(component.id.value)
-            expect(retrieved.id.value).toEqual(component.id.value);
+            const retrieved = craftingSystem.partDictionary.getComponent(component.id)
+            expect(retrieved.id).toEqual(component.id);
             component.essences.members.forEach(essenceId => {
-                expect(craftingSystem.partDictionary.hasEssence(essenceId.value)).toEqual(true);
+                expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
             });
         })
         const recipes = craftingSystem.partDictionary.getRecipes();
         expect(recipes.length).toEqual(15);
         recipes.forEach(recipe => {
-            const retrieved = craftingSystem.partDictionary.getRecipe(recipe.id.value)
-            expect(retrieved.id.value).toEqual(recipe.id.value);
+            const retrieved = craftingSystem.partDictionary.getRecipe(recipe.id)
+            expect(retrieved.id).toEqual(recipe.id);
             recipe.essences.members.forEach(essenceId => {
-                expect(craftingSystem.partDictionary.hasEssence(essenceId.value)).toEqual(true);
+                expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
             });
             recipe.resultGroups.forEach(resultGroup => {
                 resultGroup.members.members.forEach(componentId => {
-                    expect(craftingSystem.partDictionary.hasComponent(componentId.value)).toEqual(true);
+                    expect(craftingSystem.partDictionary.hasComponent(componentId.elementId)).toEqual(true);
                 });
             });
         })

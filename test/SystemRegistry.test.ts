@@ -3,14 +3,13 @@ import * as Sinon from "sinon";
 import {DefaultSettingsManager} from "../src/scripts/interface/settings/FabricateSettings";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
 import Properties from "../src/scripts/Properties";
-import {CraftingComponentId, CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
+import {CombinableString, CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {DefaultSystemRegistry} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {RecipeJson} from "../src/scripts/crafting/Recipe";
 import {PartDictionaryFactory, PartLoader} from "../src/scripts/system/PartDictionary";
 import {DocumentManager} from "../src/scripts/foundry/DocumentManager";
-import {EssenceId} from "../src/scripts/common/Essence";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -225,16 +224,16 @@ describe("integration test", () => {
         expect(craftingSystemOne.partDictionary.hasRecipe(recipeThreeItemUuid)).toEqual(true);
 
         const recipeOneResult = craftingSystemOne.partDictionary.getRecipe(recipeOneItemUuid);
-        expect(recipeOneResult.id.value).toEqual(recipeOneItemUuid);
+        expect(recipeOneResult.id).toEqual(recipeOneItemUuid);
         expect(recipeOneResult.name).toEqual(itemData.get(recipeOneItemUuid).name);
         expect(recipeOneResult.imageUrl).toEqual(itemData.get(recipeOneItemUuid).img);
-        expect(recipeOneResult.essences.amountFor(new EssenceId(essenceOneId))).toEqual(1);
-        expect(recipeOneResult.essences.amountFor(new EssenceId(essenceTwoId))).toEqual(2);
+        expect(recipeOneResult.essences.amountFor(new CombinableString(essenceOneId))).toEqual(1);
+        expect(recipeOneResult.essences.amountFor(new CombinableString(essenceTwoId))).toEqual(2);
         expect(recipeOneResult.catalysts.size()).toEqual(0);
         expect(recipeOneResult.ingredientGroups.length).toEqual(0);
         expect(recipeOneResult.resultGroups.length).toEqual(1);
         expect(recipeOneResult.resultGroups[0].members.size()).toEqual(1);
-        expect(recipeOneResult.resultGroups[0].members.has(new CraftingComponentId(componentOneItemUuid))).toEqual(true);
+        expect(recipeOneResult.resultGroups[0].members.has(new CombinableString(componentOneItemUuid))).toEqual(true);
 
         expect(craftingSystemOne.partDictionary.getComponents().length).toEqual(3);
         expect(craftingSystemOne.partDictionary.hasComponent(componentOneItemUuid)).toEqual(true);
@@ -242,14 +241,14 @@ describe("integration test", () => {
         expect(craftingSystemOne.partDictionary.hasComponent(componentThreeItemUuid)).toEqual(true);
 
         const componentOneResult = craftingSystemOne.partDictionary.getComponent(componentOneItemUuid);
-        expect(componentOneResult.id.value).toEqual(componentOneItemUuid);
+        expect(componentOneResult.id).toEqual(componentOneItemUuid);
         expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
         expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).img);
         expect(componentOneResult.salvage.size()).toEqual(2);
-        expect(componentOneResult.salvage.amountFor(new CraftingComponentId(componentTwoItemUuid))).toEqual(2);
+        expect(componentOneResult.salvage.amountFor(new CombinableString(componentTwoItemUuid))).toEqual(2);
         expect(componentOneResult.essences.size()).toEqual(3);
-        expect(componentOneResult.essences.amountFor(new EssenceId(essenceOneId))).toEqual(2);
-        expect(componentOneResult.essences.amountFor(new EssenceId(essenceTwoId))).toEqual(1);
+        expect(componentOneResult.essences.amountFor(new CombinableString(essenceOneId))).toEqual(2);
+        expect(componentOneResult.essences.amountFor(new CombinableString(essenceTwoId))).toEqual(1);
 
         expect(craftingSystemOne.partDictionary.getEssences().length).toEqual(3);
         expect(craftingSystemOne.partDictionary.hasEssence(essenceOneId)).toEqual(true);

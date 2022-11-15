@@ -41,16 +41,16 @@ describe('Index and Retrieve', () => {
         expect(underTest).not.toBeNull();
         expect(underTest.size()).toBe(9);
 
-        expect(underTest.getComponent(testComponentOne.id.value)).toBe(testComponentOne);
-        expect(underTest.getComponent(testComponentTwo.id.value)).toBe(testComponentTwo);
-        expect(underTest.getComponent(testComponentThree.id.value)).toBe(testComponentThree);
-        expect(underTest.getComponent(testComponentFour.id.value)).toBe(testComponentFour);
-        expect(underTest.getComponent(testComponentFive.id.value)).toBe(testComponentFive);
+        expect(underTest.getComponent(testComponentOne.id)).toBe(testComponentOne);
+        expect(underTest.getComponent(testComponentTwo.id)).toBe(testComponentTwo);
+        expect(underTest.getComponent(testComponentThree.id)).toBe(testComponentThree);
+        expect(underTest.getComponent(testComponentFour.id)).toBe(testComponentFour);
+        expect(underTest.getComponent(testComponentFive.id)).toBe(testComponentFive);
 
-        expect(underTest.getRecipe(testRecipeOne.id.value)).toBe(testRecipeOne);
-        expect(underTest.getRecipe(testRecipeTwo.id.value)).toBe(testRecipeTwo);
-        expect(underTest.getRecipe(testRecipeThree.id.value)).toBe(testRecipeThree);
-        expect(underTest.getRecipe(testRecipeFour.id.value)).toBe(testRecipeFour);
+        expect(underTest.getRecipe(testRecipeOne.id)).toBe(testRecipeOne);
+        expect(underTest.getRecipe(testRecipeTwo.id)).toBe(testRecipeTwo);
+        expect(underTest.getRecipe(testRecipeThree.id)).toBe(testRecipeThree);
+        expect(underTest.getRecipe(testRecipeFour.id)).toBe(testRecipeFour);
     });
 
     test('Should throw errors when parts are not found', () => {

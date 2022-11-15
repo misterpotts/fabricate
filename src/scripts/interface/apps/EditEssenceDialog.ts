@@ -45,12 +45,12 @@ class EditEssenceDialog extends FormApplication {
             ui.notifications.error(this.formatErrorMessage(errors));
             return;
         }
-        await this.modifyEssenceDefinition(formData);
+        await this.createOrUpdateEssence(formData);
         await this.close();
         return formData;
     }
 
-    async modifyEssenceDefinition({
+    async createOrUpdateEssence({
         name,
         description,
         iconCode,
@@ -64,14 +64,14 @@ class EditEssenceDialog extends FormApplication {
         if (!this._craftingSystem) {
             throw new Error(`The crafting system with ID "${this._craftingSystem?.id}" does not exist.`)
         }
-        const modifiedEssence = new Essence({
-            id: this._essence.id,
+        const essence = new Essence({
             name,
             description,
-            iconCode,
-            tooltip
+            tooltip,
+            id: this._essence?.id ?? randomID(),
+            iconCode: iconCode ? iconCode : Properties.ui.defaults.essenceIconCode
         });
-        this._craftingSystem.partDictionary.editEssence(modifiedEssence);
+        this._craftingSystem.partDictionary.editEssence(essence);
         return FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
     }
 

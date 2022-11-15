@@ -1,7 +1,7 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
 
 import {Combination, Unit} from "../src/scripts/common/Combination";
-import {CraftingComponent, CraftingComponentId} from "../src/scripts/common/CraftingComponent";
+import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 
@@ -16,7 +16,7 @@ test('Should create an empty Combination',() => {
     expect(underTest.isEmpty()).toBe(true);
     expect(underTest.has(testComponentOne)).toBe(false);
     expect(underTest.has(new CraftingComponent({
-        id: new CraftingComponentId('XYZ345'),
+        id: 'XYZ345',
         salvage: Combination.EMPTY(),
         essences: Combination.EMPTY(),
         name: "Test Component"
@@ -42,7 +42,7 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.has(equivalentComponent))
         .toBe(true);
     let nonEquivalentComponent = new CraftingComponent({
-        id: new CraftingComponentId('XYZ345'),
+        id: 'XYZ345',
         salvage: Combination.EMPTY(),
         essences: Combination.EMPTY(),
         name: "Test Component"
@@ -77,7 +77,7 @@ test('Should create a Combination from a several Units',() => {
         imageUrl: testComponentOne.imageUrl
     }))).toBe(true);
     expect(underTest.has(new CraftingComponent({
-        id: new CraftingComponentId('XYZ345'),
+        id: 'XYZ345',
         salvage: Combination.EMPTY(),
         essences: Combination.EMPTY(),
         name: "Test Component"

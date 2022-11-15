@@ -1,5 +1,4 @@
 import {Combinable, Combination} from "./Combination";
-import {Identifiable, Identity} from "./Identifiable";
 import Properties from "../Properties";
 
 interface EssenceJson {
@@ -10,34 +9,10 @@ interface EssenceJson {
     iconCode: string;
 }
 
-class EssenceId implements Identity, Combinable {
-
-    private static readonly _NO_ID: EssenceId = new EssenceId("");
-
-    private readonly _value: string;
-
-    constructor(value: string) {
-        this._value = value;
-    }
-
-    public static NO_ID() {
-        return this._NO_ID;
-    }
-
-    get value(): string {
-        return this._value;
-    }
-
-    get elementId(): string {
-        return this.value;
-    }
-
-}
-
-class Essence implements Identifiable<EssenceId>, Combinable {
+class Essence implements Combinable {
 
     private readonly _name: string;
-    private readonly _id: EssenceId;
+    private readonly _id: string;
     private readonly _description: string;
     private readonly _tooltip: string;
     private readonly _iconCode: string;
@@ -49,7 +24,7 @@ class Essence implements Identifiable<EssenceId>, Combinable {
         iconCode = Properties.ui.defaults.essenceIconCode,
         description
     }: {
-        id: EssenceId;
+        id: string;
         name: string;
         tooltip: string;
         iconCode?: string;
@@ -64,7 +39,7 @@ class Essence implements Identifiable<EssenceId>, Combinable {
 
     toJson(): EssenceJson {
         return {
-            id: this._id.value,
+            id: this._id,
             name: this._name,
             tooltip: this._tooltip,
             iconCode: this._iconCode,
@@ -72,7 +47,7 @@ class Essence implements Identifiable<EssenceId>, Combinable {
         }
     }
 
-    get id(): EssenceId {
+    get id(): string {
         return this._id;
     }
 
@@ -100,7 +75,7 @@ class Essence implements Identifiable<EssenceId>, Combinable {
     }
 
     get elementId(): string {
-        return this._id.elementId;
+        return this._id;
     }
 
 }
@@ -109,25 +84,25 @@ class EssenceIdentityProvider {
 
     private static readonly _primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
-    private readonly _essenceIdentities: Map<EssenceId, number>;
-    private readonly _essencesById: Map<EssenceId, Essence>;
+    private readonly _essenceIdentities: Map<string, number>;
+    private readonly _essencesById: Map<string, Essence>;
 
     private constructor({
         essenceIdentities = new Map(),
         essencesBySlug = new Map()
     }: {
-        essenceIdentities?: Map<EssenceId, number>,
-        essencesBySlug?: Map<EssenceId, Essence>
+        essenceIdentities?: Map<string, number>,
+        essencesBySlug?: Map<string, Essence>
     }) {
         this._essenceIdentities = essenceIdentities;
         this._essencesById = essencesBySlug;
     }
 
-    public getNumericIdentityByEssenceId(id: EssenceId): number {
+    public getNumericIdentityByEssenceId(id: string): number {
         return this._essenceIdentities.get(id);
     }
 
-    public getEssenceDefinitionById(id: EssenceId): Essence {
+    public getEssenceDefinitionById(id: string): Essence {
         return this._essencesById.get(id);
     }
 
@@ -145,9 +120,9 @@ class EssenceIdentityProvider {
         });
     }
 
-    private static assignEssenceIdentities(essences: Essence[]): Map<EssenceId, number> {
+    private static assignEssenceIdentities(essences: Essence[]): Map<string, number> {
         const primes: number[] = this.generatePrimes(essences.length);
-        const essenceIdentities: Map<EssenceId, number> = new Map();
+        const essenceIdentities: Map<string, number> = new Map();
         essences.forEach((essence: Essence, index: number) => essenceIdentities.set(essence.id, primes[index]));
         return essenceIdentities;
     }
@@ -168,4 +143,4 @@ class EssenceIdentityProvider {
 
 }
 
-export { EssenceJson, Essence, EssenceId, EssenceIdentityProvider }
+export { EssenceJson, Essence, EssenceIdentityProvider }

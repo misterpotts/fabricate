@@ -1,15 +1,18 @@
 import {GameProvider} from "../../foundry/GameProvider";
 import Properties from "../../Properties";
 import {CraftingSystem} from "../../system/CraftingSystem";
+import {CombinableString, CraftingComponent} from "../../common/CraftingComponent";
+import {Essence} from "../../common/Essence";
+import {Combination} from "../../common/Combination";
 
 class EditComponentDialog extends FormApplication {
 
-    private readonly _item: any;
+    private readonly _component: CraftingComponent;
     private readonly _craftingSystem: CraftingSystem;
 
-    constructor(item: any, selectedSystem: CraftingSystem) {
+    constructor(component: CraftingComponent, selectedSystem: CraftingSystem) {
         super(null);
-        this._item = item;
+        this._component = component;
         this._craftingSystem = selectedSystem;
     }
 
@@ -39,19 +42,34 @@ class EditComponentDialog extends FormApplication {
             system: {
                 id: this._craftingSystem.id,
                 essences: this._craftingSystem.essences,
-                components: this._craftingSystem.components.filter(component => component.id !== this._item.id)
+                components: this._craftingSystem.components.filter(component => component.id !== this._component.id)
             },
-            item: {
-                id: this._item.id,
-                compendiumId: this._item.compendium,
-                imageUrl: this._item.img,
-                name: this._item.name,
-            },
-            salvage: {},
-            essences: {}
+            component: {
+                id: this._component.id,
+                name: this._component.name,
+                imageUrl: this._component.imageUrl,
+                essences: this.prepareEssenceData(this._craftingSystem.essences, this._component.essences),
+                salvage: this.prepareSalvageData(this._component.id, this._craftingSystem.components, this._component.salvage)
+            }
         };
     }
 
+    private prepareEssenceData(all: Essence[], includedAmounts: Combination<CombinableString>): { essence: Essence; amount: number }[] {
+        return all.map(essence => {
+            return {
+                essence,
+                amount: includedAmounts.amountFor(new CombinableString(essence.id))
+        }});
+    }
+
+    private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<CombinableString>): { component: CraftingComponent; amount: number }[] {
+        return all.filter(component => component.id !== thisComponentId)
+            .map(component => {
+                return {
+                    component,
+                    amount: includedAmounts.amountFor(new CombinableString(component.id))
+            }});
+    }
 }
 
 export { EditComponentDialog }
