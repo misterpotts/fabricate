@@ -1,9 +1,9 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 
-interface FabricateSetting<V> {
+interface FabricateSetting<T> {
     version: string;
-    value: V;
+    value: T;
 }
 
 interface FabricateSettingMigrator<F, T> {
@@ -12,75 +12,78 @@ interface FabricateSettingMigrator<F, T> {
     perform: (from: F) => T;
 }
 
-interface SettingsManager {
+interface SettingManager<T> {
 
-    read<T>(key: string): Promise<T>;
+    read(): Promise<T>;
 
-    write<T>(key: string, value: T): Promise<void>;
+    write(value: T): Promise<void>;
 
-    delete<T>(key: string): Promise<T>;
+    delete(): Promise<T>;
 
-    asVersionedSetting<T>(value: T, key: string): FabricateSetting<T>;
+    asVersionedSetting(value: T): FabricateSetting<T>;
 }
 
-class DefaultSettingsManager implements SettingsManager {
+class DefaultSettingManager<T> implements SettingManager<T> {
 
     private readonly _moduleId: string;
+    private readonly _settingKey: string;
+    private readonly _targetVersion: string;
     private readonly _gameProvider: GameProvider;
     private readonly _settingsMigrators: Map<string, FabricateSettingMigrator<any, any>>;
-    private readonly _targetVersionsByRootSettingKey: Map<string, string>;
 
     constructor({
         moduleId = Properties.module.id,
+        settingKey,
+        targetVersion,
         gameProvider = new GameProvider(),
         settingsMigrators = new Map(),
-        targetVersionsByRootSettingKey = new Map()
     }: {
         moduleId?: string;
+        settingKey?: string;
+        targetVersion: string
         gameProvider?: GameProvider;
         settingsMigrators?: Map<string, FabricateSettingMigrator<any, any>>;
-        targetVersionsByRootSettingKey?: Map<string, string>;
     }) {
         this._moduleId = moduleId;
+        this._settingKey = settingKey;
         this._gameProvider = gameProvider;
         this._settingsMigrators = settingsMigrators;
-        this._targetVersionsByRootSettingKey = targetVersionsByRootSettingKey;
+        this._targetVersion = targetVersion;
     }
 
-    asVersionedSetting<T>(value: T, key: string): FabricateSetting<T> {
+    public asVersionedSetting(value: T): FabricateSetting<T> {
         return {
             value,
-            version: this._targetVersionsByRootSettingKey.get(key)
+            version: this._targetVersion
         };
     }
 
-    async read<T>(key: string): Promise<T> {
-        const storedSetting: FabricateSetting<T> = this.load(key);
+    public async read(): Promise<T> {
+        const storedSetting: FabricateSetting<T> = this.load(this._settingKey);
         if (!storedSetting) {
-            throw new Error(`No Setting was found for the key "${key}". `);
+            throw new Error(`No Setting was found for the key "${this._settingKey}". `);
         }
         const errors = this.validateSetting(storedSetting);
         if (errors.length !== 0) {
-            throw new Error(`Unable to read the setting for the key "${key}". Caused by: ${errors.join(", ")}`);
+            throw new Error(`Unable to read the setting for the key "${this._settingKey}". Caused by: ${errors.join(", ")} `);
         }
-        const targetVersion = this._targetVersionsByRootSettingKey.get(key);
-        if (storedSetting.version === targetVersion) {
+        if (storedSetting.version === this._targetVersion) {
             return storedSetting.value;
         }
         return this.migrateSetting(storedSetting,
-            targetVersion,
+            this._targetVersion,
             this._settingsMigrators);
     }
 
-    async write<T>(key: string, value: T): Promise<void> {
-        await this.save(key, {
-            version: this._targetVersionsByRootSettingKey.get(key),
+    async write(value: T): Promise<void> {
+        await this.save(this._settingKey, {
+            version: this._targetVersion,
             value: value
         });
         return;
     }
 
-    private migrateSetting<T>(storedSetting: FabricateSetting<T>,
+    private migrateSetting(storedSetting: FabricateSetting<T>,
                               targetVersion: string,
                               settingsMigratorsByInputVersion: Map<string, FabricateSettingMigrator<any, any>>): T {
         let setting: FabricateSetting<any> = storedSetting;
@@ -109,16 +112,16 @@ class DefaultSettingsManager implements SettingsManager {
         return errors;
     }
 
-    save<T>(key: string, value: T): Promise<T> {
+    save(key: string, value: FabricateSetting<T>): Promise<FabricateSetting<T>> {
         return this._gameProvider.globalGameObject().settings.set(this._moduleId, key, value);
     }
 
-    load(key: string): any {
-        return this._gameProvider.globalGameObject().settings.get(this._moduleId, key);
+    load(key: string): FabricateSetting<T> {
+        return this._gameProvider.globalGameObject().settings.get(this._moduleId, key) as FabricateSetting<T>;
     }
 
-    async delete<T>(key: string): Promise<T> {
-        const setting = this._gameProvider.globalGameObject().settings.storage.get("world").getSetting(`${this._moduleId}.${key}`);
+    async delete(): Promise<T> {
+        const setting = this._gameProvider.globalGameObject().settings.storage.get("world").getSetting(`${this._moduleId}.${this._settingKey}`);
         await setting.delete();
         return setting;
     }
@@ -127,4 +130,4 @@ class DefaultSettingsManager implements SettingsManager {
 
 
 
-export { SettingsManager, DefaultSettingsManager, FabricateSetting, FabricateSettingMigrator }
+export { SettingManager, DefaultSettingManager, FabricateSetting, FabricateSettingMigrator }

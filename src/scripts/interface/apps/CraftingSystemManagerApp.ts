@@ -47,6 +47,7 @@ class CraftingSystemManagerApp extends FormApplication {
     async render(force: boolean = true) {
         if (this._selectedSystem?.id) {
             this._selectedSystem = await this.systemRegistry.getCraftingSystemById(this._selectedSystem.id);
+            await this._selectedSystem?.loadPartDictionary();
         }
         super.render(force);
     }
@@ -56,7 +57,10 @@ class CraftingSystemManagerApp extends FormApplication {
         if (!this._selectedSystem && craftingSystems.size > 0) {
             [this._selectedSystem] = craftingSystems.values();
         }
-        return { craftingSystems: Array.from(craftingSystems.values()), selectedSystem: this._selectedSystem };
+        return {
+            craftingSystems: Array.from(craftingSystems.values()),
+            selectedSystem: this._selectedSystem
+        };
     }
 
     activateListeners(html: JQuery) {
@@ -150,17 +154,16 @@ class CraftingSystemManagerApp extends FormApplication {
                     }
                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
                     if (!this._selectedSystem.partDictionary.hasComponent(document.uuid)) {
-                        this._selectedSystem.partDictionary.addComponent(new CraftingComponent({
+                        const craftingComponent = new CraftingComponent({
                             id: document.uuid,
                             name: document.name,
                             imageUrl: document.img,
                             essences: Combination.EMPTY(),
                             salvage: Combination.EMPTY()
-                        }));
+                        });
+                        this._selectedSystem.partDictionary.addComponent(craftingComponent);
                         await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                     }
-                    new EditComponentDialog(this._selectedSystem.partDictionary.getComponent(document.uuid), this._selectedSystem)
-                        .render();
                 } catch (e: any) {
                     console.warn(`Something was dropped onto a Fabricate drop zone, 
                         but the drop event was not able to be processed. 
@@ -176,7 +179,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!essenceToEdit) {
                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
                 }
-                new EditEssenceDialog(this._selectedSystem, essenceToEdit).render(); // todo: second arg can be essence, not essencedef
+                new EditEssenceDialog(this._selectedSystem, essenceToEdit).render();
                 break;
             case "deleteEssence":
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;

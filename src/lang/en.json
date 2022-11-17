@@ -85,6 +85,10 @@
         "content": "Delete {systemName}? This action cannot be undone.",
         "title": "Fabricate | Delete crafting system"
       },
+      "readErrorPrompt": {
+        "title": "Error Reading Crafting Systems",
+        "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
+      },
       "tabs": {
         "essences": {
           "description": "Essences are a quality of a component. They define something that the component has, not something that it is. Components might have multiple Essences in different quantities, all of which you can define for your system. Not every crafting system needs essences. However, if you do want to add them to components, you'll need to define them here first.",

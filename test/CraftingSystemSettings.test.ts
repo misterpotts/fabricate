@@ -1,5 +1,5 @@
 import {expect, test, describe, beforeEach} from "@jest/globals";
-import {DefaultSettingsManager, FabricateSettingMigrator} from "../src/scripts/interface/settings/FabricateSettings";
+import {DefaultSettingManager, FabricateSettingMigrator} from "../src/scripts/interface/settings/FabricateSettings";
 import * as Sinon from "sinon";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
 import {CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
@@ -33,9 +33,10 @@ describe("Settings Manager", () => {
     const craftingSystemsKey = "craftingSystems";
 
     test("Should load current version without mapping", async () => {
-        const underTest = new DefaultSettingsManager({
+        const underTest = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
             gameProvider: stubGameProvider,
-            targetVersionsByRootSettingKey: new Map([[craftingSystemsKey, targetVersion]])
+            targetVersion: targetVersion,
+            settingKey: craftingSystemsKey
         });
         const testSystemId = "abc123";
         const name = "Name";
@@ -64,7 +65,7 @@ describe("Settings Manager", () => {
                     }
                 }
             })
-        const result: Record<string, CraftingSystemJson> = await underTest.read(craftingSystemsKey);
+        const result: Record<string, CraftingSystemJson> = await underTest.read();
         const resultValue = result[testSystemId];
         expect(resultValue.details.name).toEqual(name);
         expect(resultValue.details.summary).toEqual(summary);
@@ -120,9 +121,10 @@ describe("Settings Manager", () => {
             toVersion: "1",
             perform: (input) => input
         }
-        const underTest = new DefaultSettingsManager({
+        const underTest = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
             gameProvider: stubGameProvider,
-            targetVersionsByRootSettingKey: new Map([[craftingSystemsKey, targetVersion]]),
+            targetVersion: targetVersion,
+            settingKey: craftingSystemsKey,
             settingsMigrators: new Map([["1", stubSettingMigrator], ["0", noOpSettingsMigrator]])
         });
         const testSystemId = "abc123";
@@ -130,7 +132,7 @@ describe("Settings Manager", () => {
         const summary = "Summary";
         const description = "Description";
         const author = "Author";
-        stubGetSettingsMethod.withArgs("fabricate", "craftingSystems")
+        stubGetSettingsMethod.withArgs("fabricate", craftingSystemsKey)
             .returns({
                 version: "0",
                 value: {
@@ -150,7 +152,7 @@ describe("Settings Manager", () => {
                     }
                 }
             })
-        const result: Record<string, CraftingSystemJson> = await underTest.read(craftingSystemsKey);
+        const result: Record<string, CraftingSystemJson> = await underTest.read();
         const resultValue = result[testSystemId];
         expect(resultValue.details.name).toEqual(name);
         expect(resultValue.details.summary).toEqual(summary);
@@ -159,8 +161,10 @@ describe("Settings Manager", () => {
     });
 
     test("Should drop unversioned settings", async () => {
-        const underTest = new DefaultSettingsManager({
-            gameProvider: stubGameProvider
+        const underTest = new DefaultSettingManager({
+            gameProvider: stubGameProvider,
+            targetVersion: "1",
+            settingKey: craftingSystemsKey
         });
         const testSystemId = "abc123";
         const name = "Name";
@@ -181,7 +185,7 @@ describe("Settings Manager", () => {
                     [testSystemId]: testSystem
                 }
             })
-        await expect(() => underTest.read(craftingSystemsKey))
+        await expect(() => underTest.read())
             .rejects
             .toThrow(`Unable to read the setting for the key "${craftingSystemsKey}". Caused by: Expected a non-null, non-empty setting version. `);
     });

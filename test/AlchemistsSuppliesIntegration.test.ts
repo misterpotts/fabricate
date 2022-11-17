@@ -4,7 +4,6 @@ import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
 import {SYSTEM_DEFINITION as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
-import {PartDictionaryFactory, PartLoader} from "../src/scripts/system/PartDictionary";
 import {DocumentManager} from "../src/scripts/foundry/DocumentManager";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
@@ -37,12 +36,14 @@ describe('A Crafting System Factory', () => {
         const systemSpec = AlchemistsSupplies;
 
         const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
-            partDictionaryFactory: new PartDictionaryFactory(new PartLoader(new StubDocumentManager()))
+            documentManager: new StubDocumentManager()
         });
 
         const craftingSystem: CraftingSystem = await craftingSystemFactory.make(systemSpec);
 
         expect(craftingSystem).not.toBeNull();
+        await craftingSystem.loadPartDictionary();
+
         expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");
         expect(craftingSystem.enabled).toEqual(true);
         expect(craftingSystem.essences.length).toEqual(6);

@@ -1,7 +1,6 @@
 import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
 import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
-import {FabricateSetting, SettingsManager} from "../interface/settings/FabricateSettings";
-import Properties from "../Properties";
+import {FabricateSetting, SettingManager} from "../interface/settings/FabricateSettings";
 import {SYSTEM_DEFINITION as ALCHEMISTS_SUPPLIES} from "../system_definitions/AlchemistsSuppliesV16";
 
 interface SystemRegistry {
@@ -26,99 +25,111 @@ interface SystemRegistry {
 
 }
 
+enum ErrorDecisionType {
+    DELETE,
+    RETAIN,
+    RESET
+}
+
+type ErrorDecisionProvider = (error: Error) => Promise<ErrorDecisionType>;
+
 class DefaultSystemRegistry implements SystemRegistry {
 
-    private readonly _settingsManager: SettingsManager;
+    private readonly _settingsManager: SettingManager<Record<string, CraftingSystemJson>>;
     private readonly _craftingSystemFactory: CraftingSystemFactory;
+    private readonly _errorDecisionProvider: ErrorDecisionProvider;
 
     constructor({
-        settingsManager,
-        craftingSystemFactory
+        settingManager,
+        craftingSystemFactory,
+        errorDecisionProvider
     }: {
-        settingsManager: SettingsManager,
-        craftingSystemFactory: CraftingSystemFactory
+        settingManager: SettingManager<Record<string, CraftingSystemJson>>;
+        craftingSystemFactory: CraftingSystemFactory;
+        errorDecisionProvider: ErrorDecisionProvider;
     }) {
-        this._settingsManager = settingsManager;
+        this._settingsManager = settingManager;
         this._craftingSystemFactory = craftingSystemFactory;
+        this._errorDecisionProvider = errorDecisionProvider;
     }
 
     async deleteCraftingSystemById(id: string): Promise<void> {
-        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        const allCraftingSystemSettings = await this._settingsManager.read();
         delete allCraftingSystemSettings[id];
-        await this._settingsManager.write(Properties.settings.craftingSystems.key, allCraftingSystemSettings);
+        await this._settingsManager.write(allCraftingSystemSettings);
     }
 
-    /**
-     * Currently loads all parts in all crafting systems. This can be reduced to just the selected system by pulling
-     * loading into part dictionary instances and out of the factory method
-     * todo: only load the selected system's parts
-    */
-    async getAllCraftingSystems(): Promise<Map<string, CraftingSystem>> {
+    public async getAllCraftingSystems(): Promise<Map<string, CraftingSystem>> {
         let allCraftingSystemSettings: Record<string, CraftingSystemJson> = {};
         try {
-            allCraftingSystemSettings = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+            allCraftingSystemSettings = await this._settingsManager.read();
         } catch (e: any) {
-            const error: Error = e instanceof Error ? <Error> e : null;
-            if (error) {
-                console.error(error);
-            } else {
-                console.error(error.message ?? `An unexpected error occurred when reading crafting systems: \n ${e}`);
-            }
-            // todo: make this a prompt and give them the options to dump the current value to console
-            console.error("Resetting crafting system settings to defaults. Any saved crafting systems except bundled systems will be lost. ");
-            await this.reset();
-            allCraftingSystemSettings = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+            allCraftingSystemSettings = await this.handleReadError(e);
         }
         const craftingSystems = await Promise.all(Object.values(allCraftingSystemSettings)
             .map(craftingSystemJson => this._craftingSystemFactory.make(craftingSystemJson)));
         return new Map(craftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
     }
 
+    private async handleReadError(e: any): Promise<Record<string, CraftingSystemJson>> {
+        const error: Error = e instanceof Error ? e : new Error(`An unexpected error occurred reading crafting systems. `);
+        const decision = await this._errorDecisionProvider(error);
+        switch (decision) {
+            case ErrorDecisionType.RESET:
+                await this._settingsManager.delete();
+                const bundledCraftingSystemsJson = this.getBundledCraftingSystemsJson();
+                await this._settingsManager.write(bundledCraftingSystemsJson);
+                return bundledCraftingSystemsJson;
+            default:
+                return {}
+        }
+    }
+
     async getCraftingSystemById(id: string): Promise<CraftingSystem> {
-        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read();
         const craftingSystemJson = allCraftingSystemSettings[id];
         return this._craftingSystemFactory.make(craftingSystemJson);
     }
 
     async cloneCraftingSystemById(id: string): Promise<CraftingSystem> {
-        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read();
         const sourceCraftingSystem = allCraftingSystemSettings[id];
         const clonedSystemJson = deepClone(sourceCraftingSystem);
         clonedSystemJson.id = randomID();
         clonedSystemJson.details.name = `${sourceCraftingSystem.details.name} (copy)`
         clonedSystemJson.locked = false;
         allCraftingSystemSettings[clonedSystemJson.id] = clonedSystemJson;
-        await this._settingsManager.write(Properties.settings.craftingSystems.key, allCraftingSystemSettings);
+        await this._settingsManager.write(allCraftingSystemSettings);
         return this._craftingSystemFactory.make(clonedSystemJson);
     }
 
-    async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
+    public async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
         const craftingSystemJson = craftingSystem.toJson();
-        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read(Properties.settings.craftingSystems.key);
+        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read();
         allCraftingSystemSettings[craftingSystem.id] = craftingSystemJson;
-        await this._settingsManager.write(Properties.settings.craftingSystems.key, allCraftingSystemSettings);
+        await this._settingsManager.write(allCraftingSystemSettings);
         return craftingSystem;
     }
 
-    getBundledCraftingSystemsJson(): Record<string, CraftingSystemJson> {
+    public getBundledCraftingSystemsJson(): Record<string, CraftingSystemJson> {
         const systemSpecifications: Record<string, CraftingSystemJson> = {};
         systemSpecifications[ALCHEMISTS_SUPPLIES.id] = ALCHEMISTS_SUPPLIES;
         return systemSpecifications;
     }
 
-    async reset(): Promise<void> {
-        await this._settingsManager.delete(Properties.settings.craftingSystems.key);
-        await this._settingsManager.write(Properties.settings.craftingSystems.key, this.getBundledCraftingSystemsJson());
+    public async reset(): Promise<void> {
+        await this._settingsManager.delete();
+        await this._settingsManager.write(this.getBundledCraftingSystemsJson());
     }
 
-    getDefaultSettingValue(): FabricateSetting<Record<string, CraftingSystemJson>> {
-        return this._settingsManager.asVersionedSetting(this.getBundledCraftingSystemsJson(), Properties.settings.craftingSystems.key);
+    public getDefaultSettingValue(): FabricateSetting<Record<string, CraftingSystemJson>> {
+        return this._settingsManager.asVersionedSetting(this.getBundledCraftingSystemsJson(), );
     }
 
-    async createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem> {
+    public async createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem> {
         const craftingSystem = await this._craftingSystemFactory.make(systemDefinition);
         return this.saveCraftingSystem(craftingSystem);
     }
 }
 
-export { SystemRegistry, DefaultSystemRegistry }
+export { SystemRegistry, DefaultSystemRegistry, ErrorDecisionType }

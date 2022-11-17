@@ -26,13 +26,14 @@ class EditEssenceDialog extends FormApplication {
         };
     }
 
-    protected _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
+    protected async _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
         console.log("Update object");
-        this.render();
+        await this.render();
         return undefined;
     }
 
-    render(force: boolean = true) {
+    async render(force: boolean = true) {
+        await this._craftingSystem.loadPartDictionary();
         super.render(force);
     }
 

@@ -3,31 +3,38 @@ import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory
 import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
-import {PartDictionaryFactory, PartLoader} from "./PartDictionary";
-import {DefaultDocumentManager} from "../foundry/DocumentManager";
+import {PartDictionary, PartDictionaryLoader} from "./PartDictionary";
+import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 
 class CraftingSystemFactory {
-    
-    private readonly _partDictionaryFactory;
+
+    private readonly _documentManager: DocumentManager;
 
     constructor({
-        partDictionaryFactory = new PartDictionaryFactory(new PartLoader(new DefaultDocumentManager()))
+        documentManager = new DefaultDocumentManager()
     }: {
-        partDictionaryFactory?: PartDictionaryFactory
+        documentManager?: DocumentManager
     }) {
-        this._partDictionaryFactory = partDictionaryFactory
+        this._documentManager = documentManager
     }
 
     public async make(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
+
+        const partDictionary = new PartDictionary({});
+        const partDictionaryLoader = new PartDictionaryLoader({
+            documentManager: this._documentManager,
+            partDictionaryJson: craftingSystemJson.parts
+        });
 
         return new CraftingSystem({
             id: craftingSystemJson.id,
             details: new CraftingSystemDetails(craftingSystemJson.details),
             locked: craftingSystemJson.locked,
             enabled: craftingSystemJson.enabled,
-            partDictionary: await this._partDictionaryFactory.make(craftingSystemJson.parts),
+            partDictionaryLoader: partDictionaryLoader,
+            partDictionary: partDictionary,
             craftingChecks: {
                 alchemy: new NoCraftingCheck(), // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI
                 recipe: new NoCraftingCheck() // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI

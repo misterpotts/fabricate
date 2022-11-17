@@ -1,14 +1,12 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
-import {DefaultSettingsManager} from "../src/scripts/interface/settings/FabricateSettings";
+import {DefaultSettingManager} from "../src/scripts/interface/settings/FabricateSettings";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
-import Properties from "../src/scripts/Properties";
 import {CombinableString, CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
-import {DefaultSystemRegistry} from "../src/scripts/registries/SystemRegistry";
+import {DefaultSystemRegistry, ErrorDecisionType} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {RecipeJson} from "../src/scripts/crafting/Recipe";
-import {PartDictionaryFactory, PartLoader} from "../src/scripts/system/PartDictionary";
 import {DocumentManager} from "../src/scripts/foundry/DocumentManager";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
@@ -201,22 +199,30 @@ describe("integration test", () => {
 
     test('Should read all settings values and build crafting system correctly', async () => {
 
-        const fabricateSettingsManager = new DefaultSettingsManager({
+        const fabricateSettingsManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
             gameProvider: stubGameProvider,
-            targetVersionsByRootSettingKey: new Map([[Properties.settings.craftingSystems.key, "1"]])
+            targetVersion: "1",
+            settingKey: "ANY_KEY"
         });
+        stubGetSettingsMethod.returns(storedSettingsValue);
+
         const stubDocumentManager = new StubDocumentManager(itemData);
         const craftingSystemFactory = new CraftingSystemFactory({
-            partDictionaryFactory: new PartDictionaryFactory(new PartLoader(stubDocumentManager))
+            documentManager: stubDocumentManager
         });
-        const underTest = new DefaultSystemRegistry({settingsManager: fabricateSettingsManager, craftingSystemFactory});
-
-        stubGetSettingsMethod.returns(storedSettingsValue);
+        const underTest = new DefaultSystemRegistry({
+            settingManager: fabricateSettingsManager,
+            craftingSystemFactory,
+            errorDecisionProvider: () => Promise.resolve(ErrorDecisionType.RETAIN)
+        });
 
         const result: Map<string, CraftingSystem> = await underTest.getAllCraftingSystems();
 
         expect(result).not.toBeUndefined();
         const craftingSystemOne = result.get(systemOneId);
+
+        expect(craftingSystemOne).not.toBeUndefined();
+        await craftingSystemOne.loadPartDictionary();
 
         expect(craftingSystemOne.partDictionary.getRecipes().length).toEqual(3);
         expect(craftingSystemOne.partDictionary.hasRecipe(recipeOneItemUuid)).toEqual(true);

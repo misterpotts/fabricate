@@ -11,7 +11,7 @@ import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
-import {PartDictionary, PartDictionaryJson} from "./PartDictionary";
+import {PartDictionary, PartDictionaryJson, PartDictionaryLoader} from "./PartDictionary";
 import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystemDetails";
 
 interface CraftingSystemJson {
@@ -32,6 +32,7 @@ class CraftingSystem {
     private readonly _locked: boolean;
 
     private readonly _partDictionary: PartDictionary;
+    private readonly _partDictionaryLoader: PartDictionaryLoader;
 
     private readonly _recipeCraftingCheck: CraftingCheck<Actor>;
     private readonly _alchemyCraftingCheck: CraftingCheck<Actor>;
@@ -50,7 +51,8 @@ class CraftingSystem {
         alchemyAttemptFactory = new DisabledAlchemyAttemptFactory(),
         craftingAttemptFactory,
         enabled,
-        partDictionary
+        partDictionary,
+        partDictionaryLoader
     }: {
         id: string;
         details: CraftingSystemDetails,
@@ -63,6 +65,7 @@ class CraftingSystem {
         alchemyAttemptFactory?: AlchemyAttemptFactory;
         craftingAttemptFactory: CraftingAttemptFactory;
         partDictionary: PartDictionary;
+        partDictionaryLoader: PartDictionaryLoader;
     }) {
         this._id = id;
         this._details = details;
@@ -73,6 +76,7 @@ class CraftingSystem {
         this._alchemyAttemptFactory = alchemyAttemptFactory;
         this._enabled = enabled;
         this._partDictionary = partDictionary;
+        this._partDictionaryLoader = partDictionaryLoader;
     }
 
     public setEnabled(value: boolean): CraftingSystem {
@@ -142,6 +146,10 @@ class CraftingSystem {
 
     setDetails(value: CraftingSystemDetails): void {
         this._details = value;
+    }
+
+    public async loadPartDictionary() {
+        await this._partDictionaryLoader.load(this._partDictionary);
     }
 
     public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<CraftingResult> {

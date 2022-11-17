@@ -2,9 +2,10 @@ import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
 import {CraftingSystemManagerApp} from "./interface/apps/CraftingSystemManagerApp";
 import FabricateApplication from "./interface/FabricateApplication";
-import {DefaultSettingsManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
-import {DefaultSystemRegistry} from "./registries/SystemRegistry";
+import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
+import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
+import {CraftingSystemJson} from "./system/CraftingSystem";
 
 Hooks.on("renderSidebarTab", (app: any, html: any) => {
     const GAME = new GameProvider().globalGameObject();
@@ -23,15 +24,26 @@ Hooks.on("renderSidebarTab", (app: any, html: any) => {
 
 Hooks.once('init', async () => {
     const gameProvider = new GameProvider();
-    const settingsManager = new DefaultSettingsManager({
-        moduleId: Properties.module.id,
-        targetVersionsByRootSettingKey: new Map([[Properties.settings.craftingSystems.key, Properties.settings.craftingSystems.targetVersion]]),
+    const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
         gameProvider: gameProvider,
-        settingsMigrators: new Map<string, Map<string, FabricateSettingMigrator<any, any>>>()
+        moduleId: Properties.module.id,
+        settingKey: Properties.settings.craftingSystems.key,
+        targetVersion: Properties.settings.craftingSystems.targetVersion,
+        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>()
     });
     const systemRegistry = new DefaultSystemRegistry({
-        settingsManager: settingsManager,
-        craftingSystemFactory: new CraftingSystemFactory({})
+        settingManager: craftingSystemSettingManager,
+        craftingSystemFactory: new CraftingSystemFactory({}),
+        errorDecisionProvider: async (error: Error) => {
+            const reset = await Dialog.confirm({
+                title: gameProvider.globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.readErrorPrompt.title`),
+                content: `<p>${gameProvider.globalGameObject().i18n.format(Properties.module.id + ".CraftingSystemManagerApp.readErrorPrompt.content", {errorMessage: error.message})}</p>`,
+            });
+            if (reset) {
+                return ErrorDecisionType.RESET;
+            }
+            return ErrorDecisionType.RETAIN;
+        }
     });
     FabricateApplication.systemRegistry = systemRegistry;
     // @ts-ignore

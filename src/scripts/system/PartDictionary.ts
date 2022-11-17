@@ -11,29 +11,28 @@ interface ItemData {
     imageUrl: string;
 }
 
-class PartDictionaryFactory {
-
-    private readonly _partLoader: PartLoader;
-
-    constructor(partLoader: PartLoader) {
-        this._partLoader = partLoader;
-    }
-
-    public async make(partDictionaryJson: PartDictionaryJson): Promise<PartDictionary> {
-        const essences = await this._partLoader.loadEssences(partDictionaryJson.essences);
-        const components = await this._partLoader.loadComponents(partDictionaryJson.components);
-        const recipes = await this._partLoader.loadRecipes(partDictionaryJson.recipes);
-        return new PartDictionary({components, recipes, essences});
-    }
-
-}
-
-class PartLoader {
+class PartDictionaryLoader {
 
     private readonly _documentManager: DocumentManager;
+    private readonly _partDictionaryJson: PartDictionaryJson;
 
-    constructor(documentManager: DocumentManager) {
+    constructor({
+        documentManager,
+        partDictionaryJson
+    } :{
+        documentManager: DocumentManager;
+        partDictionaryJson: PartDictionaryJson
+    }) {
         this._documentManager = documentManager;
+        this._partDictionaryJson = partDictionaryJson
+    }
+
+    public async load(partDictionary: PartDictionary): Promise<void> {
+        const essences = await this.loadEssences(this._partDictionaryJson.essences);
+        const components = await this.loadComponents(this._partDictionaryJson.components);
+        const recipes = await this.loadRecipes(this._partDictionaryJson.recipes);
+        partDictionary.accept({components, recipes, essences});
+        return;
     }
 
     public loadEssences(essences: Record<string, EssenceJson>): Map<string, Essence> {
@@ -123,6 +122,12 @@ class PartLoader {
 
 }
 
+interface PartDictionaryData {
+    components?: Map<string, CraftingComponent>;
+    recipes?: Map<string, Recipe>;
+    essences?: Map<string, Essence>;
+}
+
 class PartDictionary {
 
     private readonly _components: Map<string, CraftingComponent>;
@@ -133,11 +138,7 @@ class PartDictionary {
         components = new Map(),
         recipes = new Map(),
         essences = new Map()
-    }: {
-        components?: Map<string, CraftingComponent>,
-        recipes?: Map<string, Recipe>,
-        essences?: Map<string, Essence>
-    }) {
+    }: PartDictionaryData) {
         this._components = components;
         this._recipes = recipes;
         this._essences = essences;
@@ -243,6 +244,18 @@ class PartDictionary {
         return previous;
 
     }
+
+    accept(partDictionaryData: PartDictionaryData): void {
+        this._essences.clear();
+        partDictionaryData.essences.forEach((value, key) => this._essences.set(key, value));
+
+        this._components.clear();
+        partDictionaryData.components.forEach((value, key) => this._components.set(key, value));
+
+        this._recipes.clear();
+        partDictionaryData.recipes.forEach((value, key) => this._recipes.set(key, value));
+    }
+
 }
 
 interface PartDictionaryJson {
@@ -251,4 +264,4 @@ interface PartDictionaryJson {
     essences: Record<string, EssenceJson>
 }
 
-export { PartDictionary, PartDictionaryJson, PartDictionaryFactory, PartLoader }
+export { PartDictionary, PartDictionaryJson, PartDictionaryLoader }
