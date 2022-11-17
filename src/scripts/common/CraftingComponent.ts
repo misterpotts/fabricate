@@ -20,8 +20,8 @@ class CraftingComponent implements Combinable {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private readonly _essences: Combination<CombinableString>;
-    private readonly _salvage: Combination<CombinableString>;
+    private _essences: Combination<CombinableString>;
+    private _salvage: Combination<CombinableString>;
 
     constructor({
         id,
@@ -79,6 +79,13 @@ class CraftingComponent implements Combinable {
         }
     }
 
+    set essences(value: Combination<CombinableString>) {
+        this._essences = value;
+    }
+
+    set salvage(value: Combination<CombinableString>) {
+        this._salvage = value;
+    }
 }
 
 export { CraftingComponent, CombinableString, CraftingComponentJson }

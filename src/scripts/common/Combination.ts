@@ -361,6 +361,11 @@ class Combination<T extends Combinable> {
                 return { ...left, ...right}
             }, {});
     }
+
+    toUnits(): Unit<T>[] {
+        return this.units;
+    }
+
 }
 
 export { Unit, Combination, Combinable, CombinableString }

@@ -206,7 +206,7 @@
   }
 }
 
-.fabricate-inline-component-list {
+.fabricate-inline-part-list {
   display: inline-flex;
   position: relative;
   width: 100%;
@@ -250,7 +250,7 @@
         text-align: center;
       }
 
-      .fabricate-inline-component-list, .fabricate-component-list {
+      .fabricate-inline-part-list, .fabricate-component-list {
         margin-top: 10px;
         justify-content: center;
 
@@ -263,6 +263,11 @@
         cursor: pointer;
         height: 40px;
         width: 40px;
+
+        img {
+          display: table-cell;
+          vertical-align: middle;
+        }
       }
 
       .fabricate-item-name {
@@ -424,5 +429,45 @@
 
   }
 
+}
+
+.fabricate-component-manager {
+
+  .fabricate-component {
+    .fabricate-component-tile(64px; 20px;);
+  }
+
+  .fabricate-component-image {
+
+    img {
+      height: 126px;
+      width: 126px;
+    }
+
+  }
+
+  .fabricate-component-essence-editor {
+    position: absolute;
+    top: 74px;
+    left: 0;
+    padding-left: 140px;
+    width: 492px;
+
+    .fabricate-essence {
+      cursor: pointer;
+      background: #c7c1b5;
+      padding: 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+  }
+
+  .fabricate-component-salvage-editor {
+    margin-top: 8px;
+
+    .fabricate-component-list {
+      margin-top: 16px;
+    }
+  }
 }
 

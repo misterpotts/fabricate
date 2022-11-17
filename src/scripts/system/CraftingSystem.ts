@@ -96,12 +96,20 @@ class CraftingSystem {
         return this._enabled;
     }
 
+    get details(): CraftingSystemDetails {
+        return this._details;
+    }
+
     get essences(): Essence[] {
         return this._partDictionary.getEssences();
     }
 
     get components(): CraftingComponent[] {
         return this._partDictionary.getComponents();
+    }
+
+    get recipes(): Recipe[] {
+        return this._partDictionary.getRecipes();
     }
 
     get summary(): string {

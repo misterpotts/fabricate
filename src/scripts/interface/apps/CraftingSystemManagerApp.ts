@@ -9,6 +9,8 @@ import {Combination} from "../../common/Combination";
 import {SystemRegistry} from "../../registries/SystemRegistry";
 import {DefaultDocumentManager} from "../../foundry/DocumentManager";
 import FabricateApplication from "../FabricateApplication";
+import {Recipe} from "../../crafting/Recipe";
+import {PartDictionary} from "../../system/PartDictionary";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -57,10 +59,44 @@ class CraftingSystemManagerApp extends FormApplication {
         if (!this._selectedSystem && craftingSystems.size > 0) {
             [this._selectedSystem] = craftingSystems.values();
         }
+        await this._selectedSystem?.loadPartDictionary();
         return {
             craftingSystems: Array.from(craftingSystems.values()),
-            selectedSystem: this._selectedSystem
+            selectedSystem: {
+                id: this._selectedSystem.id,
+                name: this._selectedSystem.details.name,
+                author: this._selectedSystem.details.author,
+                description: this._selectedSystem.details.description,
+                summary: this._selectedSystem.details.summary,
+                enabled: this._selectedSystem.enabled,
+                locked: this._selectedSystem.locked,
+                essences: this._selectedSystem.essences,
+                components: this._selectedSystem.components.map(component => this.buildComponentViewData(component, this._selectedSystem.partDictionary)),
+                recipes: this._selectedSystem.recipes.map(recipe => this.buildRecipeViewData(recipe, this._selectedSystem.partDictionary))
+            }
         };
+    }
+
+    private buildComponentViewData(component: CraftingComponent, partDictionary: PartDictionary) {
+        return {
+            id: component.id,
+            name: component.name,
+            imageUrl: component.imageUrl,
+            essences: component.essences.toUnits().map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
+            salvage: component.salvage.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })
+        }
+    }
+
+    private buildRecipeViewData(recipe: Recipe, partDictionary: PartDictionary) {
+        return {
+            id: recipe.id,
+            name: recipe.name,
+            imageUrl: recipe.imageUrl,
+            catalysts: recipe.catalysts.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }),
+            essences: recipe.essences.toUnits().map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
+            ingredientGroups: recipe.ingredientGroups.map(group => group.members.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })),
+            resultGroups: recipe.ingredientGroups.map(group => group.members.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }))
+        }
     }
 
     activateListeners(html: JQuery) {

@@ -26,7 +26,7 @@
                     </td>
                     <td>
                         <div class="fabricate-essence-list">
-                            {{#each essences.units}}
+                            {{#each essences}}
                                 <span class="fabricate-essence-preview">
                                     {{quantity}} <i class="{{part.iconCode}}" data-tooltip="{{part.tooltip}}"></i>
                                 </span>
@@ -39,10 +39,10 @@
                         </div>
                     </td>
                     <td>
-                        <div class="fabricate-inline-component-list">
-                            {{#each salvage.units}}
-                                <div class="fabricate-component" data-tooltip="{{id}}">
-                                    <img src="/icons/commodities/materials/bowl-liquid-red.webp">
+                        <div class="fabricate-inline-part-list">
+                            {{#each salvage}}
+                                <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                    <img src="{{part.imageUrl}}">
                                     <div class="fabricate-info">
                                         <span class="fabricate-detail">{{quantity}}</span>
                                     </div>
