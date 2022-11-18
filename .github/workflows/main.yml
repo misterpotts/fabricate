@@ -26,6 +26,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
+    needs:
+      build
     steps:
 
       - uses: actions/checkout@v2
