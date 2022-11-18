@@ -23,6 +23,11 @@ jobs:
         id: gulp-build
         run: gulp build
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+
   release:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -30,7 +35,10 @@ jobs:
       build
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
 
       # Get the version from 'module.json'
       - name: Get Version
