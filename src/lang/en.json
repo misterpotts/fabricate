@@ -1,1 +1,121 @@
-{}
+{
+  "fabricate": {
+    "EditComponentDialog": {
+      "title": "Fabricate | Component"
+    },
+    "EditEssenceDialog": {
+      "title": "Fabricate | Essence",
+      "errors": {
+        "nameRequired": "You must provide an essence name"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "A description of the nature of the essence"
+      },
+      "iconCode": {
+        "label": "FontAwesome icon",
+        "placeholder": "fa-solid fa-mortar-pestle"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "The essence name"
+      },
+      "tooltip": {
+        "label": "Tooltip text",
+        "placeholder": "The tooltip text to display on the essence icon"
+      },
+      "submit": "Submit"
+    },
+    "EditCraftingSystemDetailDialog": {
+      "title": "Fabricate | Basic System Details",
+      "description": {
+        "label": "Description (optional)",
+        "placeholder": "A more detailed description of the lore and mechanics of your new crafting system"
+      },
+      "summary": {
+        "label": "Summary",
+        "placeholder": "A short summary of the new crafting system for the sidebar"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "My new crafting system"
+      },
+      "author": {
+        "label": "Author",
+        "placeholder": "Your name"
+      },
+      "submit": "Submit",
+      "errors": {
+        "nameRequired": "You must provide a crafting system name",
+        "summaryRequired": "You must provide a summary of the crafting system",
+        "invalidSystemDefinition": "Fabricate attempted to create an invalid Crafting System. Check the console (F12) for more information"
+      }
+    },
+    "CraftingSystemManagerApp": {
+      "title": "Fabricate | Crafting System Manager",
+      "sidebar": {
+        "create": "Create",
+        "import": "Import",
+        "search": "Find a System or Recipe"
+      },
+      "contextMenu": {
+        "export": "Export",
+        "delete": "Delete",
+        "duplicate": "Duplicate"
+      },
+      "editor": {
+        "locked": "This crafting system is bundled with Fabricate and cannot be modified",
+        "editDetails": "Edit",
+        "enabled": {
+          "label": "Enabled",
+          "description": "Components in a disabled system cannot be salvaged, the system's recipes cannot be crafted, and its alchemy cannot be performed."
+        },
+        "name": {
+          "label":  "Name"
+        },
+        "summary": {
+          "label":  "Summary"
+        },
+        "description": {
+          "label":  "Description",
+          "noValue": "This system doesn't have a detailed description yet."
+        }
+      },
+      "deleteSystemConfirm": {
+        "content": "Delete {systemName}? This action cannot be undone.",
+        "title": "Fabricate | Delete crafting system"
+      },
+      "readErrorPrompt": {
+        "title": "Error Reading Crafting Systems",
+        "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
+      },
+      "tabs": {
+        "essences": {
+          "description": "Essences are a quality of a component. They define something that the component has, not something that it is. Components might have multiple Essences in different quantities, all of which you can define for your system. Not every crafting system needs essences. However, if you do want to add them to components, you'll need to define them here first.",
+          "create": "Add a new Essence",
+          "tableHeadings": {
+            "preview": "Preview",
+            "name": "Name",
+            "description": "Description"
+          },
+          "buttons": {
+            "edit": "Edit essence",
+            "delete": "Delete essence"
+          }
+        }
+      }
+    },
+    "ui": {
+      "notifications": {
+        "submissionError": {
+          "prefix": "There were some problems with your form"
+        }
+      },
+      "sidebar": {
+        "buttons": {
+          "openCraftingSystemManager": "Crafting Systems"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+<div class="chat-card dnd5e fabricate-chat-card">
+    <header class="card-header flexrow">
+        <img src="{{iconUrl}}" title="{{iconTitle}}}" width="36" height="36">
+        <h3>{{cardTitle}}</h3>
+    </header>
+    <div class="card-content">
+        <p>{{description}}</p>
+        {{#if hasResults}}
+        <p>The following items were added to your inventory:</p>
+        <div class="fabricate-components">
+            <ul>
+                {{#each results}}
+                <li>
+                    <div class="component">
+                        <span class="quantity">{{quantity}}</span>
+                        <span class="name">{{name}}</span>
+                        <img src="{{imageUrl}}" title="{{name}}">
+                    </div>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+    </div>
+    <div class="card-footer">
+        {{#each footer}}
+            <span>{{.}}</span>
+        {{/each}}
+    </div>
+</div>

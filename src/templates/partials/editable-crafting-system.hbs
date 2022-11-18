@@ -1,0 +1,56 @@
+<header class="fabricate-crafting-system-header">
+    <button class="fabricate-edit-details" type="button" data-action="editDetails" data-system-id="{{system.id}}" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.editor.editDetails"}}">
+        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+    </button>
+    <h1>{{system.name}}</h1>
+    <h4>{{system.author}}</h4>
+    <h4>{{system.summary}}</h4>
+    <hr/>
+    <h4>{{localize "fabricate.CraftingSystemManagerApp.editor.description.label"}}:</h4>
+    {{#if system.description}}
+        <p>{{system.description}}</p>
+    {{else}}
+        <p>{{localize "fabricate.CraftingSystemManagerApp.editor.description.noValue"}}</p>
+    {{/if}}
+</header>
+
+<hr/>
+
+<div class="fabricate-system-toggle">
+    <form>
+        <div class="form-group">
+            <label for="enabled">{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.label"}}</label>
+            <div class="form-fields">
+                <input name="enabled" type="checkbox" {{#if system.enabled}}checked{{/if}} data-action="toggleSystemEnabled" data-system-id="{{system.id}}">
+            </div>
+        </div>
+        <div class="form-group"><p>{{localize "fabricate.CraftingSystemManagerApp.editor.enabled.description"}}</p></div>
+    </form>
+</div>
+
+<hr/>
+
+<nav data-group="fabricate" class="fabricate-crafting-system-navigation tabs">
+    <a class="item" data-tab="componentIds">Components</a>
+    <a class="item" data-tab="recipeIds">Recipes</a>
+    <a class="item" data-tab="checks">Checks</a>
+    <a class="item" data-tab="essences">Essences</a>
+    <a class="item" data-tab="alchemy">Alchemy</a>
+</nav>
+<section class="fabricate-crafting-system-body">
+    <div class="tab" data-group="fabricate" data-tab="componentIds">
+        {{> componentsTab}}
+    </div>
+    <div class="tab active" data-group="fabricate" data-tab="recipeIds">
+        {{> recipesTab}}
+    </div>
+    <div class="tab" data-group="fabricate" data-tab="checks">
+        {{> checksTab}}
+    </div>
+    <div class="tab" data-group="fabricate" data-tab="essences">
+        {{> essencesTab}}
+    </div>
+    <div class="tab" data-group="fabricate" data-tab="alchemy">
+        {{> alchemyTab}}
+    </div>
+</section>

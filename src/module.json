@@ -1,37 +1,30 @@
 {
-  "name": "fabricate",
+  "id": "fabricate",
   "title": "Fabricate",
+  "version": "0.7.0",
   "description": "A system-agnostic, flexible crafting module for FoundryVTT",
   "authors": [
     {
       "name": "misterpotts",
       "email": "matt@misterpotts.uk",
-      "discord": "ComicXero#0255"
+      "discord": "MisterPotts#0255",
+      "url": "https://www.patreon.com/misterpotts"
     }
   ],
-  "version": "0.5.6",
-  "minimumCoreVersion": "0.7.9",
-  "compatibleCoreVersion": "0.7.9",
-  "manifestPlusVersion": "1.0.0",
+  "compatibility": {
+    "minimum": "10",
+    "verified": "10"
+  },
   "url": "https://github.com/misterpotts/fabricate",
   "manifest": "",
   "download": "",
   "bugs": "https://github.com/misterpotts/fabricate/issues",
-  "type": "module",
   "packs": [
-    {
-      "name": "fabricate-test",
-      "label": "Fabricate: Test Ingredients and Recipes",
-      "path": "packs/fabricate-test.db",
-      "entity": "Item",
-      "module": "fabricate",
-      "system": "dnd5e"
-    },
     {
       "name": "alchemists-supplies-v16",
       "label": "Alchemist's Supplies (v1.6)",
-      "path": "packs/alchemists-supplies-v16.db",
-      "entity": "Item",
+      "path": "./packs/alchemists-supplies-v16.db",
+      "type": "Item",
       "module": "fabricate",
       "system": "dnd5e"
     }
@@ -46,18 +39,11 @@
     "./module.json",
     "./README.md"
   ],
-  "media": [
+  "languages": [
     {
-      "type": "icon",
-      "location": ""
-    }, 
-    {
-      "type": "cover",
-      "location": ""
-    },
-    {
-      "type": "screenshot",
-      "location": ""
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
     }
   ],
   "esmodules": [
@@ -65,12 +51,5 @@
   ],
   "styles": [
     "styles/module.css"
-  ],
-  "languages": [
-    {
-      "lang": "en",
-      "name": "English",
-      "path": "lang/en.json"
-    }
   ]
 }

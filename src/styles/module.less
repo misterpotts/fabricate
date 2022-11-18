@@ -153,4 +153,321 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23c1b496' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 }
 
+// ========================================================
+// NEW UI ELEMENT STYLES
+// ========================================================
+
+.fabricate-component-tile(@tile-size, @info-size) {
+  display: inline-flex;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  height: @tile-size;
+  width: @tile-size;
+  margin-right: calc(@tile-size / 6);
+  margin-bottom: calc(@tile-size / 6);
+  image {
+    border-radius: 5px;
+  }
+  .fabricate-component-name {
+    position: absolute;
+    width: @tile-size;
+    z-index: 1;
+    bottom: 0;
+    left: 0;
+    color: var(--color-text-light-1);
+    background: var(--color-border-dark-2);
+    font-size: calc(@tile-size / 8);
+    text-align: center;
+
+    padding: 2px 5px;
+    border-radius: 0 0 5px 5px;
+  }
+  .fabricate-info {
+    width: @info-size;
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    margin-right: calc(-1 * @info-size / 2);
+    margin-top: calc(-1 * @info-size / 2);
+    .fabricate-detail, .fabricate-button {
+      display: block;
+      width: @info-size;
+      height: @info-size;
+      color: var(--color-text-light-1);
+      background: var(--color-border-dark-2);
+      border-radius: calc(@info-size / 2);
+      font-size: calc(@info-size / 2);
+      padding-top: calc(@info-size / 5);
+      margin-bottom: calc(@info-size / 10);
+      text-align: center;
+    }
+  }
+}
+
+.fabricate-inline-part-list {
+  display: inline-flex;
+  position: relative;
+  width: 100%;
+}
+
+.fabricate-component-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fabricate-essence-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  span {
+    display: inline-flex;
+    margin-right: 12px;
+    i {
+      margin-left: 2px;
+    }
+  }
+}
+
+.fabricate-item-table {
+  margin-top: 18px;
+
+  .fabricate-component {
+    .fabricate-component-tile(40px; 20px;);
+  }
+
+  .fabricate-item-table-header {
+    min-height: 28px;
+  }
+
+  .fabricate-item-table-body {
+
+    .fabricate-item-table-row {
+      min-height: 34px;
+
+      td.fabricate-centered {
+        text-align: center;
+      }
+
+      .fabricate-inline-part-list, .fabricate-component-list {
+        margin-top: 10px;
+        justify-content: center;
+
+        .fabricate-no-salvage {
+          margin-top: -10px;
+        }
+      }
+
+      .fabricate-item-image {
+        cursor: pointer;
+        height: 40px;
+        width: 40px;
+
+        img {
+          display: table-cell;
+          vertical-align: middle;
+        }
+      }
+
+      .fabricate-item-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .fabricate-edit-item {
+        display: flex;
+        justify-content: right;
+
+        button {
+          height: 30px;
+          width: 30px;
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
+.fabricate-crafting-system-manager {
+
+  aside {
+    padding: 0 3px;
+  }
+
+  .fabricate-crafting-system-editor {
+    padding: 10px;
+
+    .fabricate-crafting-system-header {
+      position: relative;
+
+      .fabricate-edit-details {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 30px;
+        width: 30px;
+      }
+
+      .fabricate-locked {
+        text-align: center;
+        background: #8383832b;
+        padding: 5px 3px;
+        border-radius: 3px;
+        font-style: italic;
+      }
+
+    }
+
+    p.fabricate-no-system-selected {
+      text-align: center;
+    }
+
+    .fabricate-crafting-system-details {
+
+      .fabricate-essence-preview {
+        text-align: center;
+      }
+
+      .fabricate-crafting-system-navigation {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--color-border-light-2);
+        .item {
+          color: var(--color-text-dark-2);
+          font-weight: bold;
+          font-size: var(--font-size-16);
+          &.active {
+            font-weight: bolder;
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .fabricate-drop-zone {
+        text-align: center;
+        height: 68px;
+        margin-bottom: 20px;
+        margin-top: 20px;
+        background: #d1d1d138;
+        padding-top: 26px;
+        border: 1px dashed #7a78788c;
+        border-radius: 3px;
+      }
+
+      .fabricate-basic-system-details {
+
+        label {
+          flex: 1;
+        }
+
+        .form-group {
+          flex: 4;
+        }
+
+      }
+
+      .fabricate-alchemy-toggle, .fabricate-crafting-check-toggle {
+        label {
+          flex: 3;
+        }
+      }
+
+    }
+
+  }
+
+  .sidebar {
+    min-width: 240px;
+
+    button {
+      margin: 0 0 3px 0;
+    }
+
+    .pages-list {
+
+      .directory-list {
+        padding-right: 0;
+      }
+
+      .fabricate-crafting-system {
+        border-radius: 5px;
+        padding: 2px 5px;
+        margin: 3px 0;
+
+        &.selected {
+          background: #262626ed;
+        }
+
+        .fabricate-crafting-system-name {
+          padding: 5px;
+          color: var(--color-text-light-highlight);
+          font-size: var(--font-size-14);
+          line-height: var(--line-height-12);
+        }
+
+        .fabricate-crafting-system-summary {
+          padding: 0 5px 5px 5px;
+          margin: -2px 0 0 0;
+          line-height: var(--line-height-12);
+          font-size: var(--font-size-12);
+          color: var(--color-text-light-4);
+        }
+
+        img {
+          margin: 5px;
+          border-radius: 3px;
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
+.fabricate-component-manager {
+
+  .fabricate-component {
+    .fabricate-component-tile(64px; 20px;);
+  }
+
+  .fabricate-component-image {
+
+    img {
+      height: 126px;
+      width: 126px;
+    }
+
+  }
+
+  .fabricate-component-essence-editor {
+    position: absolute;
+    top: 74px;
+    left: 0;
+    padding-left: 140px;
+    width: 492px;
+
+    .fabricate-essence {
+      cursor: pointer;
+      background: #c7c1b5;
+      padding: 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+  }
+
+  .fabricate-component-salvage-editor {
+    margin-top: 8px;
+
+    .fabricate-component-list {
+      margin-top: 16px;
+    }
+  }
+}
 

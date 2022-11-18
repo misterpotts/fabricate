@@ -1,45 +1,102 @@
 import Properties from "./Properties";
-import {FabricateLifecycle} from "./application/FabricateLifecycle";
-import {CraftingSystemSpecification} from "./core/CraftingSystemSpecification";
-import {CompendiumImportingCraftingSystemFactory, CraftingSystemFactory} from "./core/CraftingSystemFactory";
-import FabricateApplication from "./application/FabricateApplication";
+import {GameProvider} from "./foundry/GameProvider";
+import {CraftingSystemManagerApp} from "./interface/apps/CraftingSystemManagerApp";
+import FabricateApplication from "./interface/FabricateApplication";
+import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
+import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
+import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
+import {CraftingSystemJson} from "./system/CraftingSystem";
 
-
-Hooks.once('ready', loadCraftingSystems);
-Hooks.once('ready', () => {
-    FabricateLifecycle.init();
-});
-
-/**
- * Loads all Crafting Systems with a System Specification declared with the Crafting System Registry.
- * */
-async function loadCraftingSystems(): Promise<void> {
-    const systemSpecifications = FabricateApplication.systems.systemSpecifications;
-    console.log(`${Properties.module.label} | Loading ${systemSpecifications.length} crafting systems. `);
-    systemSpecifications.forEach(FabricateLifecycle.registerCraftingSystemSettings);
-    systemSpecifications.forEach(loadCraftingSystem);
-    const systemNames = systemSpecifications.map((systemSpec: CraftingSystemSpecification) => systemSpec.name);
-    console.log(`${Properties.module.label} | Loaded ${systemSpecifications.length} crafting systems: ${systemNames.join(', ')} `);
-}
-
-/**
- * Loads a single Crafting System from a System Specification, which must include a Compendium Pack Key. Item data from
- * the Compendium Pack is used to load the Recipes and Crafting Components into the system from the compendium. The
- * Fabricator, supported systems and name provided in the spec are all preserved.
- *
- * @param systemSpec `CraftingSystemSpecification` that determines how a system behaves and which compendium pack content
- * for the system should be loaded from.
- * */
-async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Promise<void> {
-    console.log(`${Properties.module.label} | Loading ${systemSpec.name} from Compendium pack ${systemSpec.compendiumPackKey}. `);
-    if (systemSpec.supportedGameSystems.indexOf(game.system.id) < 0) {
-        console.log(`${Properties.module.label} | ${systemSpec.name} does not support ${game.system.id}! `);
+Hooks.on("renderSidebarTab", (app: any, html: any) => {
+    const GAME = new GameProvider().globalGameObject();
+    if (!(app instanceof ItemDirectory) || !GAME.user.isGM) {
         return;
     }
-    const craftingSystemFactory: CraftingSystemFactory = new CompendiumImportingCraftingSystemFactory(systemSpec);
-    const craftingSystem = await craftingSystemFactory.make();
-    craftingSystem.enabled = game.settings.get(Properties.module.name, Properties.settingsKeys.craftingSystem.enabled(systemSpec.compendiumPackKey));
-    FabricateApplication.systems.register(craftingSystem);
-    console.log(`${Properties.module.label} | Loaded ${systemSpec.name}. `);
-}
+    const buttons = html.find(`.header-actions.action-buttons`);
+    const buttonClass = Properties.ui.buttons.openCraftingSystemManager.class;
+    const buttonText = GAME.i18n.localize(`${Properties.module.id}.ui.sidebar.buttons.openCraftingSystemManager`);
+    const button = $(`<button class="${buttonClass}"><i class="fa-solid fa-flask-vial"></i> ${buttonText}</button>`);
+    button.on('click', async (_event) => {
+        await new CraftingSystemManagerApp().render();
+    });
+    buttons.append(button);
+});
+
+Hooks.once('init', async () => {
+    const gameProvider = new GameProvider();
+    const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
+        gameProvider: gameProvider,
+        moduleId: Properties.module.id,
+        settingKey: Properties.settings.craftingSystems.key,
+        targetVersion: Properties.settings.craftingSystems.targetVersion,
+        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>()
+    });
+    const systemRegistry = new DefaultSystemRegistry({
+        settingManager: craftingSystemSettingManager,
+        craftingSystemFactory: new CraftingSystemFactory({}),
+        errorDecisionProvider: async (error: Error) => {
+            const reset = await Dialog.confirm({
+                title: gameProvider.globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.readErrorPrompt.title`),
+                content: `<p>${gameProvider.globalGameObject().i18n.format(Properties.module.id + ".CraftingSystemManagerApp.readErrorPrompt.content", {errorMessage: error.message})}</p>`,
+            });
+            if (reset) {
+                return ErrorDecisionType.RESET;
+            }
+            return ErrorDecisionType.RETAIN;
+        }
+    });
+    FabricateApplication.systemRegistry = systemRegistry;
+    // @ts-ignore
+    globalThis.ui.CraftingSystemManagerApp = CraftingSystemManagerApp;
+    gameProvider.globalGameObject().settings.register(Properties.module.id, "craftingSystems", {
+        name: "",
+        hint: "",
+        scope: "world",
+        config: false,
+        type: Object,
+        default: systemRegistry.getDefaultSettingValue(),
+        onChange: () => {
+            Object.values(ui.windows)
+                .find(w => w instanceof CraftingSystemManagerApp)
+                ?.render(true);
+        }
+    });
+});
+
+// Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData: any) => {
+//     CraftingTab.bind(sheetData, sheetHtml, eventData);
+// });
+//
+// Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any) => {
+//     ItemRecipeTab.bind(sheetData, sheetHtml);
+// });
+
+Hooks.once('ready', () => {
+
+    Promise.all([
+        getTemplate(Properties.module.templates.partials.editableSystem),
+        getTemplate(Properties.module.templates.partials.readOnlySystem),
+        getTemplate(Properties.module.templates.partials.recipesTab),
+        getTemplate(Properties.module.templates.partials.componentsTab),
+        getTemplate(Properties.module.templates.partials.essencesTab),
+        getTemplate(Properties.module.templates.partials.alchemyTab),
+        getTemplate(Properties.module.templates.partials.checksTab),
+    ]).then(templates => {
+        Handlebars.registerPartial('editableSystem', templates[0]);
+        Handlebars.registerPartial('readOnlySystem', templates[1]);
+        Handlebars.registerPartial('recipesTab', templates[2]);
+        Handlebars.registerPartial('componentsTab', templates[3]);
+        Handlebars.registerPartial('essencesTab', templates[4]);
+        Handlebars.registerPartial('alchemyTab', templates[5]);
+        Handlebars.registerPartial('checksTab', templates[6]);
+    });
+
+    Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
+        // @ts-ignore
+        return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+    });
+
+
+});
+
 

@@ -1,4 +1,4 @@
-![](https://img.shields.io/badge/Foundry-v0.7.9-informational)
+![](https://img.shields.io/badge/Foundry-v10-informational)
 <!--- Downloads @ Latest Badge -->
 ![Latest Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/latest/total?sort=semver&style=for-the-badge)
 <!--- Downloads @ Latest Badge -->
@@ -12,67 +12,69 @@
 
 # Fabricate
 
-Fabricate is a system-agnostic, flexible crafting module for FoundryVTT. The current version is in the late stages of 
-development. It supports the majority of the functionality of "Alchemist's Supplies V1.6" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/). 
-Once complete, Fabricate will ship with several crafting systems, but initial support will be limited to D&D 5E.
+Fabricate is a system-agnostic, flexible crafting module for FoundryVTT. 
+The current version is in the late stages of development. 
+It is working towards back-filling functionality of "Alchemist's Supplies V1.6" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/) for Foundry VVT Version 10+. 
+Once complete, Fabricate will ship with several crafting systems for D&D 5E.
 
-Here's a quick preview of one of the early features - crafting from a Recipe that requires component essences.
+Here's a quick preview of the early features.
 
-![](/screens/fabricate-preview-3.gif)
+## Creating Crafting Systems
 
-Crafting from components containing essences without a recipe.
+At the moment a crafting system is little more than a group of related components, essences and recipes.
+As Fabricate receives new features, it will define a set of behaviours, checks and rules to provide a complete, custom framework for crafting.
 
-![](/screens/fabricate-preview-5.gif)
+![](/screens/fabricate-system-creation.gif)
+
+## Creating Essences 
+
+Essences are a quality of a component. 
+They define something that the component has, not something that it is. 
+Components might have multiple Essences in different quantities, all of which you can define for your system.
+
+![](/screens/fabricate-essence-creation.gif)
+
+## Creating Crafting Components
+
+You can turn any items into crafting components.
+These are the items that your crafting system consumes and produces. 
+They can be consumables, like potions.
+They might be equipment, like armour and weapons. 
+Equally, they can be trinkets used as ingredients, such as "Iron Ore" or an "Adult Blue Dragon Tooth".
+You can imbue them with Essences, as well as define the components that can be salvaged by breaking them down.
+
+![](/screens/fabricate-component-editing.gif)
 
 # Changelog
 
 The most recent changes to Fabricate are documented here.
 
-## Version 0.5.6
+## Version 0.7.0
 
-- The Actor crafting tab now lists owned and known recipes 
-- Known and owned recipes with sufficient ingredients can be crafted from the actor crafting tab
-- Known and owned recipes with insufficient ingredients are disabled in the select box
-- Crafting results are now written to the game chat  
-- Refactored the Fabricator significantly to enable crafting checks, failure outcomes and other upcoming features
-- Chat messages are significantly improved 
-- Crafting tab no longer lists unusable items when crafting from components to combine essences 
-- Crafting tab no longer lists recipes to craft if none can be crafted
-- Recipe tab no longer allows attempting to craft recipes with insufficient owned components 
-
-## Version 0.4.0
-- The D&D 5E Actor Sheet now displays a crafting tab for systems that support 5E
-- The Actor5E Crafting Tab lists:
-    - the total number of crafting components across any number and combination of inventory items for the same
-    - the craftable recipes from the selected crafting system
-    - the crafting systems thatcan be selected to craft from
-- The Actor5E Crafting Tab supports crafting without a recipe for Alchemist's Supplies (v1.6 Alchemical Bombs only)
+- Support for v10
+- Localization and support for English
+- Create, duplicate and delete crafting systems
+- Create, edit and delete essences
+- Import items to create components, as well as delete them
+- Add and remove essences and salvage from components
 
 If you'd like to be involved I'd love to have some help! I'm always happy to talk to you about how people can contribute.
 
 # License
+
 This software is distributed with an MIT License.
 
 # Attribution
-This project is based on a FVTT Typescript Module [Template](https://github.com/League-of-Foundry-Developers/foundry-typescript-template) provided 
-by the League of Extraordinary Foundry Developers and attributed to Spacemandev.
+
+This project is based on a FVTT Typescript Module [Template](https://github.com/League-of-Foundry-Developers/foundry-typescript-template).
+The template was provided by the League of Extraordinary Foundry Developers and is attributed to Spacemandev.
 
 ## Crafting systems
 
 - "Alchemist's Supplies" belongs to /u/calculusChild and is bundled with Fabricate with their consent 
 
-# Support
-
-[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dmisterpotts%26type%3Dpatrons&style=for-the-badge)](https://patreon.com/misterpotts)
-
-You can support me on Patreon, or just follow me there for progress updates. 
-
-# Keeping in touch
-
-You can join my [Discord server](https://discord.gg/QNGn6cznJs) if you want to discuss Fabricate in a public forum, or DM me on Discord at `MisterPotts#0255`.
-
 ## Other Acknowledgements
 
 Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `valravn#7351`, `ghost#2000`, `BadIdeasBureau#7024` and `Calego#0914`. Join their Discord below.
 
-[![Discord](https://img.shields.io/discord/732325252788387980)](https://discord.gg/DrrcCtKF4C)
+[![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/ymTxJECYeg)

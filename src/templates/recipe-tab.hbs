@@ -1,0 +1,78 @@
+<div class="recipe-tab-content">
+    {{#if recipe.ingredients}}
+    <div class="ingredients">
+        <div class="description">
+            <h3>Recipe Ingredients</h3>
+            <p>This recipe requires the following ingredients:</p>
+        </div>
+        <div class="fabricate-components">
+            <ul>
+                {{#each recipe.ingredients}}
+                <li>
+                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{id}}" data-system-id="{{systemId}}">
+                        <div class="component">
+                            <span class="quantity">{{quantity}}</span>
+                            <span class="name">{{name}}</span>
+                            {{#unless consumed}}
+                            <span class="not-consumed"><i class="fas fa-minus-circle" title="Not consumed"></i></span>
+                            {{/unless}}
+                                <img src="{{{imageUrl}}}" class="compendium-reference" title="{{name}}"/>
+                        </div>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    {{/if}}
+    {{#if recipe.essences}}
+    <div class="essences">
+        <div class="description">
+            <h3>Recipe Essences</h3>
+            <p>This recipe requires the following essences: {{{essenceIconSeries recipe.essences recipe.systemId}}}</p>
+        </div>
+    </div>
+    {{/if}}
+    <div class="results">
+        <div class="description">
+            <h3>Recipe Results</h3>
+            <p>This recipe produces the following results:</p>
+        </div>
+        <div class="fabricate-components">
+            <ul>
+                {{#each recipe.results}}
+                {{#ifEquals actionType "ADD"}}
+                <li>
+                    <a title="View in Compendium" class="open-compendium-item" data-part-id="{{id}}" data-system-id="{{systemId}}">
+                        <div class="component">
+                            <span class="quantity">{{quantity}}</span>
+                            <span class="name">{{name}}</span>
+                                <img src="{{{imageUrl}}}" class="compendium-reference" title="{{name}}"/>
+                        </div>
+                    </a>
+                </li>
+                {{/ifEquals}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    {{#if item.isOwned}}
+    <div class="controls">
+        {{#if system.enabled}}
+            {{#if isCraftable}}
+            <a title="Craft">
+                <p class="craft-button"><i class="fas fa-flask"></i> Craft</p>
+            </a>
+            {{else}}
+                <p class="craft-button-disabled"><i class="fas fa-times-circle"></i> Not enough Components</p>
+            {{/if}}
+        {{else}}
+        <p class="craft-button"><i class="fas fa-lock"></i> The crafting system "{{system.name}}" is disabled! </p>
+        {{/if}}
+    </div>
+    {{else}}
+    <div class="no-controls">
+        <p>Add this recipe to an Actor's inventory to use it</p>
+    </div>
+    {{/if}}
+</div>

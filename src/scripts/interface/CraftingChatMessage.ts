@@ -1,15 +1,39 @@
-import {FabricationOutcome, OutcomeType} from "../core/FabricationOutcome";
-import {FabricationAction} from "../core/FabricationAction";
-import {CraftingError} from "../error/CraftingError";
+import Properties from "../Properties";
+import {Combination} from "../common/Combination";
+import {CraftingComponent} from "../common/CraftingComponent";
+import {GameProvider} from "../foundry/GameProvider";
+
+enum IconType {
+    ERROR,
+    FAILURE,
+    FIRE,
+    EARTH,
+    WATER,
+    AIR,
+    RANDOM
+}
+
+interface CraftingChatMessageConfig {
+    iconType: IconType;
+    description: string;
+    title?: string;
+    createdItems?: Combination<CraftingComponent>;
+    consumedItems?: Combination<CraftingComponent>;
+}
 
 class CraftingChatMessage {
 
     private static readonly _unexpectedErrorIconUrl = 'modules/fabricate/assets/caution.svg';
+
     private static readonly _craftingFailureIconUrl = 'modules/fabricate/assets/fabricate-error.png';
+
     private static readonly _fabricateFireIconUrl = 'modules/fabricate/assets/fabricate-fire.png';
     private static readonly _fabricateEarthIconUrl = 'modules/fabricate/assets/fabricate-earth.png';
     private static readonly _fabricateWaterIconUrl = 'modules/fabricate/assets/fabricate-water.png';
     private static readonly _fabricateAirIconUrl = 'modules/fabricate/assets/fabricate-air.png';
+
+    private static readonly _defaultTitle = 'Crafting Result';
+
     private static readonly _defaultImages: string[] = [
         CraftingChatMessage._fabricateFireIconUrl,
         CraftingChatMessage._fabricateEarthIconUrl,
@@ -17,43 +41,37 @@ class CraftingChatMessage {
         CraftingChatMessage._fabricateAirIconUrl
     ];
 
-    private readonly _cardTitle: string;
-    private readonly _cardContent: string;
-    private readonly _cardFooterParts: string[];
-    private readonly _addedItems: FabricationAction<Item.Data>[];
-    private readonly _cardImageUrl: string;
-    private readonly _cardImageTitle: string;
+    private readonly _title: string;
+    private readonly _description: string;
+    private readonly _createdItems: Combination<CraftingComponent>;
+    private readonly _consumedItems: Combination<CraftingComponent>;
+    private readonly _iconType;
 
-    constructor(cardTitle: string,
-                cardContent: string,
-                cardFooterParts: string[],
-                addedItems?: FabricationAction<Item.Data>[],
-                cardImageUrl?: string,
-                cardImageTitle?: string) {
-        this._cardTitle = cardTitle;
-        this._cardContent = cardContent;
-        this._addedItems = addedItems;
-        this._cardFooterParts = cardFooterParts;
-        this._cardImageUrl = cardImageUrl;
-        this._cardImageTitle = cardImageTitle;
+    constructor(config: CraftingChatMessageConfig) {
+        this._title = config.title;
+        this._description = config.description;
+        this._createdItems = config.createdItems;
+        this._consumedItems = config.consumedItems;
+        this._iconType = config.iconType;
     }
 
-    public static fromFabricationError(error: CraftingError) {
-        return new CraftingChatMessage('Crafting error', error.message, [], [], CraftingChatMessage._craftingFailureIconUrl, 'Crafting ');
-    }
-
-    static fromUnexpectedError(error: Error) {
-        return new CraftingChatMessage('Something went wrong', error.message, [], [], CraftingChatMessage._unexpectedErrorIconUrl, 'Oops!');
-    }
-
-    public static fromFabricationOutcome(outcome: FabricationOutcome): CraftingChatMessage {
-        const footerParts: string[] = outcome.removedComponents && outcome.removedComponents.length > 0 ? ['Removed:'].concat(outcome.removedComponents) : ['No components were removed'];
-        const cardImageUrl = outcome.type === OutcomeType.SUCCESS ? CraftingChatMessage.randomCardImageUrl : CraftingChatMessage._craftingFailureIconUrl;
-        return new CraftingChatMessage(outcome.title, outcome.description, footerParts, outcome.addedItems, cardImageUrl);
-    }
-
-    get cardImageUrl() {
-        return this._cardImageUrl;
+    get iconUrl() {
+        switch (this._iconType) {
+            case IconType.RANDOM:
+                return CraftingChatMessage.randomCardImageUrl
+            case IconType.ERROR:
+                return CraftingChatMessage._unexpectedErrorIconUrl;
+            case IconType.FAILURE:
+                return CraftingChatMessage._craftingFailureIconUrl;
+            case IconType.EARTH:
+                return CraftingChatMessage._fabricateEarthIconUrl;
+            case IconType.AIR:
+                return CraftingChatMessage._fabricateAirIconUrl;
+            case IconType.WATER:
+                return CraftingChatMessage._fabricateWaterIconUrl;
+            case IconType.FIRE:
+                return CraftingChatMessage._fabricateFireIconUrl;
+        }
     }
 
     static get randomCardImageUrl() {
@@ -61,33 +79,39 @@ class CraftingChatMessage {
         return CraftingChatMessage._defaultImages[selectedImageIndex];
     }
 
-    get cardImageTitle(): string {
-        if (this._cardImageTitle) {
-            return this._cardImageTitle;
-        }
-        return 'Fabricate Crafting';
+    get iconTitle(): string {
+        return CraftingChatMessage._defaultTitle;
     }
 
-    get cardTitle(): string {
-        return this._cardTitle
+    get title(): string {
+        return this._title ? this._title : CraftingChatMessage._defaultTitle;
     }
 
-    get footerParts() {
-        return this._cardFooterParts;
+    get footer() {
+        return this._consumedItems.units.map(unit => `${unit.quantity} ${unit.part.name}`);
     }
 
     get description() {
-        return this._cardContent;
+        return this._description;
     }
 
     get results() {
-        return this._addedItems;
+        return this._createdItems.units.map(unit => ({
+            key: unit.part.name,
+            imageUrl: unit.part.imageUrl,
+            quantity: unit.quantity
+        }));
     }
 
     get hasResults(): boolean {
-        return this._addedItems && this._addedItems.length > 0;
+        return this._createdItems.size() > 0;
+    }
+
+    async send(actorId: string): Promise<void> {
+        const messageTemplate = await renderTemplate(Properties.module.templates.craftingMessage, this);
+        await ChatMessage.create({user: new GameProvider().globalGameObject().user, speaker: {actor: actorId}, content: messageTemplate});
     }
 
 }
 
-export {CraftingChatMessage}
+export {CraftingChatMessage, IconType, CraftingChatMessageConfig}

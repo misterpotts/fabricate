@@ -1,55 +1,133 @@
-const gulp = require('gulp')
-const project = require('gulp-typescript').createProject('tsconfig.json');
+const { series, parallel, src, dest } = require('gulp');
 const less = require('gulp-less');
-const gulp_mocha = require('gulp-mocha');
+const jest = require('gulp-jest').default;
 const webpack = require('webpack-stream');
 const webpack_config = require('./webpack.config.js');
+const log = require('fancy-log');
+const { resolve } = require('path');
 
-gulp.task('compile-ts', async () => {
-    return gulp.src('src/**/*.ts')
+function compileTypescript() {
+    return src('src/**/*.ts')
         .pipe(webpack(webpack_config))
-        .pipe(gulp.dest('dist/'));
-});
+        .pipe(dest('dist/'));
+}
 
-gulp.task('compile-less', () => {
-    return gulp.src('src/styles/**')
+function compileLess() {
+    return src('src/styles/**')
         .pipe(less())
-        .pipe(gulp.dest('dist/styles/'));
-});
+        .pipe(dest('dist/styles/'));
+}
 
-gulp.task('test', () => {
-  return gulp.src('test/**/*.ts')
-      .pipe(gulp_mocha({
-        reporter: 'list',
-        require: ['ts-node/register'],
-        ui: 'bdd'
-      }));
-});
+const compile = parallel(compileTypescript, compileLess);
 
-gulp.task('copy', async () => {
-  return new Promise((resolve) => {
-    gulp.src('README.md').pipe(gulp.dest("dist/"))
-    gulp.src("src/module.json").pipe(gulp.dest('dist/'))
-    gulp.src("src/packs/**").pipe(gulp.dest('dist/packs'))
-    gulp.src("src/lang/**").pipe(gulp.dest('dist/lang/'))
-    gulp.src("src/templates/**").pipe(gulp.dest('dist/templates/'))
-    gulp.src("src/styles/**/*.css").pipe(gulp.dest('dist/styles/'))
-    gulp.src("src/assets/**").pipe(gulp.dest('dist/assets/'))
-    // @ts-ignore
-    resolve();
-  });
-});
+exports.compile = compile;
 
-gulp.task('build', gulp.parallel('compile-ts', 'compile-less', 'copy', 'test'));
+function runTestsWithCoverage() {
+    return src('test/**/*test.ts')
+        .pipe(jest({
+            preprocessorIgnorePatterns: [
+                "<rootDir>/dist/", "<rootDir>/node_modules/"
+            ],
+            coverage: true,
+            collectCoverageFrom: [
+                '**/*.{ts,tsx}',
+                '!**/node_modules/**',
+                '!**/vendor/**',
+            ],
+            coverageDirectory: "coverage",
+            coverageThreshold: {
+                branches: 70,
+                functions: 70,
+                lines: 70,
+                statements: 70,
+            },
+            automock: false,
+            reporters: ['default', 'github-actions']
+        }));
+}
 
-gulp.task('build-unsafe', gulp.parallel('compile-ts', 'compile-less', 'copy'));
+exports.coverageTest = runTestsWithCoverage;
 
-// Copy the dist folder into the modules directory for testing
-// TODO - parameterize this property before asking anyone to contribute
-const MODULEPATH = "../../dev-data/Data/modules/fabricate/";
+function runTests() {
+    return src('test/**/*test.ts')
+        .pipe(jest());
+}
 
-gulp.task('foundry', () => {
-  return gulp.src('dist/**').pipe(gulp.dest(MODULEPATH));
-});
+exports.test = runTests;
 
-gulp.task("update", gulp.series('build', 'foundry'));
+function copyReadme() {
+    return src('README.md')
+        .pipe(dest("dist/"));
+}
+
+function copyManifest() {
+    return src("src/module.json")
+        .pipe(dest('dist/'));
+}
+
+function copyCompendiumPacks() {
+    return src("src/packs/**")
+        .pipe(dest('dist/packs'));
+}
+
+function copyLanguages() {
+    return src("src/lang/*.json")
+        .pipe(dest('dist/lang/'));
+}
+
+function copyTemplates() {
+    return src("src/templates/**/*.hbs")
+        .pipe(dest('dist/templates/'));
+}
+
+function copyStyles() {
+    return src("src/styles/!**/!*.css")
+        .pipe(dest('dist/styles/'));
+}
+
+function copyAssets() {
+    return src("src/assets/**")
+        .pipe(dest('dist/assets/'));
+}
+
+const copy = parallel(
+    copyReadme,
+    copyManifest,
+    copyCompendiumPacks,
+    copyLanguages,
+    copyTemplates,
+    copyStyles,
+    copyAssets
+);
+
+exports.copy = copy;
+
+const build = series(compile, runTests, copy);
+
+exports.build = build;
+
+const DEFAULT_FVTT_DEV_DATA = "../../dev-data/Data";
+const FOUNDRY_MODULE_PATH = "/modules/fabricate";
+
+function foundryDirectoryPath(): string {
+    const devDataDir: string = process.env.FVTT_DEV_DATA;
+    if (devDataDir && devDataDir.length !== 0) {
+        return devDataDir.concat(FOUNDRY_MODULE_PATH);
+    }
+    return DEFAULT_FVTT_DEV_DATA.concat(FOUNDRY_MODULE_PATH);
+}
+
+function localInstall() {
+    const relativePath = foundryDirectoryPath();
+    const absolutePath = resolve(__dirname, relativePath);
+    log(`Installing to Foundry data dir: "${relativePath}". `);
+    return src('dist/**')
+        .pipe(dest(relativePath))
+        .on('end', () => log(`Installed Fabricate at: "${absolutePath}". `));
+}
+
+const deploy = series(build, localInstall);
+
+exports.deploy = deploy;
+
+exports.default = build;
