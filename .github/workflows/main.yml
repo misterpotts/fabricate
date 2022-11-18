@@ -3,13 +3,18 @@ name: Module CI/CD
 on: 
   push:
     branches:
-      - master
+      - main
 
 jobs: 
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
+    - name: Gulp build
+      shell: bash
+      id: gulp-build
+      run: gulp build
 
     # Get the version from 'module.json'
     - name: Get Version
