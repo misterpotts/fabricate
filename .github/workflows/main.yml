@@ -13,6 +13,11 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: NPM Install
+        shell: bash
+        id: npm-install
+        run: npm install
+
       - name: Gulp build
         shell: bash
         id: gulp-build
