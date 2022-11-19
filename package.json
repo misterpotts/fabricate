@@ -10,7 +10,7 @@
     "compileLess": "lessc src/styles/module.less dist/styles/module.css",
     "test": "jest",
     "coverageTest": "jest --collect-coverage --collect-coverage-from='./src/**/*.ts'",
-    "buildDist": "mkdir -p dist && npm run copyLanguages && npm run copyCompendia &&  npm run copyReadme && npm run copyManifest &&  npm run copyTemplates &&  npm run copyAssets",
+    "buildDist": "mkdir -p dist && npm run copyLanguages & npm run copyCompendia & npm run copyReadme & npm run copyManifest &  npm run copyTemplates &  npm run copyAssets",
     "copyLanguages": "mkdir -p dist/lang && cp -r src/lang/*.json dist/lang/",
     "copyCompendia": "mkdir -p dist/packs && cp -r src/packs/* dist/packs/",
     "copyReadme": "cp README.md dist/",

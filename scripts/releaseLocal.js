@@ -16,7 +16,7 @@ function releaseLocal() {
     const relativePath = foundryDirectoryPath();
     const absolutePath = path.resolve(path.join(__dirname, ".."), relativePath);
     console.log(`Installing to Foundry data dir: "${relativePath}". `);
-    fse.copySync("dist", absolutePath);
+    fse.copySync("dist", absolutePath, { overwrite: true });
     console.log(`Installed Fabricate at: "${absolutePath}". `);
 }
 
