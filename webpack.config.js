@@ -1,12 +1,11 @@
 const path = require('path');
 
 module.exports = {
-    mode: 'development',
     entry: './src/scripts/module.ts',
     output: {
         filename: 'scripts/module.js',
-        path: path.resolve(__dirname, 'module/scripts/'),
-        publicPath: path.resolve(__dirname, 'module/scripts/'),
+        path: path.resolve(__dirname, 'dist/'),
+        publicPath: path.resolve(__dirname, 'dist/'),
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json']
@@ -21,5 +20,4 @@ module.exports = {
         ]
     },
     plugins: [],
-    devtool: 'eval-source-map'
 };
