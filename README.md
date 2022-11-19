@@ -1,11 +1,9 @@
-![](https://img.shields.io/badge/Foundry-v10-informational)
+![](https://img.shields.io/badge/Foundry-v10-informational?style=for-the-badge)
 <!--- Downloads @ Latest Badge -->
 ![Latest Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/latest/total?sort=semver&style=for-the-badge)
-<!--- Downloads @ Total Badge -->
 ![Total Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/total?label=total%20downloads&style=for-the-badge)
-<!--- Patreon Badge -->
-[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dmisterpotts%26type%3Dpatrons&style=flat-square)](https://patreon.com/misterpotts)
-<!--- Discord -->
+<!--- Social badges -->
+[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dmisterpotts%26type%3Dpatrons&style=for-the-badge)](https://patreon.com/misterpotts)
 [![Discord](https://dcbadge.vercel.app/api/server/QNGn6cznJs)](https://discord.gg/QNGn6cznJs)
 
 <!--- Forge Bazaar Install % Badge -->
