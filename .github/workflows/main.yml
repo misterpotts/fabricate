@@ -59,13 +59,13 @@ jobs:
       - name: Get Version
         shell: bash
         id: get-version
-        run: echo "$(node ./.github/scripts/get-version.js)" >> $GITHUB_OUTPUT
+        run: echo "version=$(node ./.github/scripts/get-version.js)" >> $GITHUB_OUTPUT
 
       # Get the name from 'module.json'
       - name: Get Includes
         shell: bash
         id: get-includes
-        run: echo "$(node ./.github/scripts/get-includes.js)" >> $GITHUB_OUTPUT
+        run: echo "files=$(node ./.github/scripts/get-version.js)" >> $GITHUB_OUTPUT
 
       # create a zip file with all files required by the module to add to the release
       - name: Zip Files
