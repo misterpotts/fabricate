@@ -33,7 +33,7 @@
     "allowUmdGlobalAccess": true
   },
   "include": ["./src/**/*.ts", "./typings/**/*.ts", "./test/**/*.ts"],
-  "exclude": ["node_modules", "./gulpfile.ts"],
+  "exclude": ["node_modules"],
   "files": [
     "./typings/global.d.ts"
   ],
