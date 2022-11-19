@@ -88,8 +88,8 @@ class PartDictionaryLoader {
             imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
             essences: this.identityCombinationFromRecord(recipeJson.essences, CombinableString),
             catalysts: this.identityCombinationFromRecord(recipeJson.catalysts, CombinableString),
-            ingredientGroups: this.componentIdentityGroupsFromRecords(recipeJson.ingredientGroups),
-            resultGroups: this.componentIdentityGroupsFromRecords(recipeJson.resultGroups)
+            ingredientOptions: this.componentIdentityGroupsFromRecords(recipeJson.ingredientGroups),
+            resultOptions: this.componentIdentityGroupsFromRecords(recipeJson.resultGroups)
         });
     }
 

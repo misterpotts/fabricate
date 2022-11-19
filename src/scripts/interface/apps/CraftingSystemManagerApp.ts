@@ -82,8 +82,8 @@ class CraftingSystemManagerApp extends FormApplication {
             id: component.id,
             name: component.name,
             imageUrl: component.imageUrl,
-            essences: component.essences.toUnits().map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
-            salvage: component.salvage.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })
+            essences: component.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
+            salvage: component.salvage.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })
         }
     }
 
@@ -92,10 +92,10 @@ class CraftingSystemManagerApp extends FormApplication {
             id: recipe.id,
             name: recipe.name,
             imageUrl: recipe.imageUrl,
-            catalysts: recipe.catalysts.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }),
-            essences: recipe.essences.toUnits().map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
-            ingredientGroups: recipe.ingredientGroups.map(group => group.members.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })),
-            resultGroups: recipe.ingredientGroups.map(group => group.members.toUnits().map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }))
+            catalysts: recipe.catalysts.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }),
+            essences: recipe.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
+            ingredientGroups: recipe.ingredientOptions.map(group => group.members.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })),
+            resultGroups: recipe.ingredientOptions.map(group => group.members.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }))
         }
     }
 

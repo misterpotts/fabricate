@@ -25,7 +25,7 @@ describe("When creating a recipe", () => {
         expect(underTest.essences.amountFor(new CombinableString(elementalEarth.id))).toEqual(3);
 
         expect(underTest.hasOptions()).toEqual(false);
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(true);
         expect(underTest.hasIngredients()).toEqual(false);
         expect(underTest.requiresCatalysts()).toEqual(false);
@@ -42,7 +42,7 @@ describe("When creating a recipe", () => {
         expect(underTest.essences.amountFor(new CombinableString(elementalWater.id))).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(true);
         expect(underTest.hasIngredients()).toEqual(false);
         expect(underTest.requiresCatalysts()).toEqual(true);
@@ -52,11 +52,11 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with two groups of named ingredients only", () => {
         const underTest = testRecipeOne;
 
-        expect(underTest.ingredientGroups.length).toEqual(2);
-        expect(underTest.resultGroups.length).toEqual(1);
+        expect(underTest.ingredientOptions.length).toEqual(2);
+        expect(underTest.resultOptions.length).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(false);
         expect(underTest.hasIngredients()).toEqual(true);
         expect(underTest.requiresCatalysts()).toEqual(false);
@@ -66,12 +66,12 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with named ingredients and catalysts", () => {
         const underTest = testRecipeTwo;
 
-        expect(underTest.ingredientGroups.length).toEqual(1);
-        expect(underTest.resultGroups.length).toEqual(1);
+        expect(underTest.ingredientOptions.length).toEqual(1);
+        expect(underTest.resultOptions.length).toEqual(1);
         expect(underTest.catalysts.size()).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(false);
         expect(underTest.hasIngredients()).toEqual(true);
         expect(underTest.requiresCatalysts()).toEqual(true);
@@ -81,12 +81,12 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with both essences and named ingredients", () => {
         const underTest = testRecipeSix;
 
-        expect(underTest.ingredientGroups.length).toEqual(2);
-        expect(underTest.resultGroups.length).toEqual(1);
+        expect(underTest.ingredientOptions.length).toEqual(2);
+        expect(underTest.resultOptions.length).toEqual(1);
         expect(underTest.essences.size()).toEqual(4);
 
         expect(underTest.hasOptions()).toEqual(true);
-        expect(underTest.hasAllSelectionsMade()).toEqual(false);
+        expect(underTest.ready()).toEqual(false);
         expect(underTest.requiresEssences()).toEqual(true);
         expect(underTest.hasIngredients()).toEqual(true);
         expect(underTest.requiresCatalysts()).toEqual(false);
@@ -115,8 +115,8 @@ describe("When selecting ingredients", () => {
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            ingredientGroups: [componentGroupOne, componentGroupTwo],
-            resultGroups: [ComponentGroup.EMPTY()]
+            ingredientOptions: [componentGroupOne, componentGroupTwo],
+            resultOptions: [ComponentGroup.EMPTY()]
         });
 
         const selectedIngredients = underTest.getSelectedIngredients();
@@ -142,11 +142,11 @@ describe("When selecting ingredients", () => {
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            ingredientGroups: [componentGroupOne, componentGroupTwo],
-            resultGroups: [ComponentGroup.EMPTY()]
+            ingredientOptions: [componentGroupOne, componentGroupTwo],
+            resultOptions: [ComponentGroup.EMPTY()]
         });
 
-        expect(underTest.hasAllSelectionsMade()).toEqual(false);
+        expect(underTest.ready()).toEqual(false);
 
         expect(underTest.getSelectedIngredients).toThrow(Error);
 
@@ -169,13 +169,13 @@ describe("When selecting ingredients", () => {
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            ingredientGroups: [componentGroupOne, componentGroupTwo],
-            resultGroups: [ComponentGroup.EMPTY()]
+            ingredientOptions: [componentGroupOne, componentGroupTwo],
+            resultOptions: [ComponentGroup.EMPTY()]
         });
 
         underTest.selectIngredient(0, testComponentOne.id);
 
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
 
         const selectedIngredientSetOne = underTest.getSelectedIngredients();
         expect(selectedIngredientSetOne.size()).toEqual(3);
@@ -186,7 +186,7 @@ describe("When selecting ingredients", () => {
 
         underTest.selectIngredient(0, testComponentTwo.id);
 
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
 
         const selectedIngredientSetTwo = underTest.getSelectedIngredients();
         expect(selectedIngredientSetTwo.size()).toEqual(3);
@@ -219,8 +219,8 @@ describe("When selecting results", () => {
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultGroups: [componentGroupOne, componentGroupTwo],
-            ingredientGroups: [ComponentGroup.EMPTY()]
+            resultOptions: [componentGroupOne, componentGroupTwo],
+            ingredientOptions: [ComponentGroup.EMPTY()]
         });
 
         const selectedResults = underTest.getSelectedResults();
@@ -246,11 +246,11 @@ describe("When selecting results", () => {
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultGroups: [componentGroupOne, componentGroupTwo],
-            ingredientGroups: [ComponentGroup.EMPTY()]
+            resultOptions: [componentGroupOne, componentGroupTwo],
+            ingredientOptions: [ComponentGroup.EMPTY()]
         });
 
-        expect(underTest.hasAllSelectionsMade()).toEqual(false);
+        expect(underTest.ready()).toEqual(false);
 
         expect(underTest.getSelectedResults).toThrow(Error);
 
@@ -273,13 +273,13 @@ describe("When selecting results", () => {
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultGroups: [componentGroupOne, componentGroupTwo],
-            ingredientGroups: [ComponentGroup.EMPTY()]
+            resultOptions: [componentGroupOne, componentGroupTwo],
+            ingredientOptions: [ComponentGroup.EMPTY()]
         });
 
         underTest.selectResult(0, testComponentOne.id);
 
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
 
         const selectedResultSetOne = underTest.getSelectedResults();
         expect(selectedResultSetOne.size()).toEqual(3);
@@ -290,7 +290,7 @@ describe("When selecting results", () => {
 
         underTest.selectResult(0, testComponentTwo.id);
 
-        expect(underTest.hasAllSelectionsMade()).toEqual(true);
+        expect(underTest.ready()).toEqual(true);
 
         const selectedResultSetTwo = underTest.getSelectedResults();
         expect(selectedResultSetTwo.size()).toEqual(3);

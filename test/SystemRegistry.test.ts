@@ -236,10 +236,10 @@ describe("integration test", () => {
         expect(recipeOneResult.essences.amountFor(new CombinableString(essenceOneId))).toEqual(1);
         expect(recipeOneResult.essences.amountFor(new CombinableString(essenceTwoId))).toEqual(2);
         expect(recipeOneResult.catalysts.size()).toEqual(0);
-        expect(recipeOneResult.ingredientGroups.length).toEqual(0);
-        expect(recipeOneResult.resultGroups.length).toEqual(1);
-        expect(recipeOneResult.resultGroups[0].members.size()).toEqual(1);
-        expect(recipeOneResult.resultGroups[0].members.has(new CombinableString(componentOneItemUuid))).toEqual(true);
+        expect(recipeOneResult.ingredientOptions.length).toEqual(0);
+        expect(recipeOneResult.resultOptions.length).toEqual(1);
+        expect(recipeOneResult.resultOptions[0].members.size()).toEqual(1);
+        expect(recipeOneResult.resultOptions[0].members.has(new CombinableString(componentOneItemUuid))).toEqual(true);
 
         expect(craftingSystemOne.partDictionary.getComponents().length).toEqual(3);
         expect(craftingSystemOne.partDictionary.hasComponent(componentOneItemUuid)).toEqual(true);

@@ -6,19 +6,19 @@ import {elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefini
 const testRecipeOne: Recipe = new Recipe({
     id: "tdyV4AWuTMkXbepw",
     name: "Test Recipe One",
-    ingredientGroups: [
+    ingredientOptions: [
         new ComponentGroup(Combination.of(new CombinableString(testComponentOne.id), 1)),
         new ComponentGroup(Combination.of(new CombinableString(testComponentThree.id), 2))
     ],
-    resultGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentFive.id), 1))]
+    resultOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentFive.id), 1))]
 });
 
 const testRecipeTwo: Recipe = new Recipe({
     id: "QBmv3SSCaae2xxzT",
     name: "Test Recipe Two",
-    ingredientGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentFour.id), 1))],
+    ingredientOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentFour.id), 1))],
     catalysts: Combination.of(new CombinableString(testComponentFive.id), 1),
-    resultGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentTwo.id), 2))]
+    resultOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentTwo.id), 2))]
 })
 
 const testRecipeThree: Recipe = new Recipe({
@@ -28,7 +28,7 @@ const testRecipeThree: Recipe = new Recipe({
         new Unit(new CombinableString(elementalEarth.id), 3),
         new Unit(new CombinableString(elementalFire.id), 1)
     ]),
-    resultGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentOne.id), 3))]
+    resultOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentOne.id), 3))]
 });
 
 const testRecipeFour: Recipe = new Recipe({
@@ -38,9 +38,9 @@ const testRecipeFour: Recipe = new Recipe({
         new Unit(new CombinableString(elementalEarth.id), 1),
         new Unit(new CombinableString(elementalWater.id), 2)
     ]),
-    ingredientGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentTwo.id), 3))],
+    ingredientOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentTwo.id), 3))],
     catalysts: Combination.of(new CombinableString(testComponentThree.id), 1),
-    resultGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentFive.id), 10))]
+    resultOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentFive.id), 10))]
 });
 
 const testRecipeFive: Recipe = new Recipe({
@@ -51,7 +51,7 @@ const testRecipeFive: Recipe = new Recipe({
         new Unit(new CombinableString(elementalWater.id), 1)
     ]),
     catalysts: Combination.of(new CombinableString(testComponentFour.id), 1),
-    resultGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentFive.id), 10))]
+    resultOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentFive.id), 10))]
 });
 
 const testRecipeSix: Recipe = new Recipe({
@@ -61,14 +61,14 @@ const testRecipeSix: Recipe = new Recipe({
         new Unit(new CombinableString(elementalEarth.id), 3),
         new Unit(new CombinableString(elementalWater.id), 1)
     ]),
-    ingredientGroups: [
+    ingredientOptions: [
         new ComponentGroup(Combination.ofUnits([
             new Unit(new CombinableString(testComponentOne.id), 1),
             new Unit(new CombinableString(testComponentThree.id), 2)
         ])),
         new ComponentGroup(Combination.of(new CombinableString(testComponentTwo.id), 1))
     ],
-    resultGroups: [new ComponentGroup(Combination.of(new CombinableString(testComponentThree.id), 2))]
+    resultOptions: [new ComponentGroup(Combination.of(new CombinableString(testComponentThree.id), 2))]
 });
 
 

@@ -66,7 +66,7 @@ describe('A Crafting System Factory', () => {
             recipe.essences.members.forEach(essenceId => {
                 expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
             });
-            recipe.resultGroups.forEach(resultGroup => {
+            recipe.resultOptions.forEach(resultGroup => {
                 resultGroup.members.members.forEach(componentId => {
                     expect(craftingSystem.partDictionary.hasComponent(componentId.elementId)).toEqual(true);
                 });
