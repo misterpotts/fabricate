@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -43,7 +43,7 @@ jobs:
       build
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -65,7 +65,7 @@ jobs:
       - name: Get Includes
         shell: bash
         id: get-includes
-        run: echo "files=$(node ./.github/scripts/get-version.js)" >> $GITHUB_OUTPUT
+        run: echo "files=$(node ./.github/scripts/get-includes.js)" >> $GITHUB_OUTPUT
 
       # create a zip file with all files required by the module to add to the release
       - name: Zip Files
