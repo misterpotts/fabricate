@@ -1,5 +1,5 @@
 const path = require("path");
-const fse = require('fs-extra')
+const fse = require("fs-extra")
 
 const DEFAULT_FVTT_DEV_DATA = "../../dev-data/Data";
 const FOUNDRY_MODULE_PATH = "/modules/fabricate";
@@ -16,7 +16,7 @@ function releaseLocal() {
     const relativePath = foundryDirectoryPath();
     const absolutePath = path.resolve(path.join(__dirname, ".."), relativePath);
     console.log(`Installing to Foundry data dir: "${relativePath}". `);
-    fse.copySync('./dist', absolutePath);
+    fse.copySync("dist", absolutePath);
     console.log(`Installed Fabricate at: "${absolutePath}". `);
 }
 
