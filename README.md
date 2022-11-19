@@ -1,8 +1,10 @@
 ![](https://img.shields.io/badge/Foundry-v10-informational)
 <!--- Downloads @ Latest Badge -->
 ![Latest Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/latest/total?sort=semver&style=for-the-badge)
-<!--- Downloads @ Latest Badge -->
+<!--- Downloads @ Total Badge -->
 ![Total Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/total?label=total%20downloads&style=for-the-badge)
+<!--- Patreon Badge -->
+[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dmisterpotts%26type%3Dpatrons&style=flat-square)](https://patreon.com/misterpotts)
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->
@@ -45,6 +47,21 @@ You can imbue them with Essences, as well as define the components that can be s
 
 ![](/screens/fabricate-component-editing.gif)
 
+# FAQ
+
+> Why don't I see Fabricate in the official [list of modules](https://foundryvtt.com/packages/modules)
+
+Because it's not finished, and therefore not released yet.
+
+> When will Fabricate be released?
+
+When it's done.
+I want to finish core crafting and alchemy before then, as well as having some time to test it with a smaller audience.
+
+> Will Fabricate be free?
+
+Yes, but don't let that stop you supporting me on [Patreon](https://patreon.com/misterpotts) if you appreciate what I'm doing.
+
 # Changelog
 
 The most recent changes to Fabricate are documented here.
@@ -77,4 +94,4 @@ The template was provided by the League of Extraordinary Foundry Developers and 
 
 Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `valravn#7351`, `ghost#2000`, `BadIdeasBureau#7024` and `Calego#0914`. Join their Discord below.
 
-[![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/2rHs78h)
+[![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/DrrcCtKF4C)
