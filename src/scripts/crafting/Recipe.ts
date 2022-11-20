@@ -1,5 +1,6 @@
-import {CombinableString, Combination} from "../common/Combination";
+import {StringIdentity, Combination} from "../common/Combination";
 import Properties from "../Properties";
+import {Identifiable} from "../common/Identity";
 
 interface RecipeJson {
     itemUuid: string;
@@ -9,25 +10,47 @@ interface RecipeJson {
     ingredientGroups: Record<string, number>[]
 }
 
-class CombinationChoice {
+class CombinationChoice<T extends Identifiable> {
 
-    private readonly _members: Map<number, Combination<CombinableString>>;
-    private _selected: number;
+    private static readonly _NONE = new CombinationChoice([]);
 
-    constructor(members: Combination<CombinableString>[]) {
-        this._members = new Map(members.map(combination => [this.combinationIdentity(combination), combination]));
-        this._selected = 0;
+    private readonly _members: Map<string, Combination<T>>;
+    private _selected: string;
+
+    constructor(members: Combination<T>[]) {
+        this._members = new Map(members.map(combination => [combination.id, combination]));
+        this._selected = "";
     }
 
-    public select(member: string | number) {
-        const key: number = typeof member === 'number' ? member : parseInt(member);
+    public static between<T extends Identifiable>(...members: Combination<T>[]): CombinationChoice<T> {
+        return new CombinationChoice<T>(members);
+    }
+
+    public static just<T extends Identifiable>(singleton: Combination<T>): CombinationChoice<T> {
+        return new CombinationChoice<T>([singleton]);
+    }
+
+    public static NONE<T extends Identifiable>(): CombinationChoice<T> {
+        return CombinationChoice._NONE as CombinationChoice<T>;
+    }
+
+    get size(): number {
+        return this._members.size;
+    }
+
+    get choices(): { key: string, value: Combination<T> }[] {
+        return Array.from(this._members.entries())
+            .map(entry => { return { key: entry[0], value: entry[1] } });
+    }
+
+    public select(key: string) {
         if (!this._members.has(key)) {
             throw new Error(`The key "${key} does not map to the identity of an available component group choice. "`)
         }
         this._selected = key;
     }
 
-    public getSelection(): Combination<CombinableString> {
+    public getSelection(): Combination<T> {
         if (this._members.size === 1) {
             const [singleton] = this._members.values();
             return singleton;
@@ -35,32 +58,28 @@ class CombinationChoice {
         if (this._members.has(this._selected)) {
             return this._members.get(this._selected);
         }
-        return Combination.EMPTY();
+        throw new Error("You must make a selection! ");
     }
 
     public hasOptions(): boolean {
         return this._members.size > 1;
     }
 
-    public ready() {
+    public ready(): boolean {
         if (!this.hasOptions()) {
             return true;
         }
         return this._members.has(this._selected);
     }
 
-    private combinationIdentity(combination: Combination<CombinableString>): number {
-        return combination.units
-            .map(unit => this.stringIdentity(unit.part.elementId) * unit.quantity)
-            .reduce((left, right) => left + right, 0);
+    public isEmpty(): boolean {
+        return this._members.size === 0;
     }
 
-    private stringIdentity(value: string): number {
-        return [...value].reduce((left, right) => {
-            return Math.imul(31, left) + right.charCodeAt(0) | 0;
-        }, 0);
+    toJson(): Record<string, number>[] {
+        return Array.from(this._members.values())
+            .map(combination => combination.toJson());
     }
-
 }
 
 class Recipe {
@@ -72,10 +91,10 @@ class Recipe {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private readonly _catalysts: Combination<CombinableString>;
-    private readonly _essences: Combination<CombinableString>;
-    private readonly _ingredientOptions: CombinationChoice;
-    private readonly _resultOptions: CombinationChoice;
+    private readonly _catalysts: Combination<StringIdentity>;
+    private readonly _essences: Combination<StringIdentity>;
+    private readonly _ingredientOptions: CombinationChoice<StringIdentity>;
+    private readonly _resultOptions: CombinationChoice<StringIdentity>;
 
     /* ===========================
     *  Constructor
@@ -88,15 +107,15 @@ class Recipe {
         essences = Combination.EMPTY(),
         catalysts = Combination.EMPTY(),
         resultOptions,
-        ingredientOptions
+        ingredientOptions = CombinationChoice.NONE<StringIdentity>()
     }: {
         id: string;
         name: string;
         imageUrl?: string;
-        essences?: Combination<CombinableString>;
-        catalysts?: Combination<CombinableString>;
-        resultOptions: CombinationChoice;
-        ingredientOptions: CombinationChoice;
+        essences?: Combination<StringIdentity>;
+        catalysts?: Combination<StringIdentity>;
+        resultOptions: CombinationChoice<StringIdentity>;
+        ingredientOptions?: CombinationChoice<StringIdentity>;
     }) {
         this._id = id;
         this._name = name;
@@ -123,19 +142,19 @@ class Recipe {
         return this._imageUrl;
     }
 
-    get ingredientOptions(): CombinationChoice {
+    get ingredientOptions(): CombinationChoice<StringIdentity> {
         return this._ingredientOptions;
     }
 
-    get essences(): Combination<CombinableString> {
+    get essences(): Combination<StringIdentity> {
         return this._essences;
     }
 
-    get resultOptions(): CombinationChoice {
+    get resultOptions(): CombinationChoice<StringIdentity> {
         return this._resultOptions;
     }
 
-    get catalysts(): Combination<CombinableString> {
+    get catalysts(): Combination<StringIdentity> {
         return this._catalysts;
     }
 
@@ -144,7 +163,7 @@ class Recipe {
     *  =========================== */
 
     public hasOptions(): boolean {
-        return this._ingredientOptions.hasOptions() && this._resultOptions.hasOptions();
+        return this._ingredientOptions.hasOptions() || this._resultOptions.hasOptions();
     }
 
     public ready(): boolean {
@@ -154,18 +173,22 @@ class Recipe {
         return this._ingredientOptions.ready() && this._resultOptions.ready();
     }
 
-    public getSelectedIngredients(): Combination<CombinableString> {
-        return this._ingredientOptions.getSelection();
+    public getSelectedIngredients(): Combination<StringIdentity> {
+        if (this._ingredientOptions.ready()) {
+            return this._ingredientOptions.getSelection();
+        }
+        throw new Error("You must select an ingredient group. ");
     }
 
-    public getSelectedResults(): Combination<CombinableString> {
-        return this._resultOptions.getSelection();
+    public getSelectedResults(): Combination<StringIdentity> {
+        if (this._resultOptions.ready()) {
+            return this._resultOptions.getSelection();
+        }
+        throw new Error("You must select a result group. ");
     }
 
     public hasIngredients() {
-        return Array.from(this._ingredientOptions)
-            .map(group => !group.isEmpty())
-            .reduce((left, right) => left && right);
+        return !this._ingredientOptions.isEmpty();
     }
 
     public requiresCatalysts() {
@@ -176,7 +199,7 @@ class Recipe {
         return this.requiresCatalysts() || this.hasIngredients();
     }
 
-    public getNamedComponents(): Combination<CombinableString> {
+    public getNamedComponents(): Combination<StringIdentity> {
         return this.getSelectedIngredients().combineWith(this._catalysts);
     }
 
@@ -184,19 +207,12 @@ class Recipe {
         return !this._essences || !this._essences.isEmpty();
     }
     
-    public selectIngredient(index: number, component: string) {
-        return this.select(this._ingredientOptions, index, component, "ingredient");
+    public selectIngredientCombination(combinationId: string) {
+        return this._ingredientOptions.select(combinationId);
     }
 
-    public selectResult(index: number, component: string) {
-        return this.select(this._resultOptions, index, component, "result");
-    }
-
-    private select(groups: ComponentGroup[], index: number, component: string, groupType: string): void {
-        if (index < 0 || index >= groups.length) {
-            throw new Error(`"${index}" is not a valid ${groupType} group.`);
-        }
-        groups[index] = groups[index].select(component);
+    public selectResultCombination(combinationId: string) {
+        return this._resultOptions.select(combinationId);
     }
 
     public toJson(): RecipeJson {
@@ -204,11 +220,11 @@ class Recipe {
             itemUuid: this._id,
             essences: this._essences.toJson(),
             catalysts: this._catalysts.toJson(),
-            resultGroups: this._resultOptions.map(group => group.toJson()),
-            ingredientGroups: this._ingredientOptions.map(group => group.toJson())
+            resultGroups: this._resultOptions.toJson(),
+            ingredientGroups: this._ingredientOptions.toJson()
         };
     }
     
 }
 
-export { Recipe, ComponentGroup, RecipeJson }
+export { Recipe, CombinationChoice, RecipeJson }

@@ -1,13 +1,12 @@
-import {Combination} from "../common/Combination";
-import {Essence} from "../common/Essence";
+import {Combination, StringIdentity} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {ComponentCombinationGenerator} from "./ComponentCombinationGenerator";
 
 export class EssenceSelection {
 
-    private readonly _essences: Combination<Essence>;
+    private readonly _essences: Combination<StringIdentity>;
 
-    constructor(essences: Combination<Essence>) {
+    constructor(essences: Combination<StringIdentity>) {
         this._essences = essences;
     }
 
@@ -15,7 +14,7 @@ export class EssenceSelection {
         if (this._essences.isEmpty()) {
             return Combination.EMPTY();
         }
-        let availableComponents: Combination<CraftingComponent> = contents.clone();
+        let availableComponents = contents.clone();
         contents.members.forEach(((thisComponent: CraftingComponent) => {
             if (thisComponent.essences.isEmpty() || !thisComponent.essences.intersects(this._essences)) {
                 availableComponents = availableComponents.subtract(availableComponents.just(thisComponent));
@@ -24,19 +23,19 @@ export class EssenceSelection {
         return this.selectBestMatch(this.matchingCombinationsFor(availableComponents, this._essences));
     }
 
-    private selectBestMatch(combinations: [Combination<CraftingComponent>, Combination<Essence>][]): Combination<CraftingComponent> {
+    private selectBestMatch(combinations: [Combination<CraftingComponent>, Combination<StringIdentity>][]): Combination<CraftingComponent> {
         if (combinations.length === 0) {
             return Combination.EMPTY();
         }
-        const sortedCombinations: [Combination<CraftingComponent>, Combination<Essence>][] = combinations
-            .sort((left: [Combination<CraftingComponent>, Combination<Essence>], right: [Combination<CraftingComponent>, Combination<Essence>]) => {
+        const sortedCombinations = combinations
+            .sort((left, right) => {
                 return left[1].size() - right[1].size();
             });
         return sortedCombinations[0][0];
     }
 
-    private matchingCombinationsFor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<Essence>): [Combination<CraftingComponent>, Combination<Essence>][] {
-        const combinationGenerator: ComponentCombinationGenerator = new ComponentCombinationGenerator(availableComponents, requiredEssences);
+    private matchingCombinationsFor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<StringIdentity>): [Combination<CraftingComponent>, Combination<StringIdentity>][] {
+        const combinationGenerator = new ComponentCombinationGenerator(availableComponents, requiredEssences);
         return combinationGenerator.generate();
     }
 

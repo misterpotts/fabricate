@@ -1,7 +1,7 @@
 import {GameProvider} from "../../foundry/GameProvider";
 import Properties from "../../Properties";
 import {CraftingSystem} from "../../system/CraftingSystem";
-import {CombinableString, CraftingComponent} from "../../common/CraftingComponent";
+import {StringIdentity, CraftingComponent} from "../../common/CraftingComponent";
 import {Essence} from "../../common/Essence";
 import {Combination, Unit} from "../../common/Combination";
 import FabricateApplication from "../FabricateApplication";
@@ -65,8 +65,8 @@ class EditComponentDialog extends FormApplication {
         switch (data.get("action")) {
             case "editComponentEssence":
                 const essenceId = data.get("essenceId");
-                const essenceDelta = new Unit(new CombinableString(essenceId), 1);
-                let essenceResult: Combination<CombinableString>;
+                const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
+                let essenceResult: Combination<StringIdentity>;
                 if (shiftPressed) {
                     essenceResult = this._component.essences.minus(essenceDelta);
                 } else {
@@ -78,8 +78,8 @@ class EditComponentDialog extends FormApplication {
                 break;
             case "editComponentSalvage":
                 const salvageId = data.get("salvageId");
-                const salvageDelta = new Unit(new CombinableString(salvageId), 1);
-                let salvageResult: Combination<CombinableString>;
+                const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
+                let salvageResult: Combination<StringIdentity>;
                 if (shiftPressed) {
                     salvageResult = this._component.salvage.minus(salvageDelta);
                 } else {
@@ -111,20 +111,20 @@ class EditComponentDialog extends FormApplication {
         };
     }
 
-    private prepareEssenceData(all: Essence[], includedAmounts: Combination<CombinableString>): { essence: Essence; amount: number }[] {
+    private prepareEssenceData(all: Essence[], includedAmounts: Combination<StringIdentity>): { essence: Essence; amount: number }[] {
         return all.map(essence => {
             return {
                 essence,
-                amount: includedAmounts.amountFor(new CombinableString(essence.id))
+                amount: includedAmounts.amountFor(new StringIdentity(essence.id))
         }});
     }
 
-    private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<CombinableString>): { component: CraftingComponent; amount: number }[] {
+    private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<StringIdentity>): { component: CraftingComponent; amount: number }[] {
         return all.filter(component => component.id !== thisComponentId)
             .map(component => {
                 return {
                     component,
-                    amount: includedAmounts.amountFor(new CombinableString(component.id))
+                    amount: includedAmounts.amountFor(new StringIdentity(component.id))
             }});
     }
 }

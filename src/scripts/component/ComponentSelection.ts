@@ -1,14 +1,9 @@
-import {Recipe} from "../crafting/Recipe";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 
-interface ComponentSelection {
-
-    describe(): string;
+interface ComponentSelection{
 
     isSufficient(): boolean;
-
-    recipe: Recipe;
 
     components: Combination<CraftingComponent>;
 

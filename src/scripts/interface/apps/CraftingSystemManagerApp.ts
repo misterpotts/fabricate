@@ -4,7 +4,7 @@ import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
 import {EditComponentDialog} from "./EditComponentDialog";
 import {EditEssenceDialog} from "./EditEssenceDialog";
 import {CraftingSystem} from "../../system/CraftingSystem";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {CraftingComponent, StringIdentity} from "../../common/CraftingComponent";
 import {Combination} from "../../common/Combination";
 import {SystemRegistry} from "../../registries/SystemRegistry";
 import {DefaultDocumentManager} from "../../foundry/DocumentManager";
@@ -82,8 +82,8 @@ class CraftingSystemManagerApp extends FormApplication {
             id: component.id,
             name: component.name,
             imageUrl: component.imageUrl,
-            essences: component.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
-            salvage: component.salvage.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })
+            essences: component.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.id), quantity: unit.quantity } }),
+            salvage: component.salvage.units.map(unit => { return { part: partDictionary.getComponent(unit.part.id), quantity: unit.quantity } })
         }
     }
 
@@ -92,11 +92,22 @@ class CraftingSystemManagerApp extends FormApplication {
             id: recipe.id,
             name: recipe.name,
             imageUrl: recipe.imageUrl,
-            catalysts: recipe.catalysts.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }),
-            essences: recipe.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.elementId), quantity: unit.quantity } }),
-            ingredientGroups: recipe.ingredientOptions.map(group => group.members.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } })),
-            resultGroups: recipe.ingredientOptions.map(group => group.members.units.map(unit => { return { part: partDictionary.getComponent(unit.part.elementId), quantity: unit.quantity } }))
+            catalysts: recipe.catalysts.units.map(unit => { return { part: partDictionary.getComponent(unit.part.id), quantity: unit.quantity } }),
+            essences: recipe.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.id), quantity: unit.quantity } }),
+            ingredientGroups: this.populateChoices(recipe.ingredientOptions.choices, partDictionary),
+            resultGroups: this.populateChoices(recipe.resultOptions.choices, partDictionary),
         }
+    }
+
+    private populateChoices(choices: { key: string; value: Combination<StringIdentity> }[], partDictionary: PartDictionary) {
+        return choices.map(({key, value}) => {
+                return {
+                    key,
+                    value: value.units.map(unit => {
+                        return {part: partDictionary.getComponent(unit.part.id), quantity: unit.quantity};
+                    })
+                };
+            });
     }
 
     activateListeners(html: JQuery) {

@@ -1,15 +1,22 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
-import {ComponentGroup, Recipe} from "../src/scripts/crafting/Recipe";
+import {CombinationChoice, Recipe} from "../src/scripts/crafting/Recipe";
 
 import {
-    testComponentFive, testComponentFour,
     testComponentOne,
+    testComponentTwo,
     testComponentThree,
-    testComponentTwo
+    testComponentFour,
+    testComponentFive
 } from "./test_data/TestCraftingComponents";
-import {CombinableString, Combination, Unit} from "../src/scripts/common/Combination";
+import {StringIdentity, Combination, Unit} from "../src/scripts/common/Combination";
 import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
-import {testRecipeFive, testRecipeOne, testRecipeSix, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
+import {
+    testRecipeFive,
+    testRecipeSeven,
+    testRecipeSix,
+    testRecipeThree,
+    testRecipeTwo
+} from "./test_data/TestRecipes";
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -21,8 +28,8 @@ describe("When creating a recipe", () => {
         const underTest = testRecipeThree;
 
         expect(underTest.essences.size()).toEqual(4);
-        expect(underTest.essences.amountFor(new CombinableString(elementalFire.id))).toEqual(1);
-        expect(underTest.essences.amountFor(new CombinableString(elementalEarth.id))).toEqual(3);
+        expect(underTest.essences.amountFor(new StringIdentity(elementalFire.id))).toEqual(1);
+        expect(underTest.essences.amountFor(new StringIdentity(elementalEarth.id))).toEqual(3);
 
         expect(underTest.hasOptions()).toEqual(false);
         expect(underTest.ready()).toEqual(true);
@@ -36,10 +43,10 @@ describe("When creating a recipe", () => {
         const underTest = testRecipeFive;
 
         expect(underTest.catalysts.size()).toEqual(1);
-        expect(underTest.catalysts.amountFor(new CombinableString(testComponentFour.id))).toEqual(1);
+        expect(underTest.catalysts.amountFor(new StringIdentity(testComponentFour.id))).toEqual(1);
         expect(underTest.essences.size()).toEqual(2);
-        expect(underTest.essences.amountFor(new CombinableString(elementalFire.id))).toEqual(1);
-        expect(underTest.essences.amountFor(new CombinableString(elementalWater.id))).toEqual(1);
+        expect(underTest.essences.amountFor(new StringIdentity(elementalFire.id))).toEqual(1);
+        expect(underTest.essences.amountFor(new StringIdentity(elementalWater.id))).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
         expect(underTest.ready()).toEqual(true);
@@ -49,11 +56,11 @@ describe("When creating a recipe", () => {
         expect(underTest.requiresNamedComponents()).toEqual(true);
     });
 
-    test("should correctly assess requirements for a recipe with two groups of named ingredients only", () => {
-        const underTest = testRecipeOne;
+    test("should correctly assess requirements for a recipe with one set of named ingredients only", () => {
+        const underTest = testRecipeSeven;
 
-        expect(underTest.ingredientOptions.length).toEqual(2);
-        expect(underTest.resultOptions.length).toEqual(1);
+        expect(underTest.ingredientOptions.size).toEqual(1);
+        expect(underTest.resultOptions.size).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
         expect(underTest.ready()).toEqual(true);
@@ -66,8 +73,8 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with named ingredients and catalysts", () => {
         const underTest = testRecipeTwo;
 
-        expect(underTest.ingredientOptions.length).toEqual(1);
-        expect(underTest.resultOptions.length).toEqual(1);
+        expect(underTest.ingredientOptions.size).toEqual(1);
+        expect(underTest.resultOptions.size).toEqual(1);
         expect(underTest.catalysts.size()).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
@@ -81,8 +88,8 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with both essences and named ingredients", () => {
         const underTest = testRecipeSix;
 
-        expect(underTest.ingredientOptions.length).toEqual(2);
-        expect(underTest.resultOptions.length).toEqual(1);
+        expect(underTest.ingredientOptions.size).toEqual(2);
+        expect(underTest.resultOptions.size).toEqual(2);
         expect(underTest.essences.size()).toEqual(4);
 
         expect(underTest.hasOptions()).toEqual(true);
@@ -99,51 +106,22 @@ describe("When selecting ingredients", () => {
 
     const id = "hq4F67hS";
 
-    test("should combine ingredient groups with no choices when selecting ingredients", () => {
-
-        const combinationOne = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentFive.id), 3)
-        ]);
-
-        const combinationTwo = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentFive.id), 2)
-        ]);
-
-        const componentGroupOne: ComponentGroup = new ComponentGroup(combinationOne);
-        const componentGroupTwo: ComponentGroup = new ComponentGroup(combinationTwo);
-
-        const underTest = new Recipe({
-            id,
-            name: "Test Recipe",
-            ingredientOptions: [componentGroupOne, componentGroupTwo],
-            resultOptions: [ComponentGroup.EMPTY()]
-        });
-
-        const selectedIngredients = underTest.getSelectedIngredients();
-        expect(selectedIngredients.size()).toEqual(5);
-        expect(selectedIngredients.amountFor(new CombinableString(testComponentFive.id))).toEqual(5);
-
-    });
-
     test("should require choices from ingredient groups with options", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentOne.id), 1),
-            new Unit(new CombinableString(testComponentTwo.id), 1)
+            new Unit(new StringIdentity(testComponentOne.id), 1),
+            new Unit(new StringIdentity(testComponentTwo.id), 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentThree.id), 2)
+            new Unit(new StringIdentity(testComponentThree.id), 2)
         ]);
-
-        const componentGroupOne: ComponentGroup = new ComponentGroup(combinationOne);
-        const componentGroupTwo: ComponentGroup = new ComponentGroup(combinationTwo);
 
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            ingredientOptions: [componentGroupOne, componentGroupTwo],
-            resultOptions: [ComponentGroup.EMPTY()]
+            ingredientOptions: CombinationChoice.between(combinationOne, combinationTwo),
+            resultOptions: CombinationChoice.NONE()
         });
 
         expect(underTest.ready()).toEqual(false);
@@ -155,46 +133,41 @@ describe("When selecting ingredients", () => {
     test("should produce the correct selected ingredients when components in an ingredient group are re-selected", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentOne.id), 1),
-            new Unit(new CombinableString(testComponentTwo.id), 1)
+            new Unit(new StringIdentity(testComponentOne.id), 1),
+            new Unit(new StringIdentity(testComponentTwo.id), 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentThree.id), 2)
+            new Unit(new StringIdentity(testComponentThree.id), 2)
         ]);
-
-        const componentGroupOne: ComponentGroup = new ComponentGroup(combinationOne);
-        const componentGroupTwo: ComponentGroup = new ComponentGroup(combinationTwo);
 
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            ingredientOptions: [componentGroupOne, componentGroupTwo],
-            resultOptions: [ComponentGroup.EMPTY()]
+            ingredientOptions: CombinationChoice.between(combinationOne, combinationTwo),
+            resultOptions: CombinationChoice.NONE()
         });
 
-        underTest.selectIngredient(0, testComponentOne.id);
+        expect(underTest.ingredientOptions.size).toEqual(2);
+        expect(underTest.ready()).toEqual(false);
 
+        underTest.selectIngredientCombination(combinationOne.id);
         expect(underTest.ready()).toEqual(true);
 
-        const selectedIngredientSetOne = underTest.getSelectedIngredients();
-        expect(selectedIngredientSetOne.size()).toEqual(3);
-        expect(selectedIngredientSetOne.amountFor(new CombinableString(testComponentOne.id))).toEqual(1);
-        expect(selectedIngredientSetOne.has(new CombinableString(testComponentTwo.id))).toEqual(false);
-        expect(selectedIngredientSetOne.amountFor(new CombinableString(testComponentTwo.id))).toEqual(0);
-        expect(selectedIngredientSetOne.amountFor(new CombinableString(testComponentThree.id))).toEqual(2);
+        let selectedIngredients = underTest.getSelectedIngredients();
 
-        underTest.selectIngredient(0, testComponentTwo.id);
+        expect(selectedIngredients.id).toEqual(combinationOne.id);
+        expect(selectedIngredients.equals(combinationOne)).toEqual(true);
+        expect(combinationOne.equals(selectedIngredients)).toEqual(true);
 
+        underTest.selectIngredientCombination(combinationTwo.id);
         expect(underTest.ready()).toEqual(true);
 
-        const selectedIngredientSetTwo = underTest.getSelectedIngredients();
-        expect(selectedIngredientSetTwo.size()).toEqual(3);
-        expect(selectedIngredientSetTwo.has(new CombinableString(testComponentOne.id))).toEqual(false);
-        expect(selectedIngredientSetTwo.amountFor(new CombinableString(testComponentOne.id))).toEqual(0);
-        expect(selectedIngredientSetTwo.amountFor(new CombinableString(testComponentTwo.id))).toEqual(1);
-        expect(selectedIngredientSetTwo.amountFor(new CombinableString(testComponentThree.id))).toEqual(2);
+        selectedIngredients = underTest.getSelectedIngredients();
 
+        expect(selectedIngredients.id).toEqual(combinationTwo.id);
+        expect(selectedIngredients.equals(combinationTwo)).toEqual(true);
+        expect(combinationTwo.equals(selectedIngredients)).toEqual(true);
     });
 
 });
@@ -203,51 +176,57 @@ describe("When selecting results", () => {
 
     const id = "hq4F67hS";
 
-    test("should combine result groups with no choices when selecting results", () => {
+    test("should not require choice when there is only one option", () => {
 
-        const combinationOne = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentFive.id), 3)
+        const singletonResult = Combination.ofUnits([
+            new Unit(new StringIdentity(testComponentFive.id), 3),
+            new Unit(new StringIdentity(testComponentOne.id), 1)
         ]);
 
-        const combinationTwo = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentFive.id), 2)
+        const singletonIngredient = Combination.ofUnits([
+            new Unit(new StringIdentity(testComponentFour.id), 2)
         ]);
-
-        const componentGroupOne: ComponentGroup = new ComponentGroup(combinationOne);
-        const componentGroupTwo: ComponentGroup = new ComponentGroup(combinationTwo);
 
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultOptions: [componentGroupOne, componentGroupTwo],
-            ingredientOptions: [ComponentGroup.EMPTY()]
+            resultOptions: CombinationChoice.just(singletonResult),
+            ingredientOptions: CombinationChoice.just(singletonIngredient)
         });
 
         const selectedResults = underTest.getSelectedResults();
-        expect(selectedResults.size()).toEqual(5);
-        expect(selectedResults.amountFor(new CombinableString(testComponentFive.id))).toEqual(5);
+        expect(selectedResults.id).toEqual(singletonResult.id);
+        expect(selectedResults.size()).toEqual(4);
+        expect(selectedResults.amountFor(new StringIdentity(testComponentFive.id))).toEqual(3);
+        expect(selectedResults.amountFor(new StringIdentity(testComponentOne.id))).toEqual(1);
+
+        const selectedIngredients = underTest.getSelectedIngredients();
+        expect(selectedIngredients.id).toEqual(singletonIngredient.id);
+        expect(selectedIngredients.size()).toEqual(2);
+        expect(selectedIngredients.amountFor(new StringIdentity(testComponentFour.id))).toEqual(2);
 
     });
 
     test("should require choices from result groups with options", () => {
 
-        const combinationOne = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentOne.id), 1),
-            new Unit(new CombinableString(testComponentTwo.id), 1)
+        const ingredientCombinationOne = Combination.ofUnits([
+            new Unit(new StringIdentity(testComponentOne.id), 1),
+            new Unit(new StringIdentity(testComponentTwo.id), 1)
         ]);
 
-        const combinationTwo = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentThree.id), 2)
+        const ingredientCombinationTwo = Combination.ofUnits([
+            new Unit(new StringIdentity(testComponentThree.id), 2)
         ]);
 
-        const componentGroupOne: ComponentGroup = new ComponentGroup(combinationOne);
-        const componentGroupTwo: ComponentGroup = new ComponentGroup(combinationTwo);
+        const resultCombination = Combination.ofUnits([
+            new Unit(new StringIdentity(testComponentFour.id), 2)
+        ]);
 
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultOptions: [componentGroupOne, componentGroupTwo],
-            ingredientOptions: [ComponentGroup.EMPTY()]
+            resultOptions: CombinationChoice.just(resultCombination),
+            ingredientOptions: CombinationChoice.between(ingredientCombinationOne, ingredientCombinationTwo)
         });
 
         expect(underTest.ready()).toEqual(false);
@@ -259,45 +238,28 @@ describe("When selecting results", () => {
     test("should produce the correct selected results when components in a result group are re-selected", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentOne.id), 1),
-            new Unit(new CombinableString(testComponentTwo.id), 1)
+            new Unit(new StringIdentity(testComponentOne.id), 1),
+            new Unit(new StringIdentity(testComponentTwo.id), 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(new CombinableString(testComponentThree.id), 2)
+            new Unit(new StringIdentity(testComponentThree.id), 2)
         ]);
-
-        const componentGroupOne: ComponentGroup = new ComponentGroup(combinationOne);
-        const componentGroupTwo: ComponentGroup = new ComponentGroup(combinationTwo);
 
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultOptions: [componentGroupOne, componentGroupTwo],
-            ingredientOptions: [ComponentGroup.EMPTY()]
+            resultOptions: CombinationChoice.between(combinationOne, combinationTwo),
+            ingredientOptions: CombinationChoice.NONE()
         });
 
-        underTest.selectResult(0, testComponentOne.id);
+        underTest.selectResultCombination(combinationOne.id);
+        let selectedResults = underTest.getSelectedResults();
+        expect(selectedResults.id).toEqual(combinationOne.id);
 
-        expect(underTest.ready()).toEqual(true);
-
-        const selectedResultSetOne = underTest.getSelectedResults();
-        expect(selectedResultSetOne.size()).toEqual(3);
-        expect(selectedResultSetOne.amountFor(new CombinableString(testComponentOne.id))).toEqual(1);
-        expect(selectedResultSetOne.has(new CombinableString(testComponentTwo.id))).toEqual(false);
-        expect(selectedResultSetOne.amountFor(new CombinableString(testComponentTwo.id))).toEqual(0);
-        expect(selectedResultSetOne.amountFor(new CombinableString(testComponentThree.id))).toEqual(2);
-
-        underTest.selectResult(0, testComponentTwo.id);
-
-        expect(underTest.ready()).toEqual(true);
-
-        const selectedResultSetTwo = underTest.getSelectedResults();
-        expect(selectedResultSetTwo.size()).toEqual(3);
-        expect(selectedResultSetTwo.has(new CombinableString(testComponentOne.id))).toEqual(false);
-        expect(selectedResultSetTwo.amountFor(new CombinableString(testComponentOne.id))).toEqual(0);
-        expect(selectedResultSetTwo.amountFor(new CombinableString(testComponentTwo.id))).toEqual(1);
-        expect(selectedResultSetTwo.amountFor(new CombinableString(testComponentThree.id))).toEqual(2);
+        underTest.selectResultCombination(combinationTwo.id);
+        selectedResults = underTest.getSelectedResults();
+        expect(selectedResults.id).toEqual(combinationTwo.id);
 
     });
 

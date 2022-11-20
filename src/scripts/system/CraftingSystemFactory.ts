@@ -3,7 +3,7 @@ import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory
 import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
-import {PartDictionary, PartDictionaryLoader} from "./PartDictionary";
+import {PartDictionary, DefaultPartDictionaryLoader} from "./PartDictionary";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
@@ -23,7 +23,7 @@ class CraftingSystemFactory {
     public async make(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
 
         const partDictionary = new PartDictionary({});
-        const partDictionaryLoader = new PartDictionaryLoader({
+        const partDictionaryLoader = new DefaultPartDictionaryLoader({
             documentManager: this._documentManager,
             partDictionaryJson: craftingSystemJson.parts
         });

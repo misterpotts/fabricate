@@ -2,12 +2,12 @@ import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 import {DefaultSettingManager} from "../src/scripts/interface/settings/FabricateSettings";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
-import {CombinableString, CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
+import {StringIdentity, CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {DefaultSystemRegistry, ErrorDecisionType} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {RecipeJson} from "../src/scripts/crafting/Recipe";
-import {DocumentManager} from "../src/scripts/foundry/DocumentManager";
+import {RawItemData, StubDocumentManager} from "./stubs/StubDocumentManager";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -233,13 +233,11 @@ describe("integration test", () => {
         expect(recipeOneResult.id).toEqual(recipeOneItemUuid);
         expect(recipeOneResult.name).toEqual(itemData.get(recipeOneItemUuid).name);
         expect(recipeOneResult.imageUrl).toEqual(itemData.get(recipeOneItemUuid).img);
-        expect(recipeOneResult.essences.amountFor(new CombinableString(essenceOneId))).toEqual(1);
-        expect(recipeOneResult.essences.amountFor(new CombinableString(essenceTwoId))).toEqual(2);
+        expect(recipeOneResult.essences.amountFor(new StringIdentity(essenceOneId))).toEqual(1);
+        expect(recipeOneResult.essences.amountFor(new StringIdentity(essenceTwoId))).toEqual(2);
         expect(recipeOneResult.catalysts.size()).toEqual(0);
-        expect(recipeOneResult.ingredientOptions.length).toEqual(0);
-        expect(recipeOneResult.resultOptions.length).toEqual(1);
-        expect(recipeOneResult.resultOptions[0].members.size()).toEqual(1);
-        expect(recipeOneResult.resultOptions[0].members.has(new CombinableString(componentOneItemUuid))).toEqual(true);
+        expect(recipeOneResult.ingredientOptions.size).toEqual(0);
+        expect(recipeOneResult.resultOptions.size).toEqual(1);
 
         expect(craftingSystemOne.partDictionary.getComponents().length).toEqual(3);
         expect(craftingSystemOne.partDictionary.hasComponent(componentOneItemUuid)).toEqual(true);
@@ -251,10 +249,10 @@ describe("integration test", () => {
         expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
         expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).img);
         expect(componentOneResult.salvage.size()).toEqual(2);
-        expect(componentOneResult.salvage.amountFor(new CombinableString(componentTwoItemUuid))).toEqual(2);
+        expect(componentOneResult.salvage.amountFor(new StringIdentity(componentTwoItemUuid))).toEqual(2);
         expect(componentOneResult.essences.size()).toEqual(3);
-        expect(componentOneResult.essences.amountFor(new CombinableString(essenceOneId))).toEqual(2);
-        expect(componentOneResult.essences.amountFor(new CombinableString(essenceTwoId))).toEqual(1);
+        expect(componentOneResult.essences.amountFor(new StringIdentity(essenceOneId))).toEqual(2);
+        expect(componentOneResult.essences.amountFor(new StringIdentity(essenceTwoId))).toEqual(1);
 
         expect(craftingSystemOne.partDictionary.getEssences().length).toEqual(3);
         expect(craftingSystemOne.partDictionary.hasEssence(essenceOneId)).toEqual(true);
@@ -264,32 +262,5 @@ describe("integration test", () => {
     });
 
 });
-
-interface RawItemData {
-    img: string;
-    name: string;
-    uuid: string;
-}
-
-class StubDocumentManager implements DocumentManager {
-
-    private readonly _itemsByUUid: Map<string, RawItemData>;
-
-    constructor(itemsByUUid: Map<string, RawItemData>) {
-        this._itemsByUUid = itemsByUUid;
-    }
-
-    getDocumentByUuid(id: string): Promise<any> {
-        return Promise.resolve(this._itemsByUUid.get(id));
-    }
-    getDocumentsByUuid(ids: string[]): Promise<any[]> {
-        return Promise.resolve(ids.map(id => this._itemsByUUid.get(id)));
-    }
-
-    public addItem(uuid: string, data: RawItemData): void {
-        this._itemsByUUid.set(uuid, data);
-    }
-
-}
 
 

@@ -1,9 +1,10 @@
-import {CombinableString, CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
-import {ComponentGroup, Recipe, RecipeJson} from "../crafting/Recipe";
+import {StringIdentity, CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
+import {CombinationChoice, Recipe, RecipeJson} from "../crafting/Recipe";
 import {Essence, EssenceJson} from "../common/Essence";
 import {DocumentManager} from "../foundry/DocumentManager";
-import {Combinable, Combination} from "../common/Combination";
+import {Combination} from "../common/Combination";
 import Properties from "../Properties";
+import {Identifiable} from "../common/Identity";
 
 interface ItemData {
     uuid: string;
@@ -11,7 +12,13 @@ interface ItemData {
     imageUrl: string;
 }
 
-class PartDictionaryLoader {
+interface PartDictionaryLoader {
+
+    load(partDictionary: PartDictionary): Promise<void>;
+
+}
+
+class DefaultPartDictionaryLoader implements PartDictionaryLoader {
 
     private readonly _documentManager: DocumentManager;
     private readonly _partDictionaryJson: PartDictionaryJson;
@@ -66,8 +73,8 @@ class PartDictionaryLoader {
             id: componentJson.itemUuid,
             name: itemData.name,
             imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
-            essences: this.identityCombinationFromRecord(componentJson.essences, CombinableString),
-            salvage: this.identityCombinationFromRecord(componentJson.salvage, CombinableString),
+            essences: this.identityCombinationFromRecord(componentJson.essences, StringIdentity),
+            salvage: this.identityCombinationFromRecord(componentJson.salvage, StringIdentity),
         });
     }
 
@@ -86,8 +93,8 @@ class PartDictionaryLoader {
             id: recipeJson.itemUuid,
             name: itemData.name,
             imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
-            essences: this.identityCombinationFromRecord(recipeJson.essences, CombinableString),
-            catalysts: this.identityCombinationFromRecord(recipeJson.catalysts, CombinableString),
+            essences: this.identityCombinationFromRecord(recipeJson.essences, StringIdentity),
+            catalysts: this.identityCombinationFromRecord(recipeJson.catalysts, StringIdentity),
             ingredientOptions: this.componentIdentityGroupsFromRecords(recipeJson.ingredientGroups),
             resultOptions: this.componentIdentityGroupsFromRecords(recipeJson.resultGroups)
         });
@@ -105,19 +112,20 @@ class PartDictionaryLoader {
         }
     }
 
-    private identityCombinationFromRecord<T extends Combinable>(record: Record<string, number>,
-                                                                constructorFunction: new (...args: any[]) => T): Combination<T> {
+    private identityCombinationFromRecord<T extends Identifiable>(record: Record<string, number>,
+                                                                  constructorFunction: new (...args: any[]) => T): Combination<T> {
         return Array.from(Object.keys(record))
             .map(key => Combination.of(new constructorFunction(key), record[key]))
             .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
     }
 
-    private componentIdentityGroupsFromRecords(componentGroupsValues: Record<string, number>[]): ComponentGroup[] {
-        if (!componentGroupsValues) {
-            return [];
+    private componentIdentityGroupsFromRecords(componentCombinationChoices: Record<string, number>[]): CombinationChoice<StringIdentity> {
+        if (!componentCombinationChoices) {
+            return CombinationChoice.NONE();
         }
-        return componentGroupsValues.map(value => this.identityCombinationFromRecord(value, CombinableString))
-            .map(combination => new ComponentGroup(combination));
+        const combinations = componentCombinationChoices
+            .map(value => this.identityCombinationFromRecord(value, StringIdentity));
+        return new CombinationChoice<StringIdentity>(combinations);
     }
 
 }
@@ -264,4 +272,4 @@ interface PartDictionaryJson {
     essences: Record<string, EssenceJson>
 }
 
-export { PartDictionary, PartDictionaryJson, PartDictionaryLoader }
+export { PartDictionary, PartDictionaryJson, PartDictionaryLoader, DefaultPartDictionaryLoader }

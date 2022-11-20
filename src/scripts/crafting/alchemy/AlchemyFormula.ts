@@ -1,7 +1,8 @@
 import {AlchemicalCombination, AlchemicalEffect, NoAlchemicalEffect} from "./AlchemicalEffect";
-import {Essence, EssenceIdentityProvider} from "../../common/Essence";
+import {Essence} from "../../common/Essence";
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
+import {PrimeNumberIdentityProvider} from "../../common/Identity";
 
 interface AlchemyFormula {
 
@@ -23,7 +24,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
 
     private readonly _basePartId: string;
     private readonly _effectsByEssenceIdentity: Map<number, AlchemicalEffect<AlchemicalCombination>>;
-    private readonly _essenceIdentityProvider: EssenceIdentityProvider;
+    private readonly _essenceIdentityProvider: PrimeNumberIdentityProvider<Essence>;
 
     constructor({
         basePartId,
@@ -31,7 +32,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         effectsByEssenceIdentity = new Map()
     }: {
         basePartId: string;
-        essenceIdentityProvider: EssenceIdentityProvider;
+        essenceIdentityProvider: PrimeNumberIdentityProvider<Essence>;
         effectsByEssenceIdentity?: Map<number, AlchemicalEffect<AlchemicalCombination>>;
     }) {
         this._basePartId = basePartId;
@@ -51,7 +52,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         if (essences.isEmpty()) {
             return new NoAlchemicalEffect();
         }
-        const combinationIdentity: number = this._essenceIdentityProvider.getForEssenceCombination(essences);
+        const combinationIdentity: number = this._essenceIdentityProvider.getForCombination(essences);
         if (!this._effectsByEssenceIdentity.has(combinationIdentity)) {
             return new NoAlchemicalEffect();
         }
@@ -62,7 +63,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         if (essences.isEmpty()) {
             return false;
         }
-        const combinationIdentity: number = this._essenceIdentityProvider.getForEssenceCombination(essences);
+        const combinationIdentity: number = this._essenceIdentityProvider.getForCombination(essences);
         return this._effectsByEssenceIdentity.has(combinationIdentity);
     }
 
@@ -70,7 +71,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         if (essences.isEmpty()) {
             return new NoAlchemicalEffect();
         }
-        const combinationIdentity: number = this._essenceIdentityProvider.getForEssenceCombination(essences);
+        const combinationIdentity: number = this._essenceIdentityProvider.getForCombination(essences);
         if (!this._effectsByEssenceIdentity.has(combinationIdentity)) {
             this._effectsByEssenceIdentity.set(combinationIdentity, effect);
             return new NoAlchemicalEffect();

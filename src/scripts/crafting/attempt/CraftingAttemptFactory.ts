@@ -30,8 +30,7 @@ class CraftingAttemptFactory {
         const componentSelection: ComponentSelection = this._selectionStrategy.perform(recipe, availableComponents);
         if (!componentSelection.isSufficient()) {
             return new AbandonedCraftingAttempt({
-                recipe: recipe,
-                reason: componentSelection.describe()
+                recipe: recipe
             });
         }
         switch (this._wastageType) {

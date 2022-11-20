@@ -1,5 +1,6 @@
-import {Combinable, CombinableString, Combination} from "./Combination";
+import {StringIdentity, Combination} from "./Combination";
 import Properties from "../Properties";
+import {Identifiable} from "./Identity";
 
 interface CraftingComponentJson {
     itemUuid: string;
@@ -7,7 +8,7 @@ interface CraftingComponentJson {
     salvage: Record<string, number>;
 }
 
-class CraftingComponent implements Combinable {
+class CraftingComponent implements Identifiable {
 
     private static readonly _NONE: CraftingComponent = new CraftingComponent({
         id: "NO_ID",
@@ -20,8 +21,8 @@ class CraftingComponent implements Combinable {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private _essences: Combination<CombinableString>;
-    private _salvage: Combination<CombinableString>;
+    private _essences: Combination<StringIdentity>;
+    private _salvage: Combination<StringIdentity>;
 
     constructor({
         id,
@@ -33,8 +34,8 @@ class CraftingComponent implements Combinable {
         id: string;
         name: string;
         imageUrl?: string;
-        essences?: Combination<CombinableString>;
-        salvage?: Combination<CombinableString>;
+        essences?: Combination<StringIdentity>;
+        salvage?: Combination<StringIdentity>;
     }) {
         this._id = id;
         this._name = name;
@@ -43,16 +44,12 @@ class CraftingComponent implements Combinable {
         this._salvage = salvage;
     }
 
-    get elementId(): string {
+    get id(): string {
         return this._id;
     }
 
     public static NONE() {
         return this._NONE;
-    }
-
-    get id(): string {
-        return this._id;
     }
 
     get name(): string {
@@ -63,11 +60,11 @@ class CraftingComponent implements Combinable {
         return this._imageUrl;
     }
 
-    get essences(): Combination<CombinableString> {
+    get essences(): Combination<StringIdentity> {
         return this._essences;
     }
 
-    get salvage(): Combination<CombinableString> {
+    get salvage(): Combination<StringIdentity> {
         return this._salvage;
     }
 
@@ -79,13 +76,14 @@ class CraftingComponent implements Combinable {
         }
     }
 
-    set essences(value: Combination<CombinableString>) {
+    set essences(value: Combination<StringIdentity>) {
         this._essences = value;
     }
 
-    set salvage(value: Combination<CombinableString>) {
+    set salvage(value: Combination<StringIdentity>) {
         this._salvage = value;
     }
+
 }
 
-export { CraftingComponent, CombinableString, CraftingComponentJson }
+export { CraftingComponent, StringIdentity, CraftingComponentJson }

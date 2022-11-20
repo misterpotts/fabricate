@@ -55,7 +55,7 @@ describe('A Crafting System Factory', () => {
             const retrieved = craftingSystem.partDictionary.getComponent(component.id)
             expect(retrieved.id).toEqual(component.id);
             component.essences.members.forEach(essenceId => {
-                expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
+                expect(craftingSystem.partDictionary.hasEssence(essenceId.id)).toEqual(true);
             });
         })
         const recipes = craftingSystem.partDictionary.getRecipes();
@@ -64,11 +64,11 @@ describe('A Crafting System Factory', () => {
             const retrieved = craftingSystem.partDictionary.getRecipe(recipe.id)
             expect(retrieved.id).toEqual(recipe.id);
             recipe.essences.members.forEach(essenceId => {
-                expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
+                expect(craftingSystem.partDictionary.hasEssence(essenceId.id)).toEqual(true);
             });
-            recipe.resultOptions.forEach(resultGroup => {
-                resultGroup.members.members.forEach(componentId => {
-                    expect(craftingSystem.partDictionary.hasComponent(componentId.elementId)).toEqual(true);
+            recipe.resultOptions.choices.forEach(choice => {
+                choice.value.members.forEach(identity => {
+                    expect(craftingSystem.partDictionary.hasComponent(identity.id)).toEqual(true);
                 });
             });
         })
