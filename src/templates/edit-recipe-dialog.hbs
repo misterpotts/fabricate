@@ -1,0 +1,81 @@
+<div class="fabricate-recipe-manager">
+
+    <h2 class="fabricate-recipe-name">{{recipe.name}}</h2>
+
+        <div class="fabricate-recipe-image">
+            <img src="{{recipe.imageUrl}}" />
+        </div>
+
+        <div class="fabricate-recipe-essence-editor">
+            <h3>Essences</h3>
+            <p>
+                The recipe requires these essences in addition to any named ingredients and catalysts.
+                Left click on an essence to increase the required amount.
+                Shift click while doing so to decrease it.
+            </p>
+            <div class="fabricate-inline-part-list">
+                {{#each recipe.essences}}
+                    <div class="fabricate-essence" data-tooltip="{{essence.tooltip}}" data-essence-id="{{essence.id}}" data-recipe-id="{{../recipe.id}}" data-action="editRecipeEssence">
+                        <span>{{amount}} <i class="{{essence.iconCode}}"></i> {{essence.name}}</span>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="fabricate-recipe-ingredients-editor">
+            <h3>Ingredients</h3>
+            <p>
+                The recipe requires these ingredients in addition to any essences and catalysts.
+                A recipe can have more than one combination of ingredients to choose from.
+                Left click on a component to increase the required number in each option.
+                Shift click while doing so to decrease it.
+                Drop an item onto an empty ingredient combination option to create a new one.
+            </p>
+            <div class="fabricate-recipe-ingredient-options">
+                {{#each recipe.ingredientOptions.members}}
+                    <div class="fabricate-component-list">
+                        {{#each units}}
+                            <div class="fabricate-component fabricate-component-salvage-choice" data-salvage-id="{{part.id}}" data-tooltip="{{part.name}}" data-recipe-id="{{../../recipe.id}}" data-action="editRecipeIngredient">
+                                <img src="{{part.imageUrl}}">
+                                <div class="fabricate-info">
+                                    <span class="fabricate-detail">{{quantity}}</span>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                {{/each}}
+                <div class="fabricate-add-recipe-ingredient-option">
+                    <i class="fa-solid fa-square-plus"></i>
+                </div>
+            </div>
+        </div>
+
+    <div class="fabricate-recipe-results-editor">
+        <h3>Results</h3>
+        <p>
+            The recipe produces these components when successfully crafted.
+            A recipe can have more than one combination of results to choose from.
+            Left click on a component to increase the number produced in each option.
+            Shift click while doing so to decrease it.
+            Drop an item onto an empty result combination option to create a new one.
+        </p>
+        <div class="fabricate-recipe-result-options">
+            {{#each recipe.resultOptions.members}}
+                <div class="fabricate-component-list">
+                    {{#each units}}
+                        <div class="fabricate-component fabricate-component-salvage-choice" data-salvage-id="{{part.id}}" data-tooltip="{{part.name}}" data-recipe-id="{{../../recipe.id}}" data-action="editReciperesult">
+                            <img src="{{part.imageUrl}}">
+                            <div class="fabricate-info">
+                                <span class="fabricate-detail">{{quantity}}</span>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            {{/each}}
+            <div class="fabricate-add-recipe-result-option">
+                <i class="fa-solid fa-square-plus"></i>
+            </div>
+        </div>
+    </div>
+
+</div>

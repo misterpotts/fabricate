@@ -3,7 +3,7 @@ import {Recipe} from "../crafting/Recipe";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 
-class CompleteComponentSelection implements ComponentSelection<CraftingComponent> {
+class CompleteComponentSelection implements ComponentSelection {
 
     private readonly _components: Combination<CraftingComponent>;
 

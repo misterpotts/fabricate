@@ -10,6 +10,7 @@ const Properties = {
             ComponentManagerApp: "modules/fabricate/templates/edit-component-dialog.hbs",
             EssenceManagerApp: "modules/fabricate/templates/edit-essence-details.hbs",
             EditCraftingSystemDetailDialog: "modules/fabricate/templates/edit-crafting-system-detail.hbs",
+            RecipeManagerApp: "modules/fabricate/templates/edit-recipe-dialog.hbs",
             partials: {
                 editableSystem: "modules/fabricate/templates/partials/editable-crafting-system.hbs",
                 readOnlySystem: "modules/fabricate/templates/partials/readonly-crafting-system.hbs",
