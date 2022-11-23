@@ -10,7 +10,7 @@ import {Recipe} from "../../crafting/Recipe";
 import {PartDictionary} from "../../system/PartDictionary";
 import EditComponentDialogFactory from "./EditComponentDialog";
 import EditEssenceDialogFactory from "./EditEssenceDialog";
-import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialogFactory";
+import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialog";
 
 class CraftingSystemManagerApp extends FormApplication {
 
