@@ -5,110 +5,126 @@ import {CombinableString, CraftingComponent} from "../../common/CraftingComponen
 import {Essence} from "../../common/Essence";
 import {Combination, Unit} from "../../common/Combination";
 import FabricateApplication from "../FabricateApplication";
+import {ApplicationWindow, Click, DefaultClickHandler, StateManager} from "./core/Applications";
 
-class EditComponentDialog extends FormApplication {
+interface EditComponentDialogView {
+    system: {
+        id: string,
+        essences: Essence[],
+        components: CraftingComponent[]
+    },
+    component: {
+        id: string,
+        name: string,
+        imageUrl: string,
+        essences: { essence: Essence; amount: number }[],
+        salvage: { component: CraftingComponent; amount: number }[]
+    }
+}
 
+class EditComponentDialogModel {
+
+    private readonly _system: CraftingSystem;
     private readonly _component: CraftingComponent;
-    private readonly _craftingSystem: CraftingSystem;
 
-    constructor(component: CraftingComponent, selectedSystem: CraftingSystem) {
-        super(null);
+    constructor({
+        system,
+        component
+    }: {
+        system: CraftingSystem,
+        component: CraftingComponent
+    }) {
+        this._system = system;
         this._component = component;
-        this._craftingSystem = selectedSystem;
     }
 
-    static get defaultOptions() {
-        const GAME = new GameProvider().globalGameObject();
-        return {
-            ...super.defaultOptions,
-            title: GAME.i18n.localize(`${Properties.module.id}.EditComponentDialog.title`),
-            id: `${Properties.module.id}-component-manager`,
-            template: Properties.module.templates.ComponentManagerApp,
-            width: 500,
-        };
+    get system(): CraftingSystem {
+        return this._system;
     }
 
-    protected _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
-        console.log("Update object");
-        this.render();
-        return undefined;
+    get component(): CraftingComponent {
+        return this._component;
     }
 
-    render(force: boolean = true) {
-        super.render(force);
+    public incrementEssence(essenceId: string): EditComponentDialogModel {
+        const essenceDelta = new Unit(new CombinableString(essenceId), 1);
+        this._component.essences = this._component.essences.add(essenceDelta);
+        return this;
     }
 
-    activateListeners(html: JQuery) {
-        super.activateListeners(html);
-        const rootElement = html[0];
-        rootElement.addEventListener("click", this._onClick.bind(this));
+    public decrementEssence(essenceId: string): EditComponentDialogModel {
+        const essenceDelta = new Unit(new CombinableString(essenceId), 1);
+        this._component.essences = this._component.essences.minus(essenceDelta);
+        return this;
     }
 
-    async _onClick(event: any) {
-        const dataKeys = ["action", "componentId", "essenceId", "salvageId"];
-        const data = new Map(dataKeys.map(key => [key, this.getClosestElementDataForKey(key, event)]));
-        const shiftPressed: boolean = event.shiftKey;
-        return this.handleUserAction(data, shiftPressed);
+    public incrementSalvage(salvageId: string): EditComponentDialogModel {
+        const salvageDelta = new Unit(new CombinableString(salvageId), 1);
+        this._component.salvage = this._component.salvage.add(salvageDelta);
+        return this;
     }
 
-    getClosestElementDataForKey(key: string, event: any): string {
-        let element = event?.target;
-        let value = element?.dataset[key];
-        while (element && !value) {
-            value = element?.dataset[key];
-            element = element.parentElement;
-        }
-        return value;
-    };
-
-    async handleUserAction(data: Map<string, string>, shiftPressed: boolean) {
-        switch (data.get("action")) {
-            case "editComponentEssence":
-                const essenceId = data.get("essenceId");
-                const essenceDelta = new Unit(new CombinableString(essenceId), 1);
-                let essenceResult: Combination<CombinableString>;
-                if (shiftPressed) {
-                    essenceResult = this._component.essences.minus(essenceDelta);
-                } else {
-                    essenceResult = this._component.essences.add(essenceDelta);
-                }
-                this._component.essences = essenceResult;
-                await FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
-                await this.render(true);
-                break;
-            case "editComponentSalvage":
-                const salvageId = data.get("salvageId");
-                const salvageDelta = new Unit(new CombinableString(salvageId), 1);
-                let salvageResult: Combination<CombinableString>;
-                if (shiftPressed) {
-                    salvageResult = this._component.salvage.minus(salvageDelta);
-                } else {
-                    salvageResult = this._component.salvage.add(salvageDelta);
-                }
-                this._component.salvage = salvageResult;
-                await FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
-                await this.render(true);
-                break;
-            default:
-                return;
-        }
+    public decrementSalvage(salvageId: string): EditComponentDialogModel {
+        const salvageDelta = new Unit(new CombinableString(salvageId), 1);
+        this._component.salvage = this._component.salvage.minus(salvageDelta);
+        return this;
     }
 
-    async getData(): Promise<any> {
+}
+
+class ComponentStateManager implements StateManager<EditComponentDialogView, EditComponentDialogModel> {
+
+    private readonly _model: EditComponentDialogModel;
+
+    constructor({
+        component,
+        system
+    }: {
+        component: CraftingComponent,
+        system: CraftingSystem
+    }) {
+        this._model = new EditComponentDialogModel({
+            component,
+            system
+        });
+    }
+
+    getModelState(): EditComponentDialogModel {
+        return this._model;
+    }
+
+    getViewData(): EditComponentDialogView {
         return {
             system: {
-                id: this._craftingSystem.id,
-                essences: this._craftingSystem.essences,
-                components: this._craftingSystem.components.filter(component => component.id !== this._component.id)
+                id: this.system.id,
+                essences: this.system.essences,
+                components: this.system.components.filter(component => component.id !== this.component.id)
             },
             component: {
-                id: this._component.id,
-                name: this._component.name,
-                imageUrl: this._component.imageUrl,
-                essences: this.prepareEssenceData(this._craftingSystem.essences, this._component.essences),
-                salvage: this.prepareSalvageData(this._component.id, this._craftingSystem.components, this._component.salvage)
+                id: this.component.id,
+                name: this.component.name,
+                imageUrl: this.component.imageUrl,
+                essences: this.prepareEssenceData(this.system.essences, this.component.essences),
+                salvage: this.prepareSalvageData(this.component.id, this.system.components, this.component.salvage)
             }
         };
+    }
+
+    async load(): Promise<EditComponentDialogModel> {
+        return this.getModelState();
+    }
+
+    async save(model: EditComponentDialogModel): Promise<EditComponentDialogModel> {
+        await FabricateApplication.systemRegistry.saveCraftingSystem(model.system);
+        return this.getModelState();
+    }
+
+    get component(): CraftingComponent {
+        return this._model.component;
+    }
+
+    get system(): CraftingSystem {
+        return this._model.system;
     }
 
     private prepareEssenceData(all: Essence[], includedAmounts: Combination<CombinableString>): { essence: Essence; amount: number }[] {
@@ -116,7 +132,7 @@ class EditComponentDialog extends FormApplication {
             return {
                 essence,
                 amount: includedAmounts.amountFor(new CombinableString(essence.id))
-        }});
+            }});
     }
 
     private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<CombinableString>): { component: CraftingComponent; amount: number }[] {
@@ -125,8 +141,46 @@ class EditComponentDialog extends FormApplication {
                 return {
                     component,
                     amount: includedAmounts.amountFor(new CombinableString(component.id))
-            }});
+                }});
     }
+
 }
 
-export { EditComponentDialog }
+class EditComponentDialogFactory {
+
+    make(component: CraftingComponent, system: CraftingSystem): ApplicationWindow<EditComponentDialogView, EditComponentDialogModel> {
+        return new ApplicationWindow<EditComponentDialogView, EditComponentDialogModel>({
+            clickHandler: new DefaultClickHandler({
+                dataKeys: ["componentId", "essenceId", "salvageId"],
+                actions: new Map([
+                    ["editComponentEssence", async (click: Click, currentState: EditComponentDialogModel) => {
+                        const essenceId = click.data.get("essenceId");
+                        if (click.keys.shift) {
+                            return currentState.decrementEssence(essenceId);
+                        } else {
+                            return currentState.incrementEssence(essenceId);
+                        }
+                    }],
+                    ["editComponentSalvage", async (click: Click, currentState: EditComponentDialogModel) => {
+                        const salvageId = click.data.get("salvageId");
+                        if (click.keys.shift) {
+                            return currentState.decrementSalvage(salvageId);
+                        } else {
+                            return currentState.incrementSalvage(salvageId);
+                        }
+                    }]
+                ])
+            }),
+            stateManager: new ComponentStateManager({component, system}),
+            options: {
+                title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.EditComponentDialog.title`),
+                id: `${Properties.module.id}-component-manager`,
+                template: Properties.module.templates.ComponentManagerApp,
+                width: 500,
+            }
+        });
+    }
+
+}
+
+export default new EditComponentDialogFactory();

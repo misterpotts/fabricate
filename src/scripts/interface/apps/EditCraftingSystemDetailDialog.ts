@@ -68,7 +68,7 @@ class EditCraftingSystemDetailDialog extends FormApplication {
 
     private async createCraftingSystem({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
         const gameProvider = new GameProvider();
-        // todo: add more detail;s for checks and alchemy as those are defined in the UI with macros
+        // todo: add more details for checks and alchemy as those are defined in the UI with macros
         const systemDefinition: CraftingSystemJson = {
             id: randomID(),
             details: {
