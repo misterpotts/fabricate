@@ -1,110 +1,136 @@
-import {GameProvider} from "../../foundry/GameProvider";
-import Properties from "../../Properties";
-import {Essence} from "../../common/Essence";
+import {FormApplicationWindow, FormError, StateManager, SubmissionHandler} from "./core/Applications";
 import {CraftingSystem} from "../../system/CraftingSystem";
+import {Essence} from "../../common/Essence";
+import Properties from "../../Properties";
+import {GameProvider} from "../../foundry/GameProvider";
 import FabricateApplication from "../FabricateApplication";
 
-class EditEssenceDialog extends FormApplication {
+interface EssenceView {
 
-    private readonly _craftingSystem: CraftingSystem;
-    private readonly _essence?: Essence;
+    name: string;
+    description: string;
+    iconCode: string;
+    tooltip: string;
 
-    constructor(craftingSystem: CraftingSystem, essence?: Essence) {
-        super(null);
-        this._craftingSystem = craftingSystem;
+}
+
+class EssenceModel {
+
+    private readonly _system: CraftingSystem;
+    private _essence?: Essence;
+
+    constructor({
+        essence,
+        system
+    }: {
+        system: CraftingSystem,
+        essence: Essence
+    }) {
+        this._system = system;
         this._essence = essence;
     }
 
-    static get defaultOptions() {
-        const GAME = new GameProvider().globalGameObject();
-        return {
-            ...super.defaultOptions,
-            title: GAME.i18n.localize(`${Properties.module.id}.EditEssenceDialog.title`),
-            id: `${Properties.module.id}-essence-manager`,
-            template: Properties.module.templates.EssenceManagerApp,
-            width: 380,
-        };
+    get system(): CraftingSystem {
+        return this._system;
     }
 
-    protected async _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
-        console.log("Update object");
-        await this.render();
-        return undefined;
+    get essence(): Essence {
+        return this._essence;
     }
 
-    async render(force: boolean = true) {
-        await this._craftingSystem.loadPartDictionary();
-        super.render(force);
-    }
-
-    async _onSubmit(event: Event, options: FormApplication.OnSubmitOptions): Promise<any> {
-        event.preventDefault();
-        const formData = foundry.utils.expandObject(this._getSubmitData(options?.updateData));
-
-        const errors = this.validate(formData);
-        if (errors.length > 0) {
-            ui.notifications.error(this.formatErrorMessage(errors));
-            return;
-        }
-        await this.createOrUpdateEssence(formData);
-        await this.close();
-        return formData;
-    }
-
-    async createOrUpdateEssence({
-        name,
-        description,
-        iconCode,
-        tooltip
-    }: {
-        name: string,
-        description?: string,
-        iconCode: string,
-        tooltip?: string
-    }): Promise<CraftingSystem> {
-        if (!this._craftingSystem) {
-            throw new Error(`The crafting system with ID "${this._craftingSystem?.id}" does not exist.`)
-        }
-        const essence = new Essence({
-            name,
-            description,
-            tooltip,
-            id: this._essence?.id ?? randomID(),
-            iconCode: iconCode ? iconCode : Properties.ui.defaults.essenceIconCode
-        });
-        this._craftingSystem.partDictionary.editEssence(essence);
-        return FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
-    }
-
-    validate(formData: any): Array<string> {
-        const GAME = new GameProvider().globalGameObject();
-        const errors: Array<string> = [];
-        if (!formData.name || formData.name.length === 0) {
-            errors.push(GAME.i18n.localize(`${Properties.module.id}.EditEssenceDialog.errors.nameRequired`))
-        }
-        return errors;
-    }
-
-    formatErrorMessage(errors: Array<string>): string {
-        if (errors.length === 1) {
-            return `${Properties.module.label} | ${errors[0]}`;
-        }
-        const errorDetail = errors.map((error, index) => `${index + 1}) ${error}`)
-            .join(", ");
-        const GAME = new GameProvider().globalGameObject();
-        const localizationPath = `${Properties.module.id}.ui.notifications.submissionError.prefix`
-        return `${Properties.module.label} | ${GAME.i18n.localize(localizationPath)}: ${errorDetail}`
-    }
-
-    async getData(): Promise<any> {
-        return {
-            name: this._essence?.name ?? "",
-            description: this._essence?.description ?? "",
-            iconCode: this._essence?.iconCode ?? "",
-            tooltip: this._essence?.tooltip ??  ""
-        };
+    public editEssence(value: Essence): EssenceModel {
+        this._essence = value;
+        this._system.partDictionary.editEssence(value);
+        return this;
     }
 
 }
 
-export { EditEssenceDialog }
+class EssenceStateManager implements StateManager<EssenceView, EssenceModel> {
+
+    private _model: EssenceModel;
+
+    constructor({
+        essence,
+        system
+    }: {
+        essence?: Essence,
+        system: CraftingSystem}) {
+        this._model = new EssenceModel({essence, system});
+    }
+
+    getModelState(): EssenceModel {
+        return this._model;
+    }
+
+    getViewData(): EssenceView {
+        const name: string = this.essence?.name ?? "";
+        return {
+            name,
+            description: this.essence?.description ?? "",
+            iconCode: this.essence?.iconCode ? this.essence.iconCode : Properties.ui.defaults.essenceIconCode,
+            tooltip: this.essence?.tooltip ? this.essence.tooltip : name
+        };
+    }
+
+    get essence(): Essence {
+        return this._model.essence;
+    }
+
+    load(): Promise<EssenceModel> {
+        return Promise.resolve(undefined);
+    }
+
+    async save(): Promise<EssenceModel> {
+        const system = await FabricateApplication.systemRegistry.saveCraftingSystem(this._model.system);
+        this._model = new EssenceModel({system, essence: system.getEssenceById(this._model.essence.id)});
+        return this._model;
+    }
+
+}
+
+class EssenceSubmissionHandler implements SubmissionHandler<EssenceView, EssenceModel> {
+
+    async process(formData: EssenceView, currentState: EssenceModel): Promise<EssenceModel> {
+        const modifiedEssence = new Essence({
+            name: formData.name,
+            description: formData.description,
+            tooltip: formData.tooltip ? formData.tooltip : formData.name,
+            id: currentState.essence?.id ?? randomID(),
+            iconCode: formData.iconCode ? formData.iconCode : Properties.ui.defaults.essenceIconCode
+        });
+        return currentState.editEssence(modifiedEssence);
+    }
+
+    validate(formData: EssenceView): FormError[] {
+        const GAME = new GameProvider().globalGameObject();
+        const errors: Array<FormError> = [];
+        if (!formData.name || formData.name.length === 0) {
+            errors.push({
+                field: "name",
+                detail: GAME.i18n.localize(`${Properties.module.id}.EditEssenceDialog.errors.nameRequired`)
+            })
+        }
+        return errors;
+    }
+
+}
+
+class EditEssenceDialogFactory {
+
+    make(system: CraftingSystem, essence?: Essence): FormApplicationWindow<EssenceView, EssenceModel, EssenceView> {
+        return new FormApplicationWindow({
+            options: {
+                title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.EditEssenceDialog.title`),
+                id: `${Properties.module.id}-essence-manager`,
+                template: Properties.module.templates.EssenceManagerApp,
+                width: 380,
+            },
+            stateManager: new EssenceStateManager({essence, system}),
+            submissionHandler: new EssenceSubmissionHandler()
+        });
+    }
+
+}
+
+export default new EditEssenceDialogFactory();
