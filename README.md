@@ -66,6 +66,10 @@ Yes, but don't let that stop you supporting me on [Patreon](https://patreon.com/
 
 The most recent changes to Fabricate are documented here.
 
+## Version 0.7.1
+
+- Changes how Fabricate renders UI Applications in Foundry so they all use the same code
+
 ## Version 0.7.0
 
 - Support for v10
@@ -83,7 +87,7 @@ This software is distributed with an MIT License.
 
 # Attribution
 
-Though it has changessignificantly, this project was based on a FVTT Typescript Module [Template](https://github.com/League-of-Foundry-Developers/foundry-typescript-template).
+Though it has changed significantly, this project was based on a FVTT Typescript Module [Template](https://github.com/League-of-Foundry-Developers/foundry-typescript-template).
 The template was provided by the League of Extraordinary Foundry Developers and is attributed to Spacemandev.
 
 ## Crafting systems
