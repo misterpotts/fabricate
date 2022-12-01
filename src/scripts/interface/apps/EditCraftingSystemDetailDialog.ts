@@ -1,81 +1,87 @@
+import {FormApplicationWindow, FormError, StateManager, SubmissionHandler} from "./core/Applications";
+import {CraftingSystem, CraftingSystemJson} from "../../system/CraftingSystem";
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
-import {CraftingSystem, CraftingSystemJson} from "../../system/CraftingSystem";
 import FabricateApplication from "../FabricateApplication";
-import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
+import {CraftingSystemDetails, CraftingSystemDetailsJson} from "../../system/CraftingSystemDetails";
+import {CraftingSystemFactory} from "../../system/CraftingSystemFactory";
 
-class EditCraftingSystemDetailDialog extends FormApplication {
+class CraftingSystemModel {
 
-    private readonly _craftingSystem: CraftingSystem;
+    private readonly _factory: CraftingSystemFactory;
+    private _system: CraftingSystem;
 
-    constructor(craftingSystem?: CraftingSystem) {
-        super(null);
-        this._craftingSystem = craftingSystem;
+    constructor({
+        system,
+        factory
+    }: {
+        system: CraftingSystem;
+        factory: CraftingSystemFactory;
+    }) {
+        this._system = system;
+        this._factory = factory;
     }
 
-    static get defaultOptions() {
+    get system(): CraftingSystem {
+        return this._system;
+    }
+
+    set system(value: CraftingSystem) {
+        this._system = value;
+    }
+
+    public editDetails(value: CraftingSystemDetails): CraftingSystemModel {
+        this._system.setDetails(value);
+        return this;
+    }
+
+    public async createWithDetails(details: CraftingSystemDetailsJson): Promise<CraftingSystemModel> {
+        this._system = await this._factory.make({
+            id: randomID(),
+            details,
+            locked: false,
+            enabled: true,
+            parts: {
+                essences: {},
+                recipes: {},
+                components: {}
+            }
+        });
+        return this;
+    }
+
+}
+
+class CraftingSystemStateManager implements StateManager<CraftingSystemJson, CraftingSystemModel> {
+
+    private readonly _model: CraftingSystemModel;
+
+    constructor({
+        system,
+        factory
+    }: {
+        system: CraftingSystem;
+        factory: CraftingSystemFactory
+    }) {
+        this._model = new CraftingSystemModel({system, factory});
+    }
+
+    getModelState(): CraftingSystemModel {
+        return this._model;
+    }
+
+    getViewData(): CraftingSystemJson {
+        if (this._model.system) {
+            return this._model.system.toJson();
+        }
         const GAME = new GameProvider().globalGameObject();
         return {
-            ...super.defaultOptions,
-            title: GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.title`),
-            id: `${Properties.module.id}-create-crafting-system-dialog`,
-            template: Properties.module.templates.EditCraftingSystemDetailDialog,
-            width: 400,
-        };
-    }
-
-    protected async _updateObject(_event: Event, _formData: object | undefined): Promise<unknown> {
-        console.log("Update object");
-        this.render();
-        return undefined;
-    }
-
-    render(force: boolean = true) {
-        super.render(force);
-    }
-
-    async getData(): Promise<any> {
-        const GAME = new GameProvider().globalGameObject();
-        return {
-            name: this._craftingSystem?.name ?? "",
-            summary: this._craftingSystem?.summary ?? "",
-            description: this._craftingSystem?.description ?? "",
-            author: this._craftingSystem?.author ?? GAME.user.name
-        };
-    }
-
-    async _onSubmit(event: Event, options: FormApplication.OnSubmitOptions): Promise<any> {
-        event.preventDefault();
-        const formData = foundry.utils.expandObject(this._getSubmitData(options?.updateData));
-        const errors = this.validate(formData);
-        if (errors.length > 0) {
-            ui.notifications.error(this.formatErrorMessage(errors));
-            return;
-        }
-        if (!this._craftingSystem) {
-            await this.createCraftingSystem(formData);
-        } else {
-            await this.editCraftingSystemDetails(formData);
-        }
-        await this.close();
-        return formData;
-    }
-
-    private async editCraftingSystemDetails(editedDetails: { name: string, summary: string, description: string, author: string }) {
-        this._craftingSystem.setDetails(new CraftingSystemDetails(editedDetails));
-        await FabricateApplication.systemRegistry.saveCraftingSystem(this._craftingSystem);
-    }
-
-    private async createCraftingSystem({ name, summary, description, author}: {name: string, summary: string, description: string, author: string}) {
-        const gameProvider = new GameProvider();
-        // todo: add more detail;s for checks and alchemy as those are defined in the UI with macros
-        const systemDefinition: CraftingSystemJson = {
             id: randomID(),
             details: {
-                name,
-                summary,
-                description,
-                author: author ?? gameProvider.globalGameObject().user.name,
+                name: "",
+                summary: "",
+                description: "",
+                author: GAME.user.name
             },
             locked: false,
             enabled: true,
@@ -84,33 +90,70 @@ class EditCraftingSystemDetailDialog extends FormApplication {
                 components: {},
                 recipes: {}
             }
-        };
-        await FabricateApplication.systemRegistry.createCraftingSystem(systemDefinition);
+        }
     }
 
-    validate(formData: any): Array<string> {
-        const GAME = new GameProvider().globalGameObject();
-        const errors: Array<string> = [];
-        if (!formData.name || formData.name.length === 0) {
-            errors.push(GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.nameRequired`))
-        }
-        if (!formData.summary || formData.summary.length === 0) {
-            errors.push(GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.summaryRequired`))
-        }
-        return errors;
+    load(): Promise<CraftingSystemModel> {
+        return Promise.resolve(undefined);
     }
 
-    formatErrorMessage(errors: Array<string>): string {
-        if (errors.length === 1) {
-            return `${Properties.module.label} | ${errors[0]}`;
-        }
-        const errorDetail = errors.map((error, index) => `${index + 1}) ${error}`)
-            .join(", ");
-        const GAME = new GameProvider().globalGameObject();
-        const localizationPath = `${Properties.module.id}.ui.notifications.submissionError.prefix`
-        return `${Properties.module.label} | ${GAME.i18n.localize(localizationPath)}: ${errorDetail}`
+    async save(model: CraftingSystemModel): Promise<CraftingSystemModel> {
+        this._model.system = await FabricateApplication.systemRegistry.saveCraftingSystem(model.system);
+        return this._model;
     }
 
 }
 
-export { EditCraftingSystemDetailDialog }
+class CraftingSystemDetailSubmissionHandler implements SubmissionHandler<CraftingSystemDetailsJson, CraftingSystemModel> {
+
+    async process(formData: CraftingSystemDetailsJson, currentState: CraftingSystemModel): Promise<CraftingSystemModel> {
+        if (currentState.system) {
+            return currentState.editDetails(new CraftingSystemDetails({
+                name: formData.name,
+                description: formData.description,
+                author: formData.author,
+                summary: formData.summary
+            }));
+        }
+        return currentState.createWithDetails(formData);
+    }
+
+    validate(formData: CraftingSystemDetailsJson): FormError[] {
+                const GAME = new GameProvider().globalGameObject();
+        const errors: Array<FormError> = [];
+        if (!formData.name || formData.name.length === 0) {
+            errors.push({
+                detail: GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.nameRequired`),
+                field: "Name"
+            })
+        }
+        if (!formData.summary || formData.summary.length === 0) {
+            errors.push({
+                detail: GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.errors.summaryRequired`),
+                field: "Summary"
+            })
+        }
+        return errors;
+    }
+
+}
+
+class EditCraftingSystemDetailDialogFactory {
+
+    make(system?: CraftingSystem): FormApplicationWindow<CraftingSystemJson, CraftingSystemModel, CraftingSystemDetailsJson> {
+        const GAME = new GameProvider().globalGameObject();
+        return new FormApplicationWindow({
+            options: {
+                title: GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.title`),
+                id: `${Properties.module.id}-create-crafting-system-dialog`,
+                template: Properties.module.templates.EditCraftingSystemDetailDialog,
+                width: 400,
+            },
+            stateManager: new CraftingSystemStateManager({system, factory: new CraftingSystemFactory({})}),
+            submissionHandler: new CraftingSystemDetailSubmissionHandler()
+        });
+    }
+
+}
+
+export default new EditCraftingSystemDetailDialogFactory();

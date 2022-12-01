@@ -1,8 +1,5 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
-import {EditCraftingSystemDetailDialog} from "./EditCraftingSystemDetailDialog";
-import {EditComponentDialog} from "./EditComponentDialog";
-import {EditEssenceDialog} from "./EditEssenceDialog";
 import {CraftingSystem} from "../../system/CraftingSystem";
 import {CraftingComponent, StringIdentity} from "../../common/CraftingComponent";
 import {Combination} from "../../common/Combination";
@@ -11,6 +8,9 @@ import {DefaultDocumentManager} from "../../foundry/DocumentManager";
 import FabricateApplication from "../FabricateApplication";
 import {Recipe} from "../../crafting/Recipe";
 import {PartDictionary} from "../../system/PartDictionary";
+import EditComponentDialogFactory from "./EditComponentDialog";
+import EditEssenceDialogFactory from "./EditEssenceDialog";
+import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialog";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -57,7 +57,7 @@ class CraftingSystemManagerApp extends FormApplication {
     async getData(): Promise<any> {
         const craftingSystems = await this.systemRegistry.getAllCraftingSystems();
         if (!this._selectedSystem && craftingSystems.size > 0) {
-            [this._selectedSystem] = craftingSystems.values();
+            this._selectedSystem = Array.from(craftingSystems.values())[0];
         }
         await this._selectedSystem?.loadPartDictionary();
         return {
@@ -150,13 +150,13 @@ class CraftingSystemManagerApp extends FormApplication {
     private async handleUserAction(systemId: string, action: string, event: any) {
         switch (action) {
             case "editDetails":
-                new EditCraftingSystemDetailDialog(this._selectedSystem).render();
+                EditCraftingSystemDetailDialogFactory.make(this._selectedSystem).render();
                 break;
             case "importCraftingSystem":
                 console.log(event);
                 break;
             case "createCraftingSystem":
-                new EditCraftingSystemDetailDialog().render();
+                EditCraftingSystemDetailDialogFactory.make().render();
                 break;
             case "toggleSystemEnabled":
                 const checked = event.target.checked;
@@ -190,8 +190,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!componentToEdit) {
                     throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
                 }
-                new EditComponentDialog(componentToEdit, this._selectedSystem)
-                    .render();
+                EditComponentDialogFactory.make(componentToEdit, this._selectedSystem).render();
                 break;
             case "createComponent":
                 try {
@@ -218,7 +217,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 }
                 break;
             case "createEssence":
-                new EditEssenceDialog(this._selectedSystem).render();
+                EditEssenceDialogFactory.make(this._selectedSystem).render();
                 break;
             case "editEssence":
                 const essenceIdToEdit = event?.target?.dataset?.essenceId;
@@ -226,7 +225,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!essenceToEdit) {
                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
                 }
-                new EditEssenceDialog(this._selectedSystem, essenceToEdit).render();
+                EditEssenceDialogFactory.make(this._selectedSystem, essenceToEdit).render();
                 break;
             case "deleteEssence":
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;
