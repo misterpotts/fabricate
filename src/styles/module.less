@@ -439,21 +439,31 @@
     .fabricate-component-tile(64px; 20px;);
   }
 
-  .fabricate-component-image {
+  .fabricate-component-manager-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
 
-    img {
-      height: 126px;
-      width: 126px;
+    .fabricate-component-image {
+      display: inline-flex;
+      img {
+        height: 64px;
+        width: 64px;
+      }
+
+    }
+
+    .fabricate-component-name {
+      display: inline-flex;
+      margin-bottom: 0;
+      margin-left: 12px;
+      border-bottom: none;
     }
 
   }
 
   .fabricate-component-essence-editor {
-    position: absolute;
-    top: 74px;
-    left: 0;
-    padding-left: 140px;
-    width: 492px;
 
     .fabricate-essence {
       cursor: pointer;
@@ -461,6 +471,7 @@
       padding: 8px;
       border-radius: 4px;
       margin-right: 8px;
+      margin-bottom: 8px;
     }
   }
 

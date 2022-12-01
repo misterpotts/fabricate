@@ -47,25 +47,25 @@ class EditComponentDialogModel {
     }
 
     public incrementEssence(essenceId: string): EditComponentDialogModel {
-        const essenceDelta = new Unit(new CombinableString(essenceId), 1);
+        const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
         this._component.essences = this._component.essences.add(essenceDelta);
         return this;
     }
 
     public decrementEssence(essenceId: string): EditComponentDialogModel {
-        const essenceDelta = new Unit(new CombinableString(essenceId), 1);
+        const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
         this._component.essences = this._component.essences.minus(essenceDelta);
         return this;
     }
 
     public incrementSalvage(salvageId: string): EditComponentDialogModel {
-        const salvageDelta = new Unit(new CombinableString(salvageId), 1);
+        const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
         this._component.salvage = this._component.salvage.add(salvageDelta);
         return this;
     }
 
     public decrementSalvage(salvageId: string): EditComponentDialogModel {
-        const salvageDelta = new Unit(new CombinableString(salvageId), 1);
+        const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
         this._component.salvage = this._component.salvage.minus(salvageDelta);
         return this;
     }
@@ -131,10 +131,9 @@ class ComponentStateManager implements StateManager<EditComponentDialogView, Edi
         return all.map(essence => {
             return {
                 essence,
-                amount: includedAmounts.amountFor(new CombinableString(essence.id))
-            }});
                 amount: includedAmounts.amountFor(new StringIdentity(essence.id))
-        }});
+            }
+        });
     }
 
     private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<StringIdentity>): { component: CraftingComponent; amount: number }[] {
@@ -142,10 +141,9 @@ class ComponentStateManager implements StateManager<EditComponentDialogView, Edi
             .map(component => {
                 return {
                     component,
-                    amount: includedAmounts.amountFor(new CombinableString(component.id))
-                }});
                     amount: includedAmounts.amountFor(new StringIdentity(component.id))
-            }});
+                }
+            });
     }
 
 }
