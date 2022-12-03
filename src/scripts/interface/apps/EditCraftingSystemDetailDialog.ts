@@ -146,7 +146,7 @@ class EditCraftingSystemDetailDialogFactory {
             options: {
                 title: GAME.i18n.localize(`${Properties.module.id}.EditCraftingSystemDetailDialog.title`),
                 id: `${Properties.module.id}-create-crafting-system-dialog`,
-                template: Properties.module.templates.EditCraftingSystemDetailDialog,
+                template: Properties.module.templates.editCraftingSystemDetailDialog,
                 width: 400,
             },
             stateManager: new CraftingSystemStateManager({system, factory: new CraftingSystemFactory({})}),

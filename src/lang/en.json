@@ -1,7 +1,30 @@
 {
   "fabricate": {
-    "EditComponentDialog": {
-      "title": "Fabricate | Component"
+    "ComponentManagerApp": {
+      "title": "Fabricate | Component",
+      "essences": {
+        "title": "Essences",
+        "instructions": "The component is imbued with these essences. Left click on an essence to increase its potency. Shift click while doing so to decrease it."
+      },
+      "salvage": {
+        "title": "Salvage",
+        "instructions": "These components will be reclaimed when the item is salvaged. Left click on a component to increase its salvage value. Shift click while doing so to decrease it."
+      }
+    },
+    "RecipeManagerApp": {
+      "title": "Fabricate | Recipe",
+      "essences": {
+        "title": "Essences",
+        "instructions": "The recipe requires these essences in addition to any named ingredients and catalysts. Left click on an essence to increase the required amount. Shift click while doing so to decrease it."
+      },
+      "ingredients": {
+        "title": "Ingredients",
+        "instructions": "The recipe requires these ingredients in addition to any essences and catalysts. A recipe can have more than one combination of ingredients to choose from. Left click on a component to increase the required number in each option. Shift click while doing so to decrease it. Drop an item onto an empty ingredient combination option to create a new one."
+      },
+      "results": {
+        "title": "Results",
+        "instructions": "The recipe produces these components when successfully crafted. A recipe can have more than one combination of results to choose from.\n            Left click on a component to increase the number produced in each option. Shift click while doing so to decrease it. Drop an item onto an empty result combination option to create a new one."
+      }
     },
     "EditEssenceDialog": {
       "title": "Fabricate | Essence",

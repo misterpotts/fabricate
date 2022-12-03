@@ -123,7 +123,7 @@ class EditEssenceDialogFactory {
             options: {
                 title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.EditEssenceDialog.title`),
                 id: `${Properties.module.id}-essence-manager`,
-                template: Properties.module.templates.EssenceManagerApp,
+                template: Properties.module.templates.editEssenceDialog,
                 width: 380,
             },
             stateManager: new EssenceStateManager({essence, system}),

@@ -8,7 +8,7 @@ import {DefaultDocumentManager} from "../../foundry/DocumentManager";
 import FabricateApplication from "../FabricateApplication";
 import {Recipe} from "../../crafting/Recipe";
 import {PartDictionary} from "../../system/PartDictionary";
-import EditComponentDialogFactory from "./EditComponentDialog";
+import EditComponentDialogFactory from "./ComponentManagerApp";
 import EditEssenceDialogFactory from "./EditEssenceDialog";
 import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialog";
 
@@ -176,7 +176,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 this._selectedSystem = systemToSelect;
                 await this.render();
                 break;
-            case "removeComponent":
+            case "removeComponent": // todo: confirm dialog and remove references to the component from all recipes and items on delete
                 const componentIdToDelete = event?.target?.dataset?.componentId;
                 if (!componentIdToDelete) {
                     throw new Error("Cannot delete component. No ID was provided. ");
@@ -191,6 +191,28 @@ class CraftingSystemManagerApp extends FormApplication {
                     throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
                 }
                 EditComponentDialogFactory.make(componentToEdit, this._selectedSystem).render();
+                break;
+            case "createRecipe":
+                try {
+                    const data: any = JSON.parse(event.dataTransfer?.getData("text/plain"));
+                    if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
+                        return;
+                    }
+                    const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
+                    if (!this._selectedSystem.partDictionary.hasRecipe(document.uuid)) {
+                        const recipe = new Recipe({
+                            id: document.uuid,
+                            name: document.name,
+                            imageUrl: document.img
+                        });
+                        this._selectedSystem.partDictionary.addRecipe(recipe);
+                        await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                    }
+                } catch (e: any) {
+                    console.warn(`Something was dropped onto a Fabricate drop zone, 
+                        but the drop event was not able to be processed. 
+                        Caused by: ${e.message ?? e}`);
+                }
                 break;
             case "createComponent":
                 try {
@@ -227,7 +249,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 }
                 EditEssenceDialogFactory.make(this._selectedSystem, essenceToEdit).render();
                 break;
-            case "deleteEssence":
+            case "deleteEssence": // todo: confirm dialog and remove references to the essence from all recipes and items on delete
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;
                 this._selectedSystem.partDictionary.deleteEssenceById(essenceIdToDelete);
                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);

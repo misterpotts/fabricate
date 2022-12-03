@@ -106,7 +106,7 @@ class Recipe {
         imageUrl = Properties.ui.defaults.recipeImageUrl,
         essences = Combination.EMPTY(),
         catalysts = Combination.EMPTY(),
-        resultOptions,
+        resultOptions = CombinationChoice.NONE<StringIdentity>(),
         ingredientOptions = CombinationChoice.NONE<StringIdentity>()
     }: {
         id: string;
@@ -114,7 +114,7 @@ class Recipe {
         imageUrl?: string;
         essences?: Combination<StringIdentity>;
         catalysts?: Combination<StringIdentity>;
-        resultOptions: CombinationChoice<StringIdentity>;
+        resultOptions?: CombinationChoice<StringIdentity>;
         ingredientOptions?: CombinationChoice<StringIdentity>;
     }) {
         this._id = id;

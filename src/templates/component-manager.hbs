@@ -9,9 +9,8 @@
     </div>
 
     <div class="fabricate-component-essence-editor">
-        <h3>Essences</h3>
-        <p>The component is imbued with these essences. Left click on an essence to increase its potency. Shift click
-            while doing so to decrease it.</p>
+        <h3>{{localize "fabricate.ComponentManagerApp.essences.title"}}</h3>
+        <p>{{localize "fabricate.ComponentManagerApp.essences.instructions"}}</p>
         <div class="fabricate-component-list">
             {{#each component.essences}}
                 <div class="fabricate-essence" data-tooltip="{{essence.tooltip}}" data-essence-id="{{essence.id}}"
@@ -24,9 +23,8 @@
 
 
     <div class="fabricate-component-salvage-editor">
-        <h3>Salvage</h3>
-        <p>These components will be reclaimed when the item is salvaged. Left click on a component to increase its
-            salvage value. Shift click while doing so to decrease it.</p>
+        <h3>{{localize "fabricate.ComponentManagerApp.salvage.title"}}</h3>
+        <p>{{localize "fabricate.ComponentManagerApp.salvage.instructions"}}</p>
         <div class="fabricate-component-list">
             {{#each component.salvage}}
                 <div class="fabricate-component fabricate-component-salvage-choice" data-salvage-id="{{component.id}}"

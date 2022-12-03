@@ -119,6 +119,31 @@
                 </div>
             </td>
         </tr>
+        {{#each system.recipes}}
+            <tr class="fabricate-item-table-row">
+                <td class="fabricate-item-image">
+                    <img src="{{imageUrl}}">
+                </td>
+                <td class="fabricate-item-name">
+                    {{name}}
+                </td>
+                <td>
+                    <div class="fabricate-component-list">
+                        {{#each ingredientOptions.choices}}
+                            Choice
+                            {{#each members}}
+                                Member
+                            {{/each}}
+                        {{else}}
+                            <span class="fabricate-essence-preview">
+                                <!-- todo: localize -->
+                                <i class="fa-solid fa-ellipsis" data-tooltip="No ingredients"></i>
+                            </span>
+                        {{/each}}
+                    </div>
+                </td>
+            </tr>
+        {{/each}}
         </tbody>
     </table>
 </div>

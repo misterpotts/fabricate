@@ -7,7 +7,7 @@ import {Combination, Unit} from "../../common/Combination";
 import FabricateApplication from "../FabricateApplication";
 import {ApplicationWindow, Click, DefaultClickHandler, StateManager} from "./core/Applications";
 
-interface EditComponentDialogView {
+interface ComponentManagerView {
     system: {
         id: string,
         essences: Essence[],
@@ -22,7 +22,7 @@ interface EditComponentDialogView {
     }
 }
 
-class EditComponentDialogModel {
+class ComponentManagerModel {
 
     private readonly _system: CraftingSystem;
     private readonly _component: CraftingComponent;
@@ -46,25 +46,25 @@ class EditComponentDialogModel {
         return this._component;
     }
 
-    public incrementEssence(essenceId: string): EditComponentDialogModel {
+    public incrementEssence(essenceId: string): ComponentManagerModel {
         const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
         this._component.essences = this._component.essences.add(essenceDelta);
         return this;
     }
 
-    public decrementEssence(essenceId: string): EditComponentDialogModel {
+    public decrementEssence(essenceId: string): ComponentManagerModel {
         const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
         this._component.essences = this._component.essences.minus(essenceDelta);
         return this;
     }
 
-    public incrementSalvage(salvageId: string): EditComponentDialogModel {
+    public incrementSalvage(salvageId: string): ComponentManagerModel {
         const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
         this._component.salvage = this._component.salvage.add(salvageDelta);
         return this;
     }
 
-    public decrementSalvage(salvageId: string): EditComponentDialogModel {
+    public decrementSalvage(salvageId: string): ComponentManagerModel {
         const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
         this._component.salvage = this._component.salvage.minus(salvageDelta);
         return this;
@@ -72,9 +72,9 @@ class EditComponentDialogModel {
 
 }
 
-class ComponentStateManager implements StateManager<EditComponentDialogView, EditComponentDialogModel> {
+class ComponentStateManager implements StateManager<ComponentManagerView, ComponentManagerModel> {
 
-    private readonly _model: EditComponentDialogModel;
+    private readonly _model: ComponentManagerModel;
 
     constructor({
         component,
@@ -83,17 +83,17 @@ class ComponentStateManager implements StateManager<EditComponentDialogView, Edi
         component: CraftingComponent,
         system: CraftingSystem
     }) {
-        this._model = new EditComponentDialogModel({
+        this._model = new ComponentManagerModel({
             component,
             system
         });
     }
 
-    getModelState(): EditComponentDialogModel {
+    getModelState(): ComponentManagerModel {
         return this._model;
     }
 
-    getViewData(): EditComponentDialogView {
+    getViewData(): ComponentManagerView {
         return {
             system: {
                 id: this.system.id,
@@ -110,11 +110,11 @@ class ComponentStateManager implements StateManager<EditComponentDialogView, Edi
         };
     }
 
-    async load(): Promise<EditComponentDialogModel> {
+    async load(): Promise<ComponentManagerModel> {
         return this.getModelState();
     }
 
-    async save(model: EditComponentDialogModel): Promise<EditComponentDialogModel> {
+    async save(model: ComponentManagerModel): Promise<ComponentManagerModel> {
         await FabricateApplication.systemRegistry.saveCraftingSystem(model.system);
         return this.getModelState();
     }
@@ -148,14 +148,14 @@ class ComponentStateManager implements StateManager<EditComponentDialogView, Edi
 
 }
 
-class EditComponentDialogFactory {
+class ComponentManagerAppFactory {
 
-    make(component: CraftingComponent, system: CraftingSystem): ApplicationWindow<EditComponentDialogView, EditComponentDialogModel> {
-        return new ApplicationWindow<EditComponentDialogView, EditComponentDialogModel>({
+    make(component: CraftingComponent, system: CraftingSystem): ApplicationWindow<ComponentManagerView, ComponentManagerModel> {
+        return new ApplicationWindow<ComponentManagerView, ComponentManagerModel>({
             clickHandler: new DefaultClickHandler({
                 dataKeys: ["componentId", "essenceId", "salvageId"],
                 actions: new Map([
-                    ["editComponentEssence", async (click: Click, currentState: EditComponentDialogModel) => {
+                    ["editComponentEssence", async (click: Click, currentState: ComponentManagerModel) => {
                         const essenceId = click.data.get("essenceId");
                         if (click.keys.shift) {
                             return currentState.decrementEssence(essenceId);
@@ -163,7 +163,7 @@ class EditComponentDialogFactory {
                             return currentState.incrementEssence(essenceId);
                         }
                     }],
-                    ["editComponentSalvage", async (click: Click, currentState: EditComponentDialogModel) => {
+                    ["editComponentSalvage", async (click: Click, currentState: ComponentManagerModel) => {
                         const salvageId = click.data.get("salvageId");
                         if (click.keys.shift) {
                             return currentState.decrementSalvage(salvageId);
@@ -177,7 +177,7 @@ class EditComponentDialogFactory {
             options: {
                 title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.EditComponentDialog.title`),
                 id: `${Properties.module.id}-component-manager`,
-                template: Properties.module.templates.ComponentManagerApp,
+                template: Properties.module.templates.componentManagerApp,
                 width: 500,
             }
         });
@@ -185,4 +185,4 @@ class EditComponentDialogFactory {
 
 }
 
-export default new EditComponentDialogFactory();
+export default new ComponentManagerAppFactory();
