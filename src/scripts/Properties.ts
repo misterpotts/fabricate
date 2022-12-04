@@ -3,7 +3,7 @@ const Properties = {
         id: "fabricate",
         label: "Fabricate",
         templates: {
-            recipeTab: "modules/fabricate/templates/recipe-tab.hbs",
+            itemSheetCraftingTab: "modules/fabricate/templates/item-sheet-crafting-tab.hbs",
             craftingTab: "modules/fabricate/templates/crafting-tab.hbs",
             craftingMessage: "modules/fabricate/templates/chat-message.hbs",
             craftingSystemManagementApp: "modules/fabricate/templates/crafting-system-manager.hbs",

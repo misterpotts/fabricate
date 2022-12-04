@@ -282,6 +282,70 @@ class FormApplicationWindow<V, M, F> extends FormApplication {
 
 }
 
+interface SheetTab {
+
+    id: string;
+    name: string;
+    data: object;
+    templatePath: string;
+    containerClass: string;
+    innerClass: string;
+    buttonClass: string;
+
+}
+
+interface ItemSheetModifier {
+    tabs: SheetTab[];
+
+    hasTabs(): boolean;
+
+    prepareData(app: any): Promise<void>;
+}
+
+class ItemSheetExtension {
+    private readonly _html: any;
+    private readonly _itemSheetModifier: ItemSheetModifier;
+    private readonly _app: any;
+
+    constructor({
+        app,
+        html,
+        itemSheetModifier
+    }: {
+        html: any;
+        app: any;
+        itemSheetModifier: ItemSheetModifier
+    }) {
+        this._html = html;
+        this._app = app;
+        this._itemSheetModifier = itemSheetModifier;
+    }
+
+    public async render(): Promise<void> {
+        await this._itemSheetModifier.prepareData(this._app);
+        if (this._itemSheetModifier.hasTabs()) {
+            const tabs = this._html.find(`.tabs[data-group="primary"]`);
+            const body = $(this._html.find(`.sheet-body`));
+            for (const tab of this._itemSheetModifier.tabs) {
+                tabs.append($(
+                    `<a class="item ${tab.buttonClass}" data-tab="${tab.id}">${tab.name}</a>`
+                ));
+                body.append($(
+                    `<div class="tab ${tab.containerClass}" data-group="primary" data-tab="${tab.id}"></div>`
+                ));
+                const template = await renderTemplate(tab.templatePath, tab.data);
+                const element = this._html.find(tab.innerClass);
+                if (element && element.length) {
+                    element.replaceWith(template);
+                } else {
+                    this._html.find(`.tab.${tab.containerClass}`).append(template);
+                }
+            }
+        }
+    }
+
+}
+
 export {
     ApplicationWindow,
     FormApplicationWindow,
@@ -292,5 +356,8 @@ export {
     FormError,
     Click,
     ClickHandler,
-    DefaultClickHandler
+    DefaultClickHandler,
+    ItemSheetExtension,
+    ItemSheetModifier,
+    SheetTab
 }

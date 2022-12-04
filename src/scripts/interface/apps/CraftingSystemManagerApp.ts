@@ -8,7 +8,8 @@ import {DefaultDocumentManager} from "../../foundry/DocumentManager";
 import FabricateApplication from "../FabricateApplication";
 import {Recipe} from "../../crafting/Recipe";
 import {PartDictionary} from "../../system/PartDictionary";
-import EditComponentDialogFactory from "./ComponentManagerApp";
+import ComponentManagerAppFactory from "./ComponentManagerApp";
+import RecipeManagerAppFactory from "./RecipeManagerApp";
 import EditEssenceDialogFactory from "./EditEssenceDialog";
 import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialog";
 
@@ -184,13 +185,29 @@ class CraftingSystemManagerApp extends FormApplication {
                 this._selectedSystem.partDictionary.deleteComponentById(componentIdToDelete);
                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                 break;
+            case "deleteRecipe":
+                const recipeIdToDelete = event?.target?.dataset?.recipeId;
+                if (!recipeIdToDelete) {
+                    throw new Error("Cannot delete recipe. No ID was provided. ");
+                }
+                this._selectedSystem.partDictionary.deleteRecipeById(recipeIdToDelete);
+                await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                break;
             case "editComponent":
                 const componentIdToEdit = event?.target?.dataset?.componentId;
                 const componentToEdit = this._selectedSystem.partDictionary.getComponent(componentIdToEdit);
                 if (!componentToEdit) {
                     throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
                 }
-                EditComponentDialogFactory.make(componentToEdit, this._selectedSystem).render();
+                ComponentManagerAppFactory.make(componentToEdit, this._selectedSystem).render();
+                break;
+            case "editRecipe":
+                const recipeIdToEdit = event?.target?.dataset?.recipeId;
+                const recipeToEdit = this._selectedSystem.partDictionary.getRecipe(recipeIdToEdit);
+                if (!recipeToEdit) {
+                    throw new Error(`Cannot edit recipe. Recipe with ID "${recipeIdToEdit}" not found. `);
+                }
+                RecipeManagerAppFactory.make(recipeToEdit, this._selectedSystem).render();
                 break;
             case "createRecipe":
                 try {

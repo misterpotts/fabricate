@@ -18,107 +18,6 @@
         </tr>
         </thead>
         <tbody class="fabricate-item-table-body">
-        <tr class="fabricate-item-table-row">
-            <td class="fabricate-item-image">
-                <img src="icons/sundries/documents/blueprint-recipe-magic.webp" data-action="editRecipe">
-            </td>
-            <td class="fabricate-item-name">
-                Recipe name
-            </td>
-            <td>
-                <div class="fabricate-component-list">
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <div class="fabricate-component-list">
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <div class="fabricate-component-list">
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                    <div class="fabricate-component" data-tooltip="Component Name">
-                        <img src="/icons/commodities/materials/bowl-liquid-red.webp">
-                        <div class="fabricate-info">
-                            <span class="fabricate-detail">3</span>
-                        </div>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <div class="fabricate-essence-list">
-                    <span class="fabricate-essence-preview">
-                        <i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i>
-                    </span>
-                    <span class="fabricate-essence-preview">
-                        2 <i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i>
-                    </span>
-                    <span class="fabricate-essence-preview">
-                        <i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i>
-                    </span>
-                    <span class="fabricate-essence-preview">
-                        3 <i class="fa-solid fa-mortar-pestle" data-tooltip="Tooltip text"></i>
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="fabricate-edit-item">
-                    <button type="button" data-action="editRecipe" data-recipe-id="recipe-id" data-tooltip="Edit recipe">
-                        <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
-                    </button>
-                    <button type="button" data-action="deleteRecipe" data-recipe-id="recipe-id"
-                            data-tooltip="Delete recipe">
-                        <i class="fa-solid fa-trash" style="pointer-events: none"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
         {{#each system.recipes}}
             <tr class="fabricate-item-table-row">
                 <td class="fabricate-item-image">
@@ -128,18 +27,84 @@
                     {{name}}
                 </td>
                 <td>
-                    <div class="fabricate-component-list">
-                        {{#each ingredientOptions.choices}}
-                            Choice
-                            {{#each members}}
-                                Member
+                    {{#if hasResults}}
+                        <div class="fabricate-options-list">
+                            {{#each resultOptions.choices}}
+                                <i class="fa-solid fa-passport" data-tooltip="Group ID: {{id}}"></i>
+                                {{#each units}}
+                                    <div class="fabricate-component-list">
+                                        <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                            <img src="{{part.imageUrl}}">
+                                            <div class="fabricate-info">
+                                                <span class="fabricate-detail">{{quantity}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{/each}}
                             {{/each}}
-                        {{else}}
-                            <span class="fabricate-essence-preview">
-                                <!-- todo: localize -->
-                                <i class="fa-solid fa-ellipsis" data-tooltip="No ingredients"></i>
-                            </span>
+                        </div>
+                    {{else}}
+                        <i class="fa-solid fa-ellipsis" data-tooltip="No results"></i>
+                    {{/if}}
+                </td>
+                <td>
+                    {{#if hasIngredients}}
+                        <div class="fabricate-options-list">
+                            {{#each ingredientOptions.choices}}
+                                <i class="fa-solid fa-passport" data-tooltip="Group ID: {{id}}"></i>
+                                {{#each units}}
+                                    <div class="fabricate-component-list">
+                                        <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                            <img src="{{part.imageUrl}}">
+                                            <div class="fabricate-info">
+                                                <span class="fabricate-detail">{{quantity}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            {{/each}}
+                        </div>
+                    {{else}}
+                        <i class="fa-solid fa-ellipsis" data-tooltip="No named ingredients"></i>
+                    {{/if}}
+                </td>
+                <td>
+                    {{#if requiresCatalysts}}
+                        {{#each catalysts.units}}
+                            <div class="fabricate-component-list">
+                                <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                    <img src="{{part.imageUrl}}">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">{{quantity}}</span>
+                                    </div>
+                                </div>
+                            </div>
                         {{/each}}
+                    {{else}}
+                        <i class="fa-solid fa-ellipsis" data-tooltip="No catalysts"></i>
+                    {{/if}}
+                </td>
+                <td>
+                    {{#if requiresEssences}}
+                        {{#each essences}}
+                        <div class="fabricate-essence-list">
+                            <span class="fabricate-essence-preview">
+                                {{quantity}} <i class="{{iconCode}}" data-tooltip="{{tooltip}}"></i>
+                            </span>
+                        </div>
+                        {{/each}}
+                    {{else}}
+                        <i class="fa-solid fa-ellipsis" data-tooltip="No essences required"></i>
+                    {{/if}}
+                </td>
+                <td>
+                    <div class="fabricate-edit-item">
+                        <button type="button" data-action="editRecipe" data-recipe-id="{{id}}" data-tooltip="Edit recipe">
+                            <i class="fa-solid fa-pen-to-square" style="pointer-events: none"></i>
+                        </button>
+                        <button type="button" data-action="deleteRecipe" data-recipe-id="{{id}}" data-tooltip="Delete recipe">
+                            <i class="fa-solid fa-trash" style="pointer-events: none"></i>
+                        </button>
                     </div>
                 </td>
             </tr>

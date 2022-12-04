@@ -6,6 +6,8 @@ import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/setti
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
+import {ItemSheetExtension} from "./interface/apps/core/Applications";
+import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
 
 Hooks.on("renderSidebarTab", (app: any, html: any) => {
     const GAME = new GameProvider().globalGameObject();
@@ -20,6 +22,17 @@ Hooks.on("renderSidebarTab", (app: any, html: any) => {
         await new CraftingSystemManagerApp().render();
     });
     buttons.append(button);
+});
+
+Hooks.on("renderItemSheet", async (app: any, html: any) => {
+    const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
+    const craftingSystems = Array.from(systemsById.values());
+    const itemSheetExtension = new ItemSheetExtension({
+        app,
+        html,
+        itemSheetModifier: new FabricateItemSheetTab({craftingSystems})
+    });
+    await itemSheetExtension.render();
 });
 
 Hooks.once('init', async () => {

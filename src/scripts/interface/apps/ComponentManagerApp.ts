@@ -175,7 +175,7 @@ class ComponentManagerAppFactory {
             }),
             stateManager: new ComponentStateManager({component, system}),
             options: {
-                title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.EditComponentDialog.title`),
+                title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.ComponentManagerApp.title`),
                 id: `${Properties.module.id}-component-manager`,
                 template: Properties.module.templates.componentManagerApp,
                 width: 500,

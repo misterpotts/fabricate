@@ -191,6 +191,10 @@ class Recipe {
         return !this._ingredientOptions.isEmpty();
     }
 
+    public hasResults() {
+        return !this._resultOptions.isEmpty();
+    }
+
     public requiresCatalysts() {
         return this._catalysts && !this._catalysts.isEmpty();
     }
