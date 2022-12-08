@@ -1,5 +1,5 @@
 import Properties from "../Properties";
-import {Identifiable} from "./Identity";
+import {Identifiable, Serializable} from "./Identity";
 
 interface EssenceJson {
     id: string;
@@ -9,7 +9,7 @@ interface EssenceJson {
     iconCode: string;
 }
 
-class Essence implements Identifiable {
+class Essence implements Identifiable, Serializable<EssenceJson> {
 
     private readonly _name: string;
     private readonly _id: string;

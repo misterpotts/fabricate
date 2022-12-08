@@ -63,9 +63,9 @@ test('Should create a Combination from a several Units',() => {
 
     expect(underTest.size()).toBe(7);
     expect(underTest.isEmpty()).toBe(false);
-    expect(underTest.amountFor(testComponentOne)).toBe(2);
-    expect(underTest.amountFor(testComponentTwo)).toBe(2);
-    expect(underTest.amountFor(testComponentThree)).toBe(3);
+    expect(underTest.amountFor(testComponentOne.id)).toBe(2);
+    expect(underTest.amountFor(testComponentTwo.id)).toBe(2);
+    expect(underTest.amountFor(testComponentThree.id)).toBe(3);
     expect(underTest.has(testComponentOne)).toBe(true);
     expect(underTest.has(testComponentTwo)).toBe(true);
     expect(underTest.has(testComponentThree)).toBe(true);
@@ -152,9 +152,9 @@ test('Should add one Combination to another', () => {
     expect(underTest.has(testComponentFour)).toBe(false);
     expect(underTest.has(testComponentFive)).toBe(false);
     expect(underTest.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree]));
-    expect(underTest.amountFor(testComponentOne)).toBe(27);
-    expect(underTest.amountFor(testComponentTwo)).toBe(21);
-    expect(underTest.amountFor(testComponentThree)).toBe(36);
+    expect(underTest.amountFor(testComponentOne.id)).toBe(27);
+    expect(underTest.amountFor(testComponentTwo.id)).toBe(21);
+    expect(underTest.amountFor(testComponentThree.id)).toBe(36);
 });
 
 test('Should determine when wne Combination contains another', () => {
@@ -202,9 +202,9 @@ test('Should subtract one Combination from another', () => {
     expect(testResultOne.has(testComponentOne)).toBe(true);
     expect(testResultOne.has(testComponentTwo)).toBe(true);
     expect(testResultOne.has(testComponentThree)).toBe(true);
-    expect(testResultOne.amountFor(testComponentOne)).toBe(8);
-    expect(testResultOne.amountFor(testComponentTwo)).toBe(3);
-    expect(testResultOne.amountFor(testComponentThree)).toBe(5);
+    expect(testResultOne.amountFor(testComponentOne.id)).toBe(8);
+    expect(testResultOne.amountFor(testComponentTwo.id)).toBe(3);
+    expect(testResultOne.amountFor(testComponentThree.id)).toBe(5);
 
     const largestCombination: Combination<CraftingComponent> = Combination.ofUnits([
         new Unit(testComponentOne, 20),
@@ -223,9 +223,9 @@ test('Should subtract one Combination from another', () => {
     expect(testResultThree.has(testComponentOne)).toBe(true);
     expect(testResultThree.has(testComponentTwo)).toBe(true);
     expect(testResultThree.has(testComponentThree)).toBe(true);
-    expect(testResultThree.amountFor(testComponentOne)).toBe(2);
-    expect(testResultThree.amountFor(testComponentTwo)).toBe(7);
-    expect(testResultThree.amountFor(testComponentThree)).toBe(5);
+    expect(testResultThree.amountFor(testComponentOne.id)).toBe(2);
+    expect(testResultThree.amountFor(testComponentTwo.id)).toBe(7);
+    expect(testResultThree.amountFor(testComponentThree.id)).toBe(5);
 });
 
 test('Should multiply a Combination by a factor', () => {
@@ -241,9 +241,9 @@ test('Should multiply a Combination by a factor', () => {
     expect(underTest.has(testComponentOne)).toBe(true);
     expect(underTest.has(testComponentTwo)).toBe(true);
     expect(underTest.has(testComponentThree)).toBe(true);
-    expect(underTest.amountFor(testComponentOne)).toBe(30);
-    expect(underTest.amountFor(testComponentTwo)).toBe(24);
-    expect(underTest.amountFor(testComponentThree)).toBe(3);
+    expect(underTest.amountFor(testComponentOne.id)).toBe(30);
+    expect(underTest.amountFor(testComponentTwo.id)).toBe(24);
+    expect(underTest.amountFor(testComponentThree.id)).toBe(3);
 });
 
 test('Should determine when two Combinations intersect', () => {

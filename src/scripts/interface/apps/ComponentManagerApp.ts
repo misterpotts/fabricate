@@ -3,7 +3,7 @@ import Properties from "../../Properties";
 import {CraftingSystem} from "../../system/CraftingSystem";
 import {StringIdentity, CraftingComponent} from "../../common/CraftingComponent";
 import {Essence} from "../../common/Essence";
-import {Combination, Unit} from "../../common/Combination";
+import {Combination} from "../../common/Combination";
 import FabricateApplication from "../FabricateApplication";
 import {ApplicationWindow, Click, DefaultClickHandler, StateManager} from "./core/Applications";
 
@@ -47,26 +47,22 @@ class ComponentManagerModel {
     }
 
     public incrementEssence(essenceId: string): ComponentManagerModel {
-        const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
-        this._component.essences = this._component.essences.add(essenceDelta);
+        this._component.essences = this._component.essences.increment(essenceId);
         return this;
     }
 
     public decrementEssence(essenceId: string): ComponentManagerModel {
-        const essenceDelta = new Unit(new StringIdentity(essenceId), 1);
-        this._component.essences = this._component.essences.minus(essenceDelta);
+        this._component.essences = this._component.essences.decrement(essenceId);
         return this;
     }
 
     public incrementSalvage(salvageId: string): ComponentManagerModel {
-        const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
-        this._component.salvage = this._component.salvage.add(salvageDelta);
+        this._component.salvage = this._component.salvage.increment(salvageId);
         return this;
     }
 
     public decrementSalvage(salvageId: string): ComponentManagerModel {
-        const salvageDelta = new Unit(new StringIdentity(salvageId), 1);
-        this._component.salvage = this._component.salvage.minus(salvageDelta);
+        this._component.salvage = this._component.salvage.decrement(salvageId);
         return this;
     }
 
@@ -96,8 +92,8 @@ class ComponentStateManager implements StateManager<ComponentManagerView, Compon
     getViewData(): ComponentManagerView {
         return {
             system: {
-                id: this.system.id,
-                essences: this.system.essences,
+                id: this._model.system.id, // todo: save the results, not the system, in the model
+                essences: this._model.system.getEssences(),
                 components: this.system.components.filter(component => component.id !== this.component.id)
             },
             component: {
@@ -111,6 +107,7 @@ class ComponentStateManager implements StateManager<ComponentManagerView, Compon
     }
 
     async load(): Promise<ComponentManagerModel> {
+        // todo: save the results, not the system, in the model
         return this.getModelState();
     }
 

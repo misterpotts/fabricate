@@ -1,6 +1,8 @@
-import {StringIdentity, Combination} from "../common/Combination";
+import {Combination} from "../common/Combination";
 import Properties from "../Properties";
-import {Identifiable} from "../common/Identity";
+import {Identifiable, Serializable} from "../common/Identity";
+import {CraftingComponent} from "../common/CraftingComponent";
+import {Essence} from "../common/Essence";
 
 interface RecipeJson {
     itemUuid: string;
@@ -51,6 +53,9 @@ class CombinationChoice<T extends Identifiable> {
     }
 
     public getSelection(): Combination<T> {
+        if (this._members.size === 0) {
+            return Combination.EMPTY();
+        }
         if (this._members.size === 1) {
             const [singleton] = this._members.values();
             return singleton;
@@ -82,7 +87,7 @@ class CombinationChoice<T extends Identifiable> {
     }
 }
 
-class Recipe {
+class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     /* ===========================
     *  Instance members
@@ -91,10 +96,10 @@ class Recipe {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private readonly _catalysts: Combination<StringIdentity>;
-    private readonly _essences: Combination<StringIdentity>;
-    private readonly _ingredientOptions: CombinationChoice<StringIdentity>;
-    private readonly _resultOptions: CombinationChoice<StringIdentity>;
+    private readonly _catalysts: Combination<CraftingComponent>;
+    private readonly _essences: Combination<Essence>;
+    private readonly _ingredientOptions: CombinationChoice<CraftingComponent>;
+    private readonly _resultOptions: CombinationChoice<CraftingComponent>;
 
     /* ===========================
     *  Constructor
@@ -106,16 +111,16 @@ class Recipe {
         imageUrl = Properties.ui.defaults.recipeImageUrl,
         essences = Combination.EMPTY(),
         catalysts = Combination.EMPTY(),
-        resultOptions = CombinationChoice.NONE<StringIdentity>(),
-        ingredientOptions = CombinationChoice.NONE<StringIdentity>()
+        resultOptions = CombinationChoice.NONE(),
+        ingredientOptions = CombinationChoice.NONE()
     }: {
         id: string;
         name: string;
         imageUrl?: string;
-        essences?: Combination<StringIdentity>;
-        catalysts?: Combination<StringIdentity>;
-        resultOptions?: CombinationChoice<StringIdentity>;
-        ingredientOptions?: CombinationChoice<StringIdentity>;
+        essences?: Combination<Essence>;
+        catalysts?: Combination<CraftingComponent>;
+        resultOptions?: CombinationChoice<CraftingComponent>;
+        ingredientOptions?: CombinationChoice<CraftingComponent>;
     }) {
         this._id = id;
         this._name = name;
@@ -142,19 +147,19 @@ class Recipe {
         return this._imageUrl;
     }
 
-    get ingredientOptions(): CombinationChoice<StringIdentity> {
+    get ingredientOptions(): CombinationChoice<CraftingComponent> {
         return this._ingredientOptions;
     }
 
-    get essences(): Combination<StringIdentity> {
+    get essences(): Combination<Essence> {
         return this._essences;
     }
 
-    get resultOptions(): CombinationChoice<StringIdentity> {
+    get resultOptions(): CombinationChoice<CraftingComponent> {
         return this._resultOptions;
     }
 
-    get catalysts(): Combination<StringIdentity> {
+    get catalysts(): Combination<CraftingComponent> {
         return this._catalysts;
     }
 
@@ -173,14 +178,14 @@ class Recipe {
         return this._ingredientOptions.ready() && this._resultOptions.ready();
     }
 
-    public getSelectedIngredients(): Combination<StringIdentity> {
+    public getSelectedIngredients(): Combination<CraftingComponent> {
         if (this._ingredientOptions.ready()) {
             return this._ingredientOptions.getSelection();
         }
         throw new Error("You must select an ingredient group. ");
     }
 
-    public getSelectedResults(): Combination<StringIdentity> {
+    public getSelectedResults(): Combination<CraftingComponent> {
         if (this._resultOptions.ready()) {
             return this._resultOptions.getSelection();
         }
@@ -203,7 +208,7 @@ class Recipe {
         return this.requiresCatalysts() || this.hasIngredients();
     }
 
-    public getNamedComponents(): Combination<StringIdentity> {
+    public getNamedComponents(): Combination<CraftingComponent> {
         return this.getSelectedIngredients().combineWith(this._catalysts);
     }
 

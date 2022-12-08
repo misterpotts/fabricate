@@ -1,6 +1,7 @@
 import {StringIdentity, Combination} from "./Combination";
 import Properties from "../Properties";
-import {Identifiable} from "./Identity";
+import {Identifiable, Serializable} from "./Identity";
+import {Essence} from "./Essence";
 
 interface CraftingComponentJson {
     itemUuid: string;
@@ -8,7 +9,44 @@ interface CraftingComponentJson {
     salvage: Record<string, number>;
 }
 
-class CraftingComponent implements Identifiable {
+/**
+ * A CraftingComponentSummary acts as a shallow copy of a Crafting Component. This allows components to reference the
+ * shallow copy in salvage where referencing the object directly would create circular references that would make
+ * loading difficult.
+ */
+class CraftingComponentSummary implements Identifiable {
+    private readonly _id: string;
+    private readonly _name: string;
+    private readonly _imageUrl: string;
+
+    constructor({
+        id,
+        name,
+        imageUrl
+    }: {
+        id: string;
+        name: string;
+        imageUrl: string;
+    }) {
+        this._id = id;
+        this._name = name;
+        this._imageUrl = imageUrl;
+    }
+
+    get id(): string {
+        return this._id;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get imageUrl(): string {
+        return this._imageUrl;
+    }
+}
+
+class CraftingComponent implements Identifiable, Serializable<CraftingComponentJson> {
 
     private static readonly _NONE: CraftingComponent = new CraftingComponent({
         id: "NO_ID",
@@ -21,8 +59,8 @@ class CraftingComponent implements Identifiable {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private _essences: Combination<StringIdentity>;
-    private _salvage: Combination<StringIdentity>;
+    private _essences: Combination<Essence>;
+    private _salvage: Combination<CraftingComponentSummary>;
 
     constructor({
         id,
@@ -34,8 +72,8 @@ class CraftingComponent implements Identifiable {
         id: string;
         name: string;
         imageUrl?: string;
-        essences?: Combination<StringIdentity>;
-        salvage?: Combination<StringIdentity>;
+        essences?: Combination<Essence>;
+        salvage?: Combination<CraftingComponentSummary>;
     }) {
         this._id = id;
         this._name = name;
@@ -60,11 +98,11 @@ class CraftingComponent implements Identifiable {
         return this._imageUrl;
     }
 
-    get essences(): Combination<StringIdentity> {
+    get essences(): Combination<Essence> {
         return this._essences;
     }
 
-    get salvage(): Combination<StringIdentity> {
+    get salvage(): Combination<CraftingComponentSummary> {
         return this._salvage;
     }
 
@@ -76,14 +114,22 @@ class CraftingComponent implements Identifiable {
         }
     }
 
-    set essences(value: Combination<StringIdentity>) {
+    set essences(value: Combination<Essence>) {
         this._essences = value;
     }
 
-    set salvage(value: Combination<StringIdentity>) {
+    set salvage(value: Combination<CraftingComponentSummary>) {
         this._salvage = value;
+    }
+
+    public summarise(): CraftingComponentSummary {
+        return new CraftingComponentSummary({
+            id: this._id,
+            name: this._name,
+            imageUrl: this._imageUrl
+        });
     }
 
 }
 
-export { CraftingComponent, StringIdentity, CraftingComponentJson }
+export { CraftingComponent, StringIdentity, CraftingComponentJson, CraftingComponentSummary }

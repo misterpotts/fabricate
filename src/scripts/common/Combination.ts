@@ -71,7 +71,7 @@ class Unit<T extends Identifiable> {
 
 }
 
-class Combination<T extends Identifiable> implements Identifiable{
+class Combination<T extends Identifiable> implements Identifiable {
 
     private readonly _amounts: Map<string, Unit<T>>;
     private readonly _identityProvider: IdentityProvider<T> = new HashcodeIdentityProvider<T>();
@@ -118,7 +118,7 @@ class Combination<T extends Identifiable> implements Identifiable{
     }
 
     public just(member: T): Combination<T> {
-        return new Combination<T>(new Map([[member.id, new Unit<T>(member, this.amountFor(member))]]));
+        return new Combination<T>(new Map([[member.id, new Unit<T>(member, this.amountFor(member.id))]]));
     }
 
     get amounts(): Map<string, Unit<T>> {
@@ -149,8 +149,8 @@ class Combination<T extends Identifiable> implements Identifiable{
         return this.amounts.get(unit.part.id).quantity >= unit.quantity;
     }
 
-    public amountFor(member: T): number {
-        return this._amounts.has(member.id) ? this._amounts.get(member.id).quantity : 0;
+    public amountFor(memberId: string): number {
+        return this._amounts.has(memberId) ? this._amounts.get(memberId).quantity : 0;
     }
 
     public isEmpty(): boolean {
@@ -162,7 +162,7 @@ class Combination<T extends Identifiable> implements Identifiable{
             if (!other.has(unit.part)) {
                 return false;
             }
-            const amount: number = other.amountFor(unit.part) - this.amountFor(unit.part);
+            const amount: number = other.amountFor(unit.part.id) - this.amountFor(unit.part.id);
             if (amount < 0) {
                 return false;
             }
@@ -217,10 +217,10 @@ class Combination<T extends Identifiable> implements Identifiable{
         other.members.forEach((otherMember: T) => {
             if (this.amounts.has(otherMember.id)) {
                 const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
-                const modifiedAmount: Unit<T> = currentAmount.add(other.amountFor(otherMember));
+                const modifiedAmount: Unit<T> = currentAmount.add(other.amountFor(otherMember.id));
                 this.amounts.set(otherMember.id, modifiedAmount);
             } else {
-                this.amounts.set(otherMember.id, new Unit(otherMember, other.amountFor(otherMember)));
+                this.amounts.set(otherMember.id, new Unit(otherMember, other.amountFor(otherMember.id)));
             }
         });
         return this;
@@ -242,6 +242,28 @@ class Combination<T extends Identifiable> implements Identifiable{
         } else {
             amounts.set(additionalUnit.part.id, additionalUnit);
         }
+        return new Combination<T>(amounts);
+    }
+
+    public increment(partId: string, quantity: number = 1): Combination<T> {
+        const amounts: Map<string, Unit<T>> = new Map(this.amounts);
+        if (!amounts.has(partId)) {
+            throw new Error(`"${partId}" is not present in this combination and cannot be incremented. Available part ids are ${Array.from(amounts.keys()).join(", ")}. `);
+        }
+        const currentUnit = amounts.get(partId);
+        const updatedUnit = currentUnit.add(quantity);
+        amounts.set(partId, updatedUnit);
+        return new Combination<T>(amounts);
+    }
+
+    public decrement(partId: string, quantity: number = 1): Combination<T> {
+        const amounts: Map<string, Unit<T>> = new Map(this.amounts);
+        if (!amounts.has(partId)) {
+            throw new Error(`"${partId}" is not present in this combination and cannot be decremented. Available part ids are ${Array.from(amounts.keys()).join(", ")}. `);
+        }
+        const currentUnit = amounts.get(partId);
+        const updatedUnit = currentUnit.minus(quantity);
+        amounts.set(partId, updatedUnit);
         return new Combination<T>(amounts);
     }
 
@@ -283,7 +305,7 @@ class Combination<T extends Identifiable> implements Identifiable{
             if (!other.has(thisElement.part)) {
                 combination.set(thisElement.part.id, thisElement);
             } else {
-                const resultingAmount = thisElement.quantity - other.amountFor(thisElement.part);
+                const resultingAmount = thisElement.quantity - other.amountFor(thisElement.part.id);
                 if (resultingAmount > 0) {
                     combination.set(thisElement.part.id, thisElement.withQuantity(resultingAmount));
                 }
@@ -303,13 +325,13 @@ class Combination<T extends Identifiable> implements Identifiable{
         other.members.forEach((otherMember: T) => {
             if (this.amounts.has(otherMember.id)) {
                 const currentAmount: Unit<T> = this.amounts.get(otherMember.id);
-                const deleteUnit: boolean = currentAmount.quantity <= other.amountFor(otherMember);
+                const deleteUnit: boolean = currentAmount.quantity <= other.amountFor(otherMember.id);
                 switch (deleteUnit) {
                     case true:
                         this.amounts.delete(otherMember.id);
                         break;
                     case false:
-                        const modifiedAmount: Unit<T> = currentAmount.withQuantity(currentAmount.quantity - other.amountFor(otherMember));
+                        const modifiedAmount: Unit<T> = currentAmount.withQuantity(currentAmount.quantity - other.amountFor(otherMember.id));
                         this.amounts.set(otherMember.id, modifiedAmount);
                         break;
                 }
@@ -368,6 +390,7 @@ class Combination<T extends Identifiable> implements Identifiable{
     flatten(): Combination<StringIdentity> {
         return Combination.ofUnits(this.units.map(unit => new Unit(new StringIdentity(unit.part.id), unit.quantity)));
     }
+
 }
 
 export { Unit, Combination, StringIdentity }

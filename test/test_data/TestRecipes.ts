@@ -1,7 +1,7 @@
 import {CombinationChoice, Recipe} from "../../src/scripts/crafting/Recipe";
-import {StringIdentity, Combination, Unit} from "../../src/scripts/common/Combination";
+import {Combination, Unit} from "../../src/scripts/common/Combination";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
-import {elementalEarth, elementalFire, elementalWater} from "./TestEssenceDefinitions";
+import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 
 /*
 * Essences: None
@@ -13,10 +13,10 @@ const testRecipeOne: Recipe = new Recipe({
     id: "tdyV4AWuTMkXbepw",
     name: "Test Recipe One",
     ingredientOptions: CombinationChoice.between(
-        Combination.of(new StringIdentity(testComponentOne.id), 1),
-        Combination.of(new StringIdentity(testComponentThree.id), 2)
+        Combination.of(testComponentOne, 1),
+        Combination.of(testComponentThree, 2)
     ),
-    resultOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentFive.id), 1))
+    resultOptions: CombinationChoice.just(Combination.of(testComponentFive, 1))
 });
 
 /*
@@ -28,9 +28,9 @@ const testRecipeOne: Recipe = new Recipe({
 const testRecipeTwo: Recipe = new Recipe({
     id: "QBmv3SSCaae2xxzT",
     name: "Test Recipe Two",
-    ingredientOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentFour.id), 1)),
-    catalysts: Combination.of(new StringIdentity(testComponentFive.id), 1),
-    resultOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentTwo.id), 2))
+    ingredientOptions: CombinationChoice.just(Combination.of(testComponentFour, 1)),
+    catalysts: Combination.of(testComponentFive, 1),
+    resultOptions: CombinationChoice.just(Combination.of(testComponentTwo, 2))
 })
 
 /*
@@ -43,10 +43,10 @@ const testRecipeThree: Recipe = new Recipe({
     id: "eT4j7mNbZGHIUOtT",
     name: "Test Recipe Three",
     essences: Combination.ofUnits([
-        new Unit(new StringIdentity(elementalEarth.id), 3),
-        new Unit(new StringIdentity(elementalFire.id), 1)
+        new Unit(elementalEarth, 3),
+        new Unit(elementalFire, 1)
     ]),
-    resultOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentOne.id), 3))
+    resultOptions: CombinationChoice.just(Combination.of(testComponentOne, 3))
 });
 
 /*
@@ -59,12 +59,12 @@ const testRecipeFour: Recipe = new Recipe({
     id: "l46uaz805Fr9lZvU",
     name: "Test Recipe Four",
     essences: Combination.ofUnits([
-        new Unit(new StringIdentity(elementalEarth.id), 1),
-        new Unit(new StringIdentity(elementalWater.id), 2)
+        new Unit(elementalEarth, 1),
+        new Unit(elementalWater, 2)
     ]),
-    ingredientOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentTwo.id), 3)),
-    catalysts: Combination.of(new StringIdentity(testComponentThree.id), 1),
-    resultOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentFive.id), 10))
+    ingredientOptions: CombinationChoice.just(Combination.of(testComponentTwo, 3)),
+    catalysts: Combination.of(testComponentThree, 1),
+    resultOptions: CombinationChoice.just(Combination.of(testComponentFive, 10))
 });
 
 /*
@@ -77,11 +77,11 @@ const testRecipeFive: Recipe = new Recipe({
     id: "jLAVDWQdUUYr56Eo",
     name: "Test Recipe Five",
     essences: Combination.ofUnits([
-        new Unit(new StringIdentity(elementalFire.id), 1),
-        new Unit(new StringIdentity(elementalWater.id), 1)
+        new Unit(elementalFire, 1),
+        new Unit(elementalWater, 1)
     ]),
-    catalysts: Combination.of(new StringIdentity(testComponentFour.id), 1),
-    resultOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentFive.id), 10))
+    catalysts: Combination.of(testComponentFour, 1),
+    resultOptions: CombinationChoice.just(Combination.of(testComponentFive, 10))
 });
 
 /*
@@ -94,20 +94,20 @@ const testRecipeSix: Recipe = new Recipe({
     id: "jLAVDWQdUUYr56Eo",
     name: "Test Recipe Six",
     essences: Combination.ofUnits([
-        new Unit(new StringIdentity(elementalEarth.id), 3),
-        new Unit(new StringIdentity(elementalWater.id), 1)
+        new Unit(elementalEarth, 3),
+        new Unit(elementalWater, 1)
     ]),
     ingredientOptions:
         CombinationChoice.between(
             Combination.ofUnits([
-                new Unit(new StringIdentity(testComponentOne.id), 1),
-                new Unit(new StringIdentity(testComponentThree.id), 2)
+                new Unit(testComponentOne, 1),
+                new Unit(testComponentThree, 2)
             ]),
-            Combination.of(new StringIdentity(testComponentTwo.id), 1)
+            Combination.of(testComponentTwo, 1)
         ),
     resultOptions: CombinationChoice.between(
-        Combination.of(new StringIdentity(testComponentThree.id), 2),
-        Combination.of(new StringIdentity(testComponentFive.id), 2)
+        Combination.of(testComponentThree, 2),
+        Combination.of(testComponentFive, 2)
     )
 });
 
@@ -120,8 +120,8 @@ const testRecipeSix: Recipe = new Recipe({
 const testRecipeSeven: Recipe = new Recipe({
     id: "QBmv3SSCaae2xxzT",
     name: "Test Recipe Two",
-    ingredientOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentFour.id), 1)),
-    resultOptions: CombinationChoice.just(Combination.of(new StringIdentity(testComponentTwo.id), 2))
+    ingredientOptions: CombinationChoice.just(Combination.of(testComponentFour, 1)),
+    resultOptions: CombinationChoice.just(Combination.of(testComponentTwo, 2))
 })
 
 

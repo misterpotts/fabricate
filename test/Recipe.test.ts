@@ -1,4 +1,4 @@
-import {expect, jest, test, beforeEach} from "@jest/globals";
+import {expect, jest, test, beforeEach, describe} from "@jest/globals";
 import {CombinationChoice, Recipe} from "../src/scripts/crafting/Recipe";
 
 import {
@@ -8,8 +8,8 @@ import {
     testComponentFour,
     testComponentFive
 } from "./test_data/TestCraftingComponents";
-import {StringIdentity, Combination, Unit} from "../src/scripts/common/Combination";
-import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
+import {Combination, Unit} from "../src/scripts/common/Combination";
+import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
     testRecipeFive,
     testRecipeSeven,
@@ -28,8 +28,8 @@ describe("When creating a recipe", () => {
         const underTest = testRecipeThree;
 
         expect(underTest.essences.size()).toEqual(4);
-        expect(underTest.essences.amountFor(new StringIdentity(elementalFire.id))).toEqual(1);
-        expect(underTest.essences.amountFor(new StringIdentity(elementalEarth.id))).toEqual(3);
+        expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.essences.amountFor(elementalEarth.id)).toEqual(3);
 
         expect(underTest.hasOptions()).toEqual(false);
         expect(underTest.ready()).toEqual(true);
@@ -43,10 +43,10 @@ describe("When creating a recipe", () => {
         const underTest = testRecipeFive;
 
         expect(underTest.catalysts.size()).toEqual(1);
-        expect(underTest.catalysts.amountFor(new StringIdentity(testComponentFour.id))).toEqual(1);
+        expect(underTest.catalysts.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.essences.size()).toEqual(2);
-        expect(underTest.essences.amountFor(new StringIdentity(elementalFire.id))).toEqual(1);
-        expect(underTest.essences.amountFor(new StringIdentity(elementalWater.id))).toEqual(1);
+        expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.essences.amountFor(elementalWater.id)).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
         expect(underTest.ready()).toEqual(true);
@@ -109,12 +109,12 @@ describe("When selecting ingredients", () => {
     test("should require choices from ingredient groups with options", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentOne.id), 1),
-            new Unit(new StringIdentity(testComponentTwo.id), 1)
+            new Unit(testComponentOne, 1),
+            new Unit(testComponentTwo, 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentThree.id), 2)
+            new Unit(testComponentThree, 2)
         ]);
 
         const underTest = new Recipe({
@@ -133,12 +133,12 @@ describe("When selecting ingredients", () => {
     test("should produce the correct selected ingredients when components in an ingredient group are re-selected", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentOne.id), 1),
-            new Unit(new StringIdentity(testComponentTwo.id), 1)
+            new Unit(testComponentOne, 1),
+            new Unit(testComponentTwo, 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentThree.id), 2)
+            new Unit(testComponentThree, 2)
         ]);
 
         const underTest = new Recipe({
@@ -179,12 +179,12 @@ describe("When selecting results", () => {
     test("should not require choice when there is only one option", () => {
 
         const singletonResult = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentFive.id), 3),
-            new Unit(new StringIdentity(testComponentOne.id), 1)
+            new Unit(testComponentFive, 3),
+            new Unit(testComponentOne, 1)
         ]);
 
         const singletonIngredient = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentFour.id), 2)
+            new Unit(testComponentFour, 2)
         ]);
 
         const underTest = new Recipe({
@@ -197,29 +197,29 @@ describe("When selecting results", () => {
         const selectedResults = underTest.getSelectedResults();
         expect(selectedResults.id).toEqual(singletonResult.id);
         expect(selectedResults.size()).toEqual(4);
-        expect(selectedResults.amountFor(new StringIdentity(testComponentFive.id))).toEqual(3);
-        expect(selectedResults.amountFor(new StringIdentity(testComponentOne.id))).toEqual(1);
+        expect(selectedResults.amountFor(testComponentFive.id)).toEqual(3);
+        expect(selectedResults.amountFor(testComponentOne.id)).toEqual(1);
 
         const selectedIngredients = underTest.getSelectedIngredients();
         expect(selectedIngredients.id).toEqual(singletonIngredient.id);
         expect(selectedIngredients.size()).toEqual(2);
-        expect(selectedIngredients.amountFor(new StringIdentity(testComponentFour.id))).toEqual(2);
+        expect(selectedIngredients.amountFor(testComponentFour.id)).toEqual(2);
 
     });
 
     test("should require choices from result groups with options", () => {
 
         const ingredientCombinationOne = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentOne.id), 1),
-            new Unit(new StringIdentity(testComponentTwo.id), 1)
+            new Unit(testComponentOne, 1),
+            new Unit(testComponentTwo, 1)
         ]);
 
         const ingredientCombinationTwo = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentThree.id), 2)
+            new Unit(testComponentThree, 2)
         ]);
 
         const resultCombination = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentFour.id), 2)
+            new Unit(testComponentFour, 2)
         ]);
 
         const underTest = new Recipe({
@@ -238,12 +238,12 @@ describe("When selecting results", () => {
     test("should produce the correct selected results when components in a result group are re-selected", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentOne.id), 1),
-            new Unit(new StringIdentity(testComponentTwo.id), 1)
+            new Unit(testComponentOne, 1),
+            new Unit(testComponentTwo, 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(new StringIdentity(testComponentThree.id), 2)
+            new Unit(testComponentThree, 2)
         ]);
 
         const underTest = new Recipe({

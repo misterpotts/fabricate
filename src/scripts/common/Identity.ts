@@ -4,6 +4,12 @@ interface Identifiable {
     id: string;
 }
 
+interface Serializable<T> {
+
+    toJson(): T;
+
+}
+
 interface IdentityProvider<T extends Identifiable> {
 
     getForCombination(combination: Combination<T>): number;
@@ -95,4 +101,4 @@ class PrimeNumberIdentityProvider<T extends Identifiable> implements IdentityPro
 
 }
 
-export { Identifiable, IdentityProvider, PrimeNumberIdentityProvider, HashcodeIdentityProvider };
+export { Identifiable, Serializable, IdentityProvider, PrimeNumberIdentityProvider, HashcodeIdentityProvider };

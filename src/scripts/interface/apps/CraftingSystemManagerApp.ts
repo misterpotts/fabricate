@@ -1,13 +1,12 @@
 import Properties from "../../Properties";
 import {GameProvider} from "../../foundry/GameProvider";
 import {CraftingSystem} from "../../system/CraftingSystem";
-import {CraftingComponent, StringIdentity} from "../../common/CraftingComponent";
+import {CraftingComponent} from "../../common/CraftingComponent";
 import {Combination} from "../../common/Combination";
 import {SystemRegistry} from "../../registries/SystemRegistry";
 import {DefaultDocumentManager} from "../../foundry/DocumentManager";
 import FabricateApplication from "../FabricateApplication";
 import {Recipe} from "../../crafting/Recipe";
-import {PartDictionary} from "../../system/PartDictionary";
 import ComponentManagerAppFactory from "./ComponentManagerApp";
 import RecipeManagerAppFactory from "./RecipeManagerApp";
 import EditEssenceDialogFactory from "./EditEssenceDialog";
@@ -71,46 +70,12 @@ class CraftingSystemManagerApp extends FormApplication {
                 summary: this._selectedSystem.details.summary,
                 enabled: this._selectedSystem.enabled,
                 locked: this._selectedSystem.locked,
-                essences: this._selectedSystem.essences,
-                components: this._selectedSystem.components.map(component => this.buildComponentViewData(component, this._selectedSystem.partDictionary)),
-                recipes: this._selectedSystem.recipes.map(recipe => this.buildRecipeViewData(recipe, this._selectedSystem.partDictionary))
+                essences: await this._selectedSystem.getEssences(),
+                components: await this._selectedSystem.getComponents(),
+                recipes: await this._selectedSystem.getRecipes()
             }
         };
     }
-
-    private buildComponentViewData(component: CraftingComponent, partDictionary: PartDictionary) {
-        return {
-            id: component.id,
-            name: component.name,
-            imageUrl: component.imageUrl,
-            essences: component.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.id), quantity: unit.quantity } }),
-            salvage: component.salvage.units.map(unit => { return { part: partDictionary.getComponent(unit.part.id), quantity: unit.quantity } })
-        }
-    }
-
-    private buildRecipeViewData(recipe: Recipe, partDictionary: PartDictionary) {
-        return {
-            id: recipe.id,
-            name: recipe.name,
-            imageUrl: recipe.imageUrl,
-            catalysts: recipe.catalysts.units.map(unit => { return { part: partDictionary.getComponent(unit.part.id), quantity: unit.quantity } }),
-            essences: recipe.essences.units.map(unit => { return { part: partDictionary.getEssence(unit.part.id), quantity: unit.quantity } }),
-            ingredientGroups: this.populateChoices(recipe.ingredientOptions.choices, partDictionary),
-            resultGroups: this.populateChoices(recipe.resultOptions.choices, partDictionary),
-        }
-    }
-
-    private populateChoices(choices: { key: string; value: Combination<StringIdentity> }[], partDictionary: PartDictionary) {
-        return choices.map(({key, value}) => {
-                return {
-                    key,
-                    value: value.units.map(unit => {
-                        return {part: partDictionary.getComponent(unit.part.id), quantity: unit.quantity};
-                    })
-                };
-            });
-    }
-
     activateListeners(html: JQuery) {
         super.activateListeners(html);
         this._contextMenu(html);
@@ -182,7 +147,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!componentIdToDelete) {
                     throw new Error("Cannot delete component. No ID was provided. ");
                 }
-                this._selectedSystem.partDictionary.deleteComponentById(componentIdToDelete);
+                await this._selectedSystem.deleteComponentById(componentIdToDelete);
                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                 break;
             case "deleteRecipe":
@@ -190,12 +155,12 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!recipeIdToDelete) {
                     throw new Error("Cannot delete recipe. No ID was provided. ");
                 }
-                this._selectedSystem.partDictionary.deleteRecipeById(recipeIdToDelete);
+                await this._selectedSystem.deleteRecipeById(recipeIdToDelete);
                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                 break;
             case "editComponent":
                 const componentIdToEdit = event?.target?.dataset?.componentId;
-                const componentToEdit = this._selectedSystem.partDictionary.getComponent(componentIdToEdit);
+                const componentToEdit = await this._selectedSystem.getComponentById(componentIdToEdit);
                 if (!componentToEdit) {
                     throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
                 }
@@ -203,7 +168,7 @@ class CraftingSystemManagerApp extends FormApplication {
                 break;
             case "editRecipe":
                 const recipeIdToEdit = event?.target?.dataset?.recipeId;
-                const recipeToEdit = this._selectedSystem.partDictionary.getRecipe(recipeIdToEdit);
+                const recipeToEdit = await this._selectedSystem.getRecipeById(recipeIdToEdit);
                 if (!recipeToEdit) {
                     throw new Error(`Cannot edit recipe. Recipe with ID "${recipeIdToEdit}" not found. `);
                 }
@@ -216,13 +181,13 @@ class CraftingSystemManagerApp extends FormApplication {
                         return;
                     }
                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
-                    if (!this._selectedSystem.partDictionary.hasRecipe(document.uuid)) {
+                    if (!this._selectedSystem.hasRecipe(document.uuid)) {
                         const recipe = new Recipe({
                             id: document.uuid,
                             name: document.name,
                             imageUrl: document.img
                         });
-                        this._selectedSystem.partDictionary.addRecipe(recipe);
+                        await this._selectedSystem.editRecipe(recipe);
                         await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                     }
                 } catch (e: any) {
@@ -238,7 +203,7 @@ class CraftingSystemManagerApp extends FormApplication {
                         return;
                     }
                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
-                    if (!this._selectedSystem.partDictionary.hasComponent(document.uuid)) {
+                    if (!this._selectedSystem.hasComponent(document.uuid)) {
                         const craftingComponent = new CraftingComponent({
                             id: document.uuid,
                             name: document.name,
@@ -246,7 +211,7 @@ class CraftingSystemManagerApp extends FormApplication {
                             essences: Combination.EMPTY(),
                             salvage: Combination.EMPTY()
                         });
-                        this._selectedSystem.partDictionary.addComponent(craftingComponent);
+                        await this._selectedSystem.editComponent(craftingComponent);
                         await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                     }
                 } catch (e: any) {
@@ -260,15 +225,15 @@ class CraftingSystemManagerApp extends FormApplication {
                 break;
             case "editEssence":
                 const essenceIdToEdit = event?.target?.dataset?.essenceId;
-                const essenceToEdit = this._selectedSystem.essences.find(essence => essence.id === essenceIdToEdit);
-                if (!essenceToEdit) {
+                if (!this._selectedSystem.hasEssence(essenceIdToEdit)) {
                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
                 }
+                const essenceToEdit = await this._selectedSystem.getEssenceById(essenceIdToEdit);
                 EditEssenceDialogFactory.make(this._selectedSystem, essenceToEdit).render();
                 break;
             case "deleteEssence": // todo: confirm dialog and remove references to the essence from all recipes and items on delete
                 const essenceIdToDelete = event?.target?.dataset?.essenceId;
-                this._selectedSystem.partDictionary.deleteEssenceById(essenceIdToDelete);
+                await this._selectedSystem.deleteEssenceById(essenceIdToDelete);
                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
                 break;
             default:

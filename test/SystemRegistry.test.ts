@@ -2,12 +2,13 @@ import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 import {DefaultSettingManager} from "../src/scripts/interface/settings/FabricateSettings";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
-import {StringIdentity, CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
+import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {DefaultSystemRegistry, ErrorDecisionType} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {RecipeJson} from "../src/scripts/crafting/Recipe";
-import {RawItemData, StubDocumentManager} from "./stubs/StubDocumentManager";
+import {StubDocumentManager} from "./stubs/StubDocumentManager";
+import {FabricateItemData} from "../src/scripts/foundry/DocumentManager";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -188,13 +189,13 @@ describe("integration test", () => {
         }
     };
 
-    const itemData: Map<string, RawItemData> = new Map([
-        [componentOneItemUuid, {name: "Component One", img: "path/to/img.webp", uuid: componentOneItemUuid}],
-        [componentTwoItemUuid, {name: "Component Two", img: "path/to/img.webp", uuid: componentTwoItemUuid}],
-        [componentThreeItemUuid, {name: "Component Three", img: "path/to/img.webp", uuid: componentThreeItemUuid}],
-        [recipeOneItemUuid, {name: "Recipe One", img: "path/to/img.webp", uuid: recipeOneItemUuid}],
-        [recipeTwoItemUuid, {name: "Recipe Two", img: "path/to/img.webp", uuid: recipeTwoItemUuid}],
-        [recipeThreeItemUuid, {name: "Recipe Three", img: "path/to/img.webp", uuid: recipeThreeItemUuid}],
+    const itemData: Map<string, FabricateItemData> = new Map([
+        [componentOneItemUuid, {name: "Component One", imageUrl: "path/to/img.webp", uuid: componentOneItemUuid, source: componentOne}],
+        [componentTwoItemUuid, {name: "Component Two", imageUrl: "path/to/img.webp", uuid: componentTwoItemUuid, source: componentTwo}],
+        [componentThreeItemUuid, {name: "Component Three", imageUrl: "path/to/img.webp", uuid: componentThreeItemUuid, source: componentThree}],
+        [recipeOneItemUuid, {name: "Recipe One", imageUrl: "path/to/img.webp", uuid: recipeOneItemUuid, source: recipeOne}],
+        [recipeTwoItemUuid, {name: "Recipe Two", imageUrl: "path/to/img.webp", uuid: recipeTwoItemUuid, source: recipeTwo}],
+        [recipeThreeItemUuid, {name: "Recipe Three", imageUrl: "path/to/img.webp", uuid: recipeThreeItemUuid, source: recipeThree}],
     ]);
 
     test('Should read all settings values and build crafting system correctly', async () => {
@@ -224,40 +225,43 @@ describe("integration test", () => {
         expect(craftingSystemOne).not.toBeUndefined();
         await craftingSystemOne.loadPartDictionary();
 
-        expect(craftingSystemOne.partDictionary.getRecipes().length).toEqual(3);
-        expect(craftingSystemOne.partDictionary.hasRecipe(recipeOneItemUuid)).toEqual(true);
-        expect(craftingSystemOne.partDictionary.hasRecipe(recipeTwoItemUuid)).toEqual(true);
-        expect(craftingSystemOne.partDictionary.hasRecipe(recipeThreeItemUuid)).toEqual(true);
+        const essences = await craftingSystemOne.getEssences();
+        expect(essences.length).toEqual(3);
+        expect(craftingSystemOne.hasEssence(essenceOneId)).toEqual(true);
+        expect(craftingSystemOne.hasEssence(essenceTwoId)).toEqual(true);
+        expect(craftingSystemOne.hasEssence(essenceThreeId)).toEqual(true);
 
-        const recipeOneResult = craftingSystemOne.partDictionary.getRecipe(recipeOneItemUuid);
+        const components = await craftingSystemOne.getComponents();
+        expect(components.length).toEqual(3);
+        expect(craftingSystemOne.hasPart(componentOneItemUuid)).toEqual(true);
+        expect(craftingSystemOne.hasPart(componentTwoItemUuid)).toEqual(true);
+        expect(craftingSystemOne.hasPart(componentThreeItemUuid)).toEqual(true);
+
+        const componentOneResult = await craftingSystemOne.getComponentById(componentOneItemUuid);
+        expect(componentOneResult.id).toEqual(componentOneItemUuid);
+        expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
+        expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).imageUrl);
+        expect(componentOneResult.salvage.size()).toEqual(2);
+        expect(componentOneResult.salvage.amountFor(componentTwoItemUuid)).toEqual(2);
+        expect(componentOneResult.essences.size()).toEqual(3);
+        expect(componentOneResult.essences.amountFor(essenceOneId)).toEqual(2);
+        expect(componentOneResult.essences.amountFor(essenceTwoId)).toEqual(1);
+
+        const recipes = await craftingSystemOne.getRecipes();
+        expect(recipes.length).toEqual(3);
+        expect(craftingSystemOne.hasPart(recipeOneItemUuid)).toEqual(true);
+        expect(craftingSystemOne.hasPart(recipeTwoItemUuid)).toEqual(true);
+        expect(craftingSystemOne.hasPart(recipeThreeItemUuid)).toEqual(true);
+
+        const recipeOneResult = await craftingSystemOne.getRecipeById(recipeOneItemUuid);
         expect(recipeOneResult.id).toEqual(recipeOneItemUuid);
         expect(recipeOneResult.name).toEqual(itemData.get(recipeOneItemUuid).name);
-        expect(recipeOneResult.imageUrl).toEqual(itemData.get(recipeOneItemUuid).img);
-        expect(recipeOneResult.essences.amountFor(new StringIdentity(essenceOneId))).toEqual(1);
-        expect(recipeOneResult.essences.amountFor(new StringIdentity(essenceTwoId))).toEqual(2);
+        expect(recipeOneResult.imageUrl).toEqual(itemData.get(recipeOneItemUuid).imageUrl);
+        expect(recipeOneResult.essences.amountFor(essenceOneId)).toEqual(1);
+        expect(recipeOneResult.essences.amountFor(essenceTwoId)).toEqual(2);
         expect(recipeOneResult.catalysts.size()).toEqual(0);
         expect(recipeOneResult.ingredientOptions.size).toEqual(0);
         expect(recipeOneResult.resultOptions.size).toEqual(1);
-
-        expect(craftingSystemOne.partDictionary.getComponents().length).toEqual(3);
-        expect(craftingSystemOne.partDictionary.hasComponent(componentOneItemUuid)).toEqual(true);
-        expect(craftingSystemOne.partDictionary.hasComponent(componentTwoItemUuid)).toEqual(true);
-        expect(craftingSystemOne.partDictionary.hasComponent(componentThreeItemUuid)).toEqual(true);
-
-        const componentOneResult = craftingSystemOne.partDictionary.getComponent(componentOneItemUuid);
-        expect(componentOneResult.id).toEqual(componentOneItemUuid);
-        expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
-        expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).img);
-        expect(componentOneResult.salvage.size()).toEqual(2);
-        expect(componentOneResult.salvage.amountFor(new StringIdentity(componentTwoItemUuid))).toEqual(2);
-        expect(componentOneResult.essences.size()).toEqual(3);
-        expect(componentOneResult.essences.amountFor(new StringIdentity(essenceOneId))).toEqual(2);
-        expect(componentOneResult.essences.amountFor(new StringIdentity(essenceTwoId))).toEqual(1);
-
-        expect(craftingSystemOne.partDictionary.getEssences().length).toEqual(3);
-        expect(craftingSystemOne.partDictionary.hasEssence(essenceOneId)).toEqual(true);
-        expect(craftingSystemOne.partDictionary.hasEssence(essenceTwoId)).toEqual(true);
-        expect(craftingSystemOne.partDictionary.hasEssence(essenceThreeId)).toEqual(true);
 
     });
 

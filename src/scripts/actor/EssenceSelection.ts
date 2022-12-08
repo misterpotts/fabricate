@@ -1,12 +1,13 @@
-import {Combination, StringIdentity} from "../common/Combination";
+import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {ComponentCombinationGenerator} from "./ComponentCombinationGenerator";
+import {Essence} from "../common/Essence";
 
 export class EssenceSelection {
 
-    private readonly _essences: Combination<StringIdentity>;
+    private readonly _essences: Combination<Essence>;
 
-    constructor(essences: Combination<StringIdentity>) {
+    constructor(essences: Combination<Essence>) {
         this._essences = essences;
     }
 
@@ -23,7 +24,7 @@ export class EssenceSelection {
         return this.selectBestMatch(this.matchingCombinationsFor(availableComponents, this._essences));
     }
 
-    private selectBestMatch(combinations: [Combination<CraftingComponent>, Combination<StringIdentity>][]): Combination<CraftingComponent> {
+    private selectBestMatch(combinations: [Combination<CraftingComponent>, Combination<Essence>][]): Combination<CraftingComponent> {
         if (combinations.length === 0) {
             return Combination.EMPTY();
         }
@@ -34,7 +35,7 @@ export class EssenceSelection {
         return sortedCombinations[0][0];
     }
 
-    private matchingCombinationsFor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<StringIdentity>): [Combination<CraftingComponent>, Combination<StringIdentity>][] {
+    private matchingCombinationsFor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<Essence>): [Combination<CraftingComponent>, Combination<Essence>][] {
         const combinationGenerator = new ComponentCombinationGenerator(availableComponents, requiredEssences);
         return combinationGenerator.generate();
     }

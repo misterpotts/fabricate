@@ -1,9 +1,6 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {Essence} from "../src/scripts/common/Essence";
-
-import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssenceDefinitions";
 import {Inventory} from "../src/scripts/actor/Inventory";
 import {testRecipeTwo} from "./test_data/TestRecipes";
 import {
@@ -12,7 +9,7 @@ import {
     testComponentThree,
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
-import {Combination, StringIdentity, Unit} from "../src/scripts/common/Combination";
+import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingCheck, DefaultCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
 import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
@@ -30,11 +27,8 @@ import {ComponentConsumptionCalculatorFactory, WastageType} from "../src/scripts
 import {DefaultAlchemyAttemptFactory} from "../src/scripts/crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemicalCombiner5e} from "../src/scripts/5e/AlchemicalEffect5E";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
-import {StubPartDictionaryLoader} from "./stubs/StubPartDictionaryLoader";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
-
-const essences: Essence[] = [elementalAir, elementalEarth, elementalFire, elementalWater];
 
 const stubDiceRoller: DiceRoller = <DiceRoller><unknown>{
     roll: () => {},
@@ -50,7 +44,7 @@ const stubRollTermProvider: GameSystemRollModifierProvider<Actor> = <GameSystemR
 const stubActor: Actor = <Actor><unknown>{};
 
 const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
-    selectionStrategy: new DefaultComponentSelectionStrategy(testPartDictionary),
+    selectionStrategy: new DefaultComponentSelectionStrategy(),
     wastageType: WastageType.PUNITIVE
 });
 
@@ -81,7 +75,6 @@ describe('Create and configure', () => {
             enabled: true,
             locked: false,
             partDictionary: testPartDictionary,
-            partDictionaryLoader: new StubPartDictionaryLoader(),
             craftingAttemptFactory: craftingAttemptFactory
         });
 
@@ -91,7 +84,6 @@ describe('Create and configure', () => {
         expect(underTest.hasAlchemyCraftingCheck).toEqual(false);
         expect(underTest.hasRecipeCraftingCheck).toEqual(false);
         expect(underTest.supportsAlchemy).toEqual(false);
-        expect(underTest.essences).toEqual(expect.arrayContaining(essences));
 
     });
 
@@ -121,7 +113,6 @@ describe('Create and configure', () => {
             id: testSystemId,
             enabled: true,
             locked: false,
-            partDictionaryLoader: new StubPartDictionaryLoader(),
             partDictionary: testPartDictionary,
             craftingAttemptFactory: craftingAttemptFactory,
             alchemyAttemptFactory: new DefaultAlchemyAttemptFactory({
@@ -151,7 +142,6 @@ describe('Create and configure', () => {
         expect(underTest.hasAlchemyCraftingCheck).toEqual(true);
         expect(underTest.hasRecipeCraftingCheck).toEqual(true);
         expect(underTest.supportsAlchemy).toEqual(true);
-        expect(underTest.essences).toEqual(expect.arrayContaining(essences));
 
     });
 
@@ -173,8 +163,7 @@ describe('Crafting ', () => {
             enabled: true,
             locked: false,
             partDictionary: testPartDictionary,
-            craftingAttemptFactory: craftingAttemptFactory,
-            partDictionaryLoader: new StubPartDictionaryLoader(),
+            craftingAttemptFactory: craftingAttemptFactory
         });
 
         test('should succeed for recipe with sufficient ingredients',async () => {
@@ -186,9 +175,9 @@ describe('Crafting ', () => {
             expect(craftingResult).not.toBeNull();
             expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
             expect(craftingResult.created.size()).toEqual(2);
-            expect(craftingResult.created.amountFor(new StringIdentity(testComponentTwo.id))).toEqual(2);
+            expect(craftingResult.created.amountFor(testComponentTwo.id)).toEqual(2);
             expect(craftingResult.consumed.size()).toEqual(1);
-            expect(craftingResult.consumed.amountFor(testComponentFour)).toEqual(1);
+            expect(craftingResult.consumed.amountFor(testComponentFour.id)).toEqual(1);
 
         });
 
@@ -205,10 +194,10 @@ describe('Crafting ', () => {
             expect(craftingResult).not.toBeNull();
             expect(craftingResult instanceof NoCraftingResult).toEqual(true);
             expect(craftingResult.created.size()).toEqual(0);
-            expect(craftingResult.created.amountFor(new StringIdentity(testComponentFive.id))).toEqual(0);
+            expect(craftingResult.created.amountFor(testComponentFive.id)).toEqual(0);
             expect(craftingResult.consumed.size()).toEqual(0);
-            expect(craftingResult.consumed.amountFor(testComponentOne)).toEqual(0);
-            expect(craftingResult.consumed.amountFor(testComponentThree)).toEqual(0);
+            expect(craftingResult.consumed.amountFor(testComponentOne.id)).toEqual(0);
+            expect(craftingResult.consumed.amountFor(testComponentThree.id)).toEqual(0);
 
         });
 
@@ -244,7 +233,6 @@ describe('Crafting ', () => {
             enabled: true,
             locked: false,
             partDictionary: testPartDictionary,
-            partDictionaryLoader: new StubPartDictionaryLoader(),
             craftingChecks: {
                 recipe: craftingCheck
             },
