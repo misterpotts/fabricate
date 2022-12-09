@@ -4,6 +4,12 @@ import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import Properties from "../Properties";
 
+interface SystemData {
+    recipe?: Recipe;
+    component?: CraftingComponent;
+    system: CraftingSystem;
+}
+
 export class FabricateItemSheetTab implements ItemSheetModifier {
 
     private static _id: string = "fabricate-crafting";
@@ -35,30 +41,33 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
     }
 
     async prepareData(app: any): Promise<void> {
-        await Promise.all(this._craftingSystems.map(system => system.loadPartDictionary()));
         const uuid = app.document.uuid;
         const sourceId = app.document.getFlag("core", "sourceId");
         const identifiers = [uuid, sourceId];
-        const systemData = this._craftingSystems
-            .map(system => this.getSystemData(system, identifiers))
-            .filter(systemData => systemData.recipe || systemData.component);
-        this._tabs = [this.prepareTabData(systemData, app.document)];
+        const systemData = await Promise.all(
+            this._craftingSystems.map(system => this.getSystemData(system, identifiers))
+        );
+        this._tabs = this.prepareTabData(systemData.filter(system => system.recipe || system.component), app.document);
     }
 
-    private getSystemData(system: CraftingSystem, identifiers: string[]): { recipe?: Recipe, component?: CraftingComponent, system: CraftingSystem } {
-        return identifiers.reduce((systemData, identifier) => {
-            if (!systemData.recipe && system.partDictionary.hasRecipe(identifier)) {
-                systemData.recipe = system.partDictionary.getRecipe(identifier);
+    private async getSystemData(system: CraftingSystem, identifiers: string[]): Promise<SystemData> {
+        const systemData: SystemData = { system, component: null, recipe: null };
+        for (const identifier of identifiers) {
+            if (!systemData.recipe && system.hasRecipe(identifier)) {
+                systemData.recipe = await system.getRecipeById(identifier);
             }
-            if (!systemData.component && system.partDictionary.hasComponent(identifier)) {
-                systemData.component = system.partDictionary.getComponent(identifier);
+            if (!systemData.component && system.hasComponent(identifier)) {
+                systemData.component = await system.getComponentById(identifier);
             }
-            return systemData;
-        }, {recipe: null, component: null, system});
+        }
+        return systemData;
     }
 
-    private prepareTabData(systemData: { recipe?: Recipe; component?: CraftingComponent, system: CraftingSystem }[], document: any): SheetTab {
-        return {
+    private prepareTabData(systemData: SystemData[], document: any): SheetTab[] {
+        if (systemData.length === 0) {
+            return [];
+        }
+        return [{
             id: FabricateItemSheetTab._id,
             name: FabricateItemSheetTab._name,
             buttonClass: FabricateItemSheetTab._buttonClass,
@@ -70,7 +79,7 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
                 isEmbedded: document.isEmbedded ?? false,
                 actor: document.parent
             }
-        }
+        }];
     }
 
 }

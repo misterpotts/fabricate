@@ -241,11 +241,11 @@ class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
         const catalystIds = recipeJson.catalysts ? Object.keys(recipeJson.catalysts) : [];
         const ingredientIds = recipeJson.ingredientGroups
             .map(combination => Object.keys(combination))
-            .reduce((left, right) => left.concat(right));
+            .reduce((left, right) => left.concat(right), []);
         const resultIds = recipeJson.resultGroups
             .map(combination => Object.keys(combination))
-            .reduce((left, right) => left.concat(right));
-        const uniqueComponentIds = [id, ...catalystIds, ...ingredientIds, ...resultIds]
+            .reduce((left, right) => left.concat(right), []);
+        const uniqueComponentIds = [...catalystIds, ...ingredientIds, ...resultIds]
             .filter((value, index, array) => array.indexOf(value) === index);
         const components = await Promise.all(uniqueComponentIds.map(id => this._componentCache.getById(id)))
         const componentsById = new Map(components.map(component => [component.id, component]));

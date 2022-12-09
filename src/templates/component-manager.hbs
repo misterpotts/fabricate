@@ -13,9 +13,9 @@
         <p>{{localize "fabricate.ComponentManagerApp.essences.instructions"}}</p>
         <div class="fabricate-component-list">
             {{#each component.essences}}
-                <div class="fabricate-essence" data-tooltip="{{essence.tooltip}}" data-essence-id="{{essence.id}}"
+                <div class="fabricate-essence" data-tooltip="{{part.tooltip}}" data-essence-id="{{part.id}}"
                      data-component-id="{{../component.id}}" data-action="editComponentEssence">
-                    <span>{{amount}} <i class="{{essence.iconCode}}"></i> {{essence.name}}</span>
+                    <span>{{quantity}} <i class="{{part.iconCode}}"></i> {{part.name}}</span>
                 </div>
             {{/each}}
         </div>
@@ -27,12 +27,12 @@
         <p>{{localize "fabricate.ComponentManagerApp.salvage.instructions"}}</p>
         <div class="fabricate-component-list">
             {{#each component.salvage}}
-                <div class="fabricate-component fabricate-component-salvage-choice" data-salvage-id="{{component.id}}"
-                     data-tooltip="{{component.name}}" data-component-id="{{../component.id}}"
+                <div class="fabricate-component fabricate-component-salvage-choice" data-salvage-id="{{part.id}}"
+                     data-tooltip="{{part.name}}" data-component-id="{{../component.id}}"
                      data-action="editComponentSalvage">
-                    <img src="{{component.imageUrl}}">
+                    <img src="{{part.imageUrl}}">
                     <div class="fabricate-info">
-                        <span class="fabricate-detail">{{amount}}</span>
+                        <span class="fabricate-detail">{{quantity}}</span>
                     </div>
                 </div>
             {{/each}}

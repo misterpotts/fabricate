@@ -1,9 +1,9 @@
 import {GameProvider} from "../../foundry/GameProvider";
 import Properties from "../../Properties";
 import {CraftingSystem} from "../../system/CraftingSystem";
-import {StringIdentity, CraftingComponent} from "../../common/CraftingComponent";
+import {CraftingComponent, CraftingComponentSummary} from "../../common/CraftingComponent";
 import {Essence} from "../../common/Essence";
-import {Combination} from "../../common/Combination";
+import {Combination, Unit} from "../../common/Combination";
 import FabricateApplication from "../FabricateApplication";
 import {ApplicationWindow, Click, DefaultClickHandler, StateManager} from "./core/Applications";
 
@@ -17,8 +17,8 @@ interface ComponentManagerView {
         id: string,
         name: string,
         imageUrl: string,
-        essences: { essence: Essence; amount: number }[],
-        salvage: { component: CraftingComponent; amount: number }[]
+        essences: Unit<Essence>[],
+        salvage: Unit<CraftingComponent>[]
     }
 }
 
@@ -26,16 +26,24 @@ class ComponentManagerModel {
 
     private readonly _system: CraftingSystem;
     private readonly _component: CraftingComponent;
+    private readonly _availableEssences: Map<string, Essence>;
+    private readonly _availableSalvage: Map<string, CraftingComponent>;
 
     constructor({
         system,
-        component
+        component,
+        availableEssences,
+        availableSalvage
     }: {
-        system: CraftingSystem,
-        component: CraftingComponent
+        system: CraftingSystem;
+        component: CraftingComponent;
+        availableEssences: Essence[];
+        availableSalvage: CraftingComponent[];
     }) {
         this._system = system;
         this._component = component;
+        this._availableEssences = new Map(availableEssences.map(essence => [essence.id, essence]));
+        this._availableSalvage = new Map(availableSalvage.map(salvage => [salvage.id, salvage]));
     }
 
     get system(): CraftingSystem {
@@ -46,23 +54,47 @@ class ComponentManagerModel {
         return this._component;
     }
 
+    get availableEssences(): Essence[] {
+        return Array.from(this._availableEssences.values());
+    }
+
+    get availableSalvage(): CraftingComponent[] {
+        return Array.from(this._availableSalvage.values());
+    }
+
     public incrementEssence(essenceId: string): ComponentManagerModel {
-        this._component.essences = this._component.essences.increment(essenceId);
+        if (!this._availableEssences.has(essenceId)) {
+            throw new Error(`No Essence was found with the ID "${essenceId}" to add to the component "${this._component.name}". `);
+        }
+        const essence = this._availableEssences.get(essenceId);
+        this._component.essences = this._component.essences.add(new Unit(essence, 1));
         return this;
     }
 
     public decrementEssence(essenceId: string): ComponentManagerModel {
-        this._component.essences = this._component.essences.decrement(essenceId);
+        if (!this._availableEssences.has(essenceId)) {
+            throw new Error(`No Essence was found with the ID "${essenceId}" to add to the component "${this._component.name}". `);
+        }
+        const essence = this._availableEssences.get(essenceId);
+        this._component.essences = this._component.essences.minus(new Unit(essence, 1));
         return this;
     }
 
-    public incrementSalvage(salvageId: string): ComponentManagerModel {
-        this._component.salvage = this._component.salvage.increment(salvageId);
+    public incrementSalvage(componentId: string): ComponentManagerModel {
+        if (!this._availableSalvage.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to add as salvage to the component "${this._component.name}". `);
+        }
+        const salvage = this._availableSalvage.get(componentId).summarise();
+        this._component.salvage = this._component.salvage.add(new Unit(salvage, 1));
         return this;
     }
 
-    public decrementSalvage(salvageId: string): ComponentManagerModel {
-        this._component.salvage = this._component.salvage.decrement(salvageId);
+    public decrementSalvage(componentId: string): ComponentManagerModel {
+        if (!this._availableSalvage.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to add as salvage to the component "${this._component.name}". `);
+        }
+        const salvage = this._availableSalvage.get(componentId).summarise();
+        this._component.salvage = this._component.salvage.minus(new Unit(salvage, 1));
         return this;
     }
 
@@ -74,14 +106,20 @@ class ComponentStateManager implements StateManager<ComponentManagerView, Compon
 
     constructor({
         component,
-        system
+        system,
+        availableEssences,
+        availableSalvage
     }: {
-        component: CraftingComponent,
-        system: CraftingSystem
+        component: CraftingComponent;
+        system: CraftingSystem;
+        availableEssences: Essence[];
+        availableSalvage: CraftingComponent[];
     }) {
         this._model = new ComponentManagerModel({
             component,
-            system
+            system,
+            availableEssences,
+            availableSalvage
         });
     }
 
@@ -92,23 +130,27 @@ class ComponentStateManager implements StateManager<ComponentManagerView, Compon
     getViewData(): ComponentManagerView {
         return {
             system: {
-                id: this._model.system.id, // todo: save the results, not the system, in the model
-                essences: this._model.system.getEssences(),
-                components: this.system.components.filter(component => component.id !== this.component.id)
+                id: this.system.id,
+                essences: this._model.availableEssences,
+                components: this._model.availableSalvage
             },
             component: {
                 id: this.component.id,
                 name: this.component.name,
                 imageUrl: this.component.imageUrl,
-                essences: this.prepareEssenceData(this.system.essences, this.component.essences),
-                salvage: this.prepareSalvageData(this.component.id, this.system.components, this.component.salvage)
+                essences: this.prepareEssenceData(this._model.availableEssences, this.component.essences),
+                salvage: this.prepareSalvageData(this.component.id, this._model.availableSalvage, this.component.salvage)
             }
         };
     }
 
     async load(): Promise<ComponentManagerModel> {
-        // todo: save the results, not the system, in the model
-        return this.getModelState();
+        const system = this._model.system;
+        const component = this._model.component;
+        const availableEssences = await system.getEssences();
+        const components = await system.getComponents();
+        const availableSalvage = components.filter(component => component.id !== this.component.id);
+        return new ComponentManagerModel({system, component, availableEssences, availableSalvage});
     }
 
     async save(model: ComponentManagerModel): Promise<ComponentManagerModel> {
@@ -124,30 +166,20 @@ class ComponentStateManager implements StateManager<ComponentManagerView, Compon
         return this._model.system;
     }
 
-    private prepareEssenceData(all: Essence[], includedAmounts: Combination<StringIdentity>): { essence: Essence; amount: number }[] {
-        return all.map(essence => {
-            return {
-                essence,
-                amount: includedAmounts.amountFor(new StringIdentity(essence.id))
-            }
-        });
+    private prepareEssenceData(all: Essence[], includedAmounts: Combination<Essence>): Unit<Essence>[] {
+        return all.map(essence => new Unit(essence, includedAmounts.amountFor(essence.id)));
     }
 
-    private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<StringIdentity>): { component: CraftingComponent; amount: number }[] {
+    private prepareSalvageData(thisComponentId: string, all: CraftingComponent[], includedAmounts: Combination<CraftingComponentSummary>): Unit<CraftingComponent>[] {
         return all.filter(component => component.id !== thisComponentId)
-            .map(component => {
-                return {
-                    component,
-                    amount: includedAmounts.amountFor(new StringIdentity(component.id))
-                }
-            });
+            .map(component => new Unit(component, includedAmounts.amountFor(component.id)));
     }
 
 }
 
 class ComponentManagerAppFactory {
 
-    make(component: CraftingComponent, system: CraftingSystem): ApplicationWindow<ComponentManagerView, ComponentManagerModel> {
+    async make(component: CraftingComponent, system: CraftingSystem): Promise<ApplicationWindow<ComponentManagerView, ComponentManagerModel>> {
         return new ApplicationWindow<ComponentManagerView, ComponentManagerModel>({
             clickHandler: new DefaultClickHandler({
                 dataKeys: ["componentId", "essenceId", "salvageId"],
@@ -170,7 +202,12 @@ class ComponentManagerAppFactory {
                     }]
                 ])
             }),
-            stateManager: new ComponentStateManager({component, system}),
+            stateManager: new ComponentStateManager({
+                component,
+                system,
+                availableEssences: await system.getEssences(),
+                availableSalvage: await system.getComponents()
+            }),
             options: {
                 title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.ComponentManagerApp.title`),
                 id: `${Properties.module.id}-component-manager`,

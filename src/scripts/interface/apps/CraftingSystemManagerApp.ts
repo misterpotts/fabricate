@@ -164,7 +164,8 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!componentToEdit) {
                     throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
                 }
-                ComponentManagerAppFactory.make(componentToEdit, this._selectedSystem).render();
+                const componentManagerApp = await ComponentManagerAppFactory.make(componentToEdit, this._selectedSystem);
+                componentManagerApp.render();
                 break;
             case "editRecipe":
                 const recipeIdToEdit = event?.target?.dataset?.recipeId;
