@@ -14,22 +14,35 @@ interface RecipeJson {
 
 class CombinationChoice<T extends Identifiable> {
 
-    private static readonly _NONE = new CombinationChoice([]);
+    private static readonly _NONE = new CombinationChoice({});
 
     private readonly _members: Map<string, Combination<T>>;
     private _selected: string;
 
-    constructor(members: Combination<T>[]) {
-        this._members = new Map(members.map(combination => [combination.id, combination]));
-        this._selected = "";
+    constructor({
+        members = new Map(),
+        selected = ""
+    }: {
+        members?: Map<string, Combination<T>>;
+        selected?: string;
+    }) {
+        this._members = members;
+        this._selected = selected;
     }
 
-    public static between<T extends Identifiable>(...members: Combination<T>[]): CombinationChoice<T> {
-        return new CombinationChoice<T>(members);
+    public static between<T extends Identifiable>(...values: Combination<T>[]): CombinationChoice<T> {
+        const members = new Map(values.map((value, index) => [String(index + 1), value]));
+        return new CombinationChoice<T>({members});
     }
 
-    public static just<T extends Identifiable>(singleton: Combination<T>): CombinationChoice<T> {
-        return new CombinationChoice<T>([singleton]);
+    public static of<T extends Identifiable>(...entries: [string, Combination<T>][]): CombinationChoice<T> {
+        const members = new Map(entries);
+        return new CombinationChoice<T>({members});
+    }
+
+    public static just<T extends Identifiable>(singleton: Combination<T>, id: string = "1"): CombinationChoice<T> {
+        const members = new Map([[id, singleton]]);
+        return new CombinationChoice<T>({members});
     }
 
     public static NONE<T extends Identifiable>(): CombinationChoice<T> {
@@ -40,9 +53,26 @@ class CombinationChoice<T extends Identifiable> {
         return this._members.size;
     }
 
-    get choices(): { key: string, value: Combination<T> }[] {
-        return Array.from(this._members.entries())
-            .map(entry => { return { key: entry[0], value: entry[1] } });
+    public addChoice(combination: Combination<T>, id: string): void {
+        id = id ?? this.generateId(Array.from(this._members.keys()));
+        this._members.set(id, combination);
+    }
+
+    private generateId(assigned: string[]) {
+        let id = 1;
+        let found = false;
+        do {
+            const idString = String(id);
+            if (!assigned.includes(idString)) {
+                found = true;
+                return idString;
+            }
+            id++;
+        } while (!found);
+    }
+
+    get choices(): { id: string, value: Combination<T> }[] {
+        return Array.from(this._members.entries()).map(entry => { return { id: entry[0], value: entry[1] } });
     }
 
     public select(key: string) {
@@ -85,6 +115,25 @@ class CombinationChoice<T extends Identifiable> {
         return Array.from(this._members.values())
             .map(combination => combination.toJson());
     }
+
+    contains(optionId: string) {
+        return this._members.has(optionId);
+    }
+
+    getChoice(optionId: string) {
+        if (!this.contains(optionId)) {
+            throw new Error(`"${optionId}" is not part of of this combination choice. `)
+        }
+        return this._members.get(optionId).clone();
+    }
+
+    set(optionId: string, value: Combination<T>) {
+        this._members.set(optionId, value);
+    }
+
+    delete(optionId: string) {
+        this._members.delete(optionId);
+    }
 }
 
 class Recipe implements Identifiable, Serializable<RecipeJson> {
@@ -98,7 +147,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     private readonly _imageUrl: string;
     private readonly _catalysts: Combination<CraftingComponent>;
     private readonly _essences: Combination<Essence>;
-    private readonly _ingredientOptions: CombinationChoice<CraftingComponent>;
+    private _ingredientOptions: CombinationChoice<CraftingComponent>;
     private readonly _resultOptions: CombinationChoice<CraftingComponent>;
 
     /* ===========================
@@ -233,7 +282,22 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             ingredientGroups: this._ingredientOptions.toJson()
         };
     }
-    
+
+    addIngredientOption(combination: Combination<CraftingComponent>, id?: string) {
+        if (this._ingredientOptions === CombinationChoice.NONE()) {
+            this._ingredientOptions = CombinationChoice.just(combination, id);
+        } else {
+            this._ingredientOptions.addChoice(combination, id);
+        }
+    }
+
+    setIngredientOption(optionId: string, value: Combination<CraftingComponent>) {
+        if (value.isEmpty()) {
+            this._ingredientOptions.delete(optionId);
+        } else {
+            this._ingredientOptions.set(optionId, value);
+        }
+    }
 }
 
 export { Recipe, CombinationChoice, RecipeJson }

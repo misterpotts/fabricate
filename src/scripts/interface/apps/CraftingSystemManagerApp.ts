@@ -173,7 +173,8 @@ class CraftingSystemManagerApp extends FormApplication {
                 if (!recipeToEdit) {
                     throw new Error(`Cannot edit recipe. Recipe with ID "${recipeIdToEdit}" not found. `);
                 }
-                RecipeManagerAppFactory.make(recipeToEdit, this._selectedSystem).render();
+                const recipeManagerApp = await RecipeManagerAppFactory.make(recipeToEdit, this._selectedSystem);
+                recipeManagerApp.render();
                 break;
             case "createRecipe":
                 try {

@@ -104,6 +104,10 @@ class CraftingSystem {
         return this._partDictionary.hasEssence(id);
     }
 
+    public get hasEssences() {
+        return this._partDictionary.hasEssences();
+    }
+
     public async getEssences(): Promise<Essence[]> {
         return await this._partDictionary.getEssences();
     }

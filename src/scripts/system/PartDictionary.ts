@@ -16,6 +16,8 @@ interface PartCache<T, K> extends Serializable<Record<string, K>>{
 
     size: number;
 
+    isEmpty(): boolean;
+
     getAll(): Promise<Map<string, T>>;
 
     update(value: T): Promise<void>;
@@ -283,7 +285,8 @@ class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
         if (!ingredientGroups || ingredientGroups.length === 0) {
             return CombinationChoice.NONE();
         }
-        return new CombinationChoice(ingredientGroups.map(ingredientGroup => combinationFromRecord(ingredientGroup, componentsById)))
+        const members = ingredientGroups.map(ingredientGroup => combinationFromRecord(ingredientGroup, componentsById));
+        return CombinationChoice.between(...members)
     }
 
 }
@@ -344,6 +347,10 @@ class DefaultPartCache<T extends Identifiable & Serializable<K>, K> implements P
         return this._cache.size;
     }
 
+    public isEmpty(): boolean {
+        return this._cache.size === 0;
+    }
+
     public async update(value: T): Promise<void> {
         if (!this._populated) {
             await this.loadAll();
@@ -384,6 +391,10 @@ class PartDictionary {
 
     public hasEssence(id: string): boolean {
         return this._essenceCache.contains(id);
+    }
+
+    public hasEssences(): boolean {
+        return !this._essenceCache.isEmpty();
     }
 
     public hasComponent(id: string): boolean {

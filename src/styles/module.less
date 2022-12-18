@@ -157,141 +157,6 @@
 // NEW UI ELEMENT STYLES
 // ========================================================
 
-.fabricate-component-tile(@tile-size, @info-size) {
-  display: inline-flex;
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-  height: @tile-size;
-  width: @tile-size;
-  margin-right: calc(@tile-size / 6);
-  margin-bottom: calc(@tile-size / 6);
-  image {
-    border-radius: 5px;
-  }
-  .fabricate-component-name {
-    position: absolute;
-    width: @tile-size;
-    z-index: 1;
-    bottom: 0;
-    left: 0;
-    color: var(--color-text-light-1);
-    background: var(--color-border-dark-2);
-    font-size: calc(@tile-size / 8);
-    text-align: center;
-
-    padding: 2px 5px;
-    border-radius: 0 0 5px 5px;
-  }
-  .fabricate-info {
-    width: @info-size;
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    right: 0;
-    margin-right: calc(-1 * @info-size / 2);
-    margin-top: calc(-1 * @info-size / 2);
-    .fabricate-detail, .fabricate-button {
-      display: block;
-      width: @info-size;
-      height: @info-size;
-      color: var(--color-text-light-1);
-      background: var(--color-border-dark-2);
-      border-radius: calc(@info-size / 2);
-      font-size: calc(@info-size / 2);
-      padding-top: calc(@info-size / 5);
-      margin-bottom: calc(@info-size / 10);
-      text-align: center;
-    }
-  }
-}
-
-.fabricate-inline-part-list {
-  display: inline-flex;
-  position: relative;
-  width: 100%;
-}
-
-.fabricate-component-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.fabricate-essence-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  span {
-    display: inline-flex;
-    margin-right: 12px;
-    i {
-      margin-left: 2px;
-    }
-  }
-}
-
-.fabricate-item-table {
-  margin-top: 18px;
-
-  .fabricate-component {
-    .fabricate-component-tile(40px; 20px;);
-  }
-
-  .fabricate-item-table-header {
-    min-height: 28px;
-  }
-
-  .fabricate-item-table-body {
-
-    .fabricate-item-table-row {
-      min-height: 34px;
-
-      td.fabricate-centered {
-        text-align: center;
-      }
-
-      .fabricate-inline-part-list, .fabricate-component-list {
-        margin-top: 10px;
-        justify-content: center;
-
-        .fabricate-no-salvage {
-          margin-top: -10px;
-        }
-      }
-
-      .fabricate-item-image {
-        cursor: pointer;
-        height: 40px;
-        width: 40px;
-
-        img {
-          display: table-cell;
-          vertical-align: middle;
-        }
-      }
-
-      .fabricate-item-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .fabricate-edit-item {
-        display: flex;
-        justify-content: right;
-
-        button {
-          height: 30px;
-          width: 30px;
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
 .fabricate-crafting-system-manager {
 
   aside {
@@ -348,17 +213,6 @@
             text-decoration: underline;
           }
         }
-      }
-
-      .fabricate-drop-zone {
-        text-align: center;
-        height: 68px;
-        margin-bottom: 20px;
-        margin-top: 20px;
-        background: #d1d1d138;
-        padding-top: 26px;
-        border: 1px dashed #7a78788c;
-        border-radius: 3px;
       }
 
       .fabricate-basic-system-details {
@@ -460,7 +314,6 @@
       margin-left: 12px;
       border-bottom: none;
     }
-
   }
 
   .fabricate-component-essence-editor {
@@ -482,5 +335,258 @@
       margin-top: 16px;
     }
   }
+
+}
+/*
+* Target Styles
+*/
+
+@border-grey: #7a78788c;
+@background-grey: #d1d1d138;
+@text-grey: #67676738;
+
+@border-yellow: #B1AB99;
+@background-yellow: #EED916;
+@text-yellow: #4B4737;
+
+.fabricate-component-tile(@tile-size, @info-size) {
+  display: inline-flex;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  height: @tile-size;
+  width: @tile-size;
+  margin-right: calc(@tile-size / 6);
+  margin-bottom: calc(@tile-size / 6);
+  image {
+    border-radius: 5px;
+  }
+  .fabricate-component-name {
+    position: absolute;
+    width: @tile-size;
+    z-index: 1;
+    bottom: 0;
+    left: 0;
+    color: var(--color-text-light-1);
+    background: var(--color-border-dark-2);
+    font-size: calc(@tile-size / 8);
+    text-align: center;
+
+    padding: 2px 5px;
+    border-radius: 0 0 5px 5px;
+  }
+  .fabricate-info {
+    width: @info-size;
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    margin-right: calc(-1 * @info-size / 2);
+    margin-top: calc(-1 * @info-size / 2);
+    .fabricate-detail, .fabricate-button {
+      display: block;
+      width: @info-size;
+      height: @info-size;
+      color: var(--color-text-light-1);
+      background: var(--color-border-dark-2);
+      border-radius: calc(@info-size / 2);
+      font-size: calc(@info-size / 2);
+      padding-top: calc(@info-size / 5);
+      margin-bottom: calc(@info-size / 10);
+      text-align: center;
+    }
+  }
 }
 
+.fabricate-application {
+
+  aside.sidebar {
+    padding: 16px 8px;
+    background: #3c3b39d1;
+
+    .pages-list {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: var(--color-text-light-highlight);
+      font-size: var(--font-size-14);
+      line-height: var(--line-height-12);
+
+      a {
+        display: inline-flex;
+        min-height: 28px;
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+
+  .journal-entry-content {
+    border-radius: 0 !important;
+    padding-left: 5px;
+  }
+
+  .part-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
+
+    .part-image {
+      display: inline-flex;
+      img {
+        height: 64px;
+        width: 64px;
+      }
+    }
+
+    .part-name {
+      display: inline-flex;
+      margin-bottom: 0;
+      margin-left: 12px;
+      border-bottom: none;
+    }
+  }
+
+}
+
+.fabricate-alert {
+  border: 1px solid;
+  border-left: 4px solid;
+  text-align: center;
+
+  &.fabricate-warning {
+    background: @background-yellow;
+    border-color: @border-yellow;
+    color: @text-yellow;
+  }
+}
+
+.fabricate-drop-zone {
+  text-align: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: @background-grey;
+  border: 1px dashed @border-grey;
+  border-radius: 3px;
+  &.fabricate-wide {
+    height: 68px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-top: 26px;
+  }
+}
+
+.fabricate-recipe-ingredients-editor {
+  .fabricate-component {
+    .fabricate-component-tile(64px; 20px;);
+  }
+  .fabricate-recipe-choice {
+    .fabricate-choice-id {
+      margin-bottom: 14px;
+    }
+  }
+  .fabricate-available-components {
+    .fabricate-component-list {
+      margin-top: 10px;
+    }
+  }
+}
+
+.fabricate-inline-part-list {
+  display: inline-flex;
+  position: relative;
+  width: 100%;
+}
+
+.fabricate-component-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fabricate-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: flex-start;
+  label {
+    margin-right: 8px;
+  }
+}
+
+.fabricate-essence-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  span {
+    display: inline-flex;
+    margin-right: 12px;
+    i {
+      margin-left: 2px;
+    }
+  }
+}
+
+.fabricate-item-table {
+  margin-top: 18px;
+
+  .fabricate-component {
+    .fabricate-component-tile(40px; 20px;);
+  }
+
+  .fabricate-item-table-header {
+    min-height: 28px;
+  }
+
+  .fabricate-item-table-body {
+
+    .fabricate-item-table-row {
+      min-height: 34px;
+
+      td.fabricate-centered {
+        text-align: center;
+      }
+
+      .fabricate-inline-part-list, .fabricate-component-list {
+        margin-top: 10px;
+        justify-content: center;
+
+        .fabricate-no-salvage {
+          margin-top: -10px;
+        }
+      }
+
+      .fabricate-item-image {
+        cursor: pointer;
+        height: 40px;
+        width: 40px;
+
+        img {
+          display: table-cell;
+          vertical-align: middle;
+        }
+      }
+
+      .fabricate-item-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .fabricate-edit-item {
+        display: flex;
+        justify-content: right;
+
+        button {
+          height: 30px;
+          width: 30px;
+        }
+
+      }
+
+    }
+
+  }
+
+}

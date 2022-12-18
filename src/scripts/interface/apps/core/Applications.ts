@@ -1,7 +1,7 @@
 import Properties from "../../../Properties";
 import {GameProvider} from "../../../foundry/GameProvider";
 
-interface Click {
+interface ActionData {
     action: string;
     keys: {
         shift: boolean;
@@ -20,14 +20,32 @@ interface ClickHandler<V, M> {
 
 }
 
+interface DropHandler<V, M> {
+
+    handle(dropEvent: any, stateManager: StateManager<V, M>): Promise<M>;
+
+    getDragData(event: DragEvent): object;
+
+}
+
+const getClosestElementDataForKey: (key: string, event: any) => string = (key, event) => {
+    let element = event?.target;
+    let value = element?.dataset[key];
+    while (element && !value) {
+        value = element?.dataset[key];
+        element = element.parentElement;
+    }
+    return value;
+};
+
 class DefaultClickHandler<V, M, S extends StateManager<V, M>> implements ClickHandler<V, M> {
 
     private readonly _dataKeys: string[];
     private readonly _actions: Map<string, ApplicationAction<M>>;
 
     constructor({
-                    dataKeys = [],
-                    actions = new Map()
+        dataKeys = [],
+        actions = new Map()
                 }: {
         dataKeys?: string[];
         actions?: Map<string, ApplicationAction<M>>;
@@ -44,21 +62,8 @@ class DefaultClickHandler<V, M, S extends StateManager<V, M>> implements ClickHa
         return this._dataKeys;
     }
 
-    getClosestElementDataForKey(key: string, event: any): string {
-        let element = event?.target;
-        let value = element?.dataset[key];
-        while (element && !value) {
-            value = element?.dataset[key];
-            element = element.parentElement;
-        }
-        return value;
-    };
-
-    getClickData(event: any): Click {
-        const data = new Map(this._dataKeys.map(key => [key, this.getClosestElementDataForKey(key, event)]));
-        if (event.shiftKey) {
-            data.set("shiftPressed", String(event.shiftKey));
-        }
+    getClickData(event: any): ActionData {
+        const data = new Map(this._dataKeys.map(key => [key, getClosestElementDataForKey(key, event)]));
         return {
             action: data.get("action"),
             data,
@@ -83,6 +88,71 @@ class DefaultClickHandler<V, M, S extends StateManager<V, M>> implements ClickHa
         }
     }
 
+}
+
+class DefaultDropHandler<V, M, S extends StateManager<V, M>> implements DropHandler<V, M> {
+
+    private readonly _actions: Map<string, ApplicationAction<M>>;
+    private readonly _sourceDataKeys: string[];
+    private readonly _targetDataKeys: string[];
+
+    constructor({
+        actions = new Map(),
+        sourceDataKeys = [],
+        targetDataKeys = []
+    }: {
+        actions?: Map<string, ApplicationAction<M>>;
+        sourceDataKeys?: string[];
+        targetDataKeys?: string[];
+    }) {
+        this._actions = actions;
+        this._sourceDataKeys = sourceDataKeys;
+        this._targetDataKeys = [...targetDataKeys, "dropTrigger"];
+    }
+
+    async handle(dropEvent: any, stateManager: S): Promise<M> {
+        const dropData = this.getDropData(dropEvent);
+        if (this._actions.has(dropData.action)) {
+            const model = await this._actions.get(dropData.action)(dropData, stateManager.getModelState());
+            await stateManager.save(model);
+            return stateManager.getModelState();
+        }
+        if (dropData.action) {
+            throw new Error(`Could not determine action for click event ${dropData.action}`);
+        }
+    }
+
+    getDragData(event: DragEvent): object {
+        const data = new Map(this._sourceDataKeys.map(key => [key, getClosestElementDataForKey(key, event)]));
+        return Object.fromEntries(data.entries());
+    }
+
+    private getDropData(dropEvent: any): ActionData {
+        const targetData = new Map(this._targetDataKeys.map(key => [key, getClosestElementDataForKey(key, dropEvent)]));
+        const rawDropData: string = dropEvent.dataTransfer.getData("application/json");
+        const data = new Map<string, string>(targetData);
+        try {
+            const dropData: any = JSON.parse(rawDropData);
+            Object.entries(dropData).forEach(entry => {
+                if (data.has(entry[0])) {
+                    console.warn(`The data key "${entry[0]}" exists in both the source and target. Overwriting source value with target value. `);
+                }
+                data.set(entry[0], <string>entry[1]);
+            });
+        } catch (e: any) {
+            console.error(`Something was dropped onto a Fabricate Drop Zone, but the event data could not be read. Caused by ${{e}}`);
+        }
+        return {
+            action: targetData.get("dropTrigger"),
+            event: dropEvent,
+            data,
+            keys: {
+                shift: dropEvent.shiftKey,
+                alt: dropEvent.altKey,
+                ctrl: dropEvent.ctrlKey,
+            }
+        }
+    }
 }
 
 interface StateManager<V, M> {
@@ -140,25 +210,34 @@ interface SubmissionHandler<F, M> {
 
 }
 
-type ApplicationAction<M> = (click: Click, currentState: M) => Promise<M>;
+type ApplicationAction<M> = (actionData: ActionData, currentState: M) => Promise<M>;
 
 class ApplicationWindow<V, M> extends Application {
 
     private readonly _clickHandler: ClickHandler<V, M>;
+    private readonly _dropHandler: DropHandler<V, M>;
     private readonly _stateManager: StateManager<V, M>;
+    private readonly _searchMappings: Map<string, (value: string, currentState: M) => Promise<void>>;
+    private readonly _searches: Map<string, any> = new Map();
 
     constructor({
-                    clickHandler = new DefaultClickHandler({}),
-                    options = {},
-                    stateManager = NoStateManager.getInstance()
-                }: {
+        clickHandler = new DefaultClickHandler({}),
+        dropHandler = new DefaultDropHandler({}),
+        options = {},
+        stateManager = NoStateManager.getInstance(),
+        searchMappings = new Map()
+    }: {
         clickHandler?: ClickHandler<V, M>;
+        dropHandler?: DropHandler<V, M>;
         options?: Partial<ApplicationOptions>;
         stateManager?: StateManager<V, M>;
+        searchMappings?: Map<string, (value: string, currentState: M) => Promise<void>>;
     }) {
         super(options);
         this._clickHandler = clickHandler;
+        this._dropHandler = dropHandler;
         this._stateManager = stateManager;
+        this._searchMappings = searchMappings;
     }
 
     render(force: boolean = true): void {
@@ -173,12 +252,50 @@ class ApplicationWindow<V, M> extends Application {
         super.activateListeners(html);
         const rootElement = html[0];
         rootElement.addEventListener("click", this.onClick.bind(this));
+        html.find(`input[name="search"]`).each((_index, element) => {
+            element.addEventListener("click", (e: any) => e.preventDefault());
+            element.addEventListener("keyup", this.onSearch.bind(this));
+        });
+    }
+
+    private async onSearch(event: any): Promise<void> {
+        const searchId = getClosestElementDataForKey("searchId", event);
+        if (!this._searchMappings.has(searchId)) {
+            console.error(`A search was triggered on a Fabricate Application window with the search ID ${searchId}, but no handler was registered for it.`);
+        }
+        const searchFunction = this._searchMappings.get(searchId);
+        if (this._searches.has(searchId)) {
+            clearTimeout(this._searches.get(searchId));
+        }
+        const searchText = event.target.value.trim();
+        await searchFunction(searchText, this._stateManager.getModelState());
+        this._searches.set(searchId, setTimeout(() => {
+            this.render(true);
+        }, 1000));
     }
 
     private async onClick(event: any): Promise<any> {
+        if (event.target?.name === "search") {
+            return;
+        }
         await this._clickHandler.handle(event, this._stateManager);
         await this.render(true);
         return;
+    }
+
+    async _onDrop(event: any): Promise<void> {
+        await this._dropHandler.handle(event, this._stateManager);
+        await this.render(true);
+        return;
+    }
+
+    protected _onDragStart(event: DragEvent): void {
+        const dragData = this._dropHandler.getDragData(event);
+        event.dataTransfer.setData("application/json", JSON.stringify(dragData));
+    }
+
+    protected _canDragStart(selector: string): boolean {
+        return super._canDragStart(selector);
     }
 
 }
@@ -354,9 +471,11 @@ export {
     ApplicationAction,
     SubmissionHandler,
     FormError,
-    Click,
+    ActionData,
     ClickHandler,
     DefaultClickHandler,
+    DropHandler,
+    DefaultDropHandler,
     ItemSheetExtension,
     ItemSheetModifier,
     SheetTab

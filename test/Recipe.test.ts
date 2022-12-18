@@ -141,31 +141,31 @@ describe("When selecting ingredients", () => {
             new Unit(testComponentThree, 2)
         ]);
 
+        const optionOneId = "1";
+        const optionTwoId = "2";
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            ingredientOptions: CombinationChoice.between(combinationOne, combinationTwo),
+            ingredientOptions: CombinationChoice.of([optionOneId, combinationOne], [optionTwoId, combinationTwo]),
             resultOptions: CombinationChoice.NONE()
         });
 
         expect(underTest.ingredientOptions.size).toEqual(2);
         expect(underTest.ready()).toEqual(false);
 
-        underTest.selectIngredientCombination(combinationOne.id);
+        underTest.selectIngredientCombination(optionOneId);
         expect(underTest.ready()).toEqual(true);
 
         let selectedIngredients = underTest.getSelectedIngredients();
 
-        expect(selectedIngredients.id).toEqual(combinationOne.id);
         expect(selectedIngredients.equals(combinationOne)).toEqual(true);
         expect(combinationOne.equals(selectedIngredients)).toEqual(true);
 
-        underTest.selectIngredientCombination(combinationTwo.id);
+        underTest.selectIngredientCombination(optionTwoId);
         expect(underTest.ready()).toEqual(true);
 
         selectedIngredients = underTest.getSelectedIngredients();
 
-        expect(selectedIngredients.id).toEqual(combinationTwo.id);
         expect(selectedIngredients.equals(combinationTwo)).toEqual(true);
         expect(combinationTwo.equals(selectedIngredients)).toEqual(true);
     });
@@ -195,13 +195,11 @@ describe("When selecting results", () => {
         });
 
         const selectedResults = underTest.getSelectedResults();
-        expect(selectedResults.id).toEqual(singletonResult.id);
         expect(selectedResults.size()).toEqual(4);
         expect(selectedResults.amountFor(testComponentFive.id)).toEqual(3);
         expect(selectedResults.amountFor(testComponentOne.id)).toEqual(1);
 
         const selectedIngredients = underTest.getSelectedIngredients();
-        expect(selectedIngredients.id).toEqual(singletonIngredient.id);
         expect(selectedIngredients.size()).toEqual(2);
         expect(selectedIngredients.amountFor(testComponentFour.id)).toEqual(2);
 
@@ -246,20 +244,22 @@ describe("When selecting results", () => {
             new Unit(testComponentThree, 2)
         ]);
 
+        const optionOneId = "1";
+        const optionTwoId = "2";
         const underTest = new Recipe({
             id,
             name: "Test Recipe",
-            resultOptions: CombinationChoice.between(combinationOne, combinationTwo),
+            resultOptions: CombinationChoice.of([optionOneId, combinationOne], [optionTwoId, combinationTwo]),
             ingredientOptions: CombinationChoice.NONE()
         });
 
-        underTest.selectResultCombination(combinationOne.id);
+        underTest.selectResultCombination(optionOneId);
         let selectedResults = underTest.getSelectedResults();
-        expect(selectedResults.id).toEqual(combinationOne.id);
+        expect(selectedResults).toEqual(combinationOne);
 
-        underTest.selectResultCombination(combinationTwo.id);
+        underTest.selectResultCombination(optionTwoId);
         selectedResults = underTest.getSelectedResults();
-        expect(selectedResults.id).toEqual(combinationTwo.id);
+        expect(selectedResults).toEqual(combinationTwo);
 
     });
 

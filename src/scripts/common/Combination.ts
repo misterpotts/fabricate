@@ -1,4 +1,4 @@
-import {HashcodeIdentityProvider, Identifiable, IdentityProvider} from "./Identity";
+import {Identifiable} from "./Identity";
 
 class StringIdentity implements Identifiable {
 
@@ -71,10 +71,9 @@ class Unit<T extends Identifiable> {
 
 }
 
-class Combination<T extends Identifiable> implements Identifiable {
+class Combination<T extends Identifiable> {
 
     private readonly _amounts: Map<string, Unit<T>>;
-    private readonly _identityProvider: IdentityProvider<T> = new HashcodeIdentityProvider<T>();
 
     private constructor(amounts: Map<string, Unit<T>>) {
         this._amounts = amounts;
@@ -111,10 +110,6 @@ class Combination<T extends Identifiable> implements Identifiable {
 
     public static ofUnit<T extends Identifiable>(unit: Unit<T>): Combination<T> {
         return new Combination<T>(new Map([[unit.part.id, unit]]));
-    }
-
-    get id(): string {
-        return String(this._identityProvider.getForCombination(this));
     }
 
     public just(member: T): Combination<T> {

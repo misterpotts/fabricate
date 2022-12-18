@@ -5,7 +5,7 @@ import {CraftingComponent, CraftingComponentSummary} from "../../common/Crafting
 import {Essence} from "../../common/Essence";
 import {Combination, Unit} from "../../common/Combination";
 import FabricateApplication from "../FabricateApplication";
-import {ApplicationWindow, Click, DefaultClickHandler, StateManager} from "./core/Applications";
+import {ApplicationWindow, ActionData, DefaultClickHandler, StateManager} from "./core/Applications";
 
 interface ComponentManagerView {
     system: {
@@ -184,7 +184,7 @@ class ComponentManagerAppFactory {
             clickHandler: new DefaultClickHandler({
                 dataKeys: ["componentId", "essenceId", "salvageId"],
                 actions: new Map([
-                    ["editComponentEssence", async (click: Click, currentState: ComponentManagerModel) => {
+                    ["editComponentEssence", async (click: ActionData, currentState: ComponentManagerModel) => {
                         const essenceId = click.data.get("essenceId");
                         if (click.keys.shift) {
                             return currentState.decrementEssence(essenceId);
@@ -192,7 +192,7 @@ class ComponentManagerAppFactory {
                             return currentState.incrementEssence(essenceId);
                         }
                     }],
-                    ["editComponentSalvage", async (click: Click, currentState: ComponentManagerModel) => {
+                    ["editComponentSalvage", async (click: ActionData, currentState: ComponentManagerModel) => {
                         const salvageId = click.data.get("salvageId");
                         if (click.keys.shift) {
                             return currentState.decrementSalvage(salvageId);
