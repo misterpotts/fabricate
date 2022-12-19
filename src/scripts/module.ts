@@ -76,14 +76,6 @@ Hooks.once('init', async () => {
     });
 });
 
-// Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData: any) => {
-//     CraftingTab.bind(sheetData, sheetHtml, eventData);
-// });
-//
-// Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any) => {
-//     ItemRecipeTab.bind(sheetData, sheetHtml);
-// });
-
 Hooks.once('ready', () => {
 
     Promise.all([
@@ -109,6 +101,17 @@ Hooks.once('ready', () => {
         return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
     });
 
+    Handlebars.registerHelper ('truncate', function (string, maxLength) {
+        if (string?.length <= maxLength) {
+            return new Handlebars.SafeString(string);
+        }
+        const lastWhitespaceIndex = string.lastIndexOf(" ");
+        const lastWordTerminationIndex = lastWhitespaceIndex >= 0 ? lastWhitespaceIndex : string.length;
+        if (lastWordTerminationIndex > maxLength) {
+            return new Handlebars.SafeString(`${string.substring(0, maxLength)}...`);
+        }
+        return new Handlebars.SafeString(`${string.substring(0, lastWordTerminationIndex)}...`);
+    });
 
 });
 

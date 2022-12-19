@@ -12,7 +12,7 @@ beforeEach(() => {
 test('Should create an empty Combination',() => {
     const underTest: Combination<CraftingComponent> = Combination.EMPTY();
 
-    expect(underTest.size()).toBe(0);
+    expect(underTest.size).toBe(0);
     expect(underTest.isEmpty()).toBe(true);
     expect(underTest.has(testComponentOne)).toBe(false);
     expect(underTest.has(new CraftingComponent({
@@ -29,7 +29,7 @@ test('Should create an empty Combination',() => {
 test('Should create a Combination from a single Unit',() => {
     const underTest: Combination<CraftingComponent> = Combination.ofUnit(new Unit(testComponentOne, 1));
 
-    expect(underTest.size()).toBe(1);
+    expect(underTest.size).toBe(1);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
     let equivalentComponent = new CraftingComponent({
@@ -61,7 +61,7 @@ test('Should create a Combination from a several Units',() => {
         new Unit(testComponentThree, 3)
     ]);
 
-    expect(underTest.size()).toBe(7);
+    expect(underTest.size).toBe(7);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.amountFor(testComponentOne.id)).toBe(2);
     expect(underTest.amountFor(testComponentTwo.id)).toBe(2);
@@ -111,7 +111,7 @@ test('Should create a Combination from combining existing Combinations',() => {
     ]);
 
     const testResultOne: Combination<CraftingComponent> = sourceA.combineWith(sourceB);
-    expect(testResultOne.size()).toBe(15);
+    expect(testResultOne.size).toBe(15);
     expect(testResultOne.isEmpty()).toBe(false);
     expect(testResultOne.has(testComponentOne)).toBe(true);
     expect(testResultOne.has(testComponentTwo)).toBe(true);
@@ -126,7 +126,7 @@ test('Should create a Combination from combining existing Combinations',() => {
     ]);
 
     const testResultTwo: Combination<CraftingComponent> = testResultOne.combineWith(sourceC);
-    expect(testResultTwo.size()).toBe(17);
+    expect(testResultTwo.size).toBe(17);
     expect(testResultTwo.isEmpty()).toBe(false);
     expect(testResultTwo.has(testComponentOne)).toBe(true);
     expect(testResultTwo.has(testComponentTwo)).toBe(true);
@@ -144,7 +144,7 @@ test('Should add one Combination to another', () => {
     ]);
 
     const underTest: Combination<CraftingComponent> = source.add(new Unit(testComponentOne, 10));
-    expect(underTest.size()).toBe(84);
+    expect(underTest.size).toBe(84);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
     expect(underTest.has(testComponentTwo)).toBe(true);
@@ -197,7 +197,7 @@ test('Should subtract one Combination from another', () => {
     ]);
 
     const testResultOne: Combination<CraftingComponent> = largeCombination.subtract(smallCombination);
-    expect(testResultOne.size()).toBe(16);
+    expect(testResultOne.size).toBe(16);
     expect(testResultOne.isEmpty()).toBe(false);
     expect(testResultOne.has(testComponentOne)).toBe(true);
     expect(testResultOne.has(testComponentTwo)).toBe(true);
@@ -214,11 +214,11 @@ test('Should subtract one Combination from another', () => {
     ]);
 
     const testResultTwo: Combination<CraftingComponent> = largeCombination.subtract(largestCombination);
-    expect(testResultTwo.size()).toBe(0);
+    expect(testResultTwo.size).toBe(0);
     expect(testResultTwo.isEmpty()).toBe(true);
 
     const testResultThree: Combination<CraftingComponent> = smallCombination.subtract(Combination.EMPTY());
-    expect(testResultThree.size()).toBe(14);
+    expect(testResultThree.size).toBe(14);
     expect(testResultThree.isEmpty()).toBe(false);
     expect(testResultThree.has(testComponentOne)).toBe(true);
     expect(testResultThree.has(testComponentTwo)).toBe(true);
@@ -236,7 +236,7 @@ test('Should multiply a Combination by a factor', () => {
     ]);
 
     const underTest: Combination<CraftingComponent> = sourceCombination.multiply(3);
-    expect(underTest.size()).toBe(57);
+    expect(underTest.size).toBe(57);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
     expect(underTest.has(testComponentTwo)).toBe(true);

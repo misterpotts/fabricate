@@ -120,7 +120,7 @@ class Combination<T extends Identifiable> {
         return new Map(this._amounts);
     }
 
-    public size(): number {
+    get size(): number {
         let size = 0;
         this.amounts.forEach((unit: Unit<T>) => {
             size += unit.quantity;
@@ -149,7 +149,7 @@ class Combination<T extends Identifiable> {
     }
 
     public isEmpty(): boolean {
-        return this.size() === 0;
+        return this.size === 0;
     }
 
     public isIn(other: Combination<T>): boolean {
@@ -360,7 +360,7 @@ class Combination<T extends Identifiable> {
         if (!other) {
             return false;
         }
-        if (other.size() !== this.size()) {
+        if (other.size !== this.size) {
             return false;
         }
         return other.isIn(this) && this.isIn(other);

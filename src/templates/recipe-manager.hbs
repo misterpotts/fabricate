@@ -16,7 +16,8 @@
                 <i class="fa-solid fa-mortar-pestle"></i> {{localize "fabricate.RecipeManagerApp.essences.title"}}
             </a>
             <a class="item" data-tab="results">
-                <i class="fa-solid fa-arrow-up-from-bracket"></i> {{localize "fabricate.RecipeManagerApp.results.title"}}
+                <i class="fa-solid fa-arrow-up-from-bracket"></i> {{localize
+                    "fabricate.RecipeManagerApp.results.title"}}
             </a>
         </nav>
 
@@ -34,7 +35,7 @@
         <div class="content">
 
             <div class="tab" data-tab="summary" data-group="primary-tabs">
-                Summary
+                This readonly view of the complete recipe has not been implemented yet
             </div>
 
             <div class="tab" data-tab="ingredients" data-group="primary-tabs">
@@ -44,11 +45,12 @@
                     <div class="fabricate-recipe-ingredient-options">
                         {{#each recipe.ingredients.choices}}
                             <div class="fabricate-recipe-choice">
-                                <div class="fabricate-choice-id"><i class="fa-solid fa-passport"></i> Option {{id}}</div>
+                                <div class="fabricate-choice-id"><i class="fa-solid fa-book"></i> Option {{id}}</div>
                                 <div class="fabricate-component-list">
                                     {{#each value.units}}
                                         <div class="fabricate-component"
-                                             data-component-id="{{part.id}}" data-option-id="{{../id}}" data-tooltip="{{part.name}}"
+                                             data-component-id="{{part.id}}" data-option-id="{{../id}}"
+                                             data-tooltip="{{part.name}}"
                                              data-action="editRecipeIngredient">
                                             <img src="{{part.imageUrl}}">
                                             <div class="fabricate-info">
@@ -56,7 +58,8 @@
                                             </div>
                                         </div>
                                     {{/each}}
-                                    <div class="fabricate-component fabricate-drop-zone" data-option-id="{{id}}" data-drop-trigger="addComponentToIngredientOption">
+                                    <div class="fabricate-component fabricate-drop-zone" data-option-id="{{id}}"
+                                         data-drop-trigger="addComponentToIngredientOption">
                                         <i class="fa-solid fa-plus"></i>
                                     </div>
                                 </div>
@@ -75,14 +78,19 @@
                     <div class="fabricate-available-components">
                         <div class="fabricate-search">
                             <label for="search"><i class="fas fa-search"></i></label>
-                            <input type="text" name="search" value="{{search.ingredients}}" autocomplete="off" data-search-id="availableIngredients" placeholder="{{localize "fabricate.RecipeManagerApp.ingredients.search"}}">
+                            <input type="text" name="search" value="{{search.components}}" autocomplete="off"
+                                   data-search-id="availableComponents"
+                                   placeholder="{{localize "fabricate.RecipeManagerApp.search"}}">
+                            <a class="fabricate-clear-search" data-action="clearComponentSearch"><i
+                                    class="fa-regular fa-circle-xmark"></i></a>
                         </div>
                         <div class="fabricate-component-list">
                             {{#each system.components}}
                                 <div class="fabricate-component fabricate-draggable" draggable="true"
                                      data-part-id="{{id}}"
                                      data-tooltip="{{name}}">
-                                    <img src="{{imageUrl}}">
+                                    <img src="{{imageUrl}}" draggable="false">
+                                    <div class="fabricate-component-name">{{truncate name 10}}</div>
                                 </div>
                             {{/each}}
                         </div>
@@ -96,17 +104,39 @@
                     <p>{{localize "fabricate.RecipeManagerApp.catalysts.instructions"}}</p>
                     <div class="fabricate-component-list">
                         {{#each recipe.catalysts.units}}
-                            <div class="fabricate-component fabricate-component-catalyst-choice" data-tooltip="{{part.name}}"
+                            <div class="fabricate-component fabricate-component-catalyst-choice"
+                                 data-tooltip="{{part.name}}"
                                  data-component-id="{{part.id}}" data-action="editRecipeCatalyst">
                                 <img src="{{part.imageUrl}}">
                                 <div class="fabricate-info">
                                     <span class="fabricate-detail">{{quantity}}</span>
                                 </div>
                             </div>
+                        {{else}}
+                            <div class="fabricate-component fabricate-empty" style="cursor: pointer;">
+                                <i class="fa-solid fa-circle-question"></i>
+                            </div>
                         {{/each}}
-                        <div class="fabricate-add-catalyst">
-                            <i class="fa-solid fa-square-plus"></i>
-                            <p>{{localize "fabricate.RecipeManagerApp.catalysts.add"}}</p>
+                    </div>
+                    <p>{{localize "fabricate.RecipeManagerApp.catalysts.add"}}</p>
+                    <div class="fabricate-search">
+                        <label for="search"><i class="fas fa-search"></i></label>
+                        <input type="text" name="search" value="{{search.components}}" autocomplete="off"
+                               data-search-id="availableComponents"
+                               placeholder="{{localize "fabricate.RecipeManagerApp.search"}}">
+                        <a class="fabricate-clear-search" data-action="clearComponentSearch">
+                            <i class="fa-regular fa-circle-xmark"></i>
+                        </a>
+                    </div>
+                    <div class="fabricate-available-components">
+                        <div class="fabricate-component-list">
+                            {{#each system.components}}
+                                <div class="fabricate-component" data-component-id="{{id}}" draggable="false"
+                                     data-tooltip="{{name}}" data-action="addRecipeCatalyst">
+                                    <img src="{{imageUrl}}" draggable="false">
+                                    <div class="fabricate-component-name" draggable="false">{{truncate name 10}}</div>
+                                </div>
+                            {{/each}}
                         </div>
                     </div>
                 </div>
@@ -117,9 +147,10 @@
                     {{#if system.hasEssences}}
                         <h3>{{localize "fabricate.RecipeManagerApp.essences.title"}}</h3>
                         <p>{{localize "fabricate.RecipeManagerApp.essences.instructions"}}</p>
-                        <div class="fabricate-component-list">
+                        <div class="fabricate-essence-buttons">
                             {{#each recipe.essences}}
-                                <div class="fabricate-essence" data-tooltip="{{part.tooltip}}" data-essence-id="{{part.id}}"
+                                <div class="fabricate-essence-button" data-tooltip="{{part.tooltip}}"
+                                     data-essence-id="{{part.id}}"
                                      data-action="editRecipeEssence">
                                     <span>{{quantity}} <i class="{{part.iconCode}}"></i> {{part.name}}</span>
                                 </div>
@@ -138,28 +169,56 @@
                     <p>{{localize "fabricate.RecipeManagerApp.results.instructions"}}</p>
                     <div class="fabricate-recipe-result-options">
                         {{#each recipe.results.choices}}
-                            <div class="fabricate-component-list">
-                                {{#each value.units}}
-                                    <div class="fabricate-component fabricate-component-salvage-choice"
-                                         data-component-id="{{part.id}}" data-option-id="{{../id}}"
-                                         data-tooltip="{{part.name}}" data-action="editRecipeResult">
-                                        <img src="{{part.imageUrl}}">
-                                        <div class="fabricate-info">
-                                            <span class="fabricate-detail">{{quantity}}</span>
+                            <div class="fabricate-recipe-choice">
+                                <div class="fabricate-choice-id"><i class="fa-solid fa-book"></i> Option {{id}}</div>
+                                <div class="fabricate-component-list">
+                                    {{#each value.units}}
+                                        <div class="fabricate-component"
+                                             data-component-id="{{part.id}}" data-option-id="{{../id}}"
+                                             data-tooltip="{{part.name}}"
+                                             data-action="editRecipeResult">
+                                            <img src="{{part.imageUrl}}">
+                                            <div class="fabricate-info">
+                                                <span class="fabricate-detail">{{quantity}}</span>
+                                            </div>
                                         </div>
+                                    {{/each}}
+                                    <div class="fabricate-component fabricate-drop-zone" data-option-id="{{id}}"
+                                         data-drop-trigger="addComponentToResultOption">
+                                        <i class="fa-solid fa-plus"></i>
                                     </div>
-                                {{/each}}
+                                </div>
                             </div>
                         {{else}}
-                            <div class="fabricate-recipe-no-ingredients">
+                            <div class="fabricate-alert fabricate-warning">
                                 <p>{{localize "fabricate.RecipeManagerApp.results.noneSet"}}</p>
                             </div>
                         {{/each}}
-                        <div class="fabricate-add-recipe-result-option">
-                            <div class="fabricate-add-combination" data-drop-trigger="addResultOption">
-                                <i class="fa-solid fa-plus"></i>
-                            </div>
-                            <p>{{localize "fabricate.RecipeManagerApp.results.addCombinationOption"}}</p>
+                    </div>
+                    <div class="fabricate-add-recipe-result-option">
+                        <div class="fabricate-drop-zone fabricate-wide" data-drop-trigger="addResultOption">
+                            <i class="fa-solid fa-plus"></i> {{localize
+                                "fabricate.RecipeManagerApp.results.addCombinationOption"}}
+                        </div>
+                    </div>
+                    <div class="fabricate-available-components">
+                        <div class="fabricate-search">
+                            <label for="search"><i class="fas fa-search"></i></label>
+                            <input type="text" name="search" value="{{search.components}}" autocomplete="off"
+                                   data-search-id="availableComponents"
+                                   placeholder="{{localize "fabricate.RecipeManagerApp.search"}}">
+                            <a class="fabricate-clear-search" data-action="clearComponentSearch"><i
+                                    class="fa-regular fa-circle-xmark"></i></a>
+                        </div>
+                        <div class="fabricate-component-list">
+                            {{#each system.components}}
+                                <div class="fabricate-component fabricate-draggable" draggable="true"
+                                     data-part-id="{{id}}"
+                                     data-tooltip="{{name}}">
+                                    <img src="{{imageUrl}}" draggable="false">
+                                    <div class="fabricate-component-name">{{truncate name 10}}</div>
+                                </div>
+                            {{/each}}
                         </div>
                     </div>
                 </div>

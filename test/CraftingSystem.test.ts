@@ -174,9 +174,9 @@ describe('Crafting ', () => {
 
             expect(craftingResult).not.toBeNull();
             expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
-            expect(craftingResult.created.size()).toEqual(2);
+            expect(craftingResult.created.size).toEqual(2);
             expect(craftingResult.created.amountFor(testComponentTwo.id)).toEqual(2);
-            expect(craftingResult.consumed.size()).toEqual(1);
+            expect(craftingResult.consumed.size).toEqual(1);
             expect(craftingResult.consumed.amountFor(testComponentFour.id)).toEqual(1);
 
         });
@@ -193,9 +193,9 @@ describe('Crafting ', () => {
 
             expect(craftingResult).not.toBeNull();
             expect(craftingResult instanceof NoCraftingResult).toEqual(true);
-            expect(craftingResult.created.size()).toEqual(0);
+            expect(craftingResult.created.size).toEqual(0);
             expect(craftingResult.created.amountFor(testComponentFive.id)).toEqual(0);
-            expect(craftingResult.consumed.size()).toEqual(0);
+            expect(craftingResult.consumed.size).toEqual(0);
             expect(craftingResult.consumed.amountFor(testComponentOne.id)).toEqual(0);
             expect(craftingResult.consumed.amountFor(testComponentThree.id)).toEqual(0);
 

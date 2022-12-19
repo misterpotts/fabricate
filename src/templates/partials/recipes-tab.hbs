@@ -30,7 +30,7 @@
                     {{#if hasResults}}
                         <div class="fabricate-options-list">
                             {{#each resultOptions.choices}}
-                                <i class="fa-solid fa-passport" data-tooltip="Group ID: {{id}}"></i>
+                                <i class="fa-solid fa-cubes" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.optionTooltip" size=value.size}}"></i>
                                 {{#each units}}
                                     <div class="fabricate-component-list">
                                         <div class="fabricate-component" data-tooltip="{{part.name}}">
@@ -51,7 +51,7 @@
                     {{#if hasIngredients}}
                         <div class="fabricate-options-list">
                             {{#each ingredientOptions.choices}}
-                                <i class="fa-solid fa-passport" data-tooltip="Group ID: {{id}}"></i>
+                                <i class="fa-solid fa-cubes" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.optionTooltip" size=value.size}}"></i>
                                 {{#each units}}
                                     <div class="fabricate-component-list">
                                         <div class="fabricate-component" data-tooltip="{{part.name}}">
@@ -71,7 +71,7 @@
                 <td>
                     {{#if requiresCatalysts}}
                         {{#each catalysts.units}}
-                            <div class="fabricate-component-list">
+                            <div class="fabricate-inline-part-list">
                                 <div class="fabricate-component" data-tooltip="{{part.name}}">
                                     <img src="{{part.imageUrl}}">
                                     <div class="fabricate-info">
@@ -81,20 +81,22 @@
                             </div>
                         {{/each}}
                     {{else}}
-                        <i class="fa-solid fa-ellipsis" data-tooltip="No catalysts"></i>
+                        <div class="fabricate-no-salvage">
+                            <i class="fa-solid fa-ellipsis" data-tooltip="No catalysts"></i>
+                        </div>
                     {{/if}}
                 </td>
                 <td>
                     {{#if requiresEssences}}
-                        {{#each essences}}
                         <div class="fabricate-essence-list">
-                            <span class="fabricate-essence-preview">
-                                {{quantity}} <i class="{{iconCode}}" data-tooltip="{{tooltip}}"></i>
-                            </span>
+                            {{#each essences}}
+                                <span class="fabricate-essence-preview">
+                                    {{quantity}} <i class="{{iconCode}}" data-tooltip="{{tooltip}}"></i>
+                                </span>
+                            {{/each}}
+                            {{else}}
+                                <i class="fa-solid fa-ellipsis" data-tooltip="No essences required"></i>
                         </div>
-                        {{/each}}
-                    {{else}}
-                        <i class="fa-solid fa-ellipsis" data-tooltip="No essences required"></i>
                     {{/if}}
                 </td>
                 <td>

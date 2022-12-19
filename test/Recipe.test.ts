@@ -27,7 +27,7 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with essences only", () => {
         const underTest = testRecipeThree;
 
-        expect(underTest.essences.size()).toEqual(4);
+        expect(underTest.essences.size).toEqual(4);
         expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
         expect(underTest.essences.amountFor(elementalEarth.id)).toEqual(3);
 
@@ -42,9 +42,9 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with essences and catalysts", () => {
         const underTest = testRecipeFive;
 
-        expect(underTest.catalysts.size()).toEqual(1);
+        expect(underTest.catalysts.size).toEqual(1);
         expect(underTest.catalysts.amountFor(testComponentFour.id)).toEqual(1);
-        expect(underTest.essences.size()).toEqual(2);
+        expect(underTest.essences.size).toEqual(2);
         expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
         expect(underTest.essences.amountFor(elementalWater.id)).toEqual(1);
 
@@ -75,7 +75,7 @@ describe("When creating a recipe", () => {
 
         expect(underTest.ingredientOptions.size).toEqual(1);
         expect(underTest.resultOptions.size).toEqual(1);
-        expect(underTest.catalysts.size()).toEqual(1);
+        expect(underTest.catalysts.size).toEqual(1);
 
         expect(underTest.hasOptions()).toEqual(false);
         expect(underTest.ready()).toEqual(true);
@@ -90,7 +90,7 @@ describe("When creating a recipe", () => {
 
         expect(underTest.ingredientOptions.size).toEqual(2);
         expect(underTest.resultOptions.size).toEqual(2);
-        expect(underTest.essences.size()).toEqual(4);
+        expect(underTest.essences.size).toEqual(4);
 
         expect(underTest.hasOptions()).toEqual(true);
         expect(underTest.ready()).toEqual(false);
@@ -195,12 +195,12 @@ describe("When selecting results", () => {
         });
 
         const selectedResults = underTest.getSelectedResults();
-        expect(selectedResults.size()).toEqual(4);
+        expect(selectedResults.size).toEqual(4);
         expect(selectedResults.amountFor(testComponentFive.id)).toEqual(3);
         expect(selectedResults.amountFor(testComponentOne.id)).toEqual(1);
 
         const selectedIngredients = underTest.getSelectedIngredients();
-        expect(selectedIngredients.size()).toEqual(2);
+        expect(selectedIngredients.size).toEqual(2);
         expect(selectedIngredients.amountFor(testComponentFour.id)).toEqual(2);
 
     });

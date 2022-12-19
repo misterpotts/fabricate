@@ -21,6 +21,7 @@ interface RecipeManagerView {
         name: string;
         imageUrl: string;
         essences: Unit<Essence>[];
+        catalysts: Combination<CraftingComponent>;
         ingredients: CombinationChoice<CraftingComponent>;
         results: CombinationChoice<CraftingComponent>;
     };
@@ -31,13 +32,13 @@ interface RecipeManagerView {
         hasEssences: boolean;
     };
     search: {
-        ingredients: string;
+        components: string;
     };
 
 }
 
 class RecipeManagerModel {
-    private _ingredientSearch: string = "";
+    private _componentSearch: string = "";
 
     private readonly _system: CraftingSystem;
     private readonly _recipe: Recipe;
@@ -77,12 +78,12 @@ class RecipeManagerModel {
         return Array.from(this._availableComponents.values());
     }
 
-    get ingredientSearch(): string {
-        return this._ingredientSearch;
+    get componentSearch(): string {
+        return this._componentSearch;
     }
 
-    set ingredientSearch(value: string) {
-        this._ingredientSearch = value;
+    set componentSearch(value: string) {
+        this._componentSearch = value;
     }
 
     addIngredientOption(componentId: string): RecipeManagerModel {
@@ -134,6 +135,100 @@ class RecipeManagerModel {
         return this;
     }
 
+    addResultOption(componentId: string): RecipeManagerModel {
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`The Component with ID ${componentId} is not part of this Crafting System. `);
+        }
+        const component = this._availableComponents.get(componentId);
+        this._recipe.addResultOption(Combination.of(component, 1));
+        return this;
+    }
+
+    async decrementResultChoiceComponent(optionId: string, componentId: string): Promise<RecipeManagerModel> {
+        if (!this._recipe.resultOptions.contains(optionId)) {
+            throw new Error(`The option with ID ${optionId} is not part of this Recipe. `);
+        }
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to remove as a result of this Recipe. `);
+        }
+        const combination = this._recipe.resultOptions.getChoice(optionId);
+        const component = this._availableComponents.get(componentId);
+        const updatedCombination = combination.minus(new Unit(component, 1));
+        this._recipe.setResultOption(optionId, updatedCombination);
+        return this;
+    }
+
+    async incrementResultChoiceComponent(optionId: string, componentId: string): Promise<RecipeManagerModel> {
+        if (!this._recipe.resultOptions.contains(optionId)) {
+            throw new Error(`The option with ID ${optionId} is not part of this Recipe. `);
+        }
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to add as a result of this Recipe. `);
+        }
+        const combination = this._recipe.resultOptions.getChoice(optionId);
+        const component = this._availableComponents.get(componentId);
+        this._recipe.setResultOption(optionId, combination.add(new Unit(component, 1)));
+        return this;
+    }
+
+    addComponentToResultOption(optionId: string, componentId: string) {
+        if (!this._recipe.resultOptions.contains(optionId)) {
+            throw new Error(`The option with ID ${optionId} is not part of this Recipe. `);
+        }
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to add as a result to this combination option. `);
+        }
+        const combination = this._recipe.resultOptions.getChoice(optionId);
+        const component = this._availableComponents.get(componentId);
+        this._recipe.setResultOption(optionId, combination.add(new Unit(component, 1)));
+        return this;
+    }
+
+    addCatalyst(componentId: string) {
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to add as a catalyst tp this Recipe. `);
+        }
+        const component = this._availableComponents.get(componentId);
+        this._recipe.catalysts = this._recipe.catalysts.add(new Unit(component, 1));
+        return this;
+    }
+
+    decrementCatalyst(componentId: string): RecipeManagerModel {
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to remove as a catalyst for this Recipe. `);
+        }
+        const component = this._availableComponents.get(componentId);
+        this._recipe.catalysts = this._recipe.catalysts.minus(new Unit(component, 1));
+        return this;
+    }
+
+    incrementCatalyst(componentId: string): RecipeManagerModel {
+        if (!this._availableComponents.has(componentId)) {
+            throw new Error(`No Component was found with the ID "${componentId}" to add as a catalyst for this Recipe. `);
+        }
+        const component = this._availableComponents.get(componentId);
+        this._recipe.catalysts = this._recipe.catalysts.add(new Unit(component, 1));
+        return this;
+    }
+
+    decrementEssence(essenceId: string) {
+        if (!this._availableEssences.has(essenceId)) {
+            throw new Error(`No Essence was found with the ID "${essenceId}" to remove from this Recipe. `);
+        }
+        const essence = this._availableEssences.get(essenceId);
+        this._recipe.essences = this._recipe.essences.minus(new Unit(essence, 1));
+        return this;
+    }
+
+    incrementEssence(essenceId: string) {
+        if (!this._availableEssences.has(essenceId)) {
+            throw new Error(`No Essence was found with the ID "${essenceId}" to add to this Recipe. `);
+        }
+        const essence = this._availableEssences.get(essenceId);
+        this._recipe.essences = this._recipe.essences.add(new Unit(essence, 1));
+        return this;
+    }
+
 }
 
 class RecipeStateManager implements StateManager<RecipeManagerView, RecipeManagerModel> {
@@ -154,18 +249,19 @@ class RecipeStateManager implements StateManager<RecipeManagerView, RecipeManage
                 id: this._model.system.id,
                 hasEssences: this._model.system.hasEssences,
                 essences: this._model.availableEssences,
-                components: this.filterComponents(this._model.availableComponents, this._model.ingredientSearch)
+                components: this.filterComponents(this._model.availableComponents, this._model.componentSearch)
             },
             recipe: {
                 id: this._model.recipe.id,
                 essences: this.prepareEssenceData(this._model.availableEssences, this._model.recipe.essences),
+                catalysts: this._model.recipe.catalysts,
                 imageUrl: this._model.recipe.imageUrl,
                 name: this._model.recipe.name,
                 ingredients: this._model.recipe.ingredientOptions,
                 results: this._model.recipe.resultOptions
             },
             search: {
-                ingredients: this._model.ingredientSearch
+                components: this._model.componentSearch
             }
         };
     }
@@ -204,8 +300,8 @@ class RecipeManagerAppFactory {
                 availableComponents: await system.getComponents()
             })),
             searchMappings: new Map([
-                ["availableIngredients", async (text: string, currentState: RecipeManagerModel) => {
-                    currentState.ingredientSearch = text;
+                ["availableComponents", async (text: string, currentState: RecipeManagerModel) => {
+                    currentState.componentSearch = text;
                 }]
             ]),
             dropHandler: new DefaultDropHandler({
@@ -219,6 +315,14 @@ class RecipeManagerAppFactory {
                         const optionId = actionData.data.get("optionId");
                         const componentId = actionData.data.get("partId");
                         return currentState.addComponentToIngredientOption(optionId, componentId);
+                    }],
+                    ["addResultOption", async (actionData: ActionData, currentState: RecipeManagerModel) => {
+                        return currentState.addResultOption(actionData.data.get("partId"));
+                    }],
+                    ["addComponentToResultOption", async (actionData: ActionData, currentState: RecipeManagerModel) => {
+                        const optionId = actionData.data.get("optionId");
+                        const componentId = actionData.data.get("partId");
+                        return currentState.addComponentToResultOption(optionId, componentId);
                     }]
                 ])
             }),
@@ -232,6 +336,39 @@ class RecipeManagerAppFactory {
                             return currentState.decrementIngredientChoiceComponent(optionId, componentId);
                         } else {
                             return currentState.incrementIngredientChoiceComponent(optionId, componentId);
+                        }
+                    }],
+                    ["editRecipeResult", async (actionData: ActionData, currentState: RecipeManagerModel) => {
+                        const componentId = actionData.data.get("componentId");
+                        const optionId = actionData.data.get("optionId");
+                        if (actionData.keys.shift) {
+                            return currentState.decrementResultChoiceComponent(optionId, componentId);
+                        } else {
+                            return currentState.incrementResultChoiceComponent(optionId, componentId);
+                        }
+                    }],
+                    ["clearComponentSearch", async (_actionData: ActionData, currentState: RecipeManagerModel) => {
+                        currentState.componentSearch = "";
+                        return currentState;
+                    }],
+                    ["addRecipeCatalyst", async (actionData: ActionData, currentState: RecipeManagerModel) => {
+                        const componentId = actionData.data.get("componentId");
+                        return currentState.addCatalyst(componentId);
+                    }],
+                    ["editRecipeCatalyst", async (actionData: ActionData, currentState: RecipeManagerModel) => {
+                        const componentId = actionData.data.get("componentId");
+                        if (actionData.keys.shift) {
+                            return currentState.decrementCatalyst(componentId);
+                        } else {
+                            return currentState.incrementCatalyst(componentId);
+                        }
+                    }],
+                    ["editRecipeEssence", async (actionData: ActionData, currentState: RecipeManagerModel) => {
+                        const essenceId = actionData.data.get("essenceId");
+                        if (actionData.keys.shift) {
+                            return currentState.decrementEssence(essenceId);
+                        } else {
+                            return currentState.incrementEssence(essenceId);
                         }
                     }]
                 ])

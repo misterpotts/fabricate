@@ -241,9 +241,9 @@ describe("integration test", () => {
         expect(componentOneResult.id).toEqual(componentOneItemUuid);
         expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
         expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).imageUrl);
-        expect(componentOneResult.salvage.size()).toEqual(2);
+        expect(componentOneResult.salvage.size).toEqual(2);
         expect(componentOneResult.salvage.amountFor(componentTwoItemUuid)).toEqual(2);
-        expect(componentOneResult.essences.size()).toEqual(3);
+        expect(componentOneResult.essences.size).toEqual(3);
         expect(componentOneResult.essences.amountFor(essenceOneId)).toEqual(2);
         expect(componentOneResult.essences.amountFor(essenceTwoId)).toEqual(1);
 
@@ -259,7 +259,7 @@ describe("integration test", () => {
         expect(recipeOneResult.imageUrl).toEqual(itemData.get(recipeOneItemUuid).imageUrl);
         expect(recipeOneResult.essences.amountFor(essenceOneId)).toEqual(1);
         expect(recipeOneResult.essences.amountFor(essenceTwoId)).toEqual(2);
-        expect(recipeOneResult.catalysts.size()).toEqual(0);
+        expect(recipeOneResult.catalysts.size).toEqual(0);
         expect(recipeOneResult.ingredientOptions.size).toEqual(0);
         expect(recipeOneResult.resultOptions.size).toEqual(1);
 

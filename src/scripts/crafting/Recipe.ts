@@ -145,10 +145,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private readonly _catalysts: Combination<CraftingComponent>;
-    private readonly _essences: Combination<Essence>;
+    private _catalysts: Combination<CraftingComponent>;
+    private _essences: Combination<Essence>;
     private _ingredientOptions: CombinationChoice<CraftingComponent>;
-    private readonly _resultOptions: CombinationChoice<CraftingComponent>;
+    private _resultOptions: CombinationChoice<CraftingComponent>;
 
     /* ===========================
     *  Constructor
@@ -204,12 +204,20 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._essences;
     }
 
+    set essences(value: Combination<Essence>) {
+        this._essences = value;
+    }
+
     get resultOptions(): CombinationChoice<CraftingComponent> {
         return this._resultOptions;
     }
 
     get catalysts(): Combination<CraftingComponent> {
         return this._catalysts;
+    }
+
+    set catalysts(value: Combination<CraftingComponent>) {
+        this._catalysts = value;
     }
 
     /* ===========================
@@ -291,6 +299,14 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         }
     }
 
+    addResultOption(combination: Combination<CraftingComponent>, id?: string) {
+        if (this._resultOptions === CombinationChoice.NONE()) {
+            this._resultOptions = CombinationChoice.just(combination, id);
+        } else {
+            this._resultOptions.addChoice(combination, id);
+        }
+    }
+
     setIngredientOption(optionId: string, value: Combination<CraftingComponent>) {
         if (value.isEmpty()) {
             this._ingredientOptions.delete(optionId);
@@ -298,6 +314,15 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             this._ingredientOptions.set(optionId, value);
         }
     }
+
+    setResultOption(optionId: string, value: Combination<CraftingComponent>) {
+        if (value.isEmpty()) {
+            this._resultOptions.delete(optionId);
+        } else {
+            this._resultOptions.set(optionId, value);
+        }
+    }
+
 }
 
 export { Recipe, CombinationChoice, RecipeJson }

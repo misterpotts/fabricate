@@ -338,19 +338,35 @@
 
 }
 /*
+* ========================================================================================
 * Target Styles
+* ========================================================================================
 */
 
 @border-grey: #7a78788c;
 @background-grey: #d1d1d138;
 @text-grey: #67676738;
 
-@border-yellow: #B1AB99;
-@background-yellow: #EED916;
-@text-yellow: #4B4737;
+@border-yellow: #A68F28;
+@background-yellow: #F2D03A;
+@text-yellow: #665818;
+
+@border-blue: #5081CC;
+@background-blue: #5E9AF2;
+@text-blue: #284166;
+
+@border-green: #45A84C;
+@background-green: #63F26D;
+@text-green: #2A662E;
+
+@border-red: #A8362F;
+@background-red: #F24D44;
+@text-red: #66201D;
 
 .fabricate-component-tile(@tile-size, @info-size) {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   cursor: pointer;
   padding: 0;
@@ -364,15 +380,18 @@
   .fabricate-component-name {
     position: absolute;
     width: @tile-size;
+    height: calc(@tile-size / 4);
     z-index: 1;
     bottom: 0;
     left: 0;
     color: var(--color-text-light-1);
     background: var(--color-border-dark-2);
-    font-size: calc(@tile-size / 8);
+    font-size: calc(@tile-size / 7);
     text-align: center;
-
-    padding: 2px 5px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 0 0 5px 5px;
   }
   .fabricate-info {
@@ -455,12 +474,40 @@
   border: 1px solid;
   border-left: 4px solid;
   text-align: center;
+  background: @background-grey;
+  border-color: @border-grey;
+  color: @text-grey;
 
   &.fabricate-warning {
     background: @background-yellow;
     border-color: @border-yellow;
     color: @text-yellow;
   }
+
+  &.fabricate-info {
+    background: @background-blue;
+    border-color: @border-blue;
+    color: @text-blue;
+  }
+
+  &.fabricate-success {
+    background: @background-green;
+    border-color: @border-green;
+    color: @text-green;
+  }
+  &.fabricate-error {
+    background: @background-red;
+    border-color: @border-red;
+    color: @text-red;
+  }
+
+}
+
+.fabricate-component.fabricate-empty {
+  background: @background-grey;
+  color: @text-grey;
+  border: 1px dashed @border-grey;
+  cursor: default;
 }
 
 .fabricate-drop-zone {
@@ -479,9 +526,11 @@
   }
 }
 
-.fabricate-recipe-ingredients-editor {
-  .fabricate-component {
-    .fabricate-component-tile(64px; 20px;);
+.fabricate-application.recipe-manager {
+  .fabricate-recipe-ingredient-options, .fabricate-recipe-result-options, .fabricate-recipe-catalyst-editor {
+    .fabricate-component {
+      .fabricate-component-tile(64px; 20px;);
+    }
   }
   .fabricate-recipe-choice {
     .fabricate-choice-id {
@@ -489,6 +538,9 @@
     }
   }
   .fabricate-available-components {
+    .fabricate-component {
+      .fabricate-component-tile(84px; 20px;);
+    }
     .fabricate-component-list {
       margin-top: 10px;
     }
@@ -501,18 +553,44 @@
   width: 100%;
 }
 
-.fabricate-component-list {
+.fabricate-component-list, .fabricate-essence-buttons, .fabricate-options-list {
   display: flex;
   flex-wrap: wrap;
 }
 
+.fabricate-options-list {
+  align-items: center;
+  justify-content: center;
+}
+
+.fabricate-essence-button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c7c1b5;
+  padding: 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
 .fabricate-search {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
   align-content: flex-start;
   label {
     margin-right: 8px;
+  }
+  .fabricate-clear-search {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 0;
+    margin-right: 7px;
+    margin-top: 5px;
   }
 }
 

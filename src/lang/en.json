@@ -21,9 +21,9 @@
         "instructions": "The recipe requires these essences in addition to any named ingredients and catalysts. Left click on an essence to increase the required amount. Shift click while doing so to decrease it.",
         "notAvailable": "This crafting system has no Essences specified."
       },
+      "search": "Search available components",
       "ingredients": {
         "title": "Ingredients",
-        "search": "Search ingredients",
         "instructions": "The recipe requires these ingredients in addition to any essences and catalysts. A recipe can have more than one combination of ingredients to choose from. Drag and drop a component onto an empty result combination option to create a new one, or drop a component into an existing combination. Left click on a component to increase the number required in each option. Shift click while doing so to decrease it. ",
         "addCombinationOption": "Drag and drop a component here to create a new option for Recipe ingredients. ",
         "noneSet": "This Recipe has no named ingredients. "
@@ -37,7 +37,8 @@
       "catalysts": {
         "title": "Catalysts",
         "instructions": "The recipe requires these catalysts to be present in order to be crafted. Catalysts are not consumed by crafting.",
-        "add": "Drag and drop a component here to make it a catalyst. You can also left click existing catalysts to increase the required quantity, or shift click while doing so to decrease it."
+        "add": "Left click a component below to add it as a catalyst for this Recipe. You can left click existing catalysts to increase the required number, or shift click while doing so to decrease it. ",
+        "noneSet": "This recipe has no catalysts. "
       }
     },
     "EditEssenceDialog": {
@@ -127,6 +128,9 @@
         "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
       },
       "tabs": {
+        "recipes": {
+          "optionTooltip": "{size} Components"
+        },
         "essences": {
           "description": "Essences are a quality of a component. They define something that the component has, not something that it is. Components might have multiple Essences in different quantities, all of which you can define for your system. Not every crafting system needs essences. However, if you do want to add them to components, you'll need to define them here first.",
           "create": "Add a new Essence",
