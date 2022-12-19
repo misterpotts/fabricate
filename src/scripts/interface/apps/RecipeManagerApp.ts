@@ -327,7 +327,7 @@ class RecipeManagerAppFactory {
                 ])
             }),
             clickHandler: new DefaultClickHandler({
-                dataKeys: ["componentId", "optionId"],
+                dataKeys: ["componentId", "optionId", "essenceId"],
                 actions: new Map([
                     ["editRecipeIngredient", async (actionData: ActionData, currentState: RecipeManagerModel) => {
                         const componentId = actionData.data.get("componentId");

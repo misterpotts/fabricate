@@ -35,7 +35,89 @@
         <div class="content">
 
             <div class="tab" data-tab="summary" data-group="primary-tabs">
-                This readonly view of the complete recipe has not been implemented yet
+                <div class="fabricate-recipe-summary">
+                    <h2>{{localize "fabricate.RecipeManagerApp.summary.title"}}</h2>
+                    <p>{{localize "fabricate.RecipeManagerApp.summary.instructions"}}</p>
+
+                    <h3>{{localize "fabricate.RecipeManagerApp.ingredients.title"}}</h3>
+                    <div class="fabricate-recipe-ingredient-summary">
+                        {{#each recipe.ingredients.choices}}
+                            <div class="fabricate-recipe-choice">
+                                <div class="fabricate-choice-id">
+                                    <i class="fa-solid fa-book"></i> Option {{id}}
+                                </div>
+                                <div class="fabricate-component-list">
+                                    {{#each value.units}}
+                                        <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                            <img src="{{part.imageUrl}}">
+                                            <div class="fabricate-info">
+                                                <span class="fabricate-detail">{{quantity}}</span>
+                                            </div>
+                                        </div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="fabricate-alert fabricate-warning">
+                                <p>{{localize "fabricate.RecipeManagerApp.ingredients.noneSet"}}</p>
+                            </div>
+                        {{/each}}
+                    </div>
+
+                    <h3>{{localize "fabricate.RecipeManagerApp.catalysts.title"}}</h3>
+                    <div class="fabricate-recipe-catalyst-summary">
+                        <div class="fabricate-component-list">
+                            {{#each recipe.catalysts.units}}
+                                <div class="fabricate-component fabricate-component-catalyst-choice" data-tooltip="{{part.name}}">
+                                    <img src="{{part.imageUrl}}">
+                                    <div class="fabricate-info">
+                                        <span class="fabricate-detail">{{quantity}}</span>
+                                    </div>
+                                </div>
+                            {{else}}
+                                <div class="fabricate-component fabricate-empty" style="cursor: default;">
+                                    <i class="fa-solid fa-circle-question"></i>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+
+                    <h3>{{localize "fabricate.RecipeManagerApp.essences.title"}}</h3>
+                    <div class="fabricate-recipe-essence-summary">
+                        <div class="fabricate-essence-list">
+                            {{#each recipe.essences}}
+                                <div class="fabricate-essence-preview">
+                                    <span>{{quantity}} <i class="{{part.iconCode}}"></i> {{part.name}}</span>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+
+                    <h3>{{localize "fabricate.RecipeManagerApp.results.title"}}</h3>
+                    <div class="fabricate-recipe-result-summary">
+                        {{#each recipe.results.choices}}
+                            <div class="fabricate-recipe-choice">
+                                <div class="fabricate-choice-id">
+                                    <i class="fa-solid fa-book"></i> Option {{id}}
+                                </div>
+                                <div class="fabricate-component-list">
+                                    {{#each value.units}}
+                                        <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                            <img src="{{part.imageUrl}}">
+                                            <div class="fabricate-info">
+                                                <span class="fabricate-detail">{{quantity}}</span>
+                                            </div>
+                                        </div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="fabricate-alert fabricate-warning">
+                                <p>{{localize "fabricate.RecipeManagerApp.recipes.noneSet"}}</p>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
             </div>
 
             <div class="tab" data-tab="ingredients" data-group="primary-tabs">
@@ -113,7 +195,7 @@
                                 </div>
                             </div>
                         {{else}}
-                            <div class="fabricate-component fabricate-empty" style="cursor: pointer;">
+                            <div class="fabricate-component fabricate-empty" style="cursor: default;">
                                 <i class="fa-solid fa-circle-question"></i>
                             </div>
                         {{/each}}

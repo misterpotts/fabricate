@@ -14,7 +14,8 @@
     "RecipeManagerApp": {
       "title": "Fabricate | Recipe",
       "summary": {
-        "title": "Summary"
+        "title": "Summary",
+        "instructions": "This Recipe has the following features. Use the left navigation menu to edit each aspect of the Recipe respectively. "
       },
       "essences": {
         "title": "Essences",

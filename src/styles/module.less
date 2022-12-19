@@ -527,9 +527,32 @@
 }
 
 .fabricate-application.recipe-manager {
-  .fabricate-recipe-ingredient-options, .fabricate-recipe-result-options, .fabricate-recipe-catalyst-editor {
+  .fabricate-recipe-ingredient-options,
+  .fabricate-recipe-result-options,
+  .fabricate-recipe-catalyst-editor {
     .fabricate-component {
       .fabricate-component-tile(64px; 20px;);
+    }
+  }
+  .fabricate-recipe-ingredient-summary,
+  .fabricate-recipe-result-summary,
+  .fabricate-recipe-catalyst-summary {
+    .fabricate-component {
+      .fabricate-component-tile(40px; 20px;);
+    }
+  }
+  .fabricate-recipe-essence-summary {
+    .fabricate-essence-list {
+      justify-content: flex-start;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      .fabricate-essence-preview {
+        justify-content: center;
+        justify-items: center;
+        i {
+          margin-right: 4px;
+        }
+      }
     }
   }
   .fabricate-recipe-choice {
@@ -561,6 +584,10 @@
 .fabricate-options-list {
   align-items: center;
   justify-content: center;
+}
+
+.fabricate-option {
+  margin-right: 5px;
 }
 
 .fabricate-essence-button {

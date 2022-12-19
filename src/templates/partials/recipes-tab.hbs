@@ -30,7 +30,7 @@
                     {{#if hasResults}}
                         <div class="fabricate-options-list">
                             {{#each resultOptions.choices}}
-                                <i class="fa-solid fa-cubes" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.optionTooltip" size=value.size}}"></i>
+                                <i class="fa-solid fa-cubes fabricate-option" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.optionTooltip" size=value.size}}"></i>
                                 {{#each units}}
                                     <div class="fabricate-component-list">
                                         <div class="fabricate-component" data-tooltip="{{part.name}}">
@@ -51,7 +51,7 @@
                     {{#if hasIngredients}}
                         <div class="fabricate-options-list">
                             {{#each ingredientOptions.choices}}
-                                <i class="fa-solid fa-cubes" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.optionTooltip" size=value.size}}"></i>
+                                <i class="fa-solid fa-cubes fabricate-option" data-tooltip="{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.optionTooltip" size=value.size}}"></i>
                                 {{#each units}}
                                     <div class="fabricate-component-list">
                                         <div class="fabricate-component" data-tooltip="{{part.name}}">
@@ -69,35 +69,33 @@
                     {{/if}}
                 </td>
                 <td>
-                    {{#if requiresCatalysts}}
+                    <div class="fabricate-inline-part-list">
                         {{#each catalysts.units}}
-                            <div class="fabricate-inline-part-list">
                                 <div class="fabricate-component" data-tooltip="{{part.name}}">
                                     <img src="{{part.imageUrl}}">
                                     <div class="fabricate-info">
                                         <span class="fabricate-detail">{{quantity}}</span>
                                     </div>
                                 </div>
-                            </div>
-                        {{/each}}
-                    {{else}}
+                        {{else}}
                         <div class="fabricate-no-salvage">
                             <i class="fa-solid fa-ellipsis" data-tooltip="No catalysts"></i>
                         </div>
-                    {{/if}}
+                        {{/each}}
+                    </div>
                 </td>
                 <td>
-                    {{#if requiresEssences}}
-                        <div class="fabricate-essence-list">
-                            {{#each essences}}
-                                <span class="fabricate-essence-preview">
-                                    {{quantity}} <i class="{{iconCode}}" data-tooltip="{{tooltip}}"></i>
-                                </span>
-                            {{/each}}
-                            {{else}}
+                    <div class="fabricate-essence-list">
+                        {{#each essences.units}}
+                            <span class="fabricate-essence-preview">
+                                {{quantity}} <i class="{{part.iconCode}}" data-tooltip="{{part.tooltip}}"></i>
+                            </span>
+                        {{else}}
+                            <span class="fabricate-essence-preview">
                                 <i class="fa-solid fa-ellipsis" data-tooltip="No essences required"></i>
-                        </div>
-                    {{/if}}
+                            </span>
+                        {{/each}}
+                    </div>
                 </td>
                 <td>
                     <div class="fabricate-edit-item">
