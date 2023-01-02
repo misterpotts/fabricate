@@ -157,145 +157,12 @@
 // NEW UI ELEMENT STYLES
 // ========================================================
 
-.fabricate-component-tile(@tile-size, @info-size) {
-  display: inline-flex;
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-  height: @tile-size;
-  width: @tile-size;
-  margin-right: calc(@tile-size / 6);
-  margin-bottom: calc(@tile-size / 6);
-  image {
-    border-radius: 5px;
-  }
-  .fabricate-component-name {
-    position: absolute;
-    width: @tile-size;
-    z-index: 1;
-    bottom: 0;
-    left: 0;
-    color: var(--color-text-light-1);
-    background: var(--color-border-dark-2);
-    font-size: calc(@tile-size / 8);
-    text-align: center;
-
-    padding: 2px 5px;
-    border-radius: 0 0 5px 5px;
-  }
-  .fabricate-info {
-    width: @info-size;
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    right: 0;
-    margin-right: calc(-1 * @info-size / 2);
-    margin-top: calc(-1 * @info-size / 2);
-    .fabricate-detail, .fabricate-button {
-      display: block;
-      width: @info-size;
-      height: @info-size;
-      color: var(--color-text-light-1);
-      background: var(--color-border-dark-2);
-      border-radius: calc(@info-size / 2);
-      font-size: calc(@info-size / 2);
-      padding-top: calc(@info-size / 5);
-      margin-bottom: calc(@info-size / 10);
-      text-align: center;
-    }
-  }
-}
-
-.fabricate-inline-part-list {
-  display: inline-flex;
-  position: relative;
-  width: 100%;
-}
-
-.fabricate-component-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.fabricate-essence-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  span {
-    display: inline-flex;
-    margin-right: 12px;
-    i {
-      margin-left: 2px;
-    }
-  }
-}
-
-.fabricate-item-table {
-  margin-top: 18px;
-
-  .fabricate-component {
-    .fabricate-component-tile(40px; 20px;);
-  }
-
-  .fabricate-item-table-header {
-    min-height: 28px;
-  }
-
-  .fabricate-item-table-body {
-
-    .fabricate-item-table-row {
-      min-height: 34px;
-
-      td.fabricate-centered {
-        text-align: center;
-      }
-
-      .fabricate-inline-part-list, .fabricate-component-list {
-        margin-top: 10px;
-        justify-content: center;
-
-        .fabricate-no-salvage {
-          margin-top: -10px;
-        }
-      }
-
-      .fabricate-item-image {
-        cursor: pointer;
-        height: 40px;
-        width: 40px;
-
-        img {
-          display: table-cell;
-          vertical-align: middle;
-        }
-      }
-
-      .fabricate-item-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .fabricate-edit-item {
-        display: flex;
-        justify-content: right;
-
-        button {
-          height: 30px;
-          width: 30px;
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
 .fabricate-crafting-system-manager {
 
   aside {
     padding: 0 3px;
+    background: #3c3b39;
+    border-radius: 5px;
   }
 
   .fabricate-crafting-system-editor {
@@ -346,17 +213,6 @@
             text-decoration: underline;
           }
         }
-      }
-
-      .fabricate-drop-zone {
-        text-align: center;
-        height: 68px;
-        margin-bottom: 20px;
-        margin-top: 20px;
-        background: #d1d1d138;
-        padding-top: 26px;
-        border: 1px dashed #7a78788c;
-        border-radius: 3px;
       }
 
       .fabricate-basic-system-details {
@@ -437,21 +293,30 @@
     .fabricate-component-tile(64px; 20px;);
   }
 
-  .fabricate-component-image {
+  .fabricate-component-manager-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
 
-    img {
-      height: 126px;
-      width: 126px;
+    .fabricate-component-image {
+      display: inline-flex;
+      img {
+        height: 64px;
+        width: 64px;
+      }
+
     }
 
+    .fabricate-component-name {
+      display: inline-flex;
+      margin-bottom: 0;
+      margin-left: 12px;
+      border-bottom: none;
+    }
   }
 
   .fabricate-component-essence-editor {
-    position: absolute;
-    top: 74px;
-    left: 0;
-    padding-left: 140px;
-    width: 492px;
 
     .fabricate-essence {
       cursor: pointer;
@@ -459,6 +324,7 @@
       padding: 8px;
       border-radius: 4px;
       margin-right: 8px;
+      margin-bottom: 8px;
     }
   }
 
@@ -469,5 +335,363 @@
       margin-top: 16px;
     }
   }
+
+}
+/*
+* ========================================================================================
+* Target Styles
+* ========================================================================================
+*/
+
+@border-grey: #7a78788c;
+@background-grey: #d1d1d138;
+@text-grey: #67676738;
+
+@border-yellow: #A68F28;
+@background-yellow: #F2D03A;
+@text-yellow: #665818;
+
+@border-blue: #5081CC;
+@background-blue: #5E9AF2;
+@text-blue: #284166;
+
+@border-green: #45A84C;
+@background-green: #63F26D;
+@text-green: #2A662E;
+
+@border-red: #A8362F;
+@background-red: #F24D44;
+@text-red: #66201D;
+
+.fabricate-component-tile(@tile-size, @info-size) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  height: @tile-size;
+  width: @tile-size;
+  margin-right: calc(@tile-size / 6);
+  margin-bottom: calc(@tile-size / 6);
+  image {
+    border-radius: 5px;
+  }
+  .fabricate-component-name {
+    position: absolute;
+    width: @tile-size;
+    height: calc(@tile-size / 4);
+    z-index: 1;
+    bottom: 0;
+    left: 0;
+    color: var(--color-text-light-1);
+    background: var(--color-border-dark-2);
+    font-size: calc(@tile-size / 7);
+    text-align: center;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 5px 5px;
+  }
+  .fabricate-info {
+    width: @info-size;
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    margin-right: calc(-1 * @info-size / 2);
+    margin-top: calc(-1 * @info-size / 2);
+    .fabricate-detail, .fabricate-button {
+      display: block;
+      width: @info-size;
+      height: @info-size;
+      color: var(--color-text-light-1);
+      background: var(--color-border-dark-2);
+      border-radius: calc(@info-size / 2);
+      font-size: calc(@info-size / 2);
+      padding-top: calc(@info-size / 5);
+      margin-bottom: calc(@info-size / 10);
+      text-align: center;
+    }
+  }
 }
 
+.fabricate-application {
+
+  aside.sidebar {
+    padding: 16px 8px;
+    background: #3c3b39d1;
+
+    .pages-list {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: var(--color-text-light-highlight);
+      font-size: var(--font-size-14);
+      line-height: var(--line-height-12);
+
+      a {
+        display: inline-flex;
+        min-height: 28px;
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+
+  .journal-entry-content {
+    border-radius: 0 !important;
+    padding-left: 5px;
+  }
+
+  .part-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
+
+    .part-image {
+      display: inline-flex;
+      img {
+        height: 64px;
+        width: 64px;
+      }
+    }
+
+    .part-name {
+      display: inline-flex;
+      margin-bottom: 0;
+      margin-left: 12px;
+      border-bottom: none;
+    }
+  }
+
+}
+
+.fabricate-alert {
+  border: 1px solid;
+  border-left: 4px solid;
+  text-align: center;
+  background: @background-grey;
+  border-color: @border-grey;
+  color: @text-grey;
+
+  &.fabricate-warning {
+    background: @background-yellow;
+    border-color: @border-yellow;
+    color: @text-yellow;
+  }
+
+  &.fabricate-info {
+    background: @background-blue;
+    border-color: @border-blue;
+    color: @text-blue;
+  }
+
+  &.fabricate-success {
+    background: @background-green;
+    border-color: @border-green;
+    color: @text-green;
+  }
+  &.fabricate-error {
+    background: @background-red;
+    border-color: @border-red;
+    color: @text-red;
+  }
+
+}
+
+.fabricate-component.fabricate-empty {
+  background: @background-grey;
+  color: @text-grey;
+  border: 1px dashed @border-grey;
+  cursor: default;
+}
+
+.fabricate-drop-zone {
+  text-align: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: @background-grey;
+  border: 1px dashed @border-grey;
+  border-radius: 3px;
+  &.fabricate-wide {
+    height: 68px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-top: 26px;
+  }
+}
+
+.fabricate-application.recipe-manager {
+  .fabricate-recipe-ingredient-options,
+  .fabricate-recipe-result-options,
+  .fabricate-recipe-catalyst-editor {
+    .fabricate-component {
+      .fabricate-component-tile(64px; 20px;);
+    }
+  }
+  .fabricate-recipe-ingredient-summary,
+  .fabricate-recipe-result-summary,
+  .fabricate-recipe-catalyst-summary {
+    .fabricate-component {
+      .fabricate-component-tile(40px; 20px;);
+    }
+  }
+  .fabricate-recipe-essence-summary {
+    .fabricate-essence-list {
+      justify-content: flex-start;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      .fabricate-essence-preview {
+        justify-content: center;
+        justify-items: center;
+        i {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+  .fabricate-recipe-choice {
+    .fabricate-choice-id {
+      margin-bottom: 14px;
+    }
+  }
+  .fabricate-available-components {
+    .fabricate-component {
+      .fabricate-component-tile(84px; 20px;);
+    }
+    .fabricate-component-list {
+      margin-top: 10px;
+    }
+  }
+}
+
+.fabricate-inline-part-list {
+  display: inline-flex;
+  position: relative;
+  width: 100%;
+}
+
+.fabricate-component-list, .fabricate-essence-buttons, .fabricate-options-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fabricate-options-list {
+  align-items: center;
+  justify-content: center;
+}
+
+.fabricate-option {
+  margin-right: 5px;
+}
+
+.fabricate-essence-button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c7c1b5;
+  padding: 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.fabricate-search {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: flex-start;
+  label {
+    margin-right: 8px;
+  }
+  .fabricate-clear-search {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 0;
+    margin-right: 7px;
+    margin-top: 5px;
+  }
+}
+
+.fabricate-essence-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  span {
+    display: inline-flex;
+    margin-right: 12px;
+    i {
+      margin-left: 2px;
+    }
+  }
+}
+
+.fabricate-item-table {
+  margin-top: 18px;
+
+  .fabricate-component {
+    .fabricate-component-tile(40px; 20px;);
+  }
+
+  .fabricate-item-table-header {
+    min-height: 28px;
+  }
+
+  .fabricate-item-table-body {
+
+    .fabricate-item-table-row {
+      min-height: 34px;
+
+      td.fabricate-centered {
+        text-align: center;
+      }
+
+      .fabricate-inline-part-list, .fabricate-component-list {
+        margin-top: 10px;
+        justify-content: center;
+
+        .fabricate-no-salvage {
+          margin-top: -10px;
+        }
+      }
+
+      .fabricate-item-image {
+        cursor: pointer;
+        height: 40px;
+        width: 40px;
+
+        img {
+          display: table-cell;
+          vertical-align: middle;
+        }
+      }
+
+      .fabricate-item-name {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .fabricate-edit-item {
+        display: flex;
+        justify-content: right;
+
+        button {
+          height: 30px;
+          width: 30px;
+        }
+
+      }
+
+    }
+
+  }
+
+}

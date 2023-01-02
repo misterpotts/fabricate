@@ -7,8 +7,8 @@ import {
 import {CraftingCheck} from "../check/CraftingCheck";
 import {Recipe} from "../Recipe";
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
 import {CraftingCheckResult} from "../check/CraftingCheckResult";
+import {CraftingComponent} from "../../common/CraftingComponent";
 
 interface CraftingAttempt {
 
@@ -18,19 +18,20 @@ interface CraftingAttempt {
 
 export {CraftingAttempt}
 
-interface WastefulCraftingAttemptConfig {
-    recipe: Recipe;
-    components: Combination<CraftingComponent>;
-}
-
 class WastefulCraftingAttempt implements CraftingAttempt {
 
     private readonly _recipe: Recipe;
     private readonly _components: Combination<CraftingComponent>;
 
-    constructor(config: WastefulCraftingAttemptConfig) {
-        this._recipe = config.recipe;
-        this._components = config.components;
+    constructor({
+        recipe,
+        components
+    }: {
+        recipe: Recipe;
+        components: Combination<CraftingComponent>;
+    }) {
+        this._recipe = recipe;
+        this._components = components;
     }
 
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult {
@@ -54,19 +55,20 @@ class WastefulCraftingAttempt implements CraftingAttempt {
 
 export {WastefulCraftingAttempt};
 
-interface GenerousCraftingAttemptConfig {
-    recipe: Recipe;
-    components: Combination<CraftingComponent>;
-}
-
 class GenerousCraftingAttempt implements CraftingAttempt {
 
     private readonly _recipe: Recipe;
     private readonly _components: Combination<CraftingComponent>;
 
-    constructor(config: GenerousCraftingAttemptConfig) {
-        this._recipe = config.recipe;
-        this._components = config.components;
+    constructor({
+        recipe,
+        components
+    }: {
+        recipe: Recipe;
+        components: Combination<CraftingComponent>;
+    }) {
+        this._recipe = recipe;
+        this._components = components;
     }
 
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult {
@@ -90,19 +92,20 @@ class GenerousCraftingAttempt implements CraftingAttempt {
 
 export {GenerousCraftingAttempt};
 
-interface AbandonedCraftingAttemptConfig {
-    recipe: Recipe;
-    reason: string;
-}
-
 class AbandonedCraftingAttempt implements CraftingAttempt {
 
-    private readonly _reason: string;
     private readonly _recipe: Recipe;
 
-    constructor(config: AbandonedCraftingAttemptConfig) {
-        this._reason = config.reason;
-        this._recipe = config.recipe;
+    constructor({
+        recipe
+    }: {
+        recipe: Recipe;
+    }) {
+        this._recipe = recipe;
+    }
+
+    get recipe(): Recipe {
+        return this._recipe;
     }
 
     /**
@@ -111,16 +114,9 @@ class AbandonedCraftingAttempt implements CraftingAttempt {
      * */
     // @ts-ignore
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult {
-        return new NoCraftingResult({
-            detail: this.getResultDetail()
-        });
-    }
-
-    private getResultDetail(): string {
-        return `Unable to craft recipe ${this._recipe.id}. ${this._reason}. `; // todo Recipes can have names passed in on construction from the document in the ui
+        return new NoCraftingResult();
     }
 
 }
 
 export {AbandonedCraftingAttempt};
-export {AbandonedCraftingAttemptConfig};

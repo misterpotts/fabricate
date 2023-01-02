@@ -11,7 +11,7 @@ import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {AlchemyAttemptFactory, DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemyFormula} from "../crafting/alchemy/AlchemyFormula";
-import {PartDictionary, PartDictionaryJson, PartDictionaryLoader} from "./PartDictionary";
+import {PartDictionary, PartDictionaryJson} from "./PartDictionary";
 import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystemDetails";
 
 interface CraftingSystemJson {
@@ -32,7 +32,6 @@ class CraftingSystem {
     private readonly _locked: boolean;
 
     private readonly _partDictionary: PartDictionary;
-    private readonly _partDictionaryLoader: PartDictionaryLoader;
 
     private readonly _recipeCraftingCheck: CraftingCheck<Actor>;
     private readonly _alchemyCraftingCheck: CraftingCheck<Actor>;
@@ -51,8 +50,7 @@ class CraftingSystem {
         alchemyAttemptFactory = new DisabledAlchemyAttemptFactory(),
         craftingAttemptFactory,
         enabled,
-        partDictionary,
-        partDictionaryLoader
+        partDictionary
     }: {
         id: string;
         details: CraftingSystemDetails,
@@ -65,7 +63,6 @@ class CraftingSystem {
         alchemyAttemptFactory?: AlchemyAttemptFactory;
         craftingAttemptFactory: CraftingAttemptFactory;
         partDictionary: PartDictionary;
-        partDictionaryLoader: PartDictionaryLoader;
     }) {
         this._id = id;
         this._details = details;
@@ -76,7 +73,6 @@ class CraftingSystem {
         this._alchemyAttemptFactory = alchemyAttemptFactory;
         this._enabled = enabled;
         this._partDictionary = partDictionary;
-        this._partDictionaryLoader = partDictionaryLoader;
     }
 
     public setEnabled(value: boolean): CraftingSystem {
@@ -100,16 +96,72 @@ class CraftingSystem {
         return this._details;
     }
 
-    get essences(): Essence[] {
-        return this._partDictionary.getEssences();
+    public hasPart(itemUuid: string): boolean {
+        return this._partDictionary.hasComponent(itemUuid) || this._partDictionary.hasRecipe(itemUuid);
     }
 
-    get components(): CraftingComponent[] {
-        return this._partDictionary.getComponents();
+    public hasEssence(id: string) {
+        return this._partDictionary.hasEssence(id);
     }
 
-    get recipes(): Recipe[] {
-        return this._partDictionary.getRecipes();
+    public get hasEssences() {
+        return this._partDictionary.hasEssences();
+    }
+
+    public async getEssences(): Promise<Essence[]> {
+        return await this._partDictionary.getEssences();
+    }
+
+    public async getEssenceById(id: string): Promise<Essence> {
+        return await this._partDictionary.getEssence(id);
+    }
+
+    public deleteEssenceById(id: string): Promise<void> {
+        return this._partDictionary.deleteEssenceById(id);
+    }
+
+    public async editEssence(essence: Essence): Promise<void> {
+        return this._partDictionary.insertEssence(essence);
+    }
+
+    public async getComponents(): Promise<CraftingComponent[]> {
+        return await this._partDictionary.getComponents();
+    }
+
+    public hasComponent(id: string) {
+        return this._partDictionary.hasComponent(id);
+    }
+
+    public async getComponentById(id: string): Promise<CraftingComponent> {
+        return await this._partDictionary.getComponent(id);
+    }
+
+    public deleteComponentById(id: string): Promise<void> {
+        return this._partDictionary.deleteComponentById(id);
+    }
+
+    public async editComponent(component: CraftingComponent): Promise<void> {
+        return this._partDictionary.insertComponent(component);
+    }
+
+    public async getRecipes(): Promise<Recipe[]> {
+        return await this._partDictionary.getRecipes();
+    }
+
+    public hasRecipe(id: string) {
+        return this._partDictionary.hasRecipe(id);
+    }
+
+    public async getRecipeById(id: string): Promise<Recipe> {
+        return await this._partDictionary.getRecipe(id);
+    }
+
+    public deleteRecipeById(id: string): Promise<void> {
+        return this._partDictionary.deleteRecipeById(id);
+    }
+
+    public async editRecipe(recipe: Recipe): Promise<void> {
+        return this._partDictionary.insertRecipe(recipe);
     }
 
     get summary(): string {
@@ -122,10 +174,6 @@ class CraftingSystem {
 
     get author(): string {
         return this._details.author;
-    }
-
-    getEssenceById(id: string) {
-        return this._partDictionary.getEssence(id);
     }
 
     get hasRecipeCraftingCheck(): boolean {
@@ -148,25 +196,19 @@ class CraftingSystem {
         return this._details.name;
     }
 
-    get partDictionary(): PartDictionary {
-        return this._partDictionary;
-    }
-
-    setDetails(value: CraftingSystemDetails): void {
+    public setDetails(value: CraftingSystemDetails): void {
         this._details = value;
     }
 
-    public async loadPartDictionary() {
-        await this._partDictionaryLoader.load(this._partDictionary);
+    public async loadPartDictionary(): Promise<void> {
+        await this._partDictionary.loadAll();
     }
 
     public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<CraftingResult> {
-
         const craftingAttempt: CraftingAttempt = this._craftingAttemptFactory.make(inventory.ownedComponents, recipe);
         const craftingResult: CraftingResult = craftingAttempt.perform(actor, this._recipeCraftingCheck);
         await inventory.acceptCraftingResult(craftingResult);
         return craftingResult;
-
     }
 
     // todo implement
@@ -174,12 +216,10 @@ class CraftingSystem {
                            inventory: Inventory,
                            baseComponent: CraftingComponent,
                            componentSelection: Combination<CraftingComponent>): Promise<AlchemyResult> {
-
         const alchemyAttempt: AlchemyAttempt = this._alchemyAttemptFactory.make(baseComponent, componentSelection);
         const alchemyResult: AlchemyResult = alchemyAttempt.perform(actor, this._alchemyCraftingCheck);
         await inventory.acceptAlchemyResult(alchemyResult);
         return alchemyResult;
-
     }
 
     toJson(): CraftingSystemJson {

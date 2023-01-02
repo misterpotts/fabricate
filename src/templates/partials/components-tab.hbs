@@ -2,7 +2,7 @@
     <p>
         Components are the items that are consumed and produced by the crafting activities in your system.
     </p>
-    <div class="fabricate-drop-zone" data-drop-trigger="createComponent">
+    <div class="fabricate-drop-zone fabricate-wide" data-drop-trigger="createComponent">
         <i class="fa-solid fa-plus" style="pointer-events: none"></i> Drop an item here to create a component
     </div>
     <table class="fabricate-item-table">
@@ -26,7 +26,7 @@
                     </td>
                     <td>
                         <div class="fabricate-essence-list">
-                            {{#each essences}}
+                            {{#each essences.units}}
                                 <span class="fabricate-essence-preview">
                                     {{quantity}} <i class="{{part.iconCode}}" data-tooltip="{{part.tooltip}}"></i>
                                 </span>
@@ -40,7 +40,7 @@
                     </td>
                     <td>
                         <div class="fabricate-inline-part-list">
-                            {{#each salvage}}
+                            {{#each salvage.units}}
                                 <div class="fabricate-component" data-tooltip="{{part.name}}">
                                     <img src="{{part.imageUrl}}">
                                     <div class="fabricate-info">

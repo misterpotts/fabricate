@@ -6,6 +6,8 @@ import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/setti
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
+import {ItemSheetExtension} from "./interface/apps/core/Applications";
+import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
 
 Hooks.on("renderSidebarTab", (app: any, html: any) => {
     const GAME = new GameProvider().globalGameObject();
@@ -20,6 +22,17 @@ Hooks.on("renderSidebarTab", (app: any, html: any) => {
         await new CraftingSystemManagerApp().render();
     });
     buttons.append(button);
+});
+
+Hooks.on("renderItemSheet", async (app: any, html: any) => {
+    const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
+    const craftingSystems = Array.from(systemsById.values());
+    const itemSheetExtension = new ItemSheetExtension({
+        app,
+        html,
+        itemSheetModifier: new FabricateItemSheetTab({craftingSystems})
+    });
+    await itemSheetExtension.render();
 });
 
 Hooks.once('init', async () => {
@@ -63,14 +76,6 @@ Hooks.once('init', async () => {
     });
 });
 
-// Hooks.on('renderActorSheet5e', (sheetData: ItemSheet, sheetHtml: any, eventData: any) => {
-//     CraftingTab.bind(sheetData, sheetHtml, eventData);
-// });
-//
-// Hooks.on('renderItemSheet5e', (sheetData: ItemSheet, sheetHtml: any) => {
-//     ItemRecipeTab.bind(sheetData, sheetHtml);
-// });
-
 Hooks.once('ready', () => {
 
     Promise.all([
@@ -96,6 +101,17 @@ Hooks.once('ready', () => {
         return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
     });
 
+    Handlebars.registerHelper ('truncate', function (string, maxLength) {
+        if (string?.length <= maxLength) {
+            return new Handlebars.SafeString(string);
+        }
+        const lastWhitespaceIndex = string.lastIndexOf(" ");
+        const lastWordTerminationIndex = lastWhitespaceIndex >= 0 ? lastWhitespaceIndex : string.length;
+        if (lastWordTerminationIndex > maxLength) {
+            return new Handlebars.SafeString(`${string.substring(0, maxLength)}...`);
+        }
+        return new Handlebars.SafeString(`${string.substring(0, lastWordTerminationIndex)}...`);
+    });
 
 });
 

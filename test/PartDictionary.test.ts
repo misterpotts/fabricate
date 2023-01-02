@@ -1,9 +1,10 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {PartDictionary} from "../src/scripts/system/PartDictionary";
+import {PartDictionary, PartDictionaryFactory} from "../src/scripts/system/PartDictionary";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
+import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -14,61 +15,86 @@ beforeEach(() => {
 describe('Create', () => {
 
     test('Should construct empty Part Dictionary', () => {
-        const underTest: PartDictionary = new PartDictionary({});
+        const underTest: PartDictionary = new PartDictionaryFactory({})
+            .make({
+                essences: {},
+                recipes: {},
+                components: {}
+            });
 
         expect(underTest).not.toBeNull();
-        expect(underTest.size()).toBe(0);
+        expect(underTest.size).toBe(0);
     });
 
 });
 
 describe('Index and Retrieve', () => {
 
-    test('Should add and Get Recipes and Components', () => {
-        const underTest: PartDictionary = new PartDictionary({});
+    test('Should add and Get Recipes and Components', async () => {
+        const underTest: PartDictionary = new PartDictionaryFactory({})
+            .make({
+                essences: {},
+                recipes: {},
+                components: {}
+            });
 
-        underTest.addComponent(testComponentOne);
-        underTest.addComponent(testComponentTwo);
-        underTest.addComponent(testComponentThree);
-        underTest.addComponent(testComponentFour);
-        underTest.addComponent(testComponentFive);
+        await underTest.insertEssence(elementalFire);
+        await underTest.insertEssence(elementalEarth);
+        await underTest.insertEssence(elementalAir);
+        await underTest.insertEssence(elementalWater);
 
-        underTest.addRecipe(testRecipeOne);
-        underTest.addRecipe(testRecipeTwo);
-        underTest.addRecipe(testRecipeThree);
-        underTest.addRecipe(testRecipeFour);
+        await underTest.insertComponent(testComponentOne);
+        await underTest.insertComponent(testComponentTwo);
+        await underTest.insertComponent(testComponentThree);
+        await underTest.insertComponent(testComponentFour);
+        await underTest.insertComponent(testComponentFive);
+
+        await underTest.insertRecipe(testRecipeOne);
+        await underTest.insertRecipe(testRecipeTwo);
+        await underTest.insertRecipe(testRecipeThree);
+        await underTest.insertRecipe(testRecipeFour);
 
         expect(underTest).not.toBeNull();
-        expect(underTest.size()).toBe(9);
+        expect(underTest.size).toBe(13);
 
-        expect(underTest.getComponent(testComponentOne.id)).toBe(testComponentOne);
-        expect(underTest.getComponent(testComponentTwo.id)).toBe(testComponentTwo);
-        expect(underTest.getComponent(testComponentThree.id)).toBe(testComponentThree);
-        expect(underTest.getComponent(testComponentFour.id)).toBe(testComponentFour);
-        expect(underTest.getComponent(testComponentFive.id)).toBe(testComponentFive);
+        await expect(underTest.getEssence(elementalFire.id)).resolves.toEqual(elementalFire);
+        await expect(underTest.getEssence(elementalEarth.id)).resolves.toEqual(elementalEarth);
+        await expect(underTest.getEssence(elementalAir.id)).resolves.toEqual(elementalAir);
+        await expect(underTest.getEssence(elementalWater.id)).resolves.toEqual(elementalWater);
 
-        expect(underTest.getRecipe(testRecipeOne.id)).toBe(testRecipeOne);
-        expect(underTest.getRecipe(testRecipeTwo.id)).toBe(testRecipeTwo);
-        expect(underTest.getRecipe(testRecipeThree.id)).toBe(testRecipeThree);
-        expect(underTest.getRecipe(testRecipeFour.id)).toBe(testRecipeFour);
+        await expect(underTest.getComponent(testComponentOne.id)).resolves.toEqual(testComponentOne);
+        await expect(underTest.getComponent(testComponentTwo.id)).resolves.toEqual(testComponentTwo);
+        await expect(underTest.getComponent(testComponentThree.id)).resolves.toEqual(testComponentThree);
+        await expect(underTest.getComponent(testComponentFour.id)).resolves.toEqual(testComponentFour);
+        await expect(underTest.getComponent(testComponentFive.id)).resolves.toEqual(testComponentFive);
+
+        await expect(underTest.getRecipe(testRecipeOne.id)).resolves.toEqual(testRecipeOne);
+        await expect(underTest.getRecipe(testRecipeTwo.id)).resolves.toEqual(testRecipeTwo);
+        await expect(underTest.getRecipe(testRecipeThree.id)).resolves.toEqual(testRecipeThree);
+        await expect(underTest.getRecipe(testRecipeFour.id)).resolves.toEqual(testRecipeFour);
     });
 
-    test('Should throw errors when parts are not found', () => {
+    test('Should throw errors when parts are not found', async () => {
 
-        const underTest: PartDictionary = new PartDictionary({});
+        const underTest: PartDictionary = new PartDictionaryFactory({})
+            .make({
+                essences: {},
+                recipes: {},
+                components: {}
+            });
 
-        underTest.addComponent(testComponentOne);
-        underTest.addComponent(testComponentThree);
-        underTest.addComponent(testComponentFour);
+        await underTest.insertComponent(testComponentOne);
+        await underTest.insertComponent(testComponentThree);
+        await underTest.insertComponent(testComponentFour);
 
-        underTest.addRecipe(testRecipeOne);
+        await underTest.insertRecipe(testRecipeOne);
 
         expect(underTest).not.toBeNull();
-        expect(underTest.size()).toBe(4);
+        expect(underTest.size).toBe(4);
 
         const id: string = 'notAValidId';
-        expect(() => underTest.getComponent(id)).toThrow(new Error(`No Component was found with the identifier ${id}. `));
-        expect(() => underTest.getRecipe(id)).toThrow(new Error(`No Recipe was found with the identifier ${id}. `));
+        await expect(underTest.getComponent(id)).rejects.toThrow(new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: `));
+        await expect(underTest.getRecipe(id)).rejects.toThrow(new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: `));
 
     });
 

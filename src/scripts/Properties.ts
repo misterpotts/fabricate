@@ -3,13 +3,14 @@ const Properties = {
         id: "fabricate",
         label: "Fabricate",
         templates: {
-            recipeTab: "modules/fabricate/templates/recipe-tab.hbs",
+            itemSheetCraftingTab: "modules/fabricate/templates/item-sheet-crafting-tab.hbs",
             craftingTab: "modules/fabricate/templates/crafting-tab.hbs",
             craftingMessage: "modules/fabricate/templates/chat-message.hbs",
             craftingSystemManagementApp: "modules/fabricate/templates/crafting-system-manager.hbs",
-            ComponentManagerApp: "modules/fabricate/templates/edit-component-dialog.hbs",
-            EssenceManagerApp: "modules/fabricate/templates/edit-essence-details.hbs",
-            EditCraftingSystemDetailDialog: "modules/fabricate/templates/edit-crafting-system-detail.hbs",
+            componentManagerApp: "modules/fabricate/templates/component-manager.hbs",
+            recipeManagerApp: "modules/fabricate/templates/recipe-manager.hbs",
+            editEssenceDialog: "modules/fabricate/templates/edit-essence-details.hbs",
+            editCraftingSystemDetailDialog: "modules/fabricate/templates/edit-crafting-system-detail.hbs",
             partials: {
                 editableSystem: "modules/fabricate/templates/partials/editable-crafting-system.hbs",
                 readOnlySystem: "modules/fabricate/templates/partials/readonly-crafting-system.hbs",

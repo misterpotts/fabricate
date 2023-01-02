@@ -4,7 +4,8 @@ import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
 import {SYSTEM_DEFINITION as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
-import {DocumentManager} from "../src/scripts/foundry/DocumentManager";
+import {StubDocumentManager} from "./stubs/StubDocumentManager";
+import {Combination} from "../src/scripts/common/Combination";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -13,22 +14,6 @@ beforeEach(() => {
     Sandbox.reset();
 });
 
-class StubDocumentManager implements DocumentManager {
-
-    getDocumentByUuid(_id: string): Promise<any> {
-        return Promise.resolve({
-            name: "Item name",
-            img: "path/to/image/webp",
-            uuid: "NOT_A_UUID"
-        });
-    }
-
-    getDocumentsByUuid(ids: string[]): Promise<any[]> {
-        return Promise.all(ids.map(id => this.getDocumentByUuid(id)));
-    }
-
-}
-
 describe('A Crafting System Factory', () => {
 
     test('should create a new Crafting System from a valid specification', async () => {
@@ -36,42 +21,47 @@ describe('A Crafting System Factory', () => {
         const systemSpec = AlchemistsSupplies;
 
         const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
-            documentManager: new StubDocumentManager()
+            documentManager: StubDocumentManager.forPartDefinitions({
+                craftingComponentsJson: Array.from(Object.values(systemSpec.parts.components)),
+                recipesJson: Array.from(Object.values(systemSpec.parts.recipes))
+            })
         });
 
-        const craftingSystem: CraftingSystem = await craftingSystemFactory.make(systemSpec);
+        const result: CraftingSystem = await craftingSystemFactory.make(systemSpec);
 
-        expect(craftingSystem).not.toBeNull();
-        await craftingSystem.loadPartDictionary();
+        expect(result).not.toBeNull();
+        await result.loadPartDictionary();
 
-        expect(craftingSystem.id).toEqual("alchemists-supplies-v1.6");
-        expect(craftingSystem.enabled).toEqual(true);
-        expect(craftingSystem.essences.length).toEqual(6);
-        expect(craftingSystem.essences.map(essence => essence.id))
-            .toEqual(expect.arrayContaining(["water", "fire", "earth", "air", "negative-energy", "positive-energy"]));
-        const components = craftingSystem.partDictionary.getComponents();
-        expect(components.length).toEqual(30);
-        components.forEach(component => {
-            const retrieved = craftingSystem.partDictionary.getComponent(component.id)
-            expect(retrieved.id).toEqual(component.id);
-            component.essences.members.forEach(essenceId => {
-                expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
-            });
-        })
-        const recipes = craftingSystem.partDictionary.getRecipes();
-        expect(recipes.length).toEqual(15);
-        recipes.forEach(recipe => {
-            const retrieved = craftingSystem.partDictionary.getRecipe(recipe.id)
-            expect(retrieved.id).toEqual(recipe.id);
-            recipe.essences.members.forEach(essenceId => {
-                expect(craftingSystem.partDictionary.hasEssence(essenceId.elementId)).toEqual(true);
-            });
-            recipe.resultGroups.forEach(resultGroup => {
-                resultGroup.members.members.forEach(componentId => {
-                    expect(craftingSystem.partDictionary.hasComponent(componentId.elementId)).toEqual(true);
-                });
-            });
-        })
+        expect(result.id).toEqual("alchemists-supplies-v1.6");
+        expect(result.enabled).toEqual(true);
+
+        const essences = await result.getEssences();
+        const essenceIds = Object.keys(systemSpec.parts.essences);
+        expect(essences.length).toEqual(essenceIds.length);
+        expect(essences.map(essence => essence.id)).toEqual(expect.arrayContaining(essenceIds));
+
+        const components = await result.getComponents();
+        const componentIds = Object.keys(systemSpec.parts.components);
+        expect(components.length).toEqual(componentIds.length);
+        expect(components.map(component => component.id)).toEqual(expect.arrayContaining(componentIds));
+        components.map(component => component.essences)
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
+            .members
+            .forEach(essence => expect(essences).toContain(essence));
+
+        const recipes = await result.getRecipes();
+        const recipeIds = Object.keys(systemSpec.parts.recipes);
+        expect(recipes.length).toEqual(recipeIds.length);
+        expect(recipes.map(recipe => recipe.id)).toEqual(expect.arrayContaining(recipeIds));
+        recipes.map(recipe => recipe.getNamedComponents().combineWith(recipe.getSelectedResults()))
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
+            .members
+            .forEach(component => expect(components).toContain(component));
+
+        recipes.map(recipe => recipe.essences)
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
+            .members
+            .forEach(essence => expect(essences).toContain(essence));
 
         // todo: enable when implemented with new logic
         // expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);

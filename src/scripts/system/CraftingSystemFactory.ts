@@ -3,7 +3,7 @@ import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory
 import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
-import {PartDictionary, PartDictionaryLoader} from "./PartDictionary";
+import {PartDictionaryFactory} from "./PartDictionary";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
@@ -22,18 +22,14 @@ class CraftingSystemFactory {
 
     public async make(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
 
-        const partDictionary = new PartDictionary({});
-        const partDictionaryLoader = new PartDictionaryLoader({
-            documentManager: this._documentManager,
-            partDictionaryJson: craftingSystemJson.parts
-        });
+        const partDictionaryFactory = new PartDictionaryFactory({documentManager: this._documentManager});
+        const partDictionary = partDictionaryFactory.make(craftingSystemJson.parts);
 
         return new CraftingSystem({
             id: craftingSystemJson.id,
             details: new CraftingSystemDetails(craftingSystemJson.details),
             locked: craftingSystemJson.locked,
             enabled: craftingSystemJson.enabled,
-            partDictionaryLoader: partDictionaryLoader,
             partDictionary: partDictionary,
             craftingChecks: {
                 alchemy: new NoCraftingCheck(), // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI

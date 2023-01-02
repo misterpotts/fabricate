@@ -1,5 +1,7 @@
-import {Combinable, CombinableString, Combination} from "./Combination";
+import {StringIdentity, Combination} from "./Combination";
 import Properties from "../Properties";
+import {Identifiable, Serializable} from "./Identity";
+import {Essence} from "./Essence";
 
 interface CraftingComponentJson {
     itemUuid: string;
@@ -7,48 +9,28 @@ interface CraftingComponentJson {
     salvage: Record<string, number>;
 }
 
-class CraftingComponent implements Combinable {
-
-    private static readonly _NONE: CraftingComponent = new CraftingComponent({
-        id: "NO_ID",
-        name: "NO_NAME",
-        imageUrl: Properties.ui.defaults.itemImageUrl,
-        essences: Combination.EMPTY(),
-        salvage: Combination.EMPTY()
-    });
-
+/**
+ * A CraftingComponentSummary acts as a shallow copy of a Crafting Component. This allows components to reference the
+ * shallow copy in salvage where referencing the object directly would create circular references that would make
+ * loading difficult.
+ */
+class CraftingComponentSummary implements Identifiable {
     private readonly _id: string;
     private readonly _name: string;
     private readonly _imageUrl: string;
-    private _essences: Combination<CombinableString>;
-    private _salvage: Combination<CombinableString>;
 
     constructor({
         id,
         name,
-        imageUrl = Properties.ui.defaults.itemImageUrl,
-        essences = Combination.EMPTY(),
-        salvage = Combination.EMPTY()
+        imageUrl
     }: {
         id: string;
         name: string;
-        imageUrl?: string;
-        essences?: Combination<CombinableString>;
-        salvage?: Combination<CombinableString>;
+        imageUrl: string;
     }) {
         this._id = id;
         this._name = name;
         this._imageUrl = imageUrl;
-        this._essences = essences;
-        this._salvage = salvage;
-    }
-
-    get elementId(): string {
-        return this._id;
-    }
-
-    public static NONE() {
-        return this._NONE;
     }
 
     get id(): string {
@@ -62,12 +44,65 @@ class CraftingComponent implements Combinable {
     get imageUrl(): string {
         return this._imageUrl;
     }
+}
 
-    get essences(): Combination<CombinableString> {
+class CraftingComponent implements Identifiable, Serializable<CraftingComponentJson> {
+
+    private static readonly _NONE: CraftingComponent = new CraftingComponent({
+        id: "NO_ID",
+        name: "NO_NAME",
+        imageUrl: Properties.ui.defaults.itemImageUrl,
+        essences: Combination.EMPTY(),
+        salvage: Combination.EMPTY()
+    });
+
+    private readonly _id: string;
+    private readonly _name: string;
+    private readonly _imageUrl: string;
+    private _essences: Combination<Essence>;
+    private _salvage: Combination<CraftingComponentSummary>;
+
+    constructor({
+        id,
+        name,
+        imageUrl = Properties.ui.defaults.itemImageUrl,
+        essences = Combination.EMPTY(),
+        salvage = Combination.EMPTY()
+    }: {
+        id: string;
+        name: string;
+        imageUrl?: string;
+        essences?: Combination<Essence>;
+        salvage?: Combination<CraftingComponentSummary>;
+    }) {
+        this._id = id;
+        this._name = name;
+        this._imageUrl = imageUrl;
+        this._essences = essences;
+        this._salvage = salvage;
+    }
+
+    get id(): string {
+        return this._id;
+    }
+
+    public static NONE() {
+        return this._NONE;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get imageUrl(): string {
+        return this._imageUrl;
+    }
+
+    get essences(): Combination<Essence> {
         return this._essences;
     }
 
-    get salvage(): Combination<CombinableString> {
+    get salvage(): Combination<CraftingComponentSummary> {
         return this._salvage;
     }
 
@@ -79,13 +114,22 @@ class CraftingComponent implements Combinable {
         }
     }
 
-    set essences(value: Combination<CombinableString>) {
+    set essences(value: Combination<Essence>) {
         this._essences = value;
     }
 
-    set salvage(value: Combination<CombinableString>) {
+    set salvage(value: Combination<CraftingComponentSummary>) {
         this._salvage = value;
     }
+
+    public summarise(): CraftingComponentSummary {
+        return new CraftingComponentSummary({
+            id: this._id,
+            name: this._name,
+            imageUrl: this._imageUrl
+        });
+    }
+
 }
 
-export { CraftingComponent, CombinableString, CraftingComponentJson }
+export { CraftingComponent, StringIdentity, CraftingComponentJson, CraftingComponentSummary }

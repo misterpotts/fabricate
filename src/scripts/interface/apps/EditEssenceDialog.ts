@@ -38,9 +38,9 @@ class EssenceModel {
         return this._essence;
     }
 
-    public editEssence(value: Essence): EssenceModel {
+    public async editEssence(value: Essence): Promise<EssenceModel> {
         this._essence = value;
-        this._system.partDictionary.editEssence(value);
+        await this._system.editEssence(value);
         return this;
     }
 
@@ -83,7 +83,7 @@ class EssenceStateManager implements StateManager<EssenceView, EssenceModel> {
 
     async save(): Promise<EssenceModel> {
         const system = await FabricateApplication.systemRegistry.saveCraftingSystem(this._model.system);
-        this._model = new EssenceModel({system, essence: system.getEssenceById(this._model.essence.id)});
+        this._model = new EssenceModel({system, essence: await system.getEssenceById(this._model.essence.id)});
         return this._model;
     }
 
@@ -123,7 +123,7 @@ class EditEssenceDialogFactory {
             options: {
                 title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.EditEssenceDialog.title`),
                 id: `${Properties.module.id}-essence-manager`,
-                template: Properties.module.templates.EssenceManagerApp,
+                template: Properties.module.templates.editEssenceDialog,
                 width: 380,
             },
             stateManager: new EssenceStateManager({essence, system}),
