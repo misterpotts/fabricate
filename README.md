@@ -49,9 +49,15 @@ You can imbue them with Essences, as well as define the components that can be s
 
 # FAQ
 
-> Why don't I see Fabricate in the official [list of modules](https://foundryvtt.com/packages/modules)?
+> Why don't I see Fabricate in the official [list of modules](https://foundryvtt.com/packages/modules).
 
 Because it's not finished, and therefore not released yet.
+
+> How do I install Fabricate?
+
+Follow the official guide on [Installing New modules](https://foundryvtt.com/article/modules/).
+You can use the manifest URL from the top level `module.json` file in the [latest release](https://github.com/misterpotts/fabricate/releases/latest) when "_Installing via Manifest URL_".
+Alternatively, you can download the `module.zip` archive from the [latest release](https://github.com/misterpotts/fabricate/releases/latest) when "_Installing Modules Manually_".
 
 > When will Fabricate be released?
 
@@ -64,22 +70,12 @@ Yes, but don't let that stop you supporting me on [Patreon](https://patreon.com/
 
 # Changelog
 
-The most recent changes to Fabricate are documented here.
+Changes to Fabricate are documented on the [releases](https://github.com/misterpotts/fabricate/releases) themselves.
 
-## Version 0.7.1
+# Contributing
 
-- Changes how Fabricate renders UI Applications in Foundry so they all use the same code
-
-## Version 0.7.0
-
-- Support for v10
-- Localization and support for English
-- Create, duplicate and delete crafting systems
-- Create, edit and delete essences
-- Import items to create components, as well as delete them
-- Add and remove essences and salvage from components
-
-If you'd like to be involved I'd love to have some help! I'm always happy to talk to you about how people can contribute.
+If you'd like to be involved I'd love to have some help! 
+I'm always happy to talk to you about how people can contribute.
 
 # License
 
