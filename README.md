@@ -49,7 +49,7 @@ You can imbue them with Essences, as well as define the components that can be s
 
 # FAQ
 
-> Why don't I see Fabricate in the official [list of modules](https://foundryvtt.com/packages/modules).
+> Why don't I see Fabricate in the official [list of modules](https://foundryvtt.com/packages/modules)?
 
 Because it's not finished, and therefore not released yet.
 
