@@ -214,6 +214,7 @@ describe("integration test", () => {
         const underTest = new DefaultSystemRegistry({
             settingManager: fabricateSettingsManager,
             craftingSystemFactory,
+            gameSystem: "dnd5e",
             errorDecisionProvider: () => Promise.resolve(ErrorDecisionType.RETAIN)
         });
 

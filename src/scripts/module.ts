@@ -37,6 +37,7 @@ Hooks.on("renderItemSheet", async (app: any, html: any) => {
 
 Hooks.once('init', async () => {
     const gameProvider = new GameProvider();
+    const gameObject = gameProvider.globalGameObject();
     const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
         gameProvider: gameProvider,
         moduleId: Properties.module.id,
@@ -46,11 +47,12 @@ Hooks.once('init', async () => {
     });
     const systemRegistry = new DefaultSystemRegistry({
         settingManager: craftingSystemSettingManager,
+        gameSystem: gameObject.system.id,
         craftingSystemFactory: new CraftingSystemFactory({}),
         errorDecisionProvider: async (error: Error) => {
             const reset = await Dialog.confirm({
-                title: gameProvider.globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.readErrorPrompt.title`),
-                content: `<p>${gameProvider.globalGameObject().i18n.format(Properties.module.id + ".CraftingSystemManagerApp.readErrorPrompt.content", {errorMessage: error.message})}</p>`,
+                title: gameObject.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.readErrorPrompt.title`),
+                content: `<p>${gameObject.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.readErrorPrompt.content", {errorMessage: error.message})}</p>`,
             });
             if (reset) {
                 return ErrorDecisionType.RESET;
@@ -61,7 +63,7 @@ Hooks.once('init', async () => {
     FabricateApplication.systemRegistry = systemRegistry;
     // @ts-ignore
     globalThis.ui.CraftingSystemManagerApp = CraftingSystemManagerApp;
-    gameProvider.globalGameObject().settings.register(Properties.module.id, "craftingSystems", {
+    gameObject.settings.register(Properties.module.id, Properties.settings.craftingSystems.key, {
         name: "",
         hint: "",
         scope: "world",
@@ -74,6 +76,12 @@ Hooks.once('init', async () => {
                 ?.render(true);
         }
     });
+    try {
+        // todo: remove purge in later versions
+        await systemRegistry.purgeBundledSystemsFromStoredSettings();
+    } catch (e: any) {
+        console.warn(`Unable to purge Fabricate's bundled systems from world settings. ${{e}}`)
+    }
 });
 
 Hooks.once('ready', () => {

@@ -458,4 +458,9 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
     }
 }
 
-export {SYSTEM_DEFINITION}
+const SYSTEM_DATA = {
+    definition: SYSTEM_DEFINITION,
+    gameSystem: "dnd5e"
+}
+
+export {SYSTEM_DATA}
