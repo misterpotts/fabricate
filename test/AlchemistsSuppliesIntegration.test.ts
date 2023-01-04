@@ -3,7 +3,7 @@ import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {SYSTEM_DEFINITION as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
+import {SYSTEM_DATA as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {Combination} from "../src/scripts/common/Combination";
 
@@ -18,7 +18,7 @@ describe('A Crafting System Factory', () => {
 
     test('should create a new Crafting System from a valid specification', async () => {
 
-        const systemSpec = AlchemistsSupplies;
+        const systemSpec = AlchemistsSupplies.definition;
 
         const craftingSystemFactory: CraftingSystemFactory = new CraftingSystemFactory({
             documentManager: StubDocumentManager.forPartDefinitions({

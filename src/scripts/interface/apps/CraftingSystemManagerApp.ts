@@ -60,8 +60,15 @@ class CraftingSystemManagerApp extends FormApplication {
             this._selectedSystem = Array.from(craftingSystems.values())[0];
         }
         await this._selectedSystem?.loadPartDictionary();
+        const systems = Array.from(craftingSystems.values())
+            .sort((left,right) => Number(right.locked) - Number(left.locked));
+        if (!this._selectedSystem) {
+            return {
+                craftingSystems: systems
+            }
+        }
         return {
-            craftingSystems: Array.from(craftingSystems.values()),
+            craftingSystems: systems,
             selectedSystem: {
                 id: this._selectedSystem.id,
                 name: this._selectedSystem.details.name,
