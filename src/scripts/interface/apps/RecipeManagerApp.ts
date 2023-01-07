@@ -273,8 +273,8 @@ class RecipeStateManager implements StateManager<RecipeManagerView, RecipeManage
         return availableComponents.filter(component => component.name.search(new RegExp(nameSearch, "i")) >= 0);
     }
 
-    load(): Promise<RecipeManagerModel> {
-        return Promise.resolve(undefined);
+    async load(): Promise<RecipeManagerModel> {
+        return this._model;
     }
 
     async save(model: RecipeManagerModel): Promise<RecipeManagerModel> {

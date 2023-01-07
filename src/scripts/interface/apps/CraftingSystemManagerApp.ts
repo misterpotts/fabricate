@@ -11,6 +11,8 @@ import ComponentManagerAppFactory from "./ComponentManagerApp";
 import RecipeManagerAppFactory from "./RecipeManagerApp";
 import EditEssenceDialogFactory from "./EditEssenceDialog";
 import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialog";
+import {ActionData, ApplicationWindow, DefaultClickHandler, StateManager} from "./core/Applications";
+import {Essence} from "../../common/Essence";
 
 class CraftingSystemManagerApp extends FormApplication {
 
@@ -308,4 +310,151 @@ class CraftingSystemManagerApp extends FormApplication {
 
 }
 
-export { CraftingSystemManagerApp }
+interface SystemManagerView {
+
+    selectedSystem: {
+        id: string,
+        name: string,
+        summary: string,
+        description: string,
+        author: string
+        enabled: boolean,
+        locked: boolean,
+        essences: Essence[],
+        components: CraftingComponent[],
+        recipes: Recipe[]
+    };
+    craftingSystems: CraftingSystem[];
+
+}
+
+interface LoadedSystem {
+    system: CraftingSystem;
+    parts: {
+        components: CraftingComponent[],
+        recipes: Recipe[],
+        essences: Essence[]
+    };
+}
+
+class SystemManagerModel {
+
+    private _selected?: LoadedSystem;
+    private readonly _craftingSystems: Map<string, CraftingSystem>;
+
+    constructor({
+        selectedSystem,
+        craftingSystems
+    } :{
+        selectedSystem?: LoadedSystem,
+        craftingSystems: Map<string, CraftingSystem>
+    }) {
+        this._selected = selectedSystem;
+        this._craftingSystems = craftingSystems;
+    }
+
+    get selected(): LoadedSystem {
+        return this._selected;
+    }
+
+    get craftingSystems(): CraftingSystem[] {
+        return Array.from(this._craftingSystems.values())
+            .sort((left,right) => Number(right.locked) - Number(left.locked));
+    }
+
+    async selectSystem(systemId?: string): Promise<SystemManagerModel> {
+        if (systemId && !this._craftingSystems.has(systemId)) {
+            throw new Error(`Cannot select crafting system with ID "${systemId}" as it does not exist! `);
+        }
+        const craftingSystem = systemId ? this._craftingSystems.get(systemId) : this.craftingSystems[0];
+        this._selected = {
+            system: craftingSystem,
+            parts: {
+                components: await craftingSystem.getComponents(),
+                essences: await craftingSystem.getEssences(),
+                recipes: await craftingSystem.getRecipes()
+            }
+        };
+        return this;
+    }
+
+    hasSelectedSystem() {
+        return !!this._selected;
+    }
+}
+
+class SystemStateManager implements StateManager<SystemManagerView, SystemManagerModel> {
+
+    private readonly _model: SystemManagerModel;
+
+    constructor(model: SystemManagerModel) {
+        this._model = model;
+    }
+
+    getModelState(): SystemManagerModel {
+        return this._model;
+    }
+
+    getViewData(): SystemManagerView {
+        return {
+            craftingSystems: this._model.craftingSystems,
+            selectedSystem: {
+                id: this._model.selected.system.id,
+                name: this._model.selected.system.details.name,
+                summary: this._model.selected.system.details.summary,
+                description: this._model.selected.system.details.description,
+                author: this._model.selected.system.details.author,
+                enabled: this._model.selected.system.enabled,
+                locked: this._model.selected.system.locked,
+                essences: this._model.selected.parts.essences,
+                components: this._model.selected.parts.components,
+                recipes: this._model.selected.parts.recipes
+            }
+        };
+    }
+
+    async load(): Promise<SystemManagerModel> {
+        if (!this._model.hasSelectedSystem() && this._model.craftingSystems.length > 0) {
+            await this._model.selectSystem();
+        }
+        return this._model;
+    }
+
+    async save(_model: SystemManagerModel): Promise<SystemManagerModel> {
+        return this.getModelState();
+    }
+
+}
+
+class CraftingSystemManagerAppFactory {
+
+    public async make(craftingSystems: Map<string, CraftingSystem>): Promise<ApplicationWindow<SystemManagerView, SystemManagerModel>> {
+        const systemStateManager = new SystemStateManager(new SystemManagerModel({craftingSystems}));
+        await systemStateManager.load();
+        return new ApplicationWindow({
+            stateManager: systemStateManager,
+            clickHandler: new DefaultClickHandler({
+                dataKeys: ["systemId"],
+                actions: new Map([
+                    ["selectCraftingSystem", async (actionData: ActionData, currentState: SystemManagerModel) => {
+                        return currentState.selectSystem(actionData.data.get("systemId"));
+                    }]
+                ])
+            }),
+            options: {
+                title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
+                id: `${Properties.module.id}-crafting-system-manager`,
+                classes: ["sheet", "journal-sheet", "journal-entry"],
+                template: Properties.module.templates.craftingSystemManagementApp,
+                resizable: true,
+                width: 920,
+                height: 740,
+                tabs: [{navSelector: ".tabs", contentSelector: ".content", initial: "components"}],
+                dragDrop: [{dragSelector: ".fabricate-draggable", dropSelector: ".fabricate-drop-zone"}]
+            }
+        });
+    }
+
+}
+
+export { CraftingSystemManagerApp, CraftingSystemManagerAppFactory }
