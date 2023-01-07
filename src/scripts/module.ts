@@ -1,6 +1,6 @@
 import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
-import {CraftingSystemManagerApp} from "./interface/apps/CraftingSystemManagerApp";
+import {CraftingSystemManagerApp, CraftingSystemManagerAppFactory} from "./interface/apps/CraftingSystemManagerApp";
 import FabricateApplication from "./interface/FabricateApplication";
 import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
@@ -9,7 +9,7 @@ import {CraftingSystemJson} from "./system/CraftingSystem";
 import {ItemSheetExtension} from "./interface/apps/core/Applications";
 import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
 
-Hooks.on("renderSidebarTab", (app: any, html: any) => {
+Hooks.on("renderSidebarTab", async (app: any, html: any) => {
     const GAME = new GameProvider().globalGameObject();
     if (!(app instanceof ItemDirectory) || !GAME.user.isGM) {
         return;
@@ -18,8 +18,12 @@ Hooks.on("renderSidebarTab", (app: any, html: any) => {
     const buttonClass = Properties.ui.buttons.openCraftingSystemManager.class;
     const buttonText = GAME.i18n.localize(`${Properties.module.id}.ui.sidebar.buttons.openCraftingSystemManager`);
     const button = $(`<button class="${buttonClass}"><i class="fa-solid fa-flask-vial"></i> ${buttonText}</button>`);
+
+    const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
+    const applicationWindow = await new CraftingSystemManagerAppFactory()
+        .make(systemsById);
     button.on('click', async (_event) => {
-        await new CraftingSystemManagerApp().render();
+        applicationWindow.render();
     });
     buttons.append(button);
 });

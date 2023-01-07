@@ -30,27 +30,28 @@
 
 <hr/>
 
-<nav data-group="fabricate" class="fabricate-crafting-system-navigation tabs">
-    <a class="item" data-tab="componentIds">Components</a>
-    <a class="item" data-tab="recipeIds">Recipes</a>
-    <a class="item" data-tab="checks">Checks</a>
-    <a class="item" data-tab="essences">Essences</a>
-    <a class="item" data-tab="alchemy">Alchemy</a>
+<nav class="pages-list tabs fabricate-crafting-system-navigation" data-group="primary-tabs" aria-label="Crafting System Elements">
+    <a class="item" data-tab="components">{{localize "fabricate.CraftingSystemManagerApp.tabs.components.title"}}</a>
+    <a class="item" data-tab="recipes">{{localize "fabricate.CraftingSystemManagerApp.tabs.recipes.title"}}</a>
+    <a class="item" data-tab="checks">{{localize "fabricate.CraftingSystemManagerApp.tabs.checks.title"}}</a>
+    <a class="item" data-tab="essences">{{localize "fabricate.CraftingSystemManagerApp.tabs.essences.title"}}</a>
+    <a class="item" data-tab="alchemy">{{localize "fabricate.CraftingSystemManagerApp.tabs.alchemy.title"}}</a>
 </nav>
-<section class="fabricate-crafting-system-body">
-    <div class="tab" data-group="fabricate" data-tab="componentIds">
+
+<section class="fabricate-crafting-system-body content">
+    <div class="tab" data-group="primary-tabs" data-tab="components">
         {{> componentsTab}}
     </div>
-    <div class="tab active" data-group="fabricate" data-tab="recipeIds">
+    <div class="tab active" data-group="primary-tabs" data-tab="recipes">
         {{> recipesTab}}
     </div>
-    <div class="tab" data-group="fabricate" data-tab="checks">
+    <div class="tab" data-group="primary-tabs" data-tab="checks">
         {{> checksTab}}
     </div>
-    <div class="tab" data-group="fabricate" data-tab="essences">
+    <div class="tab" data-group="primary-tabs" data-tab="essences">
         {{> essencesTab}}
     </div>
-    <div class="tab" data-group="fabricate" data-tab="alchemy">
+    <div class="tab" data-group="primary-tabs" data-tab="alchemy">
         {{> alchemyTab}}
     </div>
 </section>

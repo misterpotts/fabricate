@@ -130,9 +130,11 @@
       },
       "tabs": {
         "recipes": {
+          "title": "Recipes",
           "optionTooltip": "{size} Components"
         },
         "essences": {
+          "title": "Essences",
           "description": "Essences are a quality of a component. They define something that the component has, not something that it is. Components might have multiple Essences in different quantities, all of which you can define for your system. Not every crafting system needs essences. However, if you do want to add them to components, you'll need to define them here first.",
           "create": "Add a new Essence",
           "tableHeadings": {
@@ -144,6 +146,15 @@
             "edit": "Edit essence",
             "delete": "Delete essence"
           }
+        },
+        "alchemy": {
+          "title": "Alchemy"
+        },
+        "checks": {
+          "title": "Checks"
+        },
+        "components": {
+          "title": "Components"
         }
       }
     },
