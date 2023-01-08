@@ -11,7 +11,13 @@ import ComponentManagerAppFactory from "./ComponentManagerApp";
 import RecipeManagerAppFactory from "./RecipeManagerApp";
 import EditEssenceDialogFactory from "./EditEssenceDialog";
 import EditCraftingSystemDetailDialogFactory from "./EditCraftingSystemDetailDialog";
-import {ActionData, ApplicationWindow, DefaultClickHandler, StateManager} from "./core/Applications";
+import {
+    ActionData,
+    ApplicationWindow,
+    DefaultClickHandler,
+    DefaultDropHandler,
+    StateManager
+} from "./core/Applications";
 import {Essence} from "../../common/Essence";
 
 class CraftingSystemManagerApp extends FormApplication {
@@ -133,16 +139,16 @@ class CraftingSystemManagerApp extends FormApplication {
             case "createCraftingSystem":
                 EditCraftingSystemDetailDialogFactory.make().render();
                 break;
-            case "toggleSystemEnabled":
-                const checked = event.target.checked;
-                if (this._selectedSystem.enabled === checked) {
-                    return;
-                }
-                await this.systemRegistry.saveCraftingSystem(
-                    this._selectedSystem.setEnabled(checked)
-                );
-                await this.render();
-                break;
+            // case "toggleSystemEnabled":
+            //     const checked = event.target.checked;
+            //     if (this._selectedSystem.enabled === checked) {
+            //         return;
+            //     }
+            //     await this.systemRegistry.saveCraftingSystem(
+            //         this._selectedSystem.setEnabled(checked)
+            //     );
+            //     await this.render();
+            //     break;
             case "selectCraftingSystem":
                 const systemToSelect = await this.systemRegistry.getCraftingSystemById(systemId);
                 if (!systemToSelect) {
@@ -340,33 +346,51 @@ interface LoadedSystem {
 class SystemManagerModel {
 
     private _selected?: LoadedSystem;
-    private readonly _craftingSystems: Map<string, CraftingSystem>;
+    private readonly _embeddedSystems: Map<string, CraftingSystem>;
+    private readonly _userDefinedSystems: Map<string, CraftingSystem>;
 
     constructor({
         selectedSystem,
-        craftingSystems
+        embeddedSystems,
+        userDefinedSystems
     } :{
         selectedSystem?: LoadedSystem,
-        craftingSystems: Map<string, CraftingSystem>
+        embeddedSystems: Map<string, CraftingSystem>;
+        userDefinedSystems: Map<string, CraftingSystem>;
     }) {
         this._selected = selectedSystem;
-        this._craftingSystems = craftingSystems;
+        this._embeddedSystems = embeddedSystems;
+        this._userDefinedSystems = userDefinedSystems;
     }
 
     get selected(): LoadedSystem {
         return this._selected;
     }
 
+    get embeddedSystems(): Map<string, CraftingSystem> {
+        return this._embeddedSystems;
+    }
+
+    get userDefinedSystems(): Map<string, CraftingSystem> {
+        return this._userDefinedSystems;
+    }
+
     get craftingSystems(): CraftingSystem[] {
-        return Array.from(this._craftingSystems.values())
+        return Array.from(this._embeddedSystems.values())
+            .concat(Array.from(this._userDefinedSystems.values()))
             .sort((left,right) => Number(right.locked) - Number(left.locked));
     }
 
     async selectSystem(systemId?: string): Promise<SystemManagerModel> {
-        if (systemId && !this._craftingSystems.has(systemId)) {
+        const allCraftingSystems = new Map(this.craftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
+        if (systemId && !allCraftingSystems.has(systemId)) {
             throw new Error(`Cannot select crafting system with ID "${systemId}" as it does not exist! `);
         }
-        const craftingSystem = systemId ? this._craftingSystems.get(systemId) : this.craftingSystems[0];
+        if (allCraftingSystems.size === 0) {
+            this._selected = null;
+            return this;
+        }
+        const craftingSystem = systemId ? allCraftingSystems.get(systemId) : this.craftingSystems[0];
         this._selected = {
             system: craftingSystem,
             parts: {
@@ -381,14 +405,61 @@ class SystemManagerModel {
     hasSelectedSystem() {
         return !!this._selected;
     }
+
+    enableSelectedSystem(): SystemManagerModel {
+        const selectedSystem = this._selected?.system;
+        if (!selectedSystem) {
+            throw new Error("Cannot enable selected system: No crafting system was selected");
+        }
+        selectedSystem.enable();
+        return this;
+    }
+
+    disableSelectedSystem(): SystemManagerModel {
+        const selectedSystem = this._selected?.system;
+        if (!selectedSystem) {
+            throw new Error("Cannot enable selected system: No crafting system was selected");
+        }
+        selectedSystem.disable();
+        return this;
+    }
+
+    async removeComponentFromSelectedSystem(componentId: string): Promise<SystemManagerModel> {
+        await this._selected.system.deleteComponentById(componentId);
+        return this;
+    }
+
+    deleteSystemById(systemId: string): SystemManagerModel {
+        if (!this.userDefinedSystems.has(systemId)) {
+            throw new Error(`Cannot delete Crafting System "${systemId}". It was not found! `);
+        }
+        this.userDefinedSystems.delete(systemId);
+        return this;
+    }
+
+    cloneCraftingSystemById(systemId: string): SystemManagerModel {
+        const sourceCraftingSystem = this.craftingSystems.find(system => system.id === systemId);
+        if (!sourceCraftingSystem) {
+            throw new Error(`Cannot clone Crafting System "${systemId}". It was not found! `);
+        }
+        const clonedCraftingSystem = sourceCraftingSystem.clone({
+            id: randomID(),
+            name: `${sourceCraftingSystem.name} (copy)`,
+            locked: false
+        });
+        this._userDefinedSystems.set(clonedCraftingSystem.id, clonedCraftingSystem);
+        return this;
+    }
 }
 
 class SystemStateManager implements StateManager<SystemManagerView, SystemManagerModel> {
 
-    private readonly _model: SystemManagerModel;
+    private _model: SystemManagerModel;
+    private readonly _systemRegistry: SystemRegistry;
 
-    constructor(model: SystemManagerModel) {
+    constructor({model, systemRegistry}: {model: SystemManagerModel; systemRegistry?: SystemRegistry}) {
         this._model = model;
+        this._systemRegistry = systemRegistry ?? FabricateApplication.systemRegistry;
     }
 
     getModelState(): SystemManagerModel {
@@ -396,6 +467,12 @@ class SystemStateManager implements StateManager<SystemManagerView, SystemManage
     }
 
     getViewData(): SystemManagerView {
+        if (!this._model.hasSelectedSystem()) {
+            return {
+                craftingSystems: this._model.craftingSystems,
+                selectedSystem: null
+            };
+        }
         return {
             craftingSystems: this._model.craftingSystems,
             selectedSystem: {
@@ -414,13 +491,20 @@ class SystemStateManager implements StateManager<SystemManagerView, SystemManage
     }
 
     async load(): Promise<SystemManagerModel> {
-        if (!this._model.hasSelectedSystem() && this._model.craftingSystems.length > 0) {
-            await this._model.selectSystem();
-        }
-        return this._model;
+        const userDefinedSystems = await this._systemRegistry.getUserDefinedSystems();
+        const embeddedSystems = await this._systemRegistry.getEmbeddedSystems();
+        const loadedModelState = new SystemManagerModel({
+            embeddedSystems,
+            userDefinedSystems
+        });
+        const selectedSystemId = this._model.selected?.system?.id;
+        await loadedModelState.selectSystem(selectedSystemId);
+        this._model = loadedModelState;
+        return loadedModelState;
     }
 
-    async save(_model: SystemManagerModel): Promise<SystemManagerModel> {
+    async save(model: SystemManagerModel): Promise<SystemManagerModel> {
+        await this._systemRegistry.saveCraftingSystems(model.userDefinedSystems);
         return this.getModelState();
     }
 
@@ -428,19 +512,228 @@ class SystemStateManager implements StateManager<SystemManagerView, SystemManage
 
 class CraftingSystemManagerAppFactory {
 
-    public async make(craftingSystems: Map<string, CraftingSystem>): Promise<ApplicationWindow<SystemManagerView, SystemManagerModel>> {
-        const systemStateManager = new SystemStateManager(new SystemManagerModel({craftingSystems}));
+    public async make({
+        embeddedSystems,
+        userDefinedSystems
+    }: {
+        embeddedSystems: Map<string, CraftingSystem>,
+        userDefinedSystems: Map<string, CraftingSystem>
+    }): Promise<ApplicationWindow<SystemManagerView, SystemManagerModel>> {
+        const model = new SystemManagerModel({embeddedSystems, userDefinedSystems});
+        const systemStateManager = new SystemStateManager({model});
         await systemStateManager.load();
+        const gameObject = new GameProvider().globalGameObject();
         return new ApplicationWindow({
             stateManager: systemStateManager,
-            clickHandler: new DefaultClickHandler({
-                dataKeys: ["systemId"],
+            dropHandler: new DefaultDropHandler({
                 actions: new Map([
-                    ["selectCraftingSystem", async (actionData: ActionData, currentState: SystemManagerModel) => {
-                        return currentState.selectSystem(actionData.data.get("systemId"));
+                    ["createComponent", async (actionData: ActionData, currentState: SystemManagerModel) => {
+                        const document: any = await new DefaultDocumentManager().getDocumentByUuid(actionData.document.uuid);
+                        if (!currentState.selected.system.hasComponent(document.uuid)) {
+                            const craftingComponent = new CraftingComponent({
+                                id: document.uuid,
+                                name: document.name,
+                                imageUrl: document.img,
+                                essences: Combination.EMPTY(),
+                                salvage: Combination.EMPTY()
+                            });
+                            await currentState.selected.system.editComponent(craftingComponent);
+                            return currentState;
+                        }
                     }]
                 ])
             }),
+            clickHandler: new DefaultClickHandler({
+                dataKeys: ["systemId", "componentId"],
+                actions: new Map([
+                    ["selectCraftingSystem", async (actionData: ActionData, currentState: SystemManagerModel) => {
+                        await currentState.selectSystem(actionData.data.get("systemId"));
+                        return null;
+                    }],
+                    ["editDetails", async (_actionData: ActionData, currentState: SystemManagerModel) => {
+                        EditCraftingSystemDetailDialogFactory.make(currentState.selected.system).render();
+                        return currentState;
+                    }],
+                    ["createCraftingSystem", async (_actionData: ActionData, currentState: SystemManagerModel) => {
+                        EditCraftingSystemDetailDialogFactory.make().render();
+                        return currentState;
+                    }],
+                    ["toggleSystemEnabled", async (actionData: ActionData, currentState: SystemManagerModel) => {
+                        if (actionData.checked) {
+                            return currentState.enableSelectedSystem()
+                        }
+                        return currentState.disableSelectedSystem();
+                    }],
+                    ["importCraftingSystem", async (_actionData: ActionData, _currentState: SystemManagerModel) => {
+                        throw new Error("Import is not implemented. ");
+                    }],
+                    ["removeComponent", async (actionData: ActionData, currentState: SystemManagerModel) => {
+                        const componentId = actionData.data.get("componentId");
+                        if (!currentState.selected.system.hasComponent(componentId)) {
+                            throw new Error(`Cannot delete Component with ID ${componentId}. It was not found in the System "${currentState.selected.system.name}". `);
+                        }
+                        const component = await currentState.selected.system.getComponentById(componentId);
+                        const doDelete = await Dialog.confirm({
+                            title: gameObject.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeComponent.title`, {name: component.name}),
+                            content: `<p>${gameObject.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeComponent.content")}</p>`,
+                        });
+                        if (doDelete) {
+                            await currentState.removeComponentFromSelectedSystem(componentId);
+                        }
+                        return currentState;
+                    }],
+                    //["name", async (_actionData: ActionData, currentState: SystemManagerModel) => { return currentState; }],
+                    //             case "removeComponent": // todo: confirm dialog and remove references to the component from all recipes and items on delete
+                    //                 const componentIdToDelete = event?.target?.dataset?.componentId;
+                    //                 if (!componentIdToDelete) {
+                    //                     throw new Error("Cannot delete component. No ID was provided. ");
+                    //                 }
+                    //                 await this._selectedSystem.deleteComponentById(componentIdToDelete);
+                    //                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                    //                 break;
+                    //             case "deleteRecipe":
+                    //                 const recipeIdToDelete = event?.target?.dataset?.recipeId;
+                    //                 if (!recipeIdToDelete) {
+                    //                     throw new Error("Cannot delete recipe. No ID was provided. ");
+                    //                 }
+                    //                 await this._selectedSystem.deleteRecipeById(recipeIdToDelete);
+                    //                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                    //                 break;
+                    //             case "editComponent":
+                    //                 const componentIdToEdit = event?.target?.dataset?.componentId;
+                    //                 const componentToEdit = await this._selectedSystem.getComponentById(componentIdToEdit);
+                    //                 if (!componentToEdit) {
+                    //                     throw new Error(`Cannot edit component. Component with ID "${componentIdToEdit}" not found. `);
+                    //                 }
+                    //                 const componentManagerApp = await ComponentManagerAppFactory.make(componentToEdit, this._selectedSystem);
+                    //                 componentManagerApp.render();
+                    //                 break;
+                    //             case "editRecipe":
+                    //                 const recipeIdToEdit = event?.target?.dataset?.recipeId;
+                    //                 const recipeToEdit = await this._selectedSystem.getRecipeById(recipeIdToEdit);
+                    //                 if (!recipeToEdit) {
+                    //                     throw new Error(`Cannot edit recipe. Recipe with ID "${recipeIdToEdit}" not found. `);
+                    //                 }
+                    //                 const recipeManagerApp = await RecipeManagerAppFactory.make(recipeToEdit, this._selectedSystem);
+                    //                 recipeManagerApp.render();
+                    //                 break;
+                    //             case "createRecipe":
+                    //                 try {
+                    //                     const data: any = JSON.parse(event.dataTransfer?.getData("text/plain"));
+                    //                     if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
+                    //                         return;
+                    //                     }
+                    //                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
+                    //                     if (!this._selectedSystem.hasRecipe(document.uuid)) {
+                    //                         const recipe = new Recipe({
+                    //                             id: document.uuid,
+                    //                             name: document.name,
+                    //                             imageUrl: document.img
+                    //                         });
+                    //                         await this._selectedSystem.editRecipe(recipe);
+                    //                         await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                    //                     }
+                    //                 } catch (e: any) {
+                    //                     console.warn(`Something was dropped onto a Fabricate drop zone,
+                    //                         but the drop event was not able to be processed.
+                    //                         Caused by: ${e.message ?? e}`);
+                    //                 }
+                    //                 break;
+                    //             case "createComponent":
+                    //                 try {
+                    //                     const data: any = JSON.parse(event.dataTransfer?.getData("text/plain"));
+                    //                     if (Properties.module.documents.supportedTypes.indexOf(data.type) < 0) {
+                    //                         return;
+                    //                     }
+                    //                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(data.uuid);
+                    //                     if (!this._selectedSystem.hasComponent(document.uuid)) {
+                    //                         const craftingComponent = new CraftingComponent({
+                    //                             id: document.uuid,
+                    //                             name: document.name,
+                    //                             imageUrl: document.img,
+                    //                             essences: Combination.EMPTY(),
+                    //                             salvage: Combination.EMPTY()
+                    //                         });
+                    //                         await this._selectedSystem.editComponent(craftingComponent);
+                    //                         await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                    //                     }
+                    //                 } catch (e: any) {
+                    //                     console.warn(`Something was dropped onto a Fabricate drop zone,
+                    //                         but the drop event was not able to be processed.
+                    //                         Caused by: ${e.message ?? e}`);
+                    //                 }
+                    //                 break;
+                    //             case "createEssence":
+                    //                 EditEssenceDialogFactory.make(this._selectedSystem).render();
+                    //                 break;
+                    //             case "editEssence":
+                    //                 const essenceIdToEdit = event?.target?.dataset?.essenceId;
+                    //                 if (!this._selectedSystem.hasEssence(essenceIdToEdit)) {
+                    //                     throw new Error(`Essence with ID "${essenceIdToEdit}" does not exist.`);
+                    //                 }
+                    //                 const essenceToEdit = await this._selectedSystem.getEssenceById(essenceIdToEdit);
+                    //                 EditEssenceDialogFactory.make(this._selectedSystem, essenceToEdit).render();
+                    //                 break;
+                    //             case "deleteEssence": // todo: confirm dialog and remove references to the essence from all recipes and items on delete
+                    //                 const essenceIdToDelete = event?.target?.dataset?.essenceId;
+                    //                 await this._selectedSystem.deleteEssenceById(essenceIdToDelete);
+                    //                 await this.systemRegistry.saveCraftingSystem(this._selectedSystem);
+                    //                 break;
+                ])
+            }),
+            contextMenuDefinitions: [{
+                selector: ".fabricate-crafting-system",
+                entries: [
+                    {
+                        name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.export`,
+                        icon: `<i class="fa-solid fa-file-export"></i>`,
+                        callback: async (element: JQuery) => {
+                            console.log(element.data()["systemId"]);
+                        }
+                    },
+                    {
+                        name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.delete`,
+                        icon: `<i class="fa-solid fa-trash"></i>`,
+                        condition: (element: JQuery) => {
+                            const locked = element.data()["locked"] as boolean;
+                            return !locked;
+                        },
+                        callback: async (element: JQuery) => {
+                            const systemId = element.data()["systemId"] as string;
+                            if (!systemId) {
+                                console.error("Cannot delete system: no ID was provided. ");
+                                return;
+                            }
+                            const gameProvider = new GameProvider();
+                            const systemToDelete = systemStateManager.getModelState().userDefinedSystems.get(systemId);
+                            if (!systemToDelete) {
+                                console.error(`Could not find system ${systemId}`);
+                                return;
+                            }
+                            const GAME = gameProvider.globalGameObject();
+                            await Dialog.confirm({
+                                title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.deleteSystemConfirm.title`),
+                                content: `<p>${GAME.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.deleteSystemConfirm.content", {systemName: systemToDelete.name})}</p>`,
+                                yes: () => {
+                                    const model = systemStateManager.getModelState().deleteSystemById(systemId);
+                                    model.selectSystem();
+                                    systemStateManager.save(model);
+                                }
+                            });
+                            return;
+                        }
+                    },
+                    {
+                        name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.duplicate`,
+                        icon: `<i class="fa-solid fa-paste"></i>`,
+                        callback: async (element: JQuery) => {
+                            const systemId = element.data()["systemId"] as string;
+                            const model = systemStateManager.getModelState().cloneCraftingSystemById(systemId);
+                            return systemStateManager.save(model);
+                        }
+                    }
+                ]
+            }],
             options: {
                 title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
                 id: `${Properties.module.id}-crafting-system-manager`,

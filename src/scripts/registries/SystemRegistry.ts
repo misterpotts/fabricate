@@ -9,13 +9,19 @@ interface SystemRegistry {
 
     getAllCraftingSystems(): Promise<Map<string, CraftingSystem>>;
 
+    getUserDefinedSystems(): Promise<Map<string, CraftingSystem>>;
+
+    getEmbeddedSystems(): Promise<Map<string, CraftingSystem>>;
+
     deleteCraftingSystemById(id: string): Promise<void>;
 
     saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem>;
 
+    saveCraftingSystems(craftingSystems: Map<string, CraftingSystem>): Promise<Map<string, CraftingSystem>>;
+
     cloneCraftingSystemById(id: string): Promise<CraftingSystem>;
 
-    getBundledCraftingSystemsJson(): Record<string, CraftingSystemJson>;
+    getEmbeddedCraftingSystemsJson(): CraftingSystemJson[];
 
     reset(): Promise<void>;
 
@@ -73,18 +79,36 @@ class DefaultSystemRegistry implements SystemRegistry {
     }
 
     public async getAllCraftingSystems(): Promise<Map<string, CraftingSystem>> {
-        let allCraftingSystemSettings: Record<string, CraftingSystemJson> = {};
+        const allCraftingSystems = await Promise.all([
+            this.getEmbeddedSystems(),
+            this.getUserDefinedSystems()
+        ]);
+        return new Map(allCraftingSystems
+            .flatMap(systemsById => <CraftingSystem[]>Array.from(systemsById.values()))
+            .map(value => <[string, CraftingSystem][]>[[value.id, value]])
+            .reduce((left, right) => left.concat(right), []));
+    }
+
+    async getEmbeddedSystems(): Promise<Map<string, CraftingSystem>> {
+        const embeddedSystems = await Promise.all(this.getEmbeddedCraftingSystemsJson()
+            .map(craftingSystemJson => this._craftingSystemFactory.make(craftingSystemJson)));
+        return new Map(embeddedSystems.map(embeddedSystem => [embeddedSystem.id, embeddedSystem]));
+    }
+
+    async getUserDefinedSystems(): Promise<Map<string, CraftingSystem>> {
+        let userDefinedCraftingSystemsJson: Record<string, CraftingSystemJson> = {};
         try {
-            allCraftingSystemSettings = await this._settingsManager.read();
-            Object.values(this.getBundledCraftingSystemsJson())
-                .forEach(systemJson => allCraftingSystemSettings[systemJson.id] = systemJson);
+            userDefinedCraftingSystemsJson = await this._settingsManager.read();
         } catch (e: any) {
-            allCraftingSystemSettings = await this.handleReadError(e);
+            userDefinedCraftingSystemsJson = await this.handleReadError(e);
         }
-        const craftingSystems = await Promise.all(Object.values(allCraftingSystemSettings)
-            .map(craftingSystemJson => this._craftingSystemFactory.make(craftingSystemJson))
-        );
-        return new Map(craftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
+        return this.prepareCraftingSystemsData(userDefinedCraftingSystemsJson);
+    }
+
+    private async prepareCraftingSystemsData(userDefinedCraftingSystemsJson: Record<string, CraftingSystemJson>): Promise<Map<string, CraftingSystem>> {
+        const userDefinedSystems = await Promise.all(Object.values(userDefinedCraftingSystemsJson)
+            .map(craftingSystemJson => this._craftingSystemFactory.make(craftingSystemJson)));
+        return new Map(userDefinedSystems.map(userDefinedSystem => [userDefinedSystem.id, userDefinedSystem]));
     }
 
     private async handleReadError(e: any): Promise<Record<string, CraftingSystemJson>> {
@@ -127,12 +151,18 @@ class DefaultSystemRegistry implements SystemRegistry {
         return craftingSystem;
     }
 
-    public getBundledCraftingSystemsJson(): Record<string, CraftingSystemJson> {
-        const systemSpecifications: Record<string, CraftingSystemJson> = {};
+    async saveCraftingSystems(craftingSystemsToSave: Map<string, CraftingSystem>): Promise<Map<string, CraftingSystem>> {
+        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = {};
+        craftingSystemsToSave
+            .forEach((value, key) => allCraftingSystemSettings[key] = value.toJson());
+        await this._settingsManager.write(allCraftingSystemSettings);
+        return this.prepareCraftingSystemsData(allCraftingSystemSettings);
+    }
+
+    public getEmbeddedCraftingSystemsJson(): CraftingSystemJson[] {
         const bundledSystems = [ALCHEMISTS_SUPPLIES];
-        bundledSystems.filter(bundledSystem => !bundledSystem.gameSystem || bundledSystem.gameSystem === this._gameSystem)
-            .forEach(bundledSystem => systemSpecifications[bundledSystem.definition.id] = bundledSystem.definition);
-        return systemSpecifications;
+        return bundledSystems.filter(bundledSystem => !bundledSystem.gameSystem || bundledSystem.gameSystem === this._gameSystem)
+            .map(bundledSystem => bundledSystem.definition);
     }
 
     public async reset(): Promise<void> {

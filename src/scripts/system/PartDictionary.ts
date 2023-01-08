@@ -22,6 +22,7 @@ interface PartCache<T, K> extends Serializable<Record<string, K>>{
 
     update(value: T): Promise<void>;
 
+    clone(): PartCache<T, K>;
 }
 
 interface PartLoader<T, K> {
@@ -367,6 +368,13 @@ class DefaultPartCache<T extends Identifiable & Serializable<K>, K> implements P
         return json;
     }
 
+    clone(): PartCache<T, K> {
+        return new DefaultPartCache({
+            cache: new Map(this._cache),
+            partLoader: this._partLoader
+        });
+    }
+
 }
 
 class PartDictionary {
@@ -449,7 +457,31 @@ class PartDictionary {
     }
 
     public async deleteComponentById(id: string): Promise<void> {
-        return await this._componentCache.deleteById(id);
+        const componentToDelete = await this._componentCache.getById(id);
+        await this._componentCache.deleteById(id);
+        const remainingComponents = await this._componentCache.getAll();
+        remainingComponents.forEach(component => {
+            if (component.salvage.hasPart(id)) {
+                component.salvage = component.salvage.without(componentToDelete.summarise());
+            }
+        });
+        const recipes = await this._recipeCache.getAll();
+        recipes.forEach(recipe => {
+            if (recipe.catalysts.hasPart(id)) {
+                recipe.catalysts = recipe.catalysts.without(componentToDelete);
+            }
+            recipe.ingredientOptions.choices.forEach(choice => {
+                if (choice.value.hasPart(id)) {
+                    recipe.setIngredientOption(choice.id, choice.value.without(componentToDelete));
+                }
+            });
+            recipe.resultOptions.choices.forEach(choice => {
+                if (choice.value.hasPart(id)) {
+                    recipe.setResultOption(choice.id, choice.value.without(componentToDelete));
+                }
+            });
+        });
+
     }
 
     public async deleteRecipeById(id: string): Promise<void> {
@@ -477,6 +509,13 @@ class PartDictionary {
         }
     }
 
+    clone() {
+        return new PartDictionary({
+            essenceCache: this._essenceCache.clone(),
+            recipeCache: this._recipeCache.clone(),
+            componentCache: this._componentCache.clone(),
+        });
+    }
 }
 
 class PartDictionaryFactory {

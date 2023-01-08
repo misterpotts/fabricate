@@ -1,12 +1,12 @@
 import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
-import {CraftingSystemManagerApp, CraftingSystemManagerAppFactory} from "./interface/apps/CraftingSystemManagerApp";
+import {CraftingSystemManagerAppFactory} from "./interface/apps/CraftingSystemManagerApp";
 import FabricateApplication from "./interface/FabricateApplication";
 import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
-import {ItemSheetExtension} from "./interface/apps/core/Applications";
+import {ApplicationWindow, ItemSheetExtension} from "./interface/apps/core/Applications";
 import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
 
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
@@ -19,14 +19,16 @@ Hooks.on("renderSidebarTab", async (app: any, html: any) => {
     const buttonText = GAME.i18n.localize(`${Properties.module.id}.ui.sidebar.buttons.openCraftingSystemManager`);
     const button = $(`<button class="${buttonClass}"><i class="fa-solid fa-flask-vial"></i> ${buttonText}</button>`);
 
-    const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
+    const embeddedSystems = await FabricateApplication.systemRegistry.getEmbeddedSystems();
+    const userDefinedSystems = await FabricateApplication.systemRegistry.getUserDefinedSystems();
     const applicationWindow = await new CraftingSystemManagerAppFactory()
-        .make(systemsById);
+        .make({embeddedSystems, userDefinedSystems});
     button.on('click', async (_event) => {
         applicationWindow.render();
     });
     buttons.append(button);
 });
+
 
 Hooks.on("renderItemSheet", async (app: any, html: any) => {
     const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
@@ -65,8 +67,6 @@ Hooks.once('init', async () => {
         }
     });
     FabricateApplication.systemRegistry = systemRegistry;
-    // @ts-ignore
-    globalThis.ui.CraftingSystemManagerApp = CraftingSystemManagerApp;
     gameObject.settings.register(Properties.module.id, Properties.settings.craftingSystems.key, {
         name: "",
         hint: "",
@@ -75,9 +75,9 @@ Hooks.once('init', async () => {
         type: Object,
         default: systemRegistry.getDefaultSettingValue(),
         onChange: () => {
-            Object.values(ui.windows)
-                .find(w => w instanceof CraftingSystemManagerApp)
-                ?.render(true);
+            const applicationWindow: ApplicationWindow<any, any> = <ApplicationWindow<any, any>>Object.values(ui.windows)
+                .find(w => w.id == "fabricate-crafting-system-manager");
+            applicationWindow.reload();
         }
     });
     try {
@@ -86,6 +86,11 @@ Hooks.once('init', async () => {
     } catch (e: any) {
         console.warn(`Unable to purge Fabricate's bundled systems from world settings. ${{e}}`)
     }
+    // Makes the system registry externally available
+    // @ts-ignore
+    gameObject[Properties.module.id] = {};
+    // @ts-ignore
+    gameObject[Properties.module.id].SystemRegistry = systemRegistry;
 });
 
 Hooks.once('ready', () => {

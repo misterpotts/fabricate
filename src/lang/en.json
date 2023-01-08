@@ -124,9 +124,16 @@
         "content": "Delete {systemName}? This action cannot be undone.",
         "title": "Fabricate | Delete crafting system"
       },
+      "noSystemSelected": "No crafting system selected. Create a new system or select one from the left menu.",
       "readErrorPrompt": {
         "title": "Error Reading Crafting Systems",
         "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
+      },
+      "prompts": {
+        "removeComponent": {
+          "title": "Remove {name}?",
+          "content": "The component will be removed from the Crafting System, as well as any Recipes and Components that reference it. This action cannot be undone. Are you sure?"
+        }
       },
       "tabs": {
         "recipes": {
