@@ -75,9 +75,12 @@ class CraftingSystem {
         this._partDictionary = partDictionary;
     }
 
-    public setEnabled(value: boolean): CraftingSystem {
-        this._enabled = value;
-        return this;
+    public enable(): void {
+        this._enabled = true;
+    }
+
+    public disable(): void {
+        this._enabled = false;
     }
 
     get locked(): boolean {
@@ -232,6 +235,26 @@ class CraftingSystem {
         };
     }
 
+    clone({id, name, locked}: { name: string; id: string; locked: boolean }) {
+        return new CraftingSystem({
+            id,
+            details: new CraftingSystemDetails({
+                name,
+                summary: this._details.summary,
+                description: this._details.description,
+                author: this._details.author,
+            }),
+            alchemyAttemptFactory:this._alchemyAttemptFactory,
+            craftingAttemptFactory:this._craftingAttemptFactory,
+            craftingChecks: {
+                alchemy: this._alchemyCraftingCheck,
+                recipe: this._recipeCraftingCheck
+            },
+            locked,
+            enabled: this._enabled,
+            partDictionary: this._partDictionary.clone()
+        });
+    }
 }
 
 export { CraftingSystem, CraftingSystemJson };

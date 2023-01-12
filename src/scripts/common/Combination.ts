@@ -335,6 +335,12 @@ class Combination<T extends Identifiable> {
         return this;
     }
 
+    without(part: T) {
+        const combination: Map<string, Unit<T>> = new Map(this._amounts);
+        combination.delete(part.id);
+        return new Combination<T>(combination);
+    }
+
     public multiply(factor: number) {
         const modifiedAmounts: Map<string, Unit<T>> = new Map(this._amounts);
         this.members.forEach((member: T) => {

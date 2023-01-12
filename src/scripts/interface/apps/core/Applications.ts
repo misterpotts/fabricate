@@ -1,5 +1,6 @@
 import Properties from "../../../Properties";
 import {GameProvider} from "../../../foundry/GameProvider";
+import {DefaultDocumentManager} from "../../../foundry/DocumentManager";
 
 interface ActionData {
     action: string;
@@ -8,7 +9,9 @@ interface ActionData {
         alt: boolean;
         ctrl: boolean;
     };
+    checked: boolean;
     data: Map<string, string>;
+    document?: any;
     event: any;
 }
 
@@ -68,6 +71,7 @@ class DefaultClickHandler<V, M, S extends StateManager<V, M>> implements ClickHa
             action: data.get("action"),
             data,
             event,
+            checked: event.target?.checked ?? false,
             keys: {
                 shift: event.shiftKey,
                 alt: event.altKey,
@@ -80,7 +84,10 @@ class DefaultClickHandler<V, M, S extends StateManager<V, M>> implements ClickHa
         const click = this.getClickData(clickEvent);
         if (this._actions.has(click.action)) {
             const model = await this._actions.get(click.action)(click, stateManager.getModelState());
-            await stateManager.save(model);
+            if (model) {
+                await stateManager.save(model);
+                return model;
+            }
             return stateManager.getModelState();
         }
         if (click.action) {
@@ -111,10 +118,13 @@ class DefaultDropHandler<V, M, S extends StateManager<V, M>> implements DropHand
     }
 
     async handle(dropEvent: any, stateManager: S): Promise<M> {
-        const dropData = this.getDropData(dropEvent);
+        const dropData = await this.getDropData(dropEvent);
         if (this._actions.has(dropData.action)) {
             const model = await this._actions.get(dropData.action)(dropData, stateManager.getModelState());
-            await stateManager.save(model);
+            if (model) {
+                await stateManager.save(model);
+                return model;
+            }
             return stateManager.getModelState();
         }
         if (dropData.action) {
@@ -127,31 +137,49 @@ class DefaultDropHandler<V, M, S extends StateManager<V, M>> implements DropHand
         return Object.fromEntries(data.entries());
     }
 
-    private getDropData(dropEvent: any): ActionData {
+    private async getDropData(dropEvent: any): Promise<ActionData> {
         const targetData = new Map(this._targetDataKeys.map(key => [key, getClosestElementDataForKey(key, dropEvent)]));
-        const rawDropData: string = dropEvent.dataTransfer.getData("application/json");
-        const data = new Map<string, string>(targetData);
-        try {
-            const dropData: any = JSON.parse(rawDropData);
-            Object.entries(dropData).forEach(entry => {
-                if (data.has(entry[0])) {
-                    console.warn(`The data key "${entry[0]}" exists in both the source and target. Overwriting source value with target value. `);
-                }
-                data.set(entry[0], <string>entry[1]);
-            });
-        } catch (e: any) {
-            console.error(`Something was dropped onto a Fabricate Drop Zone, but the event data could not be read. Caused by ${{e}}`);
-        }
-        return {
+        const rawJsonDropData: string = dropEvent.dataTransfer.getData("application/json");
+        const rawTextDropData: string = dropEvent.dataTransfer.getData("text/plain");
+        const actionData: ActionData = {
             action: targetData.get("dropTrigger"),
-            event: dropEvent,
-            data,
+                event: dropEvent,
+            data : null,
+            document: null,
+            checked: false,
             keys: {
                 shift: dropEvent.shiftKey,
                 alt: dropEvent.altKey,
                 ctrl: dropEvent.ctrlKey,
             }
         }
+        if (rawJsonDropData) {
+            const data = new Map<string, string>(targetData);
+            try {
+                const dropData: any = JSON.parse(rawJsonDropData);
+                Object.entries(dropData).forEach(entry => {
+                    if (data.has(entry[0])) {
+                        console.warn(`The data key "${entry[0]}" exists in both the source and target. Overwriting source value with target value. `);
+                    }
+                    data.set(entry[0], <string>entry[1]);
+                });
+                actionData.data = data;
+            } catch (e: any) {
+                console.error(`Something was dropped onto a Fabricate Drop Zone, but the event data could not be read. Caused by ${e}`);
+            }
+        }
+        if (rawTextDropData) {
+            try {
+                const dropData = JSON.parse(rawTextDropData);
+                if (Properties.module.documents.supportedTypes.indexOf(dropData.type) >= 0) {
+                    const document: any = await new DefaultDocumentManager().getDocumentByUuid(dropData.uuid);
+                    actionData.document = document;
+                }
+            } catch (e: any) {
+                console.error(`Something was dropped onto a Fabricate Drop Zone, but the event data could not be read. Caused by ${e}`);
+            }
+        }
+        return actionData;
     }
 }
 
@@ -210,7 +238,12 @@ interface SubmissionHandler<F, M> {
 
 }
 
-type ApplicationAction<M> = (actionData: ActionData, currentState: M) => Promise<M>;
+type ApplicationAction<M> = (actionData: ActionData, currentState: M) => Promise<M> | Promise<void>;
+
+interface ContextMenuDefinition {
+    entries: ContextMenuEntry[];
+    selector: string;
+}
 
 class ApplicationWindow<V, M> extends Application {
 
@@ -219,29 +252,38 @@ class ApplicationWindow<V, M> extends Application {
     private readonly _stateManager: StateManager<V, M>;
     private readonly _searchMappings: Map<string, (value: string, currentState: M) => Promise<void>>;
     private readonly _searches: Map<string, any> = new Map();
+    private _contextMenuDefinitions: ContextMenuDefinition[];
 
     constructor({
         clickHandler = new DefaultClickHandler({}),
         dropHandler = new DefaultDropHandler({}),
         options = {},
         stateManager = NoStateManager.getInstance(),
-        searchMappings = new Map()
+        searchMappings = new Map(),
+        contextMenuDefinitions = []
     }: {
         clickHandler?: ClickHandler<V, M>;
         dropHandler?: DropHandler<V, M>;
         options?: Partial<ApplicationOptions>;
         stateManager?: StateManager<V, M>;
         searchMappings?: Map<string, (value: string, currentState: M) => Promise<void>>;
+        contextMenuDefinitions?: ContextMenuDefinition[];
     }) {
         super(options);
         this._clickHandler = clickHandler;
         this._dropHandler = dropHandler;
         this._stateManager = stateManager;
         this._searchMappings = searchMappings;
+        this._contextMenuDefinitions = contextMenuDefinitions;
     }
 
-    render(force: boolean = true): void {
+    async render(force: boolean = true): Promise<void> {
         super.render(force);
+    }
+
+    async reload(): Promise<void> {
+        await this._stateManager.load();
+        return this.render(true);
     }
 
     async getData(): Promise<any> {
@@ -250,6 +292,7 @@ class ApplicationWindow<V, M> extends Application {
 
     activateListeners(html: JQuery): void {
         super.activateListeners(html);
+        this._contextMenu(html);
         const rootElement = html[0];
         rootElement.addEventListener("click", this.onClick.bind(this));
         html.find(`input[name="search"]`).each((_index, element) => {
@@ -296,6 +339,11 @@ class ApplicationWindow<V, M> extends Application {
 
     protected _canDragStart(selector: string): boolean {
         return super._canDragStart(selector);
+    }
+
+    protected _contextMenu(html: JQuery) {
+        this._contextMenuDefinitions
+            .forEach(contextMenuDefinition => new ContextMenu(html, contextMenuDefinition.selector, contextMenuDefinition.entries));
     }
 
 }

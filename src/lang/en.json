@@ -124,15 +124,36 @@
         "content": "Delete {systemName}? This action cannot be undone.",
         "title": "Fabricate | Delete crafting system"
       },
+      "noSystemSelected": "No crafting system selected. Create a new system or select one from the left menu.",
       "readErrorPrompt": {
         "title": "Error Reading Crafting Systems",
         "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
       },
+      "prompts": {
+        "itemReadError":{
+          "title": "Remove {type} {itemId}?",
+          "content": "The {type} with UUID {itemId} was referenced by a Fabricate Item, but does not exist. Deleting references to it will allow Fabricate to load. Proceed?"
+        },
+        "removeComponent": {
+          "title": "Remove {name}?",
+          "content": "The component will be removed from the Crafting System, as well as any Recipes and Components that reference it. This action cannot be undone. Are you sure?"
+        },
+        "removeEssence": {
+          "title": "Remove {name}?",
+          "content": "The essence will be removed from the Crafting System, as well as any Recipes and Components that reference it. This action cannot be undone. Are you sure?"
+        },
+        "removeRecipe": {
+          "title": "Remove {name}?",
+          "content": "The recipe will be removed from the Crafting System. This action cannot be undone. Are you sure?"
+        }
+      },
       "tabs": {
         "recipes": {
+          "title": "Recipes",
           "optionTooltip": "{size} Components"
         },
         "essences": {
+          "title": "Essences",
           "description": "Essences are a quality of a component. They define something that the component has, not something that it is. Components might have multiple Essences in different quantities, all of which you can define for your system. Not every crafting system needs essences. However, if you do want to add them to components, you'll need to define them here first.",
           "create": "Add a new Essence",
           "tableHeadings": {
@@ -144,6 +165,15 @@
             "edit": "Edit essence",
             "delete": "Delete essence"
           }
+        },
+        "alchemy": {
+          "title": "Alchemy"
+        },
+        "checks": {
+          "title": "Checks"
+        },
+        "components": {
+          "title": "Components"
         }
       }
     },

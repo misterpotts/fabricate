@@ -1,7 +1,11 @@
 import {CraftingComponent, CraftingComponentJson, CraftingComponentSummary} from "../common/CraftingComponent";
 import {CombinationChoice, Recipe, RecipeJson} from "../crafting/Recipe";
 import {Essence, EssenceJson} from "../common/Essence";
-import {DefaultDocumentManager, DocumentManager, FabricateItemData} from "../foundry/DocumentManager";
+import {
+    DefaultDocumentManager,
+    DocumentManager,
+    FabricateItemData
+} from "../foundry/DocumentManager";
 import {Combination} from "../common/Combination";
 import Properties from "../Properties";
 import {Identifiable, Serializable} from "../common/Identity";
@@ -22,9 +26,11 @@ interface PartCache<T, K> extends Serializable<Record<string, K>>{
 
     update(value: T): Promise<void>;
 
+    clone(): PartCache<T, K>;
 }
 
 interface PartLoader<T, K> {
+    size: number;
 
     loadById(id: string): Promise<T>;
 
@@ -91,6 +97,10 @@ class EssenceLoader implements PartLoader<Essence, EssenceJson> {
 
     contains(id: string): boolean {
         return !!this._sourceData[id];
+    }
+
+    get size(): number {
+        return this._sourceData ? Object.keys(this._sourceData).length : 0;
     }
 
 }
@@ -178,6 +188,10 @@ class ComponentLoader implements PartLoader<CraftingComponent, CraftingComponent
 
     contains(id: string): boolean {
         return !!this._sourceData[id];
+    }
+
+    get size(): number {
+        return this._sourceData ? Object.keys(this._sourceData).length : 0;
     }
 
 }
@@ -289,6 +303,10 @@ class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
         return CombinationChoice.between(...members)
     }
 
+    get size(): number {
+        return this._sourceData ? Object.keys(this._sourceData).length : 0;
+    }
+
 }
 
 class DefaultPartCache<T extends Identifiable & Serializable<K>, K> implements PartCache<T, K> {
@@ -344,7 +362,10 @@ class DefaultPartCache<T extends Identifiable & Serializable<K>, K> implements P
     }
 
     get size(): number {
-        return this._cache.size;
+        if (this._populated) {
+            return this._cache.size;
+        }
+        return this._partLoader.size;
     }
 
     public isEmpty(): boolean {
@@ -367,7 +388,21 @@ class DefaultPartCache<T extends Identifiable & Serializable<K>, K> implements P
         return json;
     }
 
+    clone(): PartCache<T, K> {
+        return new DefaultPartCache({
+            cache: new Map(this._cache),
+            partLoader: this._partLoader
+        });
+    }
+
 }
+
+enum ErrorDecisionType {
+    DELETE,
+    RETAIN
+}
+
+type ErrorDecisionProvider = (partType: string, itemId: string) => Promise<ErrorDecisionType>;
 
 class PartDictionary {
 
@@ -376,10 +411,10 @@ class PartDictionary {
     private readonly _recipeCache: PartCache<Recipe, RecipeJson>;
 
     constructor({
-        essenceCache,
-        componentCache,
-        recipeCache
-    }: {
+                    essenceCache,
+                    componentCache,
+                    recipeCache
+                }: {
         essenceCache: PartCache<Essence, EssenceJson>;
         componentCache: PartCache<CraftingComponent, CraftingComponentJson>;
         recipeCache: PartCache<Recipe, RecipeJson>;
@@ -418,7 +453,7 @@ class PartDictionary {
     }
 
     get size(): number {
-        return this._recipeCache.size + this._componentCache.size +this._essenceCache.size;
+        return this._recipeCache.size + this._componentCache.size + this._essenceCache.size;
     }
 
     public async getComponents(): Promise<CraftingComponent[]> {
@@ -449,7 +484,30 @@ class PartDictionary {
     }
 
     public async deleteComponentById(id: string): Promise<void> {
-        return await this._componentCache.deleteById(id);
+        const componentToDelete = await this._componentCache.getById(id);
+        await this._componentCache.deleteById(id);
+        const remainingComponents = await this._componentCache.getAll();
+        remainingComponents.forEach(component => {
+            if (component.salvage.has(componentToDelete.summarise())) {
+                component.salvage = component.salvage.without(componentToDelete.summarise());
+            }
+        });
+        const recipes = await this._recipeCache.getAll();
+        recipes.forEach(recipe => {
+            if (recipe.catalysts.has(componentToDelete)) {
+                recipe.catalysts = recipe.catalysts.without(componentToDelete);
+            }
+            recipe.ingredientOptions.choices.forEach(choice => {
+                if (choice.value.has(componentToDelete)) {
+                    recipe.setIngredientOption(choice.id, choice.value.without(componentToDelete));
+                }
+            });
+            recipe.resultOptions.choices.forEach(choice => {
+                if (choice.value.has(componentToDelete)) {
+                    recipe.setResultOption(choice.id, choice.value.without(componentToDelete));
+                }
+            });
+        });
     }
 
     public async deleteRecipeById(id: string): Promise<void> {
@@ -457,7 +515,20 @@ class PartDictionary {
     }
 
     public async deleteEssenceById(id: string): Promise<void> {
-        return await this._essenceCache.deleteById(id);
+        const essenceToDelete = await this._essenceCache.getById(id);
+        await this._essenceCache.deleteById(id);
+        const components = await this._componentCache.getAll();
+        components.forEach(component => {
+            if (component.essences.has(essenceToDelete)) {
+                component.essences = component.essences.without(essenceToDelete);
+            }
+        });
+        const recipes = await this._recipeCache.getAll();
+        recipes.forEach(recipe => {
+            if (recipe.essences.has(essenceToDelete)) {
+                recipe.essences = recipe.essences.without(essenceToDelete);
+            }
+        });
     }
 
     async loadAll(): Promise<void> {
@@ -477,6 +548,13 @@ class PartDictionary {
         }
     }
 
+    clone() {
+        return new PartDictionary({
+            essenceCache: this._essenceCache.clone(),
+            recipeCache: this._recipeCache.clone(),
+            componentCache: this._componentCache.clone()
+        });
+    }
 }
 
 class PartDictionaryFactory {
@@ -486,6 +564,7 @@ class PartDictionaryFactory {
         documentManager = new DefaultDocumentManager()
     }: {
         documentManager?: DocumentManager;
+        errorDecisionProvider?: ErrorDecisionProvider
     }) {
         this._documentManager = documentManager;
     }
@@ -497,8 +576,12 @@ class PartDictionaryFactory {
         const componentLoader = new ComponentLoader({sourceData: sourceData.components, essenceCache, documentManager});
         const componentCache = new DefaultPartCache({partLoader: componentLoader});
         const recipeLoader = new RecipeLoader({sourceData: sourceData.recipes, essenceCache, componentCache, documentManager});
-        const recipeCache = new DefaultPartCache({partLoader: recipeLoader})
-        return new PartDictionary({essenceCache, componentCache, recipeCache});
+        const recipeCache = new DefaultPartCache({partLoader: recipeLoader});
+        return new PartDictionary({
+            essenceCache,
+            componentCache,
+            recipeCache
+        });
     }
 
 }
@@ -509,4 +592,4 @@ interface PartDictionaryJson {
     essences: Record<string, EssenceJson>
 }
 
-export { PartDictionary, PartDictionaryJson, PartDictionaryFactory }
+export { PartDictionary, PartDictionaryJson, PartDictionaryFactory, ErrorDecisionProvider, ErrorDecisionType }
