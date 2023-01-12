@@ -130,9 +130,21 @@
         "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
       },
       "prompts": {
+        "itemReadError":{
+          "title": "Remove {type} {itemId}?",
+          "content": "The {type} with UUID {itemId} was referenced by a Fabricate Item, but does not exist. Deleting references to it will allow Fabricate to load. Proceed?"
+        },
         "removeComponent": {
           "title": "Remove {name}?",
           "content": "The component will be removed from the Crafting System, as well as any Recipes and Components that reference it. This action cannot be undone. Are you sure?"
+        },
+        "removeEssence": {
+          "title": "Remove {name}?",
+          "content": "The essence will be removed from the Crafting System, as well as any Recipes and Components that reference it. This action cannot be undone. Are you sure?"
+        },
+        "removeRecipe": {
+          "title": "Remove {name}?",
+          "content": "The recipe will be removed from the Crafting System. This action cannot be undone. Are you sure?"
         }
       },
       "tabs": {

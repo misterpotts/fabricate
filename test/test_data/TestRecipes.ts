@@ -10,7 +10,7 @@ import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 * Result Options: 1
 * */
 const testRecipeOne: Recipe = new Recipe({
-    id: "tdyV4AWuTMkXbepw",
+    id: "z2ixo2m312l",
     name: "Test Recipe One",
     ingredientOptions: CombinationChoice.between(
         Combination.of(testComponentOne, 1),
@@ -26,7 +26,7 @@ const testRecipeOne: Recipe = new Recipe({
 * Result Options: 1
 * */
 const testRecipeTwo: Recipe = new Recipe({
-    id: "QBmv3SSCaae2xxzT",
+    id: "fzv66f90sd",
     name: "Test Recipe Two",
     ingredientOptions: CombinationChoice.just(Combination.of(testComponentFour, 1)),
     catalysts: Combination.of(testComponentFive, 1),
@@ -40,7 +40,7 @@ const testRecipeTwo: Recipe = new Recipe({
 * Result Options: 1
 * */
 const testRecipeThree: Recipe = new Recipe({
-    id: "eT4j7mNbZGHIUOtT",
+    id: "5pux8ghlct",
     name: "Test Recipe Three",
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 3),
@@ -56,7 +56,7 @@ const testRecipeThree: Recipe = new Recipe({
 * Result Options: 1
 * */
 const testRecipeFour: Recipe = new Recipe({
-    id: "l46uaz805Fr9lZvU",
+    id: "3lieym2gjef",
     name: "Test Recipe Four",
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 1),
@@ -74,7 +74,7 @@ const testRecipeFour: Recipe = new Recipe({
 * Result Options: 1
 * */
 const testRecipeFive: Recipe = new Recipe({
-    id: "jLAVDWQdUUYr56Eo",
+    id: "fequ5qvoqh",
     name: "Test Recipe Five",
     essences: Combination.ofUnits([
         new Unit(elementalFire, 1),
@@ -91,7 +91,7 @@ const testRecipeFive: Recipe = new Recipe({
 * Result Options: 1
 * */
 const testRecipeSix: Recipe = new Recipe({
-    id: "jLAVDWQdUUYr56Eo",
+    id: "bx8luu4cpd",
     name: "Test Recipe Six",
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 3),
@@ -118,7 +118,7 @@ const testRecipeSix: Recipe = new Recipe({
 * Result Options: 1
 * */
 const testRecipeSeven: Recipe = new Recipe({
-    id: "QBmv3SSCaae2xxzT",
+    id: "8kimdf8z83",
     name: "Test Recipe Two",
     ingredientOptions: CombinationChoice.just(Combination.of(testComponentFour, 1)),
     resultOptions: CombinationChoice.just(Combination.of(testComponentTwo, 2))

@@ -1,13 +1,23 @@
-import {DocumentManager, FabricateItemData} from "../../src/scripts/foundry/DocumentManager";
+import {DocumentManager, FabricateItemData, ItemNotFoundError} from "../../src/scripts/foundry/DocumentManager";
 import {CraftingComponent, CraftingComponentJson} from "../../src/scripts/common/CraftingComponent";
 import {Recipe, RecipeJson} from "../../src/scripts/crafting/Recipe";
 
 class StubDocumentManager implements DocumentManager {
 
-    private readonly _itemData: Map<string, FabricateItemData>;
+    private readonly _permissive: boolean;
+    private static readonly _defaultItemData: FabricateItemData = {
+        name: "Item name",
+        imageUrl: "path/to/image/webp",
+        uuid: "NOT_A_UUID",
+        source: {}
+    };
 
-    constructor(itemData: Map<string, FabricateItemData>) {
+    private readonly _itemData: Map<string, FabricateItemData>;
+    private readonly _poisonIds: string[] = [];
+
+    constructor(itemData: Map<string, FabricateItemData>, permissive = true) {
         this._itemData = itemData;
+        this._permissive = permissive;
     }
 
     public static forParts({
@@ -69,18 +79,40 @@ class StubDocumentManager implements DocumentManager {
         parts.map(part => mappingFunction(part)).forEach(itemData => target.set(itemData.uuid, itemData));
     }
 
-    public async getDocumentByUuid(_id: string): Promise<any> {
-        return Promise.resolve({
-            name: "Item name",
-            img: "path/to/image/webp",
-            uuid: "NOT_A_UUID"
-        });
+    public async getDocumentByUuid(id: string): Promise<any> {
+        if (this._poisonIds.includes(id)) {
+            throw new ItemNotFoundError(id);
+        }
+        const result = this._itemData.get(id);
+        if (!result && this._permissive) {
+            return StubDocumentManager._defaultItemData;
+        } else if (!result) {
+            throw new ItemNotFoundError(id);
+        } else {
+            return result;
+        }
     }
 
     public async getDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>> {
-        return new Map(ids.map(id => this._itemData.get(id))
-            .map(itemData => [itemData.uuid, itemData])
-        );
+        const results = new Map<string, FabricateItemData>();
+        for (const id of ids) {
+            if (this._poisonIds.includes(id)) {
+                throw new ItemNotFoundError(id);
+            }
+            const result = this._itemData.get(id);
+            if (!result && this._permissive) {
+                results.set(id, StubDocumentManager._defaultItemData);
+            } else if (!result) {
+                throw new ItemNotFoundError(id);
+            } else {
+                results.set(id, this._itemData.get(id));
+            }
+        }
+        return results;
+    }
+
+    poison(id: string) {
+        this._poisonIds.push(id);
     }
 
 }

@@ -1,6 +1,6 @@
 import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
-import {CraftingSystemManagerAppFactory} from "./interface/apps/CraftingSystemManagerApp";
+import CraftingSystemManagerAppFactory from "./interface/apps/CraftingSystemManagerApp";
 import FabricateApplication from "./interface/FabricateApplication";
 import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
@@ -21,8 +21,7 @@ Hooks.on("renderSidebarTab", async (app: any, html: any) => {
 
     const embeddedSystems = await FabricateApplication.systemRegistry.getEmbeddedSystems();
     const userDefinedSystems = await FabricateApplication.systemRegistry.getUserDefinedSystems();
-    const applicationWindow = await new CraftingSystemManagerAppFactory()
-        .make({embeddedSystems, userDefinedSystems});
+    const applicationWindow = await CraftingSystemManagerAppFactory.make({embeddedSystems, userDefinedSystems});
     button.on('click', async (_event) => {
         applicationWindow.render();
     });
