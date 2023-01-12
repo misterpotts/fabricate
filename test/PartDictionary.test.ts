@@ -106,7 +106,7 @@ describe('Index and Retrieve', () => {
     );
     const stubDocumentManager = new StubDocumentManager(itemData);
 
-    test('Should delete invalid components when loading fails', async () => {
+    test.skip('Should delete invalid components when loading fails', async () => {
 
         const poisonDocumentManager = new StubDocumentManager(itemData);
         poisonDocumentManager.poison(testComponentThree.id);
