@@ -144,7 +144,7 @@ class DefaultDropHandler<V, M, S extends StateManager<V, M>> implements DropHand
         const actionData: ActionData = {
             action: targetData.get("dropTrigger"),
                 event: dropEvent,
-            data : null,
+            data : new Map<string, string>(targetData),
             document: null,
             checked: false,
             keys: {
@@ -154,16 +154,14 @@ class DefaultDropHandler<V, M, S extends StateManager<V, M>> implements DropHand
             }
         }
         if (rawJsonDropData) {
-            const data = new Map<string, string>(targetData);
             try {
                 const dropData: any = JSON.parse(rawJsonDropData);
                 Object.entries(dropData).forEach(entry => {
-                    if (data.has(entry[0])) {
+                    if (actionData.data.has(entry[0])) {
                         console.warn(`The data key "${entry[0]}" exists in both the source and target. Overwriting source value with target value. `);
                     }
-                    data.set(entry[0], <string>entry[1]);
+                    actionData.data.set(entry[0], <string>entry[1]);
                 });
-                actionData.data = data;
             } catch (e: any) {
                 console.error(`Something was dropped onto a Fabricate Drop Zone, but the event data could not be read. Caused by ${e}`);
             }
@@ -174,6 +172,9 @@ class DefaultDropHandler<V, M, S extends StateManager<V, M>> implements DropHand
                 if (Properties.module.documents.supportedTypes.indexOf(dropData.type) >= 0) {
                     const document: any = await new DefaultDocumentManager().getDocumentByUuid(dropData.uuid);
                     actionData.document = document;
+                    if (document) {
+                        actionData.data.set("partId", document.uuid);
+                    }
                 }
             } catch (e: any) {
                 console.error(`Something was dropped onto a Fabricate Drop Zone, but the event data could not be read. Caused by ${e}`);
