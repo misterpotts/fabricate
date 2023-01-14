@@ -75,7 +75,65 @@ Changes to Fabricate are documented on the [releases](https://github.com/misterp
 # Contributing
 
 If you'd like to be involved I'd love to have some help! 
+Take a look at the [contributing guide](CONTRIBUTING.md) and feel free to get in touch va [Discord](discordapp.com/users/MisterPotts#0255) or [email](mailto:matt@mrpotts.uk).
 I'm always happy to talk to you about how people can contribute.
+
+## Building Fabricate
+
+Checkout the code on the `main` branch (SSL: `git@github.com:misterpotts/fabricate.git`) and run the following script to build the module:
+
+```shell
+npm run build
+```
+
+To build with inline sourcemaps and human-readable output from Webpack, you can use:
+
+```shell
+npm run buildDev
+```
+
+## Testing Fabricate
+
+Fabricate uses Jest for testing. You can execute the test suite with the following command.
+
+```shell
+npm test
+```
+
+## Local Install
+
+Local installation is straightforward.
+Just run the following command.
+
+```shell
+npm run releaseLocal
+```
+
+Fabricate will `test`, `buildDev` and then copy the build output from the `/dist` directory to your local Foundry VTT Data directory.
+This lets you use the development version of the Fabricate module straight away!
+Just startup Foundry and enable Fabricate in module settings.
+
+Fabricate installs the local build directly to your Foundry VTT Data Directory, under `/modules/fabricate`.
+The default Foundry VTT Data Directory is `"../../dev-data/Data"`.
+Fabricate assumes that you're doing local development with the following folder structure:
+
+```
+foundry-dev-root
+- dev-data
+  - Data (your Foundry VTT Data Directory)
+    - modules
+      - fabricate
+      ... other locally installed modules
+- dev-modules
+  - fabricate
+  ... other modules being developed
+```
+
+If you don't want to organise your projects how I do, you can set the `FVTT_DEV_DATA` environment variable to override the relative Foundry VTT Data Directory location.
+
+```shell
+export FVTT_DEV_DATA="relative-path/from-the-build-directory/to-your-FVTT/Data"
+```
 
 # License
 
