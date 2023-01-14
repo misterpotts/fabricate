@@ -30,6 +30,7 @@ interface SystemRegistry {
     createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem>;
 
     handleItemDeleted(uuid: string): Promise<void>;
+
 }
 
 enum ErrorDecisionType {

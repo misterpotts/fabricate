@@ -236,7 +236,7 @@ class CraftingSystemManagerAppFactory {
         const model = new SystemManagerModel({embeddedSystems, userDefinedSystems});
         const systemStateManager = new SystemStateManager({model});
         await systemStateManager.load();
-        const gameObject = new GameProvider().globalGameObject();
+        const GAME = new GameProvider().globalGameObject();
         return new ApplicationWindow({
             stateManager: systemStateManager,
             dropHandler: new DefaultDropHandler({
@@ -297,7 +297,52 @@ class CraftingSystemManagerAppFactory {
                         return currentState.disableSelectedSystem();
                     }],
                     ["importCraftingSystem", async (_actionData: ActionData, _currentState: SystemManagerModel) => {
-                        throw new Error("Import is not implemented. ");
+                        const craftingSystemTypeName = GAME.i18n.localize(`${Properties.module.id}.partTypes.system`);
+                        const importActionHint = GAME.i18n.localize(`${Properties.module.id}.ImportCraftingSystemDialog.hintText`);
+                        const content = await renderTemplate("templates/apps/import-data.html", {
+                            hint1: GAME.i18n.format("DOCUMENT.ImportDataHint1", {document: craftingSystemTypeName}),
+                            hint2: GAME.i18n.format("DOCUMENT.ImportDataHint2", {name: importActionHint})
+                        });
+                        new Dialog({
+                            title: GAME.i18n.localize(`${Properties.module.id}.ImportCraftingSystemDialog.title`),
+                            content: content,
+                            default: "import",
+                            buttons: {
+                                import: {
+                                    icon: '<i class="fas fa-file-import"></i>',
+                                    label: GAME.i18n.localize(`${Properties.module.id}.ImportCraftingSystemDialog.buttons.import.label`),
+                                    callback: async (html) => {
+                                        // @ts-ignore
+                                        const form = html.find("form")[0];
+                                        if (!form.data.files.length) {
+                                            const message = GAME.i18n.localize(`${Properties.module.id}.ImportCraftingSystemDialog.errors.noFileUploaded`);
+                                            ui.notifications.error(message);
+                                            throw new Error(message);
+                                        }
+                                        const fileData = await readTextFromFile(form.data.files[0]);
+                                        try {
+                                            const craftingSystemJson = JSON.parse(fileData);
+                                            if (!craftingSystemJson.id) {
+                                                craftingSystemJson.id = randomID();
+                                            }
+                                            const craftingSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
+                                            const message = GAME.i18n.format(`${Properties.module.id}.ImportCraftingSystemDialog.info.success`, { systemName: craftingSystem.name});
+                                            ui.notifications.info(message);
+                                        } catch (e: any) {
+                                            const message = GAME.i18n.localize(`${Properties.module.id}.ImportCraftingSystemDialog.errors.couldNotParseFile`);
+                                            ui.notifications.error(message);
+                                            throw new Error(message);
+                                        }
+                                    }
+                                },
+                                no: {
+                                    icon: '<i class="fas fa-times"></i>',
+                                    label: GAME.i18n.localize(`${Properties.module.id}.ImportCraftingSystemDialog.buttons.no.label`)
+                                }
+                            }
+                        }, {
+                            width: 400
+                        }).render(true);
                     }],
                     ["removeComponent", async (actionData: ActionData, currentState: SystemManagerModel) => {
                         const componentId = actionData.data.get("componentId");
@@ -310,8 +355,8 @@ class CraftingSystemManagerAppFactory {
                             return currentState;
                         }
                         const doDelete = await Dialog.confirm({
-                            title: gameObject.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeComponent.title`, {name: component.name}),
-                            content: `<p>${gameObject.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeComponent.content")}</p>`,
+                            title: GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeComponent.title`, {name: component.name}),
+                            content: `<p>${GAME.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeComponent.content")}</p>`,
                         });
                         if (doDelete) {
                             await currentState.removeComponentFromSelectedSystem(componentId);
@@ -329,8 +374,8 @@ class CraftingSystemManagerAppFactory {
                             return currentState;
                         }
                         const doDelete = await Dialog.confirm({
-                            title: gameObject.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeRecipe.title`, {name: recipe.name}),
-                            content: `<p>${gameObject.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeRecipe.content")}</p>`,
+                            title: GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeRecipe.title`, {name: recipe.name}),
+                            content: `<p>${GAME.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeRecipe.content")}</p>`,
                         });
                         if (doDelete) {
                             await currentState.removeRecipeFromSelectedSystem(recipeId);
@@ -372,8 +417,8 @@ class CraftingSystemManagerAppFactory {
                             return currentState;
                         }
                         const doDelete = await Dialog.confirm({
-                            title: gameObject.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeEssence.title`, {name: essence.name}),
-                            content: `<p>${gameObject.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeEssence.content")}</p>`,
+                            title: GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.prompts.removeEssence.title`, {name: essence.name}),
+                            content: `<p>${GAME.i18n.localize(Properties.module.id + ".CraftingSystemManagerApp.prompts.removeEssence.content")}</p>`,
                         });
                         if (doDelete) {
                             await currentState.removeEssenceFromSelectedSystem(essenceId);
@@ -388,8 +433,28 @@ class CraftingSystemManagerAppFactory {
                     {
                         name: `${Properties.module.id}.CraftingSystemManagerApp.contextMenu.export`,
                         icon: `<i class="fa-solid fa-file-export"></i>`,
+                        condition: (element: JQuery) => {
+                            const locked = element.data()["locked"] as boolean;
+                            return !locked;
+                        },
                         callback: async (element: JQuery) => {
-                            console.log(element.data()["systemId"]);
+                            const systemId = element.data()["systemId"];
+                            const GAME = new GameProvider().globalGameObject();
+                            if (!systemId) {
+                                const message = GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.errors.export.noIdProvided`);
+                                ui.notifications.error(message);
+                                throw new Error(message);
+                            }
+                            const craftingSystem = await FabricateApplication.systemRegistry.getCraftingSystemById(systemId);
+                            if (!craftingSystem) {
+                                const message = GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.errors.export.systemNotFound`, { systemId: systemId });
+                                ui.notifications.error(message);
+                                throw new Error(message);
+                            }
+                            const exportData = JSON.stringify(craftingSystem.toJson(), null, 2);
+                            const fileName = `fabricate-crafting-system-${craftingSystem.name.slugify()}.json`
+                            saveDataToFile(exportData, "application/json", fileName);
+                            ui.notifications.info(GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.info.export.success`, { systemName: craftingSystem.name, fileName }))
                         }
                     },
                     {
