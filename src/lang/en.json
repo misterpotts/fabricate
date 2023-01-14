@@ -1,5 +1,11 @@
 {
   "fabricate": {
+    "partTypes": {
+      "recipe": "Recipe",
+      "component": "Crafting Component",
+      "system": "Crafting System",
+      "essence": "Essence"
+    },
     "ComponentManagerApp": {
       "title": "Fabricate | Component",
       "essences": {
@@ -90,6 +96,25 @@
         "invalidSystemDefinition": "Fabricate attempted to create an invalid Crafting System. Check the console (F12) for more information"
       }
     },
+    "ImportCraftingSystemDialog": {
+      "title": "Fabricate | Import Crafting System",
+      "hintText": "the Crafting System with the same ID as the Crafting System in the uploaded document, or create a new one,",
+      "buttons": {
+        "no": {
+          "label": "Cancel"
+        },
+        "import": {
+          "label": "Import"
+        }
+      },
+      "errors": {
+        "noFileUploaded": "You must select a file to upload",
+        "couldNotParseFile": "Unable to parse JSON file."
+      },
+      "info": {
+        "success": "Successfully Imported the {systemName} Crafting System"
+      }
+    },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",
       "sidebar": {
@@ -128,6 +153,17 @@
       "readErrorPrompt": {
         "title": "Error Reading Crafting Systems",
         "content": "{errorMessage}. \n You can reset Fabricate to resolve the error, but this will delete all except the bundled crafting systems!"
+      },
+      "errors": {
+        "export": {
+          "systemNotFound": "The Crafting System with ID {systemId} could not be exported as it could not be found.",
+          "noIdProvided": "Cannot export Crafting System as no ID was provided. "
+        }
+      },
+      "info": {
+        "export": {
+          "success": "The Crafting System {systemName} was successfully exported to {fileName}."
+        }
       },
       "prompts": {
         "itemReadError":{
