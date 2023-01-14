@@ -9,6 +9,13 @@ import {CraftingSystemJson} from "./system/CraftingSystem";
 import {ApplicationWindow, ItemSheetExtension} from "./interface/apps/core/Applications";
 import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
 
+// `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
+// `id` is useless to Fabricate
+Hooks.on("deleteItem", async (item: any, _app: unknown, _id: string) => {
+    console.log(`Item UUID ${item.uuid} deleted`);
+    await FabricateApplication.systemRegistry.handleItemDeleted(item.uuid);
+});
+
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
     const GAME = new GameProvider().globalGameObject();
     if (!(app instanceof ItemDirectory) || !GAME.user.isGM) {

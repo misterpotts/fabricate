@@ -119,7 +119,7 @@ class CraftingSystemDetailSubmissionHandler implements SubmissionHandler<Craftin
     }
 
     validate(formData: CraftingSystemDetailsJson): FormError[] {
-                const GAME = new GameProvider().globalGameObject();
+        const GAME = new GameProvider().globalGameObject();
         const errors: Array<FormError> = [];
         if (!formData.name || formData.name.length === 0) {
             errors.push({

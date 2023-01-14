@@ -29,6 +29,7 @@ interface SystemRegistry {
 
     createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem>;
 
+    handleItemDeleted(uuid: string): Promise<void>;
 }
 
 enum ErrorDecisionType {
@@ -177,6 +178,52 @@ class DefaultSystemRegistry implements SystemRegistry {
         const craftingSystem = await this._craftingSystemFactory.make(systemDefinition);
         return this.saveCraftingSystem(craftingSystem);
     }
+
+    public async handleItemDeleted(uuid: string): Promise<void> {
+        const systemsJson = await this._settingsManager.read();
+        let referenceCount = 0;
+        let recipeCount = 0;
+        let componentCount = 0;
+        Object.values(systemsJson).forEach(craftingSystemJson => {
+            if (craftingSystemJson.parts.components[uuid]) {
+                delete craftingSystemJson.parts.components[uuid];
+                componentCount++;
+            }
+            Object.values(craftingSystemJson.parts.components)
+                .forEach(componentJson => {
+                    if (componentJson.salvage[uuid]) {
+                        delete componentJson.salvage[uuid];
+                        referenceCount++;
+                    }
+                });
+            if (craftingSystemJson.parts.recipes[uuid]) {
+                delete craftingSystemJson.parts.recipes[uuid];
+                recipeCount++;
+            }
+            Object.values(craftingSystemJson.parts.recipes)
+                .forEach(recipeJson => {
+                    if (recipeJson.catalysts[uuid]) {
+                        delete recipeJson.catalysts[uuid];
+                        referenceCount++;
+                    }
+                    recipeJson.ingredientGroups.forEach(ingredientGroup => {
+                        if (ingredientGroup[uuid]) {
+                            delete ingredientGroup[uuid];
+                            referenceCount++;
+                        }
+                    });
+                    recipeJson.resultGroups.forEach(ingredientGroup => {
+                        if (ingredientGroup[uuid]) {
+                            delete ingredientGroup[uuid];
+                            referenceCount++;
+                        }
+                    });
+                });
+        });
+        await this._settingsManager.write(systemsJson);
+        console.info(`Deleted ${recipeCount} Recipes, ${componentCount} Components and ${referenceCount} references to the Item with UUID ${uuid} across ${Object.keys(systemsJson).length} Crafting Systems. `);
+    }
+
 }
 
 export { SystemRegistry, DefaultSystemRegistry, ErrorDecisionType }

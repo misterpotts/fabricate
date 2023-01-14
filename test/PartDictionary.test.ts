@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 
-import {ErrorDecisionType, PartDictionary, PartDictionaryFactory} from "../src/scripts/system/PartDictionary";
+import {PartDictionary, PartDictionaryFactory} from "../src/scripts/system/PartDictionary";
 import {
     testComponentFive,
     testComponentFour,
