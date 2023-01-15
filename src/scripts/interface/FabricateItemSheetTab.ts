@@ -6,7 +6,9 @@ import Properties from "../Properties";
 
 interface SystemData {
     recipe?: Recipe;
+    craftable: boolean;
     component?: CraftingComponent;
+    salvageable: boolean;
     system: CraftingSystem;
 }
 
@@ -45,19 +47,31 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
         const sourceId = app.document.getFlag("core", "sourceId");
         const identifiers = [uuid, sourceId];
         const systemData = await Promise.all(
-            this._craftingSystems.map(system => this.getSystemData(system, identifiers))
+            this._craftingSystems.filter(system => system.enabled)
+                .map(system => this.getSystemData(system, identifiers, app.document))
         );
         this._tabs = this.prepareTabData(systemData.filter(system => system.recipe || system.component), app.document);
     }
 
-    private async getSystemData(system: CraftingSystem, identifiers: string[]): Promise<SystemData> {
-        const systemData: SystemData = { system, component: null, recipe: null };
+    private async getSystemData(system: CraftingSystem, identifiers: string[], document: any): Promise<SystemData> {
+        const systemData: SystemData = {
+            system, component: null,
+            recipe: null,
+            craftable: false,
+            salvageable: false
+        };
         for (const identifier of identifiers) {
             if (!systemData.recipe && system.hasRecipe(identifier)) {
                 systemData.recipe = await system.getRecipeById(identifier);
+                if (document.actor) {
+                    // const _inventory = FabricateApplication.inventoryRegistry.getForActor(document.actor.id);
+                    // todo: implement
+                    systemData.craftable = false;
+                }
             }
             if (!systemData.component && system.hasComponent(identifier)) {
                 systemData.component = await system.getComponentById(identifier);
+                systemData.salvageable = systemData.component.isSalvageable;
             }
         }
         return systemData;
@@ -76,7 +90,7 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
             templatePath: Properties.module.templates.itemSheetCraftingTab,
             data: {
                 systems: systemData,
-                isEmbedded: document.isEmbedded ?? false,
+                owned: !!document?.isEmbedded,
                 actor: document.parent
             }
         }];

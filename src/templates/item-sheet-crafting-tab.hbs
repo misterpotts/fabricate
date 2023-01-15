@@ -1,11 +1,38 @@
-<div class="fabricate-item-crafting-content">
+<div class="fabricate-item-tab-wrapper">
+    <div class="fabricate-item-tab-header">
+        <div class="fabricate-title">
+            Crafting
+        </div>
+        <div class="fabricate-tag-list fabricate-inline-list fabricate-align-right">
+            {{#each systems}}
+                <span class="fabricate-tag fabricate-list-item fabricate-clickable fabricate-selected">{{system.name}}</span>
+            {{/each}}
+        </div>
+    </div>
     {{#each systems}}
-        <h3 class="form-header">Crafting System: {{system.name}}</h3>
         {{#if recipe}}
-            isRecipe
-        {{/if}}
-        {{#if component}}
-            isComponent
+            <div class="fabricate-item-detail">
+                <div class="fabricate-item-header-outer">
+                    <div class="fabricate-item-header">
+                        <div class="fabricate-item-title">
+                            {{localize "fabricate.partTypes.recipe"}}
+                        </div>
+                        <div class="fabricate-item-conditions fabricate-inline-list fabricate-align-right">
+                            <span class="fabricate-item-condition fabricate-list-item" data-tooltip="Part of {{system.name}}"><i class="fa-solid fa-pen-ruler"></i></span>
+                            {{#if ../owned}}
+                                <span class="fabricate-item-condition fabricate-list-item" data-tooltip="Owned by {{../actor.name}}"><i class="fa-solid fa-circle-user"></i></span>
+                            {{else}}
+                                <span class="fabricate-item-condition fabricate-list-item" data-tooltip="Not owned"><i class="fa-solid fa-user-slash"></i></span>
+                            {{/if}}
+                            {{#if craftable}}
+                                <span class="fabricate-item-condition fabricate-list-item" data-tooltip="Can be crafted"><i class="fa-solid fa-hammer"></i></span>
+                            {{else}}
+                                <span class="fabricate-item-condition fabricate-list-item" data-tooltip="Cannot be crafted"><i class="fa-solid fa-xmark"></i></span>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
         {{/if}}
     {{/each}}
 </div>

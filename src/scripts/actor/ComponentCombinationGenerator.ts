@@ -30,18 +30,18 @@ export class ComponentCombinationGenerator {
     }
 
     private excludeInsufficient(allCombinations: ComponentCombinationNode[], requiredEssences: Combination<Essence>): ComponentCombinationNode[] {
-        return allCombinations.filter((node) => node.essenceCombination.size() >= requiredEssences.size()
+        return allCombinations.filter((node) => node.essenceCombination.size >= requiredEssences.size
             && requiredEssences.isIn(node.essenceCombination));
     }
 
     private excludeDuplicates(sufficientCombinations: ComponentCombinationNode[]): [Combination<CraftingComponent>, Combination<Essence>][] {
         const suitableCombinationsBySize: Map<number, [Combination<CraftingComponent>, Combination<Essence>][]> = new Map();
         sufficientCombinations.forEach((node) => {
-            if (!suitableCombinationsBySize.has(node.componentCombination.size())) {
-                suitableCombinationsBySize.set(node.componentCombination.size(), [[node.componentCombination, node.essenceCombination]]);
+            if (!suitableCombinationsBySize.has(node.componentCombination.size)) {
+                suitableCombinationsBySize.set(node.componentCombination.size, [[node.componentCombination, node.essenceCombination]]);
             } else {
                 let isDuplicate: boolean = false;
-                const existing: [Combination<CraftingComponent>, Combination<Essence>][] = suitableCombinationsBySize.get(node.componentCombination.size());
+                const existing: [Combination<CraftingComponent>, Combination<Essence>][] = suitableCombinationsBySize.get(node.componentCombination.size);
                 for (const existingCombination of existing) {
                     if (existingCombination[0].equals(node.componentCombination)) {
                         isDuplicate = true;

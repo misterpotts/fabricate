@@ -8,6 +8,8 @@ import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
 import {ApplicationWindow, ItemSheetExtension} from "./interface/apps/core/Applications";
 import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
+import {DefaultInventoryRegistry} from "./registries/InventoryRegistry";
+import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
@@ -48,6 +50,14 @@ Hooks.on("renderItemSheet", async (app: any, html: any) => {
 });
 
 Hooks.once('init', async () => {
+    /*
+    * Create the Inventory registry
+    */
+    const inventoryFactory = new DefaultInventoryFactory();
+    const inventoryRegistry = new DefaultInventoryRegistry({inventoryFactory});
+    /*
+    * Create the Crafting System registry
+    */
     const gameProvider = new GameProvider();
     const gameObject = gameProvider.globalGameObject();
     const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
@@ -55,7 +65,7 @@ Hooks.once('init', async () => {
         moduleId: Properties.module.id,
         settingKey: Properties.settings.craftingSystems.key,
         targetVersion: Properties.settings.craftingSystems.targetVersion,
-        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>()
+        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>() // still on v1 :shrug:
     });
     const systemRegistry = new DefaultSystemRegistry({
         settingManager: craftingSystemSettingManager,
@@ -73,6 +83,9 @@ Hooks.once('init', async () => {
         }
     });
     FabricateApplication.systemRegistry = systemRegistry;
+    /*
+    * Register game settings for Fabricate
+    */
     gameObject.settings.register(Properties.module.id, Properties.settings.craftingSystems.key, {
         name: "",
         hint: "",
@@ -81,11 +94,17 @@ Hooks.once('init', async () => {
         type: Object,
         default: systemRegistry.getDefaultSettingValue(),
         onChange: () => {
+            // Reload the crafting system UI if it exists
             const applicationWindow: ApplicationWindow<any, any> = <ApplicationWindow<any, any>>Object.values(ui.windows)
                 .find(w => w.id == "fabricate-crafting-system-manager");
             applicationWindow.reload();
+            // Reload all open item application windows
+            Object.values(ui.windows)
+                .filter(w => w instanceof ItemSheet)
+                .forEach(w => w.render());
         }
     });
+    // Cleans up the old embedded system data which should no longer be stored in game settings
     try {
         // todo: remove purge in later versions
         await systemRegistry.purgeBundledSystemsFromStoredSettings();
@@ -97,6 +116,8 @@ Hooks.once('init', async () => {
     gameObject[Properties.module.id] = {};
     // @ts-ignore
     gameObject[Properties.module.id].SystemRegistry = systemRegistry;
+    // @ts-ignore
+    gameObject[Properties.module.id].InventoryRegistry = inventoryRegistry;
 });
 
 Hooks.once('ready', () => {

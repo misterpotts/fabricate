@@ -30,7 +30,7 @@ export class EssenceSelection {
         }
         const sortedCombinations = combinations
             .sort((left, right) => {
-                return left[1].size() - right[1].size();
+                return left[1].size - right[1].size;
             });
         return sortedCombinations[0][0];
     }
