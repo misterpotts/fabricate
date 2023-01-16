@@ -1,4 +1,4 @@
-import {ItemSheetModifier, SheetTab} from "./apps/core/Applications";
+import {ItemSheetModifier, SheetTab, SheetTabAction} from "./apps/core/Applications";
 import {CraftingSystem} from "../system/CraftingSystem";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
@@ -10,6 +10,7 @@ interface SystemData {
     component?: CraftingComponent;
     salvageable: boolean;
     system: CraftingSystem;
+    visible: boolean;
 }
 
 export class FabricateItemSheetTab implements ItemSheetModifier {
@@ -18,20 +19,27 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
     private static _name: string = "Fabricate";
     private static _buttonClass: string = "fabricate-item-crafting";
     private static _containerClass: string = "fabricate-item-crafting";
-    private static _innerClass: string = "fabricate-item-crafting-content";
+    private static _innerClass: string = "fabricate-item-tab-wrapper";
 
     private _tabs: SheetTab[] = [];
     private readonly _craftingSystems: CraftingSystem[];
+    private readonly _actions: Map<string, SheetTabAction>;
+
+    private readonly _hiddenSystemIds: Set<string> = new Set();
 
     constructor({
         tabs = [],
-        craftingSystems
+        craftingSystems,
+        actions = new Map()
     }: {
-        tabs?: SheetTab[],
-        craftingSystems: CraftingSystem[]
+        tabs?: SheetTab[];
+        craftingSystems: CraftingSystem[];
+        actions?: Map<string, SheetTabAction>;
     }) {
         this._tabs = tabs;
         this._craftingSystems = craftingSystems;
+        this._actions = actions;
+        this.prepareActions();
     }
 
     get tabs(): SheetTab[] {
@@ -55,7 +63,9 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
 
     private async getSystemData(system: CraftingSystem, identifiers: string[], document: any): Promise<SystemData> {
         const systemData: SystemData = {
-            system, component: null,
+            visible: !this._hiddenSystemIds.has(system.id),
+            system,
+            component: null,
             recipe: null,
             craftable: false,
             salvageable: false
@@ -77,10 +87,15 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
         return systemData;
     }
 
+    private getAction(name: string) {
+        return this._actions.get(name);
+    }
+
     private prepareTabData(systemData: SystemData[], document: any): SheetTab[] {
         if (systemData.length === 0) {
             return [];
         }
+        const itemSheetTab = this;
         return [{
             id: FabricateItemSheetTab._id,
             name: FabricateItemSheetTab._name,
@@ -88,12 +103,25 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
             containerClass: FabricateItemSheetTab._containerClass,
             innerClass: FabricateItemSheetTab._innerClass,
             templatePath: Properties.module.templates.itemSheetCraftingTab,
+            dataKeys: ["systemId"],
             data: {
                 systems: systemData,
                 owned: !!document?.isEmbedded,
                 actor: document.parent
-            }
+            },
+            getAction: (name: string) => itemSheetTab.getAction(name)
         }];
+    }
+
+    private prepareActions() {
+        this._actions.set("toggleSystemParts", async (data: Map<string,string>) => {
+            const systemId = data.get("systemId");
+            if (this._hiddenSystemIds.has(systemId)) {
+                this._hiddenSystemIds.delete(systemId);
+            } else {
+                this._hiddenSystemIds.add(systemId);
+            }
+        });
     }
 
 }
