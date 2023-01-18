@@ -30,15 +30,41 @@
                                 {{else}}
                                     <span class="fabricate-item-condition fabricate-warning fabricate-list-item" data-tooltip="Cannot be crafted"><i class="fa-solid fa-xmark"></i></span>
                                 {{/if}}
+                                {{#if ../isGm}}
+                                    <span class="fabricate-item-condition fabricate-info fabricate-list-item fabricate-clickable" data-action="editRecipe" data-recipe-id="{{recipe.id}}" data-tooltip="{{localize "fabricate.ItemSheetTab.buttons.edit.tooltip"}}"><i class="fa-solid fa-pen-to-square"></i></span>
+                                {{/if}}
                             </div>
                         </div>
                     </div>
-                    <div class="fabricate">
-                        {{#each recipe.ingredientOptions.choices}}
-                            <div>Choice</div>
-                        {{else}}
-                            <div>No choice</div>
-                        {{/each}}
+                    <div class="fabricate-columns">
+                        <div class="fabricate-column fabricate-recipe-ingredients">
+                            <div class="fabricate-ingredients-header fabricate-row">
+                                Ingredients
+                            </div>
+                            {{#each recipe.ingredientOptions.choices}}
+                                {{#if ../recipe.hasIngredientOptions}}
+                                    {{#if ../craftable}}
+                                        <div class="fabricate-choice-header fabricate-row {{#if selected}}fabricate-selected{{/if}}">
+                                            <div class="fabricate-choice-name">{{localize "fabricate.ItemSheetTab.ingredients.optionName"}} {{id}}</div>
+                                            <div class="fabricate-select-button" data-action="selectIngredientOption" data-option-id="{{id}}">{{localize "fabricate.ItemSheetTab.ingredients.selectOption"}}</div>
+                                        </div>
+                                    {{/if}}
+                                {{/if}}
+                                {{#each value.units}}
+                                    <div class="fabricate-component fabricate-row">
+                                        <div class="fabricate-component-image">
+                                            <img src="{{part.imageUrl}}">
+                                        </div>
+                                        <div class="fabricate-component-detail">{{quantity}} {{part.name}}</div>
+                                    </div>
+                                {{/each}}
+                            {{else}}
+                                <div class="fabricate-no-ingredients">No ingredients</div>
+                            {{/each}}
+                        </div>
+                        <div class="fabricate-column fabricate-recipe-results">
+
+                        </div>
                     </div>
                 </div>
             {{/if}}

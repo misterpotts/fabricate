@@ -146,7 +146,7 @@ Hooks.once('ready', () => {
     });
 
     Handlebars.registerHelper ('truncate', function (string, maxLength) {
-        if (string?.length <= maxLength) {
+        if (!string || string?.length <= maxLength) {
             return new Handlebars.SafeString(string);
         }
         const lastWhitespaceIndex = string.lastIndexOf(" ");

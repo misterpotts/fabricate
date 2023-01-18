@@ -451,6 +451,8 @@ class FormApplicationWindow<V, M, F> extends FormApplication {
 type SheetTabAction = (data: Map<string, string>) => Promise<void>;
 
 interface SheetTab {
+    height?: number;
+    resize: boolean;
     dataKeys: string[];
 
     id: string;
@@ -472,6 +474,9 @@ interface ItemSheetModifier {
 }
 
 class ItemSheetExtension {
+
+    private static readonly _defaultTabHeight = 400;
+
     private readonly _html: any;
     private readonly _itemSheetModifier: ItemSheetModifier;
     private readonly _app: any;
@@ -510,6 +515,14 @@ class ItemSheetExtension {
                 tabs.append($(
                     `<a class="item ${tab.buttonClass}" data-tab="${tab.id}">${tab.name}</a>`
                 ));
+                if (tab.resize) {
+                    const addedTabElement = tabs.find(`.${tab.buttonClass}`);
+                    addedTabElement.click((_e: any) => {
+                        const position = this._app.position;
+                        position.height = tab.height ?? ItemSheetExtension._defaultTabHeight;
+                        this._app.setPosition(position);
+                    });
+                }
             }
 
             // Create the tab content container

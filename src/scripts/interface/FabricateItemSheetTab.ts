@@ -3,6 +3,8 @@ import {CraftingSystem} from "../system/CraftingSystem";
 import {Recipe} from "../crafting/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import Properties from "../Properties";
+import {GameProvider} from "../foundry/GameProvider";
+import RecipeManagerApp from "./apps/RecipeManagerApp";
 
 interface SystemData {
     recipe?: Recipe;
@@ -97,17 +99,20 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
         }
         const itemSheetTab = this;
         return [{
+            resize: true,
+            height: 500,
             id: FabricateItemSheetTab._id,
             name: FabricateItemSheetTab._name,
             buttonClass: FabricateItemSheetTab._buttonClass,
             containerClass: FabricateItemSheetTab._containerClass,
             innerClass: FabricateItemSheetTab._innerClass,
             templatePath: Properties.module.templates.itemSheetCraftingTab,
-            dataKeys: ["systemId"],
+            dataKeys: ["systemId", "recipeId"],
             data: {
                 systems: systemData,
                 owned: !!document?.isEmbedded,
-                actor: document.parent
+                actor: document.parent,
+                isGm: new GameProvider().globalGameObject().user.isGM
             },
             getAction: (name: string) => itemSheetTab.getAction(name)
         }];
@@ -121,6 +126,16 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
             } else {
                 this._hiddenSystemIds.add(systemId);
             }
+        });
+        this._actions.set("editRecipe", async (data: Map<string,string>) => {
+            const recipeId = data.get("recipeId");
+            const system = this._craftingSystems.find(craftingSystem => craftingSystem.hasRecipe(recipeId));
+            if (!system) {
+                throw new Error(`Cannot edit Recipe with ID ${recipeId}. It could not be found. `);
+            }
+            const recipe = await system.getRecipeById(recipeId);
+            const app = await RecipeManagerApp.make(recipe, system);
+            return app.render(true);
         });
     }
 

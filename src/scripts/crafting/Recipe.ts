@@ -224,12 +224,20 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     *  Instance Functions
     *  =========================== */
 
-    public hasOptions(): boolean {
+    public get hasOptions(): boolean {
         return this._ingredientOptions.hasOptions() || this._resultOptions.hasOptions();
     }
 
+    public get hasIngredientOptions(): boolean {
+        return this._ingredientOptions.hasOptions();
+    }
+
+    public get hasResultOptions(): boolean {
+        return this._resultOptions.hasOptions();
+    }
+
     public ready(): boolean {
-        if (!this.hasOptions()) {
+        if (!this.hasOptions) {
             return true;
         }
         return this._ingredientOptions.ready() && this._resultOptions.ready();

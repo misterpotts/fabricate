@@ -6,6 +6,17 @@
       "system": "Crafting System",
       "essence": "Essence"
     },
+    "ItemSheetTab": {
+      "ingredients": {
+        "optionName": "Option",
+        "selectOption": "Select Ingredients"
+      },
+      "buttons": {
+        "edit": {
+          "tooltip": "Edit"
+        }
+      }
+    },
     "ComponentManagerApp": {
       "title": "Fabricate | Component",
       "essences": {
