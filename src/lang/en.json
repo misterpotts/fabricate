@@ -8,8 +8,16 @@
     },
     "ItemSheetTab": {
       "ingredients": {
+        "header": "Ingredients",
         "optionName": "Option",
-        "selectOption": "Select Ingredients"
+        "selectOption": "Select Ingredients",
+        "noneSet": "No ingredients"
+      },
+      "results": {
+        "header": "Results",
+        "optionName": "Option",
+        "selectOption": "Select Results",
+        "noneSet": "No results"
       },
       "buttons": {
         "edit": {

@@ -810,6 +810,33 @@ BEGIN COMMON STRUCTURAL STYLES
   }
 }
 
+.fabricate-component-grid {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  &.fabricate-align-right {
+    justify-content: flex-start;
+  }
+  &.fabricate-align-left {
+    justify-content: flex-end;
+  }
+  &.fabricate-small {
+    .fabricate-component {
+      .fabricate-component-tile(40px, 20px);
+    }
+  }
+  &.fabricate-medium {
+    .fabricate-component {
+      .fabricate-component-tile(64px, 20px);
+    }
+  }
+  &.fabricate-large {
+    .fabricate-component {
+      .fabricate-component-tile(84px, 20px);
+    }
+  }
+}
+
 .fabricate-inline-list {
   flex-direction: row-reverse;
   &.fabricate-align-right {
@@ -993,7 +1020,19 @@ BEGIN ITEM SHEET TAB STYLES
   }
 
   .fabricate-recipe-ingredients {
+    padding-right: 4px;
+  }
 
+  .fabricate-recipe-results {
+    padding-left: 4px;
+  }
+
+  .fabricate-recipe-ingredients, .fabricate-recipe-results {
+    .fabricate-component-grid {
+      padding: 12px 12px 0px 12px;
+      border: 1px dashed var(--color-border-dark-4);
+      margin-bottom: 8px;
+    }
   }
 
 }

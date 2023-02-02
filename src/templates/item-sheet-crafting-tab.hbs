@@ -39,7 +39,7 @@
                     <div class="fabricate-columns">
                         <div class="fabricate-column fabricate-recipe-ingredients">
                             <div class="fabricate-ingredients-header fabricate-row">
-                                Ingredients
+                                <h3>{{localize "fabricate.ItemSheetTab.ingredients.header"}}</h3>
                             </div>
                             {{#each recipe.ingredientOptions.choices}}
                                 {{#if ../recipe.hasIngredientOptions}}
@@ -50,20 +50,52 @@
                                         </div>
                                     {{/if}}
                                 {{/if}}
-                                {{#each value.units}}
-                                    <div class="fabricate-component fabricate-row">
-                                        <div class="fabricate-component-image">
-                                            <img src="{{part.imageUrl}}">
+                                <div class="fabricate-component-grid fabricate-medium">
+                                    {{#each value.units}}
+                                        <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                            <div class="fabricate-component-image">
+                                                <img src="{{part.imageUrl}}">
+                                            </div>
+                                            <div class="fabricate-info">
+                                                <div class="fabricate-detail">{{quantity}}</div>
+                                            </div>
+                                            <div class="fabricate-component-name">{{truncate part.name 10}}</div>
                                         </div>
-                                        <div class="fabricate-component-detail">{{quantity}} {{part.name}}</div>
-                                    </div>
-                                {{/each}}
+                                    {{/each}}
+                                </div>
                             {{else}}
-                                <div class="fabricate-no-ingredients">No ingredients</div>
+                                <div class="fabricate-no-ingredients">{{localize "fabricate.ItemSheetTab.ingredients.noneSet"}}</div>
                             {{/each}}
                         </div>
                         <div class="fabricate-column fabricate-recipe-results">
-
+                            <div class="fabricate-results-header fabricate-row">
+                                <h3>{{localize "fabricate.ItemSheetTab.results.header"}}</h3>
+                            </div>
+                            {{#each recipe.resultOptions.choices}}
+                                {{#if ../recipe.hasResultOptions}}
+                                    {{#if ../craftable}}
+                                        <div class="fabricate-choice-header fabricate-row {{#if selected}}fabricate-selected{{/if}}">
+                                            <div class="fabricate-choice-name">{{localize "fabricate.ItemSheetTab.results.optionName"}} {{id}}</div>
+                                            <div class="fabricate-select-button" data-action="selectResultOption" data-option-id="{{id}}">{{localize "fabricate.ItemSheetTab.ingredients.selectOption"}}</div>
+                                        </div>
+                                    {{/if}}
+                                {{/if}}
+                                <div class="fabricate-component-grid fabricate-medium">
+                                    {{#each value.units}}
+                                        <div class="fabricate-component" data-tooltip="{{part.name}}">
+                                            <div class="fabricate-component-image">
+                                                <img src="{{part.imageUrl}}">
+                                            </div>
+                                            <div class="fabricate-info">
+                                                <div class="fabricate-detail">{{quantity}}</div>
+                                            </div>
+                                            <div class="fabricate-component-name">{{truncate part.name 10}}</div>
+                                        </div>
+                                    {{/each}}
+                                </div>
+                            {{else}}
+                                <div class="fabricate-no-ingredients">{{localize "fabricate.ItemSheetTab.results.noneSet"}}</div>
+                            {{/each}}
                         </div>
                     </div>
                 </div>
