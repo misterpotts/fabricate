@@ -2,7 +2,7 @@ import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
 import CraftingSystemManagerAppFactory from "./interface/apps/CraftingSystemManagerApp";
 import FabricateApplication from "./interface/FabricateApplication";
-import {DefaultSettingManager, FabricateSettingMigrator} from "./interface/settings/FabricateSettings";
+import {DefaultSettingManager, FabricateSettingMigrator} from "./settings/FabricateSettings";
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";

@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
-import {DefaultSettingManager} from "../src/scripts/interface/settings/FabricateSettings";
+import {DefaultSettingManager} from "../src/scripts/settings/FabricateSettings";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
 import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {DefaultSystemRegistry, ErrorDecisionType} from "../src/scripts/registries/SystemRegistry";

@@ -1,5 +1,5 @@
-import Properties from "../../Properties";
-import {GameProvider} from "../../foundry/GameProvider";
+import Properties from "../Properties";
+import {GameProvider} from "../foundry/GameProvider";
 
 interface FabricateSetting<T> {
     version: string;

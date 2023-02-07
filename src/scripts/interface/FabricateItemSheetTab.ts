@@ -5,6 +5,7 @@ import {CraftingComponent} from "../common/CraftingComponent";
 import Properties from "../Properties";
 import {GameProvider} from "../foundry/GameProvider";
 import RecipeManagerApp from "./apps/RecipeManagerApp";
+import {InventoryRegistry} from "../registries/InventoryRegistry";
 
 interface SystemData {
     recipe?: Recipe;
@@ -25,6 +26,7 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
 
     private _tabs: SheetTab[] = [];
     private readonly _craftingSystems: CraftingSystem[];
+    private readonly _inventoryRegistry: InventoryRegistry;
     private readonly _actions: Map<string, SheetTabAction>;
 
     private readonly _hiddenSystemIds: Set<string> = new Set();
@@ -32,15 +34,18 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
     constructor({
         tabs = [],
         craftingSystems,
-        actions = new Map()
+        actions = new Map(),
+        inventoryRegistry
     }: {
         tabs?: SheetTab[];
         craftingSystems: CraftingSystem[];
         actions?: Map<string, SheetTabAction>;
+        inventoryRegistry: InventoryRegistry;
     }) {
         this._tabs = tabs;
         this._craftingSystems = craftingSystems;
         this._actions = actions;
+        this._inventoryRegistry = inventoryRegistry;
         this.prepareActions();
     }
 
@@ -76,8 +81,7 @@ export class FabricateItemSheetTab implements ItemSheetModifier {
             if (!systemData.recipe && system.hasRecipe(identifier)) {
                 systemData.recipe = await system.getRecipeById(identifier);
                 if (document.actor) {
-                    // const _inventory = FabricateApplication.inventoryRegistry.getForActor(document.actor.id);
-                    // todo: implement
+                    this._inventoryRegistry.getForActor(document.actor.id);
                     systemData.craftable = false;
                 }
             }

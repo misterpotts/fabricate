@@ -10,7 +10,6 @@ import {
 } from "./AlchemyAttempt";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 import {AlchemicalCombination, AlchemicalCombiner} from "./AlchemicalEffect";
-import {AlchemyDefinition} from "../../interface/settings/values/CraftingSystemSettingsValueV1";
 
 interface AlchemyAttemptFactory {
 
@@ -19,8 +18,6 @@ interface AlchemyAttemptFactory {
     make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
 
     isEnabled(): boolean;
-
-    toAlchemyDefinition(): AlchemyDefinition;
 }
 
 class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
@@ -57,8 +54,8 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
     make(baseComponent: CraftingComponent, components: Combination<CraftingComponent>): AlchemyAttempt {
 
-        if (!this._alchemyFormulaeByBasePartId.has(baseComponent.partId)) {
-            throw new Error(`There is no Alchemy Formula specified for the base component with ID: ${baseComponent.partId}. `);
+        if (!this._alchemyFormulaeByBasePartId.has(baseComponent.id)) {
+            throw new Error(`There is no Alchemy Formula specified for the base component with ID: ${baseComponent.id}. `);
         }
 
         if (components.isEmpty()) {
@@ -70,14 +67,10 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
             baseComponent: baseComponent,
             alchemicalCombiner: this._alchemicalCombiner,
             componentConsumptionCalculator: this._componentConsumptionCalculator,
-            alchemyFormula: this._alchemyFormulaeByBasePartId.get(baseComponent.partId),
+            alchemyFormula: this._alchemyFormulaeByBasePartId.get(baseComponent.id),
             alchemyConstraintEnforcer: new DefaultAlchemyConstraintEnforcer(this._constraints)
         });
 
-    }
-
-    toAlchemyDefinition(): AlchemyDefinition {
-        return undefined;
     }
 
 }
@@ -94,10 +87,6 @@ class DisabledAlchemyAttemptFactory implements AlchemyAttemptFactory {
 
     get formulaeByBasePartId(): Map<string, AlchemyFormula> {
         return new Map();
-    }
-
-    toAlchemyDefinition(): AlchemyDefinition {
-        return undefined;
     }
 
 }

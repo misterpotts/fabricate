@@ -1,5 +1,4 @@
-import {beforeEach, describe, expect, test} from "@jest/globals";
-import * as Sinon from "sinon";
+import {describe, expect, test} from "@jest/globals";
 
 import {PartDictionary, PartDictionaryFactory} from "../src/scripts/system/PartDictionary";
 import {
@@ -24,12 +23,6 @@ import {RecipeJson} from "../src/scripts/crafting/Recipe";
 import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {FabricateItemData} from "../src/scripts/foundry/DocumentManager";
-
-const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
-
-beforeEach(() => {
-    Sandbox.reset();
-});
 
 describe('Create', () => {
 

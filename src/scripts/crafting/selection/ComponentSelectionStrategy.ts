@@ -5,7 +5,7 @@ import {CraftingComponent} from "../../common/CraftingComponent";
 
 interface ComponentSelectionStrategy {
 
-    perform(recipe: Recipe, availableComponents: Combination<CraftingComponent>): ComponentSelection<CraftingComponent>;
+    perform(recipe: Recipe, availableComponents: Combination<CraftingComponent>): ComponentSelection;
 
 }
 

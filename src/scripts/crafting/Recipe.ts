@@ -225,7 +225,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     *  =========================== */
 
     public get hasOptions(): boolean {
-        return this._ingredientOptions.hasOptions() || this._resultOptions.hasOptions();
+        return this.hasIngredientOptions || this.hasResultOptions;
     }
 
     public get hasIngredientOptions(): boolean {
