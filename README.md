@@ -152,9 +152,10 @@ export FVTT_DEV_DATA="relative-path/from-the-build-directory/to-your-FVTT/Data"
 ## Vite Development Server
 
 You can run a local Vite development server once you've performed a local installation of Fabricate.
-Vite will watch the build directory and rebuild the `/dist` directory when source files change.
+Vite will watch the build directory and rebuild the `/dist` directory when some source files change.
 The Vite dev server will also intercept requests to `<LOCAL_FOUNDRY_HOST>/modules/fabricate/**` to serve these updated resources.
 This enables live reload for CSS, which I find hugely boosts my productivity when working on Fabricate's UI.
+I haven't figured out live reload for handlebars templates yet, but I'd like to.
 
 To start the Vite dev server, run:
 
