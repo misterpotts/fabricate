@@ -13,7 +13,7 @@
   ],
   "compatibility": {
     "minimum": "10",
-    "verified": "10"
+    "verified": "10.290.0"
   },
   "url": "https://github.com/misterpotts/fabricate",
   "manifest": "",
@@ -32,12 +32,11 @@
   "includes": [
     "./assets/**",
     "./lang/**",
-    "./scripts/**",
-    "./styles/**",
+    ".fabricate.mjs",
+    "style.css",
     "./packs/**",
     "./templates/**",
-    "./module.json",
-    "./README.md"
+    "./module.json"
   ],
   "languages": [
     {
@@ -47,9 +46,9 @@
     }
   ],
   "esmodules": [
-    "scripts/module.js"
+    "fabricate.mjs"
   ],
   "styles": [
-    "styles/module.css"
+    "style.css"
   ]
 }

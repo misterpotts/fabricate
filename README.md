@@ -12,12 +12,26 @@
 
 ![](/screens/fabricate-repo-preview.png)
 
-# Fabricate
+# About Fabricate
 
 Fabricate is a system-agnostic, flexible crafting module for FoundryVTT. 
 The current version is in the late stages of development. 
 It is working towards back-filling functionality of "Alchemist's Supplies V1.6" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/) for Foundry VVT Version 10+. 
-Once complete, Fabricate will ship with several crafting systems for D&D 5E.
+Once complete, Fabricate will ship with at least one crafting system for D&D 5E.
+
+# Installation
+
+Follow the official guide on [Installing New modules](https://foundryvtt.com/article/modules/).
+The first method is to use the manifest URL from the top level `module.json` file in the [latest release](https://github.com/misterpotts/fabricate/releases/latest) when ["_Installing via Manifest URL_"](https://foundryvtt.com/article/modules/).
+
+Alternatively, a second approach is to download the `module.zip` archive from the [latest release](https://github.com/misterpotts/fabricate/releases/latest) when ["_Installing Modules Manually_"](https://foundryvtt.com/article/modules/).
+If you do download the bundle `module.zip` manually, be mindful that the included manifest file **DOES NOT** contain valid download and manifest URLs.
+If you want to install by manifest URL, use the first method.
+
+Pre-releases can be installed using these same methods. 
+However, the bundle and manifest URL are shared on [Patreon](https://www.patreon.com/posts/pre-release-76128822).
+
+# Fabricate Features
 
 Here's a quick preview of the early features.
 
@@ -53,12 +67,6 @@ You can imbue them with Essences, as well as define the components that can be s
 
 Because it's not finished, and therefore not released yet.
 
-> How do I install Fabricate?
-
-Follow the official guide on [Installing New modules](https://foundryvtt.com/article/modules/).
-You can use the manifest URL from the top level `module.json` file in the [latest release](https://github.com/misterpotts/fabricate/releases/latest) when "_Installing via Manifest URL_".
-Alternatively, you can download the `module.zip` archive from the [latest release](https://github.com/misterpotts/fabricate/releases/latest) when "_Installing Modules Manually_".
-
 > When will Fabricate be released?
 
 When it's done.
@@ -80,27 +88,32 @@ I'm always happy to talk to you about how people can contribute.
 
 ## Building Fabricate
 
-Checkout the code on the `main` branch (SSL: `git@github.com:misterpotts/fabricate.git`) and run the following script to build the module:
+Checkout the code on the `main` branch (SSL: `git@github.com:misterpotts/fabricate.git`) and install dependencies with:
+
+```shell
+npm install
+```
+
+Fabricate is built with [Vite](https://vitejs.dev/).
+Vite builds the Fabricate JS bundle at a fraction of the size that Webpack did, and in a fraction of the time.
+
+Build output files are written to the `/dist` directory in the project root. 
+You can build the module by executing the following script:
 
 ```shell
 npm run build
 ```
 
-To build with inline sourcemaps and human-readable output from Webpack, you can use:
-
-```shell
-npm run buildDev
-```
-
 ## Testing Fabricate
 
-Fabricate uses Jest for testing. You can execute the test suite with the following command.
+Fabricate uses Jest for testing. 
+You can execute the test suite with the following command.
 
 ```shell
 npm test
 ```
 
-## Local Install
+## Local Installation
 
 Local installation is straightforward.
 Just run the following command.
@@ -109,7 +122,8 @@ Just run the following command.
 npm run releaseLocal
 ```
 
-Fabricate will `test`, `buildDev` and then copy the build output from the `/dist` directory to your local Foundry VTT Data directory.
+Fabricate will `test`, then `build` and finally copy the build output from the `/dist` directory to your local Foundry VTT Data directory.
+There's no need to symlink directories.
 This lets you use the development version of the Fabricate module straight away!
 Just startup Foundry and enable Fabricate in module settings.
 
@@ -135,6 +149,22 @@ If you don't want to organise your projects how I do, you can set the `FVTT_DEV_
 export FVTT_DEV_DATA="relative-path/from-the-build-directory/to-your-FVTT/Data"
 ```
 
+## Vite Development Server
+
+You can run a local Vite development server once you've performed a local installation of Fabricate.
+Vite will watch the build directory and rebuild the `/dist` directory when source files change.
+The Vite dev server will also intercept requests to `<LOCAL_FOUNDRY_HOST>/modules/fabricate/**` to serve these updated resources.
+This enables live reload for CSS, which I find hugely boosts my productivity when working on Fabricate's UI.
+
+To start the Vite dev server, run:
+
+```shell
+npm run serve
+```
+
+This will also open up a browser window at `http://127.0.0.1:30001/game`.
+Use this window, **NOT** your local Foundry client, or direct access (typically at port `30000`) to use live reload during local development.
+
 # License
 
 This software is distributed with an MIT License.
@@ -150,6 +180,15 @@ The template was provided by the League of Extraordinary Foundry Developers and 
 
 ## Other Acknowledgements
 
-Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `valravn#7351`, `ghost#2000`, `BadIdeasBureau#7024` and `Calego#0914`. Join their Discord below.
+Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `valravn#7351`, `ghost#2000`, `BadIdeasBureau#7024` and `Calego#0914`. 
+Join their Discord below.
 
 ![League Discord](https://discordapp.com/api/guilds/732325252788387980/widget.png?style=banner1)
+
+### Patron Hall of Fame
+
+I'd also like to thank the following Patrons for their ongoing support, both on the platform and on Discord:
+
+- Relic
+
+It's an exclusive club at the moment!  
