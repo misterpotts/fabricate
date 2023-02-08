@@ -50,4 +50,28 @@ const testComponentFive: CraftingComponent = new CraftingComponent({
     ])
 });
 
-export {testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive}
+const testComponentSix: CraftingComponent = new CraftingComponent({
+    id:"rgTv21iOSwjK1882",
+    essences: Combination.ofUnits([new Unit(elementalWater, 1)]),
+    name: "Test Component Six",
+    imageUrl: Properties.ui.defaults.itemImageUrl,
+    salvage: Combination.EMPTY()
+});
+
+const testComponentSeven: CraftingComponent = new CraftingComponent({
+    id:"u9jwSlvIUhlQiEe1",
+    essences: Combination.ofUnits([new Unit(elementalAir, 1)]),
+    name: "Test Component Seven",
+    imageUrl: Properties.ui.defaults.itemImageUrl,
+    salvage: Combination.EMPTY()
+});
+
+export {
+    testComponentOne,
+    testComponentTwo,
+    testComponentThree,
+    testComponentFour,
+    testComponentFive,
+    testComponentSix,
+    testComponentSeven
+}

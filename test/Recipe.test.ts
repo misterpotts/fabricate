@@ -31,7 +31,7 @@ describe("When creating a recipe", () => {
         expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
         expect(underTest.essences.amountFor(elementalEarth.id)).toEqual(3);
 
-        expect(underTest.hasOptions()).toEqual(false);
+        expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(true);
         expect(underTest.hasIngredients()).toEqual(false);
@@ -48,7 +48,7 @@ describe("When creating a recipe", () => {
         expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
         expect(underTest.essences.amountFor(elementalWater.id)).toEqual(1);
 
-        expect(underTest.hasOptions()).toEqual(false);
+        expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(true);
         expect(underTest.hasIngredients()).toEqual(false);
@@ -62,7 +62,7 @@ describe("When creating a recipe", () => {
         expect(underTest.ingredientOptions.size).toEqual(1);
         expect(underTest.resultOptions.size).toEqual(1);
 
-        expect(underTest.hasOptions()).toEqual(false);
+        expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(false);
         expect(underTest.hasIngredients()).toEqual(true);
@@ -77,7 +77,7 @@ describe("When creating a recipe", () => {
         expect(underTest.resultOptions.size).toEqual(1);
         expect(underTest.catalysts.size).toEqual(1);
 
-        expect(underTest.hasOptions()).toEqual(false);
+        expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences()).toEqual(false);
         expect(underTest.hasIngredients()).toEqual(true);
@@ -92,7 +92,7 @@ describe("When creating a recipe", () => {
         expect(underTest.resultOptions.size).toEqual(2);
         expect(underTest.essences.size).toEqual(4);
 
-        expect(underTest.hasOptions()).toEqual(true);
+        expect(underTest.hasOptions).toEqual(true);
         expect(underTest.ready()).toEqual(false);
         expect(underTest.requiresEssences()).toEqual(true);
         expect(underTest.hasIngredients()).toEqual(true);

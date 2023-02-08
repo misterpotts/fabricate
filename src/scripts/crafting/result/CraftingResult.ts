@@ -1,4 +1,4 @@
-import {Combination, StringIdentity} from "../../common/Combination";
+import {Combination} from "../../common/Combination";
 import {Recipe} from "../Recipe";
 import {CraftingCheckResult} from "../check/CraftingCheckResult";
 import {CraftingComponent} from "../../common/CraftingComponent";
@@ -6,7 +6,7 @@ import {CraftingComponent} from "../../common/CraftingComponent";
 interface CraftingResult {
 
     consumed: Combination<CraftingComponent>;
-    created: Combination<StringIdentity>;
+    created: Combination<CraftingComponent>;
 
 }
 
@@ -16,7 +16,7 @@ class NoCraftingResult implements CraftingResult {
 
     constructor() {}
 
-    get created(): Combination<StringIdentity> {
+    get created(): Combination<CraftingComponent> {
         return Combination.EMPTY();
     }
 
@@ -32,7 +32,7 @@ class SuccessfulCraftingResult implements CraftingResult {
 
     private readonly _recipe: Recipe;
     private readonly _consumed: Combination<CraftingComponent>;
-    private readonly _created: Combination<StringIdentity>;
+    private readonly _created: Combination<CraftingComponent>;
     private readonly _checkResult?: CraftingCheckResult;
 
     constructor({
@@ -43,7 +43,7 @@ class SuccessfulCraftingResult implements CraftingResult {
     }: {
         recipe: Recipe;
         consumed: Combination<CraftingComponent>;
-        created: Combination<StringIdentity>;
+        created: Combination<CraftingComponent>;
         checkResult: CraftingCheckResult;
     }) {
         this._recipe = recipe;
@@ -56,7 +56,7 @@ class SuccessfulCraftingResult implements CraftingResult {
         return this._consumed;
     }
 
-    get created(): Combination<StringIdentity> {
+    get created(): Combination<CraftingComponent> {
         return this._created;
     }
 
@@ -92,7 +92,7 @@ class UnsuccessfulCraftingResult implements CraftingResult {
         this._checkResult = checkResult;
     }
 
-    get created(): Combination<StringIdentity> {
+    get created(): Combination<CraftingComponent> {
         return Combination.EMPTY();
     }
 

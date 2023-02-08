@@ -106,6 +106,10 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         return this._salvage;
     }
 
+    public get isSalvageable(): boolean {
+        return !this.salvage.isEmpty();
+    }
+
     public toJson(): CraftingComponentJson {
         return {
             itemUuid: this._id,

@@ -1,20 +1,37 @@
 import {Inventory} from "../actor/Inventory";
+import {InventoryFactory} from "../actor/InventoryFactory";
 
-class InventoryRegistry {
+interface InventoryRegistry {
 
-    private _managedInventories: Map<string, Inventory<{}, Actor>> = new Map<string, Inventory<{}, Actor>>();
+    getForActor(actorId: string): Inventory;
 
-    public addFor(actorId: string, inventory: Inventory<{}, Actor>): void {
-        if (this._managedInventories.has(actorId)) {
-            throw new Error(`The Crafting Inventory for Actor ID ${actorId} is already managed by Fabricate and should not be overridden. `);
-        }
-        this._managedInventories.set(actorId, inventory);
+}
+
+class DefaultInventoryRegistry implements InventoryRegistry {
+
+    private readonly _managedInventories: Map<string, Inventory>;
+    private readonly _inventoryFactory: InventoryFactory;
+
+    constructor({
+        managedInventories = new Map(),
+        inventoryFactory
+    }: {
+        managedInventories?: Map<string, Inventory>;
+        inventoryFactory: InventoryFactory;
+    }) {
+        this._managedInventories = managedInventories;
+        this._inventoryFactory = inventoryFactory;
     }
 
-    public getFor(actorId: string): Inventory<{}, Actor> {
-        return this._managedInventories.get(actorId);
+    getForActor(actorId: string) {
+        if (this._managedInventories.has(actorId)) {
+            return this._managedInventories.get(actorId);
+        }
+        const inventory = this._inventoryFactory.make(actorId);
+        this._managedInventories.set(actorId, inventory);
+        return inventory;
     }
 
 }
 
-export {InventoryRegistry}
+export { InventoryRegistry, DefaultInventoryRegistry }

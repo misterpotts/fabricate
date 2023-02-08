@@ -1,5 +1,5 @@
 import {expect, test, describe, beforeEach} from "@jest/globals";
-import {DefaultSettingManager, FabricateSettingMigrator} from "../src/scripts/interface/settings/FabricateSettings";
+import {DefaultSettingManager, FabricateSettingMigrator} from "../src/scripts/settings/FabricateSettings";
 import * as Sinon from "sinon";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
 import {CraftingSystemJson} from "../src/scripts/system/CraftingSystem";

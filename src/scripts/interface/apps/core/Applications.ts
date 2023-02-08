@@ -448,7 +448,12 @@ class FormApplicationWindow<V, M, F> extends FormApplication {
 
 }
 
+type SheetTabAction = (data: Map<string, string>) => Promise<void>;
+
 interface SheetTab {
+    height?: number;
+    resize: boolean;
+    dataKeys: string[];
 
     id: string;
     name: string;
@@ -457,7 +462,7 @@ interface SheetTab {
     containerClass: string;
     innerClass: string;
     buttonClass: string;
-
+    getAction(action: string): SheetTabAction;
 }
 
 interface ItemSheetModifier {
@@ -469,9 +474,13 @@ interface ItemSheetModifier {
 }
 
 class ItemSheetExtension {
+
+    private static readonly _defaultTabHeight = 400;
+
     private readonly _html: any;
     private readonly _itemSheetModifier: ItemSheetModifier;
     private readonly _app: any;
+    private _previouslySelectedTab = "";
 
     constructor({
         app,
@@ -488,26 +497,91 @@ class ItemSheetExtension {
     }
 
     public async render(): Promise<void> {
+
         await this._itemSheetModifier.prepareData(this._app);
-        if (this._itemSheetModifier.hasTabs()) {
-            const tabs = this._html.find(`.tabs[data-group="primary"]`);
-            const body = $(this._html.find(`.sheet-body`));
-            for (const tab of this._itemSheetModifier.tabs) {
+
+        if (!this._itemSheetModifier.hasTabs()) {
+            return;
+        }
+
+        const tabs = this._html.find(`.tabs[data-group="primary"]`);
+        const body = $(this._html.find(`.sheet-body`));
+
+        for (const tab of this._itemSheetModifier.tabs) {
+
+            // Create the tab button
+            const tabElementFind = tabs.find(`.${tab.buttonClass}`);
+            if (!tabElementFind.length) {
                 tabs.append($(
                     `<a class="item ${tab.buttonClass}" data-tab="${tab.id}">${tab.name}</a>`
                 ));
-                body.append($(
-                    `<div class="tab ${tab.containerClass}" data-group="primary" data-tab="${tab.id}"></div>`
-                ));
-                const template = await renderTemplate(tab.templatePath, tab.data);
-                const element = this._html.find(tab.innerClass);
-                if (element && element.length) {
-                    element.replaceWith(template);
-                } else {
-                    this._html.find(`.tab.${tab.containerClass}`).append(template);
+                if (tab.resize) {
+                    const addedTabElement = tabs.find(`.${tab.buttonClass}`);
+                    addedTabElement.click((_e: any) => {
+                        const position = this._app.position;
+                        position.height = tab.height ?? ItemSheetExtension._defaultTabHeight;
+                        this._app.setPosition(position);
+                    });
                 }
             }
+
+            // Create the tab content container
+            const containerElementFind = body.find(`.${tab.containerClass}`);
+            if (!containerElementFind.length) {
+                body.append($(
+                    `<div class="tab fabricate-item-sheet-tab ${tab.containerClass}" data-group="primary" data-tab="${tab.id}"></div>`
+                ));
+            }
+            const template = await renderTemplate(tab.templatePath, tab.data);
+
+            // Replace the tab body content with the rendered template
+            let innerElementFind = body.find(`.${tab.innerClass}`);
+            if (innerElementFind.length) {
+                innerElementFind.replaceWith(template);
+            } else {
+                const containerElementFind = body.find(`.tab.${tab.containerClass}`);
+                containerElementFind.append(template);
+            }
+
+            // find the updated inner element and add click event listeners
+            innerElementFind = body.find(`.${tab.innerClass}`);
+            this.addClickEventHandlers(innerElementFind, tab);
+
+            // Re-select the tab in navigation if it was previously selected
+            if (this._previouslySelectedTab === tab.id && !this.tabSelected(tab.id, tabs)) {
+                this._app._tabs[0].activate(tab.id);
+                this._previouslySelectedTab = "";
+            }
+
         }
+
+    }
+
+    private addClickEventHandlers(element: any, tab: SheetTab) {
+        const itemSheetExtension = this;
+        element.click(async (event: any) => {
+            event.preventDefault();
+            const action = getClosestElementDataForKey("action", event);
+            if (!action) {
+                return;
+            }
+
+            const sheetTabAction = tab.getAction(action);
+            if (!sheetTabAction) {
+                throw new Error(`No implementation was found for the action "${action} in Sheet Extension ${tab.id}". `);
+            }
+            const data = new Map(tab.dataKeys.map(key => [key, getClosestElementDataForKey(key, event)]));
+            await sheetTabAction(data);
+
+            // Stash the tab ID for reactivating it after rendering
+            const tabId = getClosestElementDataForKey("tab", event);
+            this._previouslySelectedTab = tabId;
+            await itemSheetExtension.render();
+        });
+    }
+
+    private tabSelected(tabId: string, tabs: any): boolean {
+        return tabs.find(`[data-tab="${tabId}"]`).hasClass('active');
     }
 
 }
@@ -527,5 +601,6 @@ export {
     DefaultDropHandler,
     ItemSheetExtension,
     ItemSheetModifier,
-    SheetTab
+    SheetTab,
+    SheetTabAction
 }

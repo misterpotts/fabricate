@@ -1,12 +1,12 @@
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Combination, Unit} from "../common/Combination";
-import {FabricateItemType} from "../compendium/CompendiumData";
-import {PartDictionary} from "../system/PartDictionary";
 import {ObjectUtility} from "../foundry/ObjectUtility";
 import {CraftingResult} from "../crafting/result/CraftingResult";
-import {GameSystemDocumentManager} from "./GameSystemDocumentManager";
 import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
+import {GameProvider} from "../foundry/GameProvider";
+import {DocumentManager} from "../foundry/DocumentManager";
+import Properties from "../Properties";
 
 // @ts-ignore // todo: figure out v10 types
 interface Inventory{
@@ -25,39 +25,35 @@ interface InventoryActions {
 
 class CraftingInventory implements Inventory {
 
-    private readonly _game: Game;
+    private readonly _documentManager: DocumentManager;
     private readonly _objectUtils: ObjectUtility;
-    private readonly _documentManager: GameSystemDocumentManager;
-
     private readonly _actor: any;
     private _ownedComponents: Combination<CraftingComponent>;
-    private readonly _partDictionary: PartDictionary;
+    private readonly _componentTypes: Map<string, CraftingComponent>;
     private _managedItems: Map<CraftingComponent, [any, number][]>;
 
     protected constructor({
-            actor,
-            partDictionary,
-            game,
-            objectUtils,
-            documentManager,
-            ownedComponents,
-            managedItems
-        }: {
-            actor: any;
-            partDictionary: PartDictionary;
-            game: Game;
-            objectUtils: ObjectUtility;
-            documentManager: GameSystemDocumentManager;
-            ownedComponents?: Combination<CraftingComponent>;
-            managedItems?: Map<CraftingComponent, [any, number][]>;
+        actor,
+        documentManager,
+        objectUtils,
+        componentTypes = new Map(),
+        ownedComponents = Combination.EMPTY(),
+        managedItems = new Map()
+    }: {
+        actor: any;
+        gameProvider: GameProvider;
+        documentManager: DocumentManager;
+        objectUtils: ObjectUtility;
+        componentTypes?: Map<string, CraftingComponent>;
+        ownedComponents?: Combination<CraftingComponent>;
+        managedItems?: Map<CraftingComponent, [any, number][]>;
     }) {
         this._actor = actor;
-        this._partDictionary = partDictionary;
-        this._game = game;
-        this._objectUtils = objectUtils;
+        this._componentTypes = componentTypes;
         this._documentManager = documentManager;
-        this._ownedComponents = ownedComponents ?? Combination.EMPTY();
-        this._managedItems = managedItems ?? new Map();
+        this._objectUtils = objectUtils;
+        this._ownedComponents = ownedComponents;
+        this._managedItems = managedItems;
     }
 
     get actor(): any {
@@ -80,7 +76,7 @@ class CraftingInventory implements Inventory {
             if (!this.ownedComponents.has(craftingComponent)) {
                 throw new InventoryContentsNotFoundError(unit, 0, this._actor.id);
             }
-            const amountOwned = this.ownedComponents.amountFor(craftingComponent);
+            const amountOwned = this.ownedComponents.amountFor(craftingComponent.id);
             if (unit.quantity > amountOwned) {
                 throw new InventoryContentsNotFoundError(unit, amountOwned, this._actor.id);
             }
@@ -96,10 +92,9 @@ class CraftingInventory implements Inventory {
                     deletes.push(itemData);
                     outstandingRemovalAmount -= quantity;
                 } else {
-                    const newItemData: any = this._documentManager.writeQuantity(
-                        this._objectUtils.duplicate(itemData),
-                        quantity - outstandingRemovalAmount);
-                    updates.push(newItemData);
+                    const copiedItemData =  this._objectUtils.duplicate(itemData);
+                    copiedItemData.quantity = quantity - outstandingRemovalAmount;
+                    updates.push(copiedItemData);
                     outstandingRemovalAmount = 0;
                 }
                 currentRecordIndex++;
@@ -123,18 +118,17 @@ class CraftingInventory implements Inventory {
         for (const unit of components.units) {
             const craftingComponent: CraftingComponent = unit.part;
             if (!this.ownedComponents.has(craftingComponent)) {
-                const sourceData: any = await this.prepareItemData(craftingComponent);
-                const data: any = this._objectUtils.duplicate(sourceData);
-                const newItemData: any = this._documentManager.writeQuantity(data, unit.quantity);
-                creates.push(newItemData);
+                const sourceData: any = await this._documentManager.getDocumentByUuid(craftingComponent.id);
+                const itemData: any = this._objectUtils.duplicate(sourceData);
+                itemData.quantity = unit.quantity;
+                creates.push(itemData);
                 break;
             }
             const records: [any, number][] = this._managedItems.get(craftingComponent)
                 .sort((left: [any, number], right: [any, number]) => right[1] - left[1]);
             const itemToUpdate: [any, number] = records[0];
-            const newItemData: any = this._documentManager.writeQuantity(
-                this._objectUtils.duplicate(itemToUpdate[0].data),
-                unit.quantity + itemToUpdate[1]);
+            const newItemData: any = this._objectUtils.duplicate(itemToUpdate[0].data);
+            newItemData.quantity = unit.quantity + itemToUpdate[1];
             updates.push(newItemData);
         }
         const results: any[] = [];
@@ -162,14 +156,15 @@ class CraftingInventory implements Inventory {
     }
 
     async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]> {
-        const compendium = this._game.packs.get(alchemyResult.baseComponent.compendiumId);
-        const compendiumBaseItem = await compendium.getDocument(alchemyResult.baseComponent.partId);
-        const customItemData = this._documentManager.customizeItem(compendiumBaseItem, alchemyResult.effects.applyToItemData(compendiumBaseItem));
+        const baseItem = await this._documentManager.getDocumentByUuid(alchemyResult.baseComponent.id)
+        const baseItemData = this._objectUtils.duplicate(baseItem);
+        // todo: implement once types and process are known
+        // const customItemData = this._documentManager.customizeItem(compendiumBaseItem, alchemyResult.effects.applyToItemData(compendiumBaseItem));
         // const baseItemData: Entity.Data = duplicate(compendiumBaseItem.data);
         // mergeObject(baseItemData.data, alchemyResult.customItemData);
         // @ts-ignore
-        const createdItemData: Entity.Data = await this._actor.createEmbeddedEntity('OwnedItem', customItemData);
-        return null; // todo: implement once types are known
+        const createdItemData: Entity.Data = await this._actor.createEmbeddedEntity('OwnedItem', baseItemData);
+        return null;
     }
 
     private rationalise(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): InventoryActions {
@@ -200,12 +195,6 @@ class CraftingInventory implements Inventory {
         });
     }
 
-    private async prepareItemData(component: CraftingComponent): Promise<any> {
-        const compendium = this._game.packs.get(component.systemId);
-        const entity = await compendium.getDocument(component.partId);
-        return entity.data;
-    }
-
     async deleteOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         const ids: string[] = itemsData.map((itemData: any) => itemData._id);
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
@@ -224,12 +213,15 @@ class CraftingInventory implements Inventory {
 
     index(): Combination<CraftingComponent> {
         const actor: any = this.actor;
-        const ownedItems: any[] = this._documentManager.listActorItems(actor);
+        const ownedItems: any[] = actor.items;
         const itemsByComponentType: Map<CraftingComponent, [any, number][]> = new Map();
-        const ownedComponents: Combination<CraftingComponent> = ownedItems.filter((item: any) => PartDictionary.typeOf(item) === FabricateItemType.COMPONENT)
+        const ownedComponents: Combination<CraftingComponent> = ownedItems
+            .filter((item: any) => Properties.module.documents.supportedTypes.includes(item.type))
+            .filter((item: any) => this._componentTypes.has(item.getFlag("core", "sourceId")))
             .map((item: any) => {
-                const component: CraftingComponent = this._partDictionary.componentFrom(item);
-                const quantity: number = this._documentManager.readQuantity(item);
+                const sourceId = item.getFlag("core", "sourceId");
+                let component = this._componentTypes.get(sourceId);
+                const quantity = item.quantity;
                 if (itemsByComponentType.has(component)) {
                     itemsByComponentType.get(component).push([item, quantity]);
                 } else {
