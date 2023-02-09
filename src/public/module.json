@@ -46,7 +46,7 @@
     }
   ],
   "esmodules": [
-    "fabricate.mjs"
+    "fabricate.js"
   ],
   "styles": [
     "style.css"

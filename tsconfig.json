@@ -19,11 +19,10 @@
     "lib": ["DOM", "ES6", "ES2017", "ES2018", "ES2019"],
     "types": [
       "node",
-      "chai",
       "sinon",
       "jest",
-      "mocha",
       "handlebars",
+      "svelte",
       "@league-of-foundry-developers/foundry-vtt-types",
       "@league-of-foundry-developers/foundry-vtt-dnd5e-types"
     ],
