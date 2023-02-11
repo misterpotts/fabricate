@@ -3,6 +3,7 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowJs": true,
+    "checkJs": true,
     "baseUrl": "./",
     "rootDirs": ["./src","./test"],
     "outDir": "./dist",
@@ -23,15 +24,14 @@
       "jest",
       "handlebars",
       "svelte",
-      "@league-of-foundry-developers/foundry-vtt-types",
-      "@league-of-foundry-developers/foundry-vtt-dnd5e-types"
+      "@league-of-foundry-developers/foundry-vtt-types"
     ],
     "typeRoots": [
       "./typings"
     ],
     "allowUmdGlobalAccess": true
   },
-  "include": ["./src/**/*.ts", "./typings/**/*.ts", "./test/**/*.ts"],
+  "include": ["./src/**/*.ts", "./src/**/*.svelte", "./typings/**/*.ts", "./test/**/*.ts"],
   "exclude": ["node_modules"],
   "files": [
     "./typings/global.d.ts"

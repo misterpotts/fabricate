@@ -6,8 +6,7 @@ import {DefaultSettingManager, FabricateSettingMigrator} from "./settings/Fabric
 import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
-import {ApplicationWindow, ItemSheetExtension} from "./interface/apps/core/Applications";
-import {FabricateItemSheetTab} from "./interface/FabricateItemSheetTab";
+import {ApplicationWindow} from "./interface/apps/core/Applications";
 import {DefaultInventoryRegistry} from "./registries/InventoryRegistry";
 import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 
@@ -38,16 +37,16 @@ Hooks.on("renderSidebarTab", async (app: any, html: any) => {
 });
 
 
-Hooks.on("renderItemSheet", async (app: any, html: any) => {
-    const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
-    const craftingSystems = Array.from(systemsById.values());
-    const itemSheetExtension = new ItemSheetExtension({
-        app,
-        html,
-        itemSheetModifier: new FabricateItemSheetTab({craftingSystems})
-    });
-    await itemSheetExtension.render();
-});
+// Hooks.on("renderItemSheet", async (app: any, html: any) => {
+//     const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
+//     const craftingSystems = Array.from(systemsById.values());
+//     const itemSheetExtension = new ItemSheetExtension({
+//         app,
+//         html,
+//         itemSheetModifier: new FabricateItemSheetTab({craftingSystems})
+//     });
+//     await itemSheetExtension.render();
+// });
 
 Hooks.once('init', async () => {
     /*

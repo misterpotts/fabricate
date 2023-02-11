@@ -1,37 +1,26 @@
-import Hello from "../templates/hello.svelte"
+import Hello from "../templates/CraftingSystemManager.svelte"
 import Properties from "../scripts/Properties";
-
-class HelloApp extends Application {
-    private _component: Hello;
-
-    constructor(options: Partial<ApplicationOptions>) {
-        super(options);
-    }
-
-    activateListeners(html: JQuery) {
-        this._component = new Hello({
-            target: html.get(0),
-            props: {
-                name: "Foundry"
-            }
-        });
-    }
-
-    get component(): Hello {
-        return this._component;
-    }
-
-}
+import {SvelteApplication} from "./SvelteApplication";
+import {GameProvider} from "../scripts/foundry/GameProvider";
 
 Hooks.once("ready", () => {
-    const options = {
-        title: "Hello",
-        id: `${Properties.module.id}-hello`,
-        width: 500,
-        height: 500,
-        template: `modules/${Properties.module.id}/templates/application.html`,
-        classes: ["fabricate"]
+    const applicationOptions = {
+        title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
+        id: `${Properties.module.id}-hello-app`,
+        resizable: true,
+        width: 920,
+        height: 740
     }
-    const helloApp = new HelloApp(options);
-    console.log(helloApp.render(true));
+    const helloApp = new SvelteApplication({
+        applicationOptions,
+        svelteConfig: {
+            options: {
+                props: {
+                    name: "Foundrah"
+                }
+            },
+            componentType: Hello
+        }
+    })
+    helloApp.render(true);
 });

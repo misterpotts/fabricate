@@ -1,701 +1,43 @@
-.fabricate-components {
-  margin-top: 15px;
-  ul {
-    padding: 0 25px;
-  }
-  li {
-    display: inline-flex;
-    position: relative;
-    margin-right: 10px;
-    padding-bottom: 25px;
-  }
-  .component {
-    width: 72px;
-    height: 72px;
-    background-color: #382a2b;
-    border: 1px solid #232020;
-    border-radius: 5px;
-
-    .quantity, .name, .consumed {
-      position: absolute;
-      z-index: 1;
-      font-size: 1em;
-    }
-
-    .not-consumed {
-      background: #aba693;
-      color: #4c4439;
-      font-size: 1em;
-      width: 16px;
-      border-radius: 8px;
-      text-align: center;
-      top: 15%;
-      right: -9%;
-      padding: 2px 1px 0px 0px;
-    }
-
-    .quantity {
-      padding: 2px;
-      left: 85%;
-      top: -6%;
-      background: #aba693;
-      color: #4c4439;
-      width: 18px;
-      font-size: 0.9em;
-      font-weight: bold;
-      height: 18px;
-      text-align: center;
-      border-radius: 9px;
-    }
-
-    .name {
-      width: 72px;
-      left: 0px;
-      text-align: center;
-      background: #aba693;
-      color: #4c4439;
-      border-radius: 0px 0px 5px 5px;
-      font-size: 0.85em;
-      border-top: 1px solid #232020;
-      top: 67%;
-    }
-
-    img {
-      height: 60px;
-      width: 60px;
-      margin: 5px;
-      border-radius: 3px;
-    }
-  }
-}
-
-.fabricate-recipe, .fabricate-crafting {
-  padding: 0 10px;
-  .controls {
-    .craft-button, .craft-button-disabled {
-      width: 100%;
-      text-align: center;
-      margin: 8px 1px 0px 1px;
-      background: rgba(255, 255, 240, 0.8);
-      border: 1px solid #b5b3a4;
-      border-radius: 3px;
-      font-size: 14px;
-      line-height: 28px;
-    }
-  }
-}
-
-.fabricate-crafting {
-  .crafting-tab-content {
-    margin-top: 10px;
-    padding-bottom: 15px;
-    .controls {
-      position: relative;
-      .craft-button {
-        margin: 8px 0;
-        width: 49%;
-        display: inline-block;
-        &.clear-components {
-          right: 0;
-          position: absolute;
-        }
-        &.craft-from-components {
-          left: 0;
-          position: absolute;
-        }
-      }
-    }
-  }
-  .fabricate-components {
-    margin-top: 15px;
-    border-radius: 5px;
-    border: 1px solid #2f2a23;
-    min-height: 116px;
-    ul {
-      margin-top:10px;
-    }
-  }
-  .crafting-system, .recipes, .inventory {
-    margin-bottom: 20px;
-  }
-  .recipes {
-    padding-bottom: 20px;
-    .form-group.controls  {
-      select {
-        height: 28px;
-      }
-    }
-  }
-  .inventory, .hopper, .recipes {
-    &:after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-  }
-  .crafting-disabled {
-    position: relative;
-    padding-top: 25px;
-    .disabled-message {
-      width: 50%;
-      height: 100%;
-      top: 50%;
-      left: 25%;
-      text-align: center;
-      position: absolute;
-    }
-  }
-}
-
-// ========================================================
-// NEW UI ELEMENT STYLES
-// ========================================================
-
-.fabricate-crafting-system-manager {
-
-  aside {
-    padding: 0 3px;
-    background: #3c3b39;
-    border-radius: 5px;
-  }
-
-  .fabricate-crafting-system-editor {
-    padding: 10px;
-
-    .fabricate-crafting-system-header {
-      position: relative;
-
-      .fabricate-edit-details {
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 30px;
-        width: 30px;
-      }
-
-      .fabricate-locked {
-        text-align: center;
-        background: #8383832b;
-        padding: 5px 3px;
-        border-radius: 3px;
-        font-style: italic;
-      }
-
-    }
-
-    p.fabricate-no-system-selected {
-      text-align: center;
-    }
-
-    .fabricate-crafting-system-details {
-
-      .fabricate-essence-preview {
-        text-align: center;
-      }
-
-      .fabricate-crafting-system-navigation {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--color-border-light-2);
-        .item {
-          color: var(--color-text-dark-2);
-          font-weight: bold;
-          font-size: var(--font-size-16);
-          &.active {
-            font-weight: bolder;
-            text-decoration: underline;
-          }
-        }
-      }
-
-      .fabricate-basic-system-details {
-
-        label {
-          flex: 1;
-        }
-
-        .form-group {
-          flex: 4;
-        }
-
-      }
-
-      .fabricate-alchemy-toggle, .fabricate-crafting-check-toggle {
-        label {
-          flex: 3;
-        }
-      }
-
-    }
-
-  }
-
-  .sidebar {
-    min-width: 240px;
-
-    button {
-      margin: 0 0 3px 0;
-    }
-
-    .pages-list {
-
-      .directory-list {
-        padding-right: 0;
-      }
-
-      .fabricate-crafting-system {
-        border-radius: 5px;
-        padding: 2px 5px;
-        margin: 3px 0;
-
-        &.selected {
-          background: #262626ed;
-        }
-
-        .fabricate-crafting-system-name {
-          padding: 5px;
-          color: var(--color-text-light-highlight);
-          font-size: var(--font-size-14);
-          line-height: var(--line-height-12);
-        }
-
-        .fabricate-crafting-system-summary {
-          padding: 0 5px 5px 5px;
-          margin: -2px 0 0 0;
-          line-height: var(--line-height-12);
-          font-size: var(--font-size-12);
-          color: var(--color-text-light-4);
-        }
-
-        img {
-          margin: 5px;
-          border-radius: 3px;
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
-.fabricate-component-manager {
-
-  .fabricate-component {
-    .fabricate-component-tile(64px; 20px;);
-  }
-
-  .fabricate-component-manager-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 4px 0;
-
-    .fabricate-component-image {
-      display: inline-flex;
-      img {
-        height: 64px;
-        width: 64px;
-      }
-
-    }
-
-    .fabricate-component-name {
-      display: inline-flex;
-      margin-bottom: 0;
-      margin-left: 12px;
-      border-bottom: none;
-    }
-  }
-
-  .fabricate-component-essence-editor {
-
-    .fabricate-essence {
-      cursor: pointer;
-      background: #c7c1b5;
-      padding: 8px;
-      border-radius: 4px;
-      margin-right: 8px;
-      margin-bottom: 8px;
-    }
-  }
-
-  .fabricate-component-salvage-editor {
-    margin-top: 8px;
-
-    .fabricate-component-list {
-      margin-top: 16px;
-    }
-  }
-
-}
-
-@border-grey: #7a78788c;
-@background-grey: #d1d1d138;
-@text-grey: #67676738;
-
-@border-yellow: #A68F28;
-@background-yellow: #F2D03A;
-@text-yellow: #665818;
-
-@border-blue: #5081CC;
-@background-blue: #5E9AF2;
-@text-blue: #284166;
-
-@border-green: #45A84C;
-@background-green: #63F26D;
-@text-green: #2A662E;
-
-@border-red: #A8362F;
-@background-red: #F24D44;
-@text-red: #66201D;
-
-.fabricate-application {
-
-  aside.sidebar {
-    padding: 16px 8px;
-    background: #3c3b39d1;
-
-    .pages-list {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      color: var(--color-text-light-highlight);
-      font-size: var(--font-size-14);
-      line-height: var(--line-height-12);
-
-      a {
-        display: inline-flex;
-        min-height: 28px;
-        i {
-          margin-right: 8px;
-        }
-      }
-    }
-  }
-
-  .journal-entry-content {
-    border-radius: 0 !important;
-    padding-left: 5px;
-  }
-
-  .part-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 4px 0;
-
-    .part-image {
-      display: inline-flex;
-      img {
-        height: 64px;
-        width: 64px;
-      }
-    }
-
-    .part-name {
-      display: inline-flex;
-      margin-bottom: 0;
-      margin-left: 12px;
-      border-bottom: none;
-    }
-  }
-
-}
-
-.fabricate-alert {
-  border: 1px solid;
-  border-left: 4px solid;
-  text-align: center;
-  background: @background-grey;
-  border-color: @border-grey;
-  color: @text-grey;
-
-  &.fabricate-warning {
-    background: @background-yellow;
-    border-color: @border-yellow;
-    color: @text-yellow;
-  }
-
-  &.fabricate-info {
-    background: @background-blue;
-    border-color: @border-blue;
-    color: @text-blue;
-  }
-
-  &.fabricate-success {
-    background: @background-green;
-    border-color: @border-green;
-    color: @text-green;
-  }
-  &.fabricate-error {
-    background: @background-red;
-    border-color: @border-red;
-    color: @text-red;
-  }
-
-}
-
-.fabricate-component.fabricate-empty {
-  background: @background-grey;
-  color: @text-grey;
-  border: 1px dashed @border-grey;
-  cursor: default;
-}
-
-.fabricate-drop-zone {
-  text-align: center;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  background: @background-grey;
-  border: 1px dashed @border-grey;
-  border-radius: 3px;
-  &.fabricate-wide {
-    height: 68px;
-    margin-bottom: 20px;
-    margin-top: 20px;
-    padding-top: 26px;
-  }
-}
-
-.fabricate-application.recipe-manager {
-  .fabricate-recipe-ingredient-options,
-  .fabricate-recipe-result-options,
-  .fabricate-recipe-catalyst-editor {
-    .fabricate-component {
-      .fabricate-component-tile(64px; 20px;);
-    }
-  }
-  .fabricate-recipe-ingredient-summary,
-  .fabricate-recipe-result-summary,
-  .fabricate-recipe-catalyst-summary {
-    .fabricate-component {
-      .fabricate-component-tile(40px; 20px;);
-    }
-  }
-  .fabricate-recipe-essence-summary {
-    .fabricate-essence-list {
-      justify-content: flex-start;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      .fabricate-essence-preview {
-        justify-content: center;
-        justify-items: center;
-        i {
-          margin-right: 4px;
-        }
-      }
-    }
-  }
-  .fabricate-recipe-choice {
-    .fabricate-choice-id {
-      margin-bottom: 14px;
-    }
-  }
-  .fabricate-available-components {
-    .fabricate-component {
-      .fabricate-component-tile(84px; 20px;);
-    }
-    .fabricate-component-list {
-      margin-top: 10px;
-    }
-  }
-}
-
-.fabricate-inline-part-list {
-  display: inline-flex;
-  position: relative;
-  width: 100%;
-}
-
-.fabricate-component-list, .fabricate-essence-buttons, .fabricate-options-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.fabricate-options-list {
-  align-items: center;
-  justify-content: center;
-}
-
-.fabricate-option {
-  margin-right: 5px;
-}
-
-.fabricate-essence-button {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #c7c1b5;
-  padding: 8px;
-  border-radius: 4px;
-  margin-right: 8px;
-  margin-bottom: 8px;
-}
-
-.fabricate-search {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  align-content: flex-start;
-  label {
-    margin-right: 8px;
-  }
-  .fabricate-clear-search {
-    position: absolute;
-    z-index: 2;
-    right: 0;
-    top: 0;
-    margin-right: 7px;
-    margin-top: 5px;
-  }
-}
-
-.fabricate-essence-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  span {
-    display: inline-flex;
-    margin-right: 12px;
-    i {
-      margin-left: 2px;
-    }
-  }
-}
-
-.fabricate-item-table {
-  margin-top: 18px;
-
-  .fabricate-component {
-    .fabricate-component-tile(40px; 20px;);
-  }
-
-  .fabricate-item-table-header {
-    min-height: 28px;
-  }
-
-  .fabricate-item-table-body {
-
-    .fabricate-item-table-row {
-      min-height: 34px;
-
-      td.fabricate-centered {
-        text-align: center;
-      }
-
-      .fabricate-inline-part-list, .fabricate-component-list {
-        margin-top: 10px;
-        justify-content: center;
-
-        .fabricate-no-salvage {
-          margin-top: -10px;
-        }
-      }
-
-      .fabricate-item-image {
-        cursor: pointer;
-        height: 40px;
-        width: 40px;
-
-        img {
-          display: table-cell;
-          vertical-align: middle;
-        }
-      }
-
-      .fabricate-item-name {
-        text-align: center;
-        font-weight: bold;
-      }
-
-      .fabricate-edit-item {
-        display: flex;
-        justify-content: right;
-
-        button {
-          height: 30px;
-          width: 30px;
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
-// These are the new styles! V
-// Todo: convert everything to this structure
-
 /*
 =====================================================================
 BEGIN CSS VARIABLE REFERENCE
 =====================================================================
 */
-.reference {
-  --color-text-light-highlight: #f0f0e0;
-  --color-text-light-heading: #c9c7b8;
-  --color-text-light-primary: #b5b3a4;
-  --color-text-dark-primary: #191813;
-  --color-text-dark-secondary: #4b4a44;
-  --color-text-dark-header: #23221d;
-  --color-text-dark-inactive: #7a7971;
-  --color-text-hyperlink: #ff6400;
-  --color-text-light-0: #fff;
-  --color-text-light-1: #eee;
-  --color-text-light-2: #ddd;
-  --color-text-light-3: #ccc;
-  --color-text-light-4: #bbb;
-  --color-text-light-5: #aaa;
-  --color-text-light-6: #999;
-  --color-text-light-7: #888;
-  --color-text-dark-1: #111;
-  --color-text-dark-2: #222;
-  --color-text-dark-3: #444;
-  --color-text-dark-4: #555;
-  --color-text-dark-5: #666;
-  --color-text-dark-6: #777;
-  --color-border-light-1: #ddd;
-  --color-border-light-2: #999;
-  --color-border-dark-1: #111;
-  --color-border-dark-2: #222;
-  --color-border-dark-3: #333;
-  --color-border-dark-4: #444;
-  --color-border-dark-5: #666;
-  --color-shadow-primary: #ff0000;
-  --color-shadow-highlight: #ff6400;
-  --color-shadow-dark: #000;
-  --color-underline-inactive: #7a7971;
-  --color-underline-active: #44191A;
-  --color-underline-header: #782e22;
-  --color-border-light-highlight: #f0f0e0;
-  --color-border-light-primary: #b5b3a4;
-  --color-border-light-secondary: #c9c7b8;
-  --color-border-light-tertiary: #7a7971;
-  --color-border-dark: #000;
-  --color-border-dark-primary: #191813;
-  --color-border-dark-secondary: #23221d;
-  --color-border-dark-tertiary: #4b4a44;
-  --color-border-highlight: #ff6400;
-  --color-border-highlight-alt: #ff0000;
-  --color-bg-btn-minor-inactive: #c9c7b8;
-  --color-bg-btn-minor-active: #b5b3a4;
-  --color-bg-option: #dad8cc;
+
+.fab-fabricate-theme {
+  --color-text-light-heading: #bea487;
+  --color-text-light-primary: #878485;
+  --color-text-dark-primary: #7b6143;
+  --color-text-dark-header: #7b6143;
+  --color-text-dark-inactive: #7b6143;
+  --color-text-hyperlink: #9a8267;
+  --color-text-light-0: #888586;
+  --color-text-light-1: #888586;
+  --color-text-light-2: #888586;
+  --color-text-light-3: #8f8c8e;
+  --color-text-light-4: #888586;
+  --color-text-light-5: #888586;
+  --color-text-light-6: #888586;
+  --color-text-light-7: #888586;
+  --color-text-dark-1: #7b6143;
+  --color-text-dark-2: #7b6143;
+  --color-text-dark-3: #7b6143;
+  --color-text-dark-4: #7b6143;
+  --color-text-dark-5: #7b6143;
+  --color-text-dark-6: #7b6143;
+  --color-border-light-1: #463e38;
+  --color-border-light-2: #463e38;
+  --color-border-dark-1: #26211e;
+  --color-border-dark-2: #26211e;
+  --color-border-dark-3: #26211e;
+  --color-border-dark-4: #26211e;
+  --color-border-dark-5: #26211e;
+  --color-bg-btn-minor-inactive: #b2aaa5;
+  --color-bg-btn-minor-active: #d6cae3;
+  --color-bg-option: #3e3a37;
   --color-ownership-none: #5500ff;
   --color-ownership-observer: #7a7971;
   --color-ownership-owner: #b5b3a4;
-  --z-index-canvas: 0;
-  --z-index-app: 30;
-  --z-index-ui: 60;
-  --z-index-window: 100;
-  --z-index-tooltip: 9999;
   --sidebar-width: 300px;
   --sidebar-header-height: 32px;
   --sidebar-item-height: 48px;
@@ -724,7 +66,7 @@ BEGIN CSS VARIABLE REFERENCE
   --line-height-30: 1.875rem;
   --color-level-info: #5c87b9;
   --color-level-warning: #b18404;
-  --color-level-error: #750003;
+  --color-level-error: #8c353a;
 }
 
 /*
@@ -735,9 +77,82 @@ END CSS VARIABLE REFERENCE
 
 /*
 =====================================================================
+BEGIN FABRICATE THEME STYLES
+=====================================================================
+*/
+
+.fab-application-window.fab-fabricate-theme {
+  .window-content {
+    background: #2c2a2e;
+    padding: 0;
+    color: var(--color-text-light-3);
+    button {
+      background: none;
+      border: none;
+      color: var(--color-bg-btn-minor-inactive);
+      &:hover {
+        box-shadow: none;
+      }
+    }
+    h1, h2, h3, h4, h5, h6 {
+      border-bottom: none;
+    }
+  }
+}
+
+/*
+=====================================================================
+END FABRICATE THEME STYLES
+=====================================================================
+*/
+
+/*
+=====================================================================
 BEGIN COMMON STRUCTURAL STYLES
 =====================================================================
 */
+
+.fab-application-container {
+  display: flex;
+}
+
+.fab-vertical-nav {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+
+  .fab-header {
+    flex-shrink: 0;
+  }
+
+  .fab-items {
+    flex-grow: 1;
+  }
+
+  .fab-footer {
+    flex-shrink: 0;
+    background: var(--color-bg-option);
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 50px;
+    display: inline-flex;
+    button {
+      i {
+        margin-right: 8px;
+      }
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 40px;
+      color: var(--color-bg-btn-minor-inactive);
+      &:hover {
+        color: var(--color-bg-btn-minor-active);
+      }
+    }
+  }
+}
 
 .fabricate-component-list(@tile-size, @info-size) {
   display: flex;
