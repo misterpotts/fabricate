@@ -1,45 +1,45 @@
 <!-- CraftingSystemManager.svelte -->
 <script lang="ts">
-    import { Tabs, TabList, TabPanel, Tab } from './common/tabs.ts';
+    import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
 
-    let items = [
+    export let systems = [
         {
-            hasErrors: true,
+            id: "1",
             name: "Crafting System 1",
             summary: "Summary details of this crafting system and its themes, component types, etc.",
-            locked: false,
-            selected: false
+            hasErrors: true,
+            isLocked: false
         },
         {
-            hasErrors: false,
+            id: "2",
             name: "Crafting System 2",
             summary: "Summary details of this crafting system and its themes, component types, etc.",
-            locked: false,
-            selected: false
+            hasErrors: false,
+            isLocked: false
         },
         {
-            hasErrors: false,
+            id: "3",
             name: "Crafting System 3",
             summary: "Summary details of this crafting system and its themes, component types, etc.",
-            locked: true,
-            selected: true
+            hasErrors: false,
+            isLocked: true
         }
     ];
 </script>
 
-<CraftingSystemNavbar bind:items />
+<CraftingSystemNavbar systems="{systems}" />
 
 <section class="fab-crafting-system">
 
     <Tabs>
 
         <TabList>
-            <Tab>Details</Tab>
-            <Tab>Components</Tab>
-            <Tab>Recipes</Tab>
-            <Tab>Essences</Tab>
-            <Tab>Alchemy</Tab>
+            <Tab><i class="fa-solid fa-file-lines"></i> Details</Tab>
+            <Tab><i class="fa-solid fa-boxes-stacked"></i> Components</Tab>
+            <Tab><i class="fa-solid fa-scroll"></i> Recipes</Tab>
+            <Tab><i class="fa-solid fa-eye-dropper"></i> Essences</Tab>
+            <Tab><i class="fa-solid fa-flask-vial"></i> Alchemy</Tab>
         </TabList>
 
         <TabPanel>

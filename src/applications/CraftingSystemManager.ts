@@ -1,4 +1,4 @@
-import Hello from "../templates/CraftingSystemManager.svelte"
+import Hello from "../templates/craftingSystemManager/CraftingSystemManager.svelte"
 import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
 import {GameProvider} from "../scripts/foundry/GameProvider";

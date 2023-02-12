@@ -1,3 +1,3 @@
-<div class="fabricate-tab-list">
+<div class="fab-tab-list">
 	<slot></slot>
 </div>

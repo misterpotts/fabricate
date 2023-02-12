@@ -1,7 +1,9 @@
 <script lang="ts">
     import CraftingSystemNavbarItem from "./CraftingSystemNavbarItem.svelte";
+    import NavbarState from "./CraftingSystemNavbarState.ts";
 
-    export let items = [];
+    export let systems = [];
+    NavbarState.setSystems(systems)
 </script>
 
 <!-- CraftingSystemNavbar.svelte -->
@@ -10,8 +12,8 @@
         <h1>Crafting Systems</h1>
     </div>
     <div class="fab-items">
-        {#each items as item}
-            <CraftingSystemNavbarItem bind:item />
+        {#each systems as system}
+            <CraftingSystemNavbarItem system="{system}" />
         {/each}
     </div>
     <div class="fab-footer">

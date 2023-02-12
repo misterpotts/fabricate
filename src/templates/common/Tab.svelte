@@ -8,6 +8,6 @@
 	registerTab(tab);
 </script>
 
-<button class:fabricate-selected="{$selectedTab === tab}" on:click="{() => selectTab(tab)}">
+<button class:fab-selected="{$selectedTab === tab}" on:click="{() => selectTab(tab)}">
 	<slot></slot>
 </button>

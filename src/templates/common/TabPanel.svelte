@@ -9,7 +9,7 @@
 </script>
 
 {#if $selectedPanel === panel}
-	<div class="fabricate-tab-content">
+	<div class="fab-tab-content">
 		<slot></slot>
 	</div>
 {/if}

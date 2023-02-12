@@ -45,6 +45,6 @@
 	});
 </script>
 
-<div class="fabricate-tabs">
+<div class="fab-tabs">
 	<slot></slot>
 </div>
