@@ -1,29 +1,28 @@
 <script lang="ts">
-    import { getContext } from 'svelte';
-    import { key } from "./CraftingSystemManagerApp"
+    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp"
 
-    export let system = {
-        id: "",
-        hasErrors: false,
-        name: "Unknown Crafting System",
-        summary: "No details",
-        isLocked: true
-    };
+    export let system;
 
-    const { navbar } = getContext(key);
+    const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+    const selectedCraftingSystem = craftingSystemManager.selectedCraftingSystemStore.selectedSystem;
 
     function selectSystem() {
-        navbar.selectSystem(system);
+        craftingSystemManager.selectedCraftingSystemStore.selectSystemById(system.id);
+    }
+
+    async function deleteSystem() {
+        await craftingSystemManager.craftingSystemsStore.deleteCraftingSystem(system);
+        craftingSystemManager.selectedCraftingSystemStore.deselectById(system.id);
     }
 </script>
 
 <!-- CraftingSystemNavbarItem.svelte -->
-<div class="fab-nav-item" class:fab-selected={$navbar.selectedSystem === system} on:click={selectSystem}>
+<div class="fab-nav-item" class:fab-selected={$selectedCraftingSystem === system} on:click={selectSystem}>
     <div class="fab-button">
         <i class="fa-solid fa-circle"></i><p>{system.name}</p>{#if system.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
     </div>
-    {#if $navbar.selectedSystem !== system}<hr />{/if}
-    {#if $navbar.selectedSystem === system}
+    {#if $selectedCraftingSystem !== system}<hr />{/if}
+    {#if $selectedCraftingSystem === system}
         <div class="fab-context-menu">
             <p class="fab-description">{system.summary}</p>
             <hr />
@@ -34,7 +33,7 @@
                 <button><i class="fa-solid fa-file-export fa-fw"></i> Export</button>
                 <button><i class="fa-solid fa-paste fa-fw"></i> Duplicate</button>
                 {#if !system.isLocked}
-                    <button><i class="fa-solid fa-trash fa-fw"></i> Delete</button>
+                    <button on:click={deleteSystem}><i class="fa-solid fa-trash fa-fw"></i> Delete</button>
                 {/if}
             </div>
         </div>

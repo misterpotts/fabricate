@@ -1,12 +1,25 @@
 <script lang="ts">
-    import { getContext } from 'svelte';
+    import {onMount} from 'svelte';
     import CraftingSystemNavbarItem from "./CraftingSystemNavbarItem.svelte";
-    import { key } from "./CraftingSystemManagerApp"
+    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
 
     export let systems = [];
 
-    const { navbar } = getContext(key);
-    systems = $navbar.systems;
+    onMount(async () => {
+        const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+        await craftingSystemManager.craftingSystemsStore.loadAll();
+        craftingSystemManager.craftingSystemsStore.value
+            .subscribe((value) => systems = value);
+        if (systems.length > 0) {
+            craftingSystemManager.selectedCraftingSystemStore.selectSystemById(systems[0].id);
+        }
+    });
+
+    async function createCraftingSystem() {
+        const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+        const created = await craftingSystemManager.craftingSystemsStore.create();
+        craftingSystemManager.selectedCraftingSystemStore.selectSystemById(created.id);
+    }
 </script>
 
 <!-- CraftingSystemNavbar.svelte -->
@@ -14,7 +27,7 @@
     <div class="fab-header">
         <h1>Crafting Systems</h1>
     </div>
-    {#if systems.length > 0}
+    {#if systems && systems.length > 0}
         <div class="fab-items">
             {#each systems as system}
                 <CraftingSystemNavbarItem system="{system}" />
@@ -26,7 +39,7 @@
         </div>
     {/if}
     <div class="fab-footer">
-        <button><i class="fa-solid fa-file-pen"></i> Create</button>
+        <button on:click={createCraftingSystem}><i class="fa-solid fa-file-pen"></i> Create</button>
         <button><i class="fa-solid fa-file-import"></i> Import</button>
     </div>
 </aside>

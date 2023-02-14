@@ -1,5 +1,13 @@
 {
   "fabricate": {
+    "CraftingSystemManagerApp": {
+      "dialog": {
+        "deleteSystemConfirm": {
+          "title": "Delete Crafting System",
+          "content": "Are you sure you want to delete {systemName}? This action cannot be undone. "
+        }
+      }
+    },
     "ui": {
       "notifications": {
         "submissionError": {

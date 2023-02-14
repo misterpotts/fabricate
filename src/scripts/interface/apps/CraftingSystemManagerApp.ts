@@ -82,7 +82,7 @@ class SystemManagerModel {
     get craftingSystems(): CraftingSystem[] {
         return Array.from(this._embeddedSystems.values())
             .concat(Array.from(this._userDefinedSystems.values()))
-            .sort((left,right) => Number(right.locked) - Number(left.locked));
+            .sort((left,right) => Number(right.isLocked) - Number(left.isLocked));
     }
 
     async selectSystem(systemId?: string): Promise<SystemManagerModel> {
@@ -196,7 +196,7 @@ class SystemStateManager implements StateManager<SystemManagerView, SystemManage
                 description: this._model.selected.system.details.description,
                 author: this._model.selected.system.details.author,
                 enabled: this._model.selected.system.enabled,
-                locked: this._model.selected.system.locked,
+                locked: this._model.selected.system.isLocked,
                 essences: this._model.selected.parts.essences,
                 components: this._model.selected.parts.components,
                 recipes: this._model.selected.parts.recipes

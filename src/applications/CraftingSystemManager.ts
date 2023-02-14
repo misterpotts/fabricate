@@ -2,12 +2,16 @@ import CraftingSystemManager from "../templates/craftingSystemManager/CraftingSy
 import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
 import {GameProvider} from "../scripts/foundry/GameProvider";
+import {DefaultSystemRegistry} from "../scripts/registries/SystemRegistry";
+import {CraftingSystemManagerApp} from "../templates/craftingSystemManager/CraftingSystemManagerApp";
 
 class CraftingSystemManagerAppFactory {
 
-    public static make(): SvelteApplication {
+    public static make(systemRegistry: DefaultSystemRegistry): SvelteApplication {
 
-        const GAME = new GameProvider().globalGameObject();
+        const gameProvider = new GameProvider();
+
+        const GAME = gameProvider.globalGameObject();
 
         const applicationOptions = {
             title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
@@ -17,35 +21,13 @@ class CraftingSystemManagerAppFactory {
             height: 740
         }
 
+        CraftingSystemManagerApp.init({gameProvider, systemRegistry});
+
         return new SvelteApplication({
             applicationOptions,
             svelteConfig: {
                 options: {
-                    props: {
-                        systems: [
-                            {
-                                id: "1",
-                                name: "Crafting System 1",
-                                summary: "Summary details of this crafting system and its themes, component types, etc.",
-                                hasErrors: true,
-                                isLocked: false
-                            },
-                            {
-                                id: "2",
-                                name: "Crafting System 2",
-                                summary: "Summary details of this crafting system and its themes, component types, etc.",
-                                hasErrors: false,
-                                isLocked: false
-                            },
-                            {
-                                id: "3",
-                                name: "Crafting System 3",
-                                summary: "Summary details of this crafting system and its themes, component types, etc.",
-                                hasErrors: false,
-                                isLocked: true
-                            }
-                        ]
-                    }
+                    props: {}
                 },
                 componentType: CraftingSystemManager
             }

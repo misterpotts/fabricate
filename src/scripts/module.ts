@@ -10,7 +10,6 @@ import {
 import {DefaultSystemRegistry} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
-import {ApplicationWindow} from "./interface/apps/core/Applications";
 import {DefaultInventoryRegistry} from "./registries/InventoryRegistry";
 import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
@@ -54,17 +53,7 @@ function registerSettings(gameObject: Game, defaultSettingValue: FabricateSettin
         scope: "world",
         config: false,
         type: Object,
-        default: defaultSettingValue,
-        onChange: () => {
-            // Reload the crafting system UI if it exists
-            const applicationWindow: ApplicationWindow<any, any> = <ApplicationWindow<any, any>>Object.values(ui.windows)
-                .find(w => w.id == "fabricate-crafting-system-manager-old");
-            applicationWindow.reload();
-            // Reload all open item application windows
-            Object.values(ui.windows)
-                .filter(w => w instanceof ItemSheet)
-                .forEach(w => w.render());
-        }
+        default: defaultSettingValue
     });
 }
 
@@ -131,7 +120,7 @@ Hooks.once('init', async () => {
     const inventoryFactory = new DefaultInventoryFactory();
     const inventoryRegistry = new DefaultInventoryRegistry({inventoryFactory});
 
-    FabricateApplication.craftingSystemManagerApp = CraftingSystemManagerAppFactory.make();
+    FabricateApplication.craftingSystemManagerApp = CraftingSystemManagerAppFactory.make(systemRegistry);
 
     // Makes the system registry externally available
     // @ts-ignore

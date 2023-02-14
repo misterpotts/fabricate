@@ -1,20 +1,7 @@
 <!-- CraftingSystemManager.svelte -->
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
-    import { onDestroy, setContext } from 'svelte';
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
-    import { key } from "./CraftingSystemManagerApp"
-    import NavbarState from "./CraftingSystemNavbarState.ts";
-
-    export let systems = [];
-    export let systemRegistry = {};
-
-    NavbarState.setSystems(systems);
-    setContext(key, {
-        navbar: NavbarState
-    });
-
 </script>
 
 <CraftingSystemNavbar />

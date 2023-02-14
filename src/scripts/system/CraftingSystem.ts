@@ -29,7 +29,7 @@ class CraftingSystem {
     private _details: CraftingSystemDetails;
 
     private _enabled: boolean;
-    private readonly _locked: boolean;
+    private readonly _isLocked: boolean;
 
     private readonly _partDictionary: PartDictionary;
 
@@ -66,7 +66,7 @@ class CraftingSystem {
     }) {
         this._id = id;
         this._details = details;
-        this._locked = locked;
+        this._isLocked = locked;
         this._alchemyCraftingCheck = craftingChecks.alchemy;
         this._recipeCraftingCheck = craftingChecks.recipe;
         this._craftingAttemptFactory = craftingAttemptFactory;
@@ -83,8 +83,8 @@ class CraftingSystem {
         this._enabled = false;
     }
 
-    get locked(): boolean {
-        return this._locked;
+    get isLocked(): boolean {
+        return this._isLocked;
     }
 
     get alchemyFormulae(): Map<string, AlchemyFormula> {
@@ -230,7 +230,7 @@ class CraftingSystem {
             id: this._id,
             details: this._details.toJson(),
             enabled: this._enabled,
-            locked: this._locked,
+            locked: this._isLocked,
             parts: this._partDictionary.toJson()
         };
     }
