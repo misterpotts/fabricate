@@ -1,5 +1,6 @@
 <script lang="ts">
-    import NavbarState from "./CraftingSystemNavbarState.ts";
+    import { getContext } from 'svelte';
+    import { key } from "./CraftingSystemManagerApp"
 
     export let system = {
         id: "",
@@ -9,18 +10,20 @@
         isLocked: true
     };
 
+    const { navbar } = getContext(key);
+
     function selectSystem() {
-        NavbarState.selectSystem(system);
+        navbar.selectSystem(system);
     }
 </script>
 
 <!-- CraftingSystemNavbarItem.svelte -->
-<div class="fab-nav-item" class:fab-selected={$NavbarState.selectedSystem === system} on:click={selectSystem}>
+<div class="fab-nav-item" class:fab-selected={$navbar.selectedSystem === system} on:click={selectSystem}>
     <div class="fab-button">
         <i class="fa-solid fa-circle"></i><p>{system.name}</p>{#if system.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
     </div>
-    {#if $NavbarState.selectedSystem !== system}<hr />{/if}
-    {#if $NavbarState.selectedSystem === system}
+    {#if $navbar.selectedSystem !== system}<hr />{/if}
+    {#if $navbar.selectedSystem === system}
         <div class="fab-context-menu">
             <p class="fab-description">{system.summary}</p>
             <hr />

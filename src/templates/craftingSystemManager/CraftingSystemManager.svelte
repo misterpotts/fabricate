@@ -1,34 +1,23 @@
 <!-- CraftingSystemManager.svelte -->
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
+    import { onDestroy, setContext } from 'svelte';
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
+    import { key } from "./CraftingSystemManagerApp"
+    import NavbarState from "./CraftingSystemNavbarState.ts";
 
-    export let systems = [
-        {
-            id: "1",
-            name: "Crafting System 1",
-            summary: "Summary details of this crafting system and its themes, component types, etc.",
-            hasErrors: true,
-            isLocked: false
-        },
-        {
-            id: "2",
-            name: "Crafting System 2",
-            summary: "Summary details of this crafting system and its themes, component types, etc.",
-            hasErrors: false,
-            isLocked: false
-        },
-        {
-            id: "3",
-            name: "Crafting System 3",
-            summary: "Summary details of this crafting system and its themes, component types, etc.",
-            hasErrors: false,
-            isLocked: true
-        }
-    ];
+    export let systems = [];
+    export let systemRegistry = {};
+
+    NavbarState.setSystems(systems);
+    setContext(key, {
+        navbar: NavbarState
+    });
+
 </script>
 
-<CraftingSystemNavbar systems="{systems}" />
+<CraftingSystemNavbar />
 
 <section class="fab-crafting-system">
 
@@ -58,8 +47,8 @@
             <h2>Essences</h2>
         </TabPanel>
 
-        <TabPanel>
-            <h2>Alchemy</h2>
+        <TabPanel style="height:100%">
+            <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center"><i class="fa-solid fa-heart-crack" style="margin-right: 10px;"></i> Not yet implemented</div>
         </TabPanel>
 
     </Tabs>

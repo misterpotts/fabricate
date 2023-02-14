@@ -1,14 +1,24 @@
 import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
-import CraftingSystemManagerAppFactory from "./interface/apps/CraftingSystemManagerApp";
 import FabricateApplication from "./interface/FabricateApplication";
-import {DefaultSettingManager, FabricateSettingMigrator} from "./settings/FabricateSettings";
-import {DefaultSystemRegistry, ErrorDecisionType} from "./registries/SystemRegistry";
+import {
+    DefaultSettingManager, FabricateSetting,
+    FabricateSettingMigrator,
+    SettingManager,
+    SettingState
+} from "./settings/FabricateSetting";
+import {DefaultSystemRegistry} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
 import {ApplicationWindow} from "./interface/apps/core/Applications";
 import {DefaultInventoryRegistry} from "./registries/InventoryRegistry";
 import {DefaultInventoryFactory} from "./actor/InventoryFactory";
+import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
+
+Hooks.once("ready", () => {
+    // todo: deleteme
+    FabricateApplication.craftingSystemManagerApp.render(true);
+});
 
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
@@ -27,61 +37,14 @@ Hooks.on("renderSidebarTab", async (app: any, html: any) => {
     const buttonText = GAME.i18n.localize(`${Properties.module.id}.ui.sidebar.buttons.openCraftingSystemManager`);
     const button = $(`<button class="${buttonClass}"><i class="fa-solid fa-flask-vial"></i> ${buttonText}</button>`);
 
-    const embeddedSystems = await FabricateApplication.systemRegistry.getEmbeddedSystems();
-    const userDefinedSystems = await FabricateApplication.systemRegistry.getUserDefinedSystems();
-    const applicationWindow = await CraftingSystemManagerAppFactory.make({embeddedSystems, userDefinedSystems});
     button.on('click', async (_event) => {
-        applicationWindow.render();
+        FabricateApplication.craftingSystemManagerApp.render(true);
     });
+
     buttons.append(button);
 });
 
-
-// Hooks.on("renderItemSheet", async (app: any, html: any) => {
-//     const systemsById = await FabricateApplication.systemRegistry.getAllCraftingSystems();
-//     const craftingSystems = Array.from(systemsById.values());
-//     const itemSheetExtension = new ItemSheetExtension({
-//         app,
-//         html,
-//         itemSheetModifier: new FabricateItemSheetTab({craftingSystems})
-//     });
-//     await itemSheetExtension.render();
-// });
-
-Hooks.once('init', async () => {
-    /*
-    * Create the Inventory registry
-    */
-    const inventoryFactory = new DefaultInventoryFactory();
-    const inventoryRegistry = new DefaultInventoryRegistry({inventoryFactory});
-    /*
-    * Create the Crafting System registry
-    */
-    const gameProvider = new GameProvider();
-    const gameObject = gameProvider.globalGameObject();
-    const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
-        gameProvider: gameProvider,
-        moduleId: Properties.module.id,
-        settingKey: Properties.settings.craftingSystems.key,
-        targetVersion: Properties.settings.craftingSystems.targetVersion,
-        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>() // still on v1 :shrug:
-    });
-    const systemRegistry = new DefaultSystemRegistry({
-        settingManager: craftingSystemSettingManager,
-        gameSystem: gameObject.system.id,
-        craftingSystemFactory: new CraftingSystemFactory({}),
-        errorDecisionProvider: async (error: Error) => {
-            const reset = await Dialog.confirm({
-                title: gameObject.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.readErrorPrompt.title`),
-                content: `<p>${gameObject.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.readErrorPrompt.content", {errorMessage: error.message})}</p>`,
-            });
-            if (reset) {
-                return ErrorDecisionType.RESET;
-            }
-            return ErrorDecisionType.RETAIN;
-        }
-    });
-    FabricateApplication.systemRegistry = systemRegistry;
+function registerSettings(gameObject: Game, defaultSettingValue: FabricateSetting<Record<string, CraftingSystemJson>>) {
     /*
     * Register game settings for Fabricate
     */
@@ -91,11 +54,11 @@ Hooks.once('init', async () => {
         scope: "world",
         config: false,
         type: Object,
-        default: systemRegistry.getDefaultSettingValue(),
+        default: defaultSettingValue,
         onChange: () => {
             // Reload the crafting system UI if it exists
             const applicationWindow: ApplicationWindow<any, any> = <ApplicationWindow<any, any>>Object.values(ui.windows)
-                .find(w => w.id == "fabricate-crafting-system-manager");
+                .find(w => w.id == "fabricate-crafting-system-manager-old");
             applicationWindow.reload();
             // Reload all open item application windows
             Object.values(ui.windows)
@@ -103,13 +66,73 @@ Hooks.once('init', async () => {
                 .forEach(w => w.render());
         }
     });
-    // Cleans up the old embedded system data which should no longer be stored in game settings
-    try {
-        // todo: remove purge in later versions
-        await systemRegistry.purgeBundledSystemsFromStoredSettings();
-    } catch (e: any) {
-        console.warn(`Unable to purge Fabricate's bundled systems from world settings. ${{e}}`)
+}
+
+async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSystemSettingManager: DefaultSettingManager<Record<string, CraftingSystemJson>>): Promise<SettingManager<Record<string, CraftingSystemJson>>> {
+
+    const checkResult = craftingSystemSettingManager.check()
+    const gameObject = gameProvider.globalGameObject();
+
+    if (checkResult.state === SettingState.INVALID) {
+        const errorDetails = checkResult.validationCheck.errors
+            .map(errorKey => gameObject.i18n.localize(`fabricate.ui.notifications.settings.errors.${errorKey}`));
+        const errorSummary = gameObject.i18n.format(
+            "fabricate.ui.notifications.settings.errors.summary",
+            { settingKey: craftingSystemSettingManager.settingKey }
+        );
+        ui.notifications.error(`${errorSummary} ${errorDetails.join(", ")}`);
     }
+
+    if (checkResult.state === SettingState.OUTDATED) {
+        ui.notifications.info(gameObject.i18n.localize("fabricate.ui.notifications.settings.migration.started"));
+        const migrationResult = await craftingSystemSettingManager.migrate();
+        if (migrationResult.isSuccessful) {
+            ui.notifications.info(gameObject.i18n.localize("fabricate.ui.notifications.settings.migration.finished"));
+        } else {
+            ui.notifications.error(gameObject.i18n.format(
+                "fabricate.ui.notifications.settings.errors.migration",
+                { settingKey: craftingSystemSettingManager.settingKey }
+                ));
+        }
+    }
+
+    return craftingSystemSettingManager;
+}
+
+Hooks.once('init', async () => {
+
+    const gameProvider = new GameProvider();
+    const gameObject = gameProvider.globalGameObject();
+
+    const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
+        gameProvider: gameProvider,
+        moduleId: Properties.module.id,
+        settingKey: Properties.settings.craftingSystems.key,
+        targetVersion: Properties.settings.craftingSystems.targetVersion,
+        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>() // still on v1 :shrug:
+    });
+
+    /*
+    * Create the Crafting System registry
+    */
+    const systemRegistry = new DefaultSystemRegistry({
+        settingManager: craftingSystemSettingManager,
+        gameSystem: gameObject.system.id,
+        craftingSystemFactory: new CraftingSystemFactory({})
+    });
+    FabricateApplication.systemRegistry = systemRegistry;
+
+    registerSettings(gameObject, systemRegistry.getDefaultSettingValue());
+    await validateAndMigrateSettings(gameProvider, craftingSystemSettingManager);
+
+    /*
+    * Create the Inventory registry
+    */
+    const inventoryFactory = new DefaultInventoryFactory();
+    const inventoryRegistry = new DefaultInventoryRegistry({inventoryFactory});
+
+    FabricateApplication.craftingSystemManagerApp = CraftingSystemManagerAppFactory.make();
+
     // Makes the system registry externally available
     // @ts-ignore
     gameObject[Properties.module.id] = {};
@@ -118,44 +141,3 @@ Hooks.once('init', async () => {
     // @ts-ignore
     gameObject[Properties.module.id].InventoryRegistry = inventoryRegistry;
 });
-
-Hooks.once('ready', () => {
-
-    Promise.all([
-        getTemplate(Properties.module.templates.partials.editableSystem),
-        getTemplate(Properties.module.templates.partials.readOnlySystem),
-        getTemplate(Properties.module.templates.partials.recipesTab),
-        getTemplate(Properties.module.templates.partials.componentsTab),
-        getTemplate(Properties.module.templates.partials.essencesTab),
-        getTemplate(Properties.module.templates.partials.alchemyTab),
-        getTemplate(Properties.module.templates.partials.checksTab),
-    ]).then(templates => {
-        Handlebars.registerPartial('editableSystem', templates[0]);
-        Handlebars.registerPartial('readOnlySystem', templates[1]);
-        Handlebars.registerPartial('recipesTab', templates[2]);
-        Handlebars.registerPartial('componentsTab', templates[3]);
-        Handlebars.registerPartial('essencesTab', templates[4]);
-        Handlebars.registerPartial('alchemyTab', templates[5]);
-        Handlebars.registerPartial('checksTab', templates[6]);
-    });
-
-    Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
-        // @ts-ignore
-        return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
-    });
-
-    Handlebars.registerHelper ('truncate', function (string, maxLength) {
-        if (!string || string?.length <= maxLength) {
-            return new Handlebars.SafeString(string);
-        }
-        const lastWhitespaceIndex = string.lastIndexOf(" ");
-        const lastWordTerminationIndex = lastWhitespaceIndex >= 0 ? lastWhitespaceIndex : string.length;
-        if (lastWordTerminationIndex > maxLength) {
-            return new Handlebars.SafeString(`${string.substring(0, maxLength)}...`);
-        }
-        return new Handlebars.SafeString(`${string.substring(0, lastWordTerminationIndex)}...`);
-    });
-
-});
-
-

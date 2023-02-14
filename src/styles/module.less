@@ -214,6 +214,17 @@ BEGIN COMMON STRUCTURAL STYLES
     }
   }
 
+  .fab-no-items {
+    flex-grow: 1;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    p {
+      text-align: center;
+    }
+  }
+
   .fab-items {
     flex-grow: 1;
     width: 100%;
@@ -265,18 +276,27 @@ BEGIN COMMON STRUCTURAL STYLES
 
 .fab-crafting-system {
   flex-grow: 1;
-  .fab-tab-list {
+  display: flex;
+  .fab-tabs {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 66px;
-    display: inline-flex;
-    justify-content: space-around;
-    align-content: center;
-    align-items: center;
-    button {
-      height: 46px;
-      width: auto;
-      margin: 0;
-      padding: 0 16px;
+    .fab-tab-list {
+      height: 66px;
+      display: inline-flex;
+      justify-content: space-around;
+      align-content: center;
+      align-items: center;
+      button {
+        height: 46px;
+        width: auto;
+        margin: 0;
+        padding: 0 16px;
+      }
+    }
+    .fab-tab-content {
+      flex-grow: 1;
+      display: flex;
     }
   }
 }

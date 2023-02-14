@@ -1,6 +1,6 @@
 import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
 import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
-import {FabricateSetting, SettingManager} from "../settings/FabricateSettings";
+import {FabricateSetting, SettingManager} from "../settings/FabricateSetting";
 import {SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system_definitions/AlchemistsSuppliesV16";
 
 interface SystemRegistry {
@@ -38,29 +38,23 @@ enum ErrorDecisionType {
     RESET
 }
 
-type ErrorDecisionProvider = (error: Error) => Promise<ErrorDecisionType>;
-
 class DefaultSystemRegistry implements SystemRegistry {
 
     private readonly _gameSystem: string;
     private readonly _settingsManager: SettingManager<Record<string, CraftingSystemJson>>;
     private readonly _craftingSystemFactory: CraftingSystemFactory;
-    private readonly _errorDecisionProvider: ErrorDecisionProvider;
 
     constructor({
         settingManager,
         craftingSystemFactory,
-        errorDecisionProvider,
         gameSystem
     }: {
         settingManager: SettingManager<Record<string, CraftingSystemJson>>;
         craftingSystemFactory: CraftingSystemFactory;
-        errorDecisionProvider: ErrorDecisionProvider;
         gameSystem: string;
     }) {
         this._settingsManager = settingManager;
         this._craftingSystemFactory = craftingSystemFactory;
-        this._errorDecisionProvider = errorDecisionProvider;
         this._gameSystem = gameSystem;
     }
 
@@ -98,11 +92,7 @@ class DefaultSystemRegistry implements SystemRegistry {
 
     async getUserDefinedSystems(): Promise<Map<string, CraftingSystem>> {
         let userDefinedCraftingSystemsJson: Record<string, CraftingSystemJson> = {};
-        try {
-            userDefinedCraftingSystemsJson = await this._settingsManager.read();
-        } catch (e: any) {
-            userDefinedCraftingSystemsJson = await this.handleReadError(e);
-        }
+        userDefinedCraftingSystemsJson = await this._settingsManager.read();
         return this.prepareCraftingSystemsData(userDefinedCraftingSystemsJson);
     }
 
@@ -110,20 +100,6 @@ class DefaultSystemRegistry implements SystemRegistry {
         const userDefinedSystems = await Promise.all(Object.values(userDefinedCraftingSystemsJson)
             .map(craftingSystemJson => this._craftingSystemFactory.make(craftingSystemJson)));
         return new Map(userDefinedSystems.map(userDefinedSystem => [userDefinedSystem.id, userDefinedSystem]));
-    }
-
-    private async handleReadError(e: any): Promise<Record<string, CraftingSystemJson>> {
-        const error: Error = e instanceof Error ? e : new Error(`An unexpected error occurred reading crafting systems. `);
-        console.error({error});
-        const decision = await this._errorDecisionProvider(error);
-        switch (decision) {
-            case ErrorDecisionType.RESET:
-                await this._settingsManager.delete();
-                await this._settingsManager.write({});
-                return {};
-            default:
-                return {}
-        }
     }
 
     async getCraftingSystemById(id: string): Promise<CraftingSystem> {

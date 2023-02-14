@@ -502,7 +502,7 @@ class CraftingSystemManagerAppFactory {
             }],
             options: {
                 title: new GameProvider().globalGameObject().i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
-                id: `${Properties.module.id}-crafting-system-manager`,
+                id: `${Properties.module.id}-crafting-system-manager-old`,
                 classes: ["sheet", "journal-sheet", "journal-entry"],
                 template: Properties.module.templates.craftingSystemManagementApp,
                 resizable: true,

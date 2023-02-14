@@ -1,5 +1,10 @@
 import {expect, test, describe, beforeEach} from "@jest/globals";
-import {DefaultSettingManager, FabricateSettingMigrator} from "../src/scripts/settings/FabricateSettings";
+import {
+    DefaultSettingManager,
+    FabricateSetting,
+    FabricateSettingMigrator,
+    SettingState
+} from "../src/scripts/settings/FabricateSetting";
 import * as Sinon from "sinon";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
 import {CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
@@ -88,7 +93,7 @@ describe("Settings Manager", () => {
         };
     }
 
-    test("Should map to new version when loading old version", async () => {
+    test("Should migrate to new version", async () => {
         const stubSettingMigrator: FabricateSettingMigrator<Record<string, OldVersion>, Record<string, CraftingSystemJson>> = {
             fromVersion: "1",
             toVersion: "2",
@@ -152,42 +157,70 @@ describe("Settings Manager", () => {
                     }
                 }
             })
-        const result: Record<string, CraftingSystemJson> = await underTest.read();
-        const resultValue = result[testSystemId];
-        expect(resultValue.details.name).toEqual(name);
-        expect(resultValue.details.summary).toEqual(summary);
-        expect(resultValue.details.description).toEqual(description);
-        expect(resultValue.details.author).toEqual(author);
+
+        const checkResult = underTest.check();
+        expect(checkResult.validationCheck.isValid).toEqual(true);
+        expect(checkResult.state).toEqual(SettingState.OUTDATED);
+        expect(checkResult.migrationCheck.requiresMigration).toEqual(true);
+        expect(checkResult.migrationCheck.currentVersion).toEqual("0");
+        expect(checkResult.migrationCheck.targetVersion).toEqual("2");
+
+        const migrationResult = await underTest.migrate();
+        expect(migrationResult.isSuccessful).toEqual(true);
+        expect(migrationResult.steps).toEqual(2);
+        expect(migrationResult.initialVersion).toEqual("0");
+        expect(migrationResult.finalVersion).toEqual("2");
+
+        const savedSetting = stubSetSettingsMethod.getCall(0).args[2] as FabricateSetting<Record<string, CraftingSystemJson>>;
+
+        expect(savedSetting).not.toBeNull();
+        expect(savedSetting.version).toEqual("2");
+        const resultValue = savedSetting.value;
+        expect(resultValue[testSystemId]).not.toBeNull();
+        const migratedValue = resultValue[testSystemId];
+        expect(migratedValue.details.name).toEqual(name);
+        expect(migratedValue.details.summary).toEqual(summary);
+        expect(migratedValue.details.description).toEqual(description);
+        expect(migratedValue.details.author).toEqual(author);
     });
 
-    test("Should drop unversioned settings", async () => {
+    test("Should throw error when setting is null", async () => {
         const underTest = new DefaultSettingManager({
             gameProvider: stubGameProvider,
             targetVersion: "1",
             settingKey: craftingSystemsKey
         });
-        const testSystemId = "abc123";
-        const name = "Name";
-        const summary = "Summary";
-        const description = "Description";
-        const author = "Author";
-        const testSystem = {
-            name: name,
-            summary: summary,
-            description: description,
-            author: author
-        };
-        stubGetSettingsMethod.withArgs("fabricate", `craftingSystems.${testSystemId}`)
-            .returns(testSystem)
+        stubGetSettingsMethod.withArgs("fabricate", `craftingSystems`)
+            .returns(null);
+        await expect(() => underTest.read()).toThrow("Unable to read setting value for key craftingSystems. ");
+    });
+
+    test("Should throw error when settings version is null", async () => {
+        const underTest = new DefaultSettingManager({
+            gameProvider: stubGameProvider,
+            targetVersion: "1",
+            settingKey: craftingSystemsKey
+        });
         stubGetSettingsMethod.withArgs("fabricate", `craftingSystems`)
             .returns({
-                value: {
-                    [testSystemId]: testSystem
-                }
-            })
-        await expect(() => underTest.read())
-            .rejects
-            .toThrow(`Unable to read the setting for the key "${craftingSystemsKey}". Caused by: Expected a non-null, non-empty setting version. `);
+                version: null,
+                value: {}
+            });
+        await expect(() => underTest.read()).toThrow("Unable to read setting value for key craftingSystems. ");
+    });
+
+    test("Should throw error when setting value is null", async () => {
+        const underTest = new DefaultSettingManager({
+            gameProvider: stubGameProvider,
+            targetVersion: "1",
+            settingKey: craftingSystemsKey
+        });
+        stubGetSettingsMethod.withArgs("fabricate", `craftingSystems`)
+            .returns({
+                version: "1",
+                value: null
+            });
+        await expect(() => underTest.read()).toThrow("Unable to read setting value for key craftingSystems. ");
     });
 
 });
