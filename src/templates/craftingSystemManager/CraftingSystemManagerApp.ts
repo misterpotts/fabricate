@@ -11,14 +11,18 @@ class CraftingSystemManagerApp {
     //private readonly _selectedRecipeStore;
     //private readonly _essenceStore;
     private readonly _selectedCraftingSystemStore: SelectedCraftingSystemStore;
+    private readonly _gameProvider: GameProvider;
 
     protected constructor({
+        gameProvider,
         craftingSystemStore,
         selectedCraftingSystemStore
     }: {
+        gameProvider: GameProvider;
         craftingSystemStore: CraftingSystemsStore;
         selectedCraftingSystemStore: SelectedCraftingSystemStore;
     }) {
+        this._gameProvider = gameProvider;
         this._craftingSystemsStore = craftingSystemStore;
         this._selectedCraftingSystemStore = selectedCraftingSystemStore;
     }
@@ -33,6 +37,7 @@ class CraftingSystemManagerApp {
         const craftingSystemStore = new CraftingSystemsStore({systemRegistry, gameProvider});
         const selectedCraftingSystemStore = new SelectedCraftingSystemStore({craftingSystemStore});
         this._INSTANCE = new CraftingSystemManagerApp({
+            gameProvider,
             craftingSystemStore,
             selectedCraftingSystemStore
         });
@@ -43,6 +48,10 @@ class CraftingSystemManagerApp {
             throw new Error("CraftingSystemManagerApp has not been initialised yet. CallCraftingSystemManagerApp::init before CraftingSystemManagerApp::getInstance")
         }
         return CraftingSystemManagerApp._INSTANCE;
+    }
+
+    get i18n() {
+        return this._gameProvider.globalGameObject().i18n;
     }
 
     get craftingSystemsStore(): CraftingSystemsStore {

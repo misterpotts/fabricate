@@ -30,6 +30,8 @@ interface SystemRegistry {
     createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem>;
 
     handleItemDeleted(uuid: string): Promise<void>;
+
+    hasCraftingSystem(id: string): Promise<boolean>;
 }
 
 enum ErrorDecisionType {
@@ -106,6 +108,11 @@ class DefaultSystemRegistry implements SystemRegistry {
         const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read();
         const craftingSystemJson = allCraftingSystemSettings[id];
         return this._craftingSystemFactory.make(craftingSystemJson);
+    }
+
+    async hasCraftingSystem(id: string): Promise<boolean> {
+        const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read();
+        return allCraftingSystemSettings[id] !== undefined;
     }
 
     async cloneCraftingSystemById(id: string): Promise<CraftingSystem> {

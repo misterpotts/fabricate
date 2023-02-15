@@ -1,12 +1,13 @@
 <script lang="ts">
     import {onMount} from 'svelte';
+    import Properties from "../../scripts/Properties";
     import CraftingSystemNavbarItem from "./CraftingSystemNavbarItem.svelte";
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
 
     export let systems = [];
+    let craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     onMount(async () => {
-        const craftingSystemManager = CraftingSystemManagerApp.getInstance();
         await craftingSystemManager.craftingSystemsStore.loadAll();
         craftingSystemManager.craftingSystemsStore.value
             .subscribe((value) => systems = value);
@@ -19,6 +20,10 @@
         const craftingSystemManager = CraftingSystemManagerApp.getInstance();
         const created = await craftingSystemManager.craftingSystemsStore.create();
         craftingSystemManager.selectedCraftingSystemStore.selectSystemById(created.id);
+    }
+
+    async function importCraftingSystem() {
+        await craftingSystemManager.craftingSystemsStore.importCraftingSystem();
     }
 </script>
 
@@ -39,7 +44,7 @@
         </div>
     {/if}
     <div class="fab-footer">
-        <button on:click={createCraftingSystem}><i class="fa-solid fa-file-pen"></i> Create</button>
-        <button><i class="fa-solid fa-file-import"></i> Import</button>
+        <button on:click={createCraftingSystem}><i class="fa-solid fa-file-pen"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.create`)}</button>
+        <button on:click={importCraftingSystem}><i class="fa-solid fa-file-import"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.importNew`)}</button>
     </div>
 </aside>

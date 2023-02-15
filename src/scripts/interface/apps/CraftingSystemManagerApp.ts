@@ -454,7 +454,7 @@ class CraftingSystemManagerAppFactory {
                             const exportData = JSON.stringify(craftingSystem.toJson(), null, 2);
                             const fileName = `fabricate-crafting-system-${craftingSystem.name.slugify()}.json`
                             saveDataToFile(exportData, "application/json", fileName);
-                            ui.notifications.info(GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.info.export.success`, { systemName: craftingSystem.name, fileName }))
+                            ui.notifications.info(GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.info.export.success`, { systemName: craftingSystem.name, fileName }));
                         }
                     },
                     {

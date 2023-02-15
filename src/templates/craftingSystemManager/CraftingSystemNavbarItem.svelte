@@ -1,5 +1,7 @@
 <script lang="ts">
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp"
+    import Properties from "../../scripts/Properties";
+    import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 
     export let system;
 
@@ -12,30 +14,51 @@
 
     async function deleteSystem() {
         await craftingSystemManager.craftingSystemsStore.deleteCraftingSystem(system);
-        craftingSystemManager.selectedCraftingSystemStore.deselectById(system.id);
+    }
+
+    async function importCraftingSystem() {
+        await craftingSystemManager.craftingSystemsStore.importCraftingSystem(system);
+    }
+
+    function exportSystem() {
+        craftingSystemManager.craftingSystemsStore.exportCraftingSystem(system);
+    }
+
+    function duplicateSystem() {
+        craftingSystemManager.craftingSystemsStore.duplicateCraftingSystem(system);
     }
 </script>
 
 <!-- CraftingSystemNavbarItem.svelte -->
-<div class="fab-nav-item" class:fab-selected={$selectedCraftingSystem === system} on:click={selectSystem}>
-    <div class="fab-button">
-        <i class="fa-solid fa-circle"></i><p>{system.name}</p>{#if system.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
-    </div>
-    {#if $selectedCraftingSystem !== system}<hr />{/if}
-    {#if $selectedCraftingSystem === system}
-        <div class="fab-context-menu">
-            <p class="fab-description">{system.summary}</p>
-            <hr />
-            <div class="fab-ctx-menu-buttons">
-                {#if !system.isLocked}
-                    <button><i class="fa-solid fa-file-import fa-fw"></i> Import</button>
-                {/if}
-                <button><i class="fa-solid fa-file-export fa-fw"></i> Export</button>
-                <button><i class="fa-solid fa-paste fa-fw"></i> Duplicate</button>
-                {#if !system.isLocked}
-                    <button on:click={deleteSystem}><i class="fa-solid fa-trash fa-fw"></i> Delete</button>
-                {/if}
-            </div>
+<div class="fab-nav-item" class:fab-selected={$selectedCraftingSystem === system} >
+    <a on:click={selectSystem}>
+        <div class="fab-button">
+            <i class="fa-solid fa-circle"></i><p>{system.name} {#if system.isLocked}<i class="fa-solid fa-lock"></i>{/if}</p>{#if system.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
         </div>
-    {/if}
+        {#if $selectedCraftingSystem !== system}<hr />{/if}
+        {#if $selectedCraftingSystem === system}
+            <div class="fab-context-menu">
+                <p class="fab-description">{system.summary}</p>
+                <hr />
+                <div class="fab-ctx-menu-buttons">
+                    {#if !system.isLocked}
+                        <button on:click={importCraftingSystem(system)}>
+                            <i class="fa-solid fa-file-import fa-fw"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.import`)}
+                        </button>
+                    {/if}
+                    <button on:click={exportSystem}>
+                        <i class="fa-solid fa-file-export fa-fw"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.export`)}
+                    </button>
+                    <button on:click={duplicateSystem}>
+                        <i class="fa-solid fa-paste fa-fw"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.duplicate`)}
+                    </button>
+                    {#if !system.isLocked}
+                        <button on:click={deleteSystem}>
+                            <i class="fa-solid fa-trash fa-fw"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.delete`)}
+                        </button>
+                    {/if}
+                </div>
+            </div>
+        {/if}
+    </a>
 </div>

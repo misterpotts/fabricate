@@ -1,10 +1,60 @@
 {
   "fabricate": {
+    "typeNames": {
+      "craftingSystem": {
+        "singular": "Crafting System",
+        "plural": "Crafting Systems"
+      },
+      "recipe": {
+        "singular": "Recipe",
+        "plural": "Recipes"
+      },
+      "component": {
+        "singular": "Component",
+        "plural": "Components"
+      },
+      "essence": {
+        "singular": "Essence",
+        "plural": "Essences"
+      }
+    },
     "CraftingSystemManagerApp": {
+      "title": "Fabricate | Crafting System Manager",
       "dialog": {
         "deleteSystemConfirm": {
           "title": "Delete Crafting System",
           "content": "Are you sure you want to delete {systemName}? This action cannot be undone. "
+        },
+        "exportCraftingSystem": {
+          "success": "The Crafting System {systemName} was successfully exported to {fileName}."
+        },
+        "duplicateCraftingSystem": {
+          "success": "Duplicated {sourceSystemName} as {duplicatedSystemName}."
+        },
+        "importCraftingSystem": {
+          "title": "Import Crafting System",
+          "hint": "the Crafting System with the same ID as the Crafting System in the uploaded document, or create a new one,",
+          "buttons": {
+            "import": "Import",
+            "cancel": "Cancel"
+          },
+          "errors": {
+            "noFileUploaded": "You must select a file to upload",
+            "couldNotParseFile": "Unable to parse JSON file.",
+            "importIdMismatch": "Cannot import Crafting System definition for {systemName}. The ID in the uploaded file does not match that of {systemName}. Wanted {expectedId}, but got {actualId}. Perhaps you uploaded the wrong file, or meant to use the Import new button below?",
+            "targetSystemNotFound": "Could not import Crafting System definition for {systemName}. {systemName} doesn't seem to exist, which is really strange. This should never happen."
+          },
+          "success": "Successfully Imported the {systemName} Crafting System"
+        }
+      },
+      "navbar": {
+        "buttons": {
+          "import": "Import",
+          "importNew": "Import New",
+          "export": "Export",
+          "duplicate": "Duplicate",
+          "delete": "Delete",
+          "create": "Create"
         }
       }
     },
