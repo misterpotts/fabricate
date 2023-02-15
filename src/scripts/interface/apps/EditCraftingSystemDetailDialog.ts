@@ -31,7 +31,7 @@ class CraftingSystemModel {
     }
 
     public editDetails(value: CraftingSystemDetails): CraftingSystemModel {
-        this._system.setDetails(value);
+        this._system.details = value;
         return this;
     }
 

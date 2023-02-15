@@ -199,7 +199,7 @@ class CraftingSystem {
         return this._details.name;
     }
 
-    public setDetails(value: CraftingSystemDetails): void {
+    set details(value: CraftingSystemDetails) {
         this._details = value;
     }
 

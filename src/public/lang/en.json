@@ -20,6 +20,28 @@
     },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",
+      "tabs": {
+        "details": {
+          "label": "Details",
+          "title": "{systemName} Details"
+        },
+        "components": {
+          "label": "Components",
+          "title": "{systemName} Components"
+        },
+        "recipes": {
+          "label": "Recipes",
+          "title": "{systemName} Recipes"
+        },
+        "essences": {
+          "label": "Essences",
+          "title": "{systemName} Essences"
+        },
+        "alchemy": {
+          "label": "Alchemy",
+          "title": "{systemName} Alchemy"
+        }
+      },
       "dialog": {
         "deleteSystemConfirm": {
           "title": "Delete Crafting System",

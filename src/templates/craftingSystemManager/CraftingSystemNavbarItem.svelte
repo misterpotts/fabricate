@@ -1,7 +1,6 @@
 <script lang="ts">
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp"
     import Properties from "../../scripts/Properties";
-    import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 
     export let system;
 

@@ -187,6 +187,16 @@ class CraftingSystemsStore {
             return value;
         });
     }
+
+    async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
+        const updatedCraftingSystem = await this._systemRegistry.saveCraftingSystem(craftingSystem);
+        this._value.update((value) => {
+            const craftingSystems = value.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
+            craftingSystems.push(updatedCraftingSystem);
+            return craftingSystems;
+        });
+        return updatedCraftingSystem;
+    }
 }
 
 export { CraftingSystemsStore }
