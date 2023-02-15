@@ -23,7 +23,14 @@
       "tabs": {
         "details": {
           "label": "Details",
-          "title": "{systemName} Details"
+          "title": "{systemName} Details",
+          "settings": {
+            "title": "Settings",
+            "enabled": {
+              "label": "Enabled",
+              "description": "Disabled systems cannot be used. Their components cannot be salvaged. Their recipes cannot be crafted."
+            }
+          }
         },
         "components": {
           "label": "Components",

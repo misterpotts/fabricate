@@ -8,10 +8,12 @@
     let loading = false;
 
     let selectedSystem;
+
     let name = "No name";
     let author = "No author";
     let summary = "No summary";
     let description = "No description";
+    let enabled = false;
 
     craftingSystemManager.selectedCraftingSystemStore.selectedSystem.subscribe((system) => {
         selectedSystem = system;
@@ -20,6 +22,7 @@
             author = system.author;
             summary = system.summary;
             description = system.description;
+            enabled = system.enabled;
         }
     });
 
@@ -39,7 +42,12 @@
         }, 500);
     }
 
+    async function toggleSystemEnabled() {
+        selectedSystem.enabled = enabled;
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+    }
 </script>
+
 <div class="fab-system-details fab-column">
     {#if loading}
         <div class="loading" transition:fade="{{duration: 100}}">
@@ -92,6 +100,15 @@
         {:else}
             <div class="fab-locked fab-textbox">{description}</div>
         {/if}
+    </div>
+    <div class="fab-tab-header fab-row">
+        <h2>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.settings.title`)}</h2>
+    </div>
+    <div class="fab-row">
+        <p class="fab-label">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.settings.enabled.label`)}: </p> <input type="checkbox" bind:checked={enabled} on:change={toggleSystemEnabled}>
+    </div>
+    <div class="fab-row">
+        <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.settings.enabled.description`)}</p>
     </div>
 </div>
 

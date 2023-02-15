@@ -203,6 +203,10 @@ class CraftingSystem {
         this._details = value;
     }
 
+    set enabled(value: boolean) {
+        this._enabled = value;
+    }
+
     public async loadPartDictionary(): Promise<void> {
         await this._partDictionary.loadAll();
     }

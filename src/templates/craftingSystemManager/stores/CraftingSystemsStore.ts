@@ -26,6 +26,33 @@ class CraftingSystemsStore {
         return this._value;
     }
 
+    private insert(craftingSystem: CraftingSystem) {
+        this._value.update((value) => {
+            const otherSystems = value.filter(system => system.id !== craftingSystem.id);
+            otherSystems.push(craftingSystem);
+            return this.sort(otherSystems);
+        });
+    }
+
+    private remove(craftingSystem: CraftingSystem) {
+        this._value.update((value) => {
+            const otherSystems = value.filter(system => system.id !== craftingSystem.id);
+            return this.sort(otherSystems);
+        });
+    }
+
+    private sort(craftingSystems: CraftingSystem[]): CraftingSystem[] {
+        return craftingSystems.sort((left, right) => {
+            if (left.isLocked && !right.isLocked) {
+                return -1;
+            }
+            if (right.isLocked && !left.isLocked) {
+                return 1;
+            }
+            return left.name.localeCompare(right.name);
+        });
+    }
+
     public async create(): Promise<CraftingSystem> {
         const systemJson: CraftingSystemJson = {
             parts: {
@@ -44,17 +71,14 @@ class CraftingSystemsStore {
             id: randomID()
         };
         const system = await this._systemRegistry.createCraftingSystem(systemJson);
-        this._value.update((value) => {
-            value.push(system);
-            return value;
-        });
+        this.insert(system);
         return system;
     }
 
     public async loadAll(): Promise<void> {
         const allSystemsById = await this._systemRegistry.getAllCraftingSystems();
         const allSystems = Array.from(allSystemsById.values());
-        this._value.update(() => allSystems);
+        this._value.update(() => this.sort(allSystems));
     }
 
     async deleteCraftingSystem(craftingSystemToDelete: CraftingSystem) {
@@ -64,9 +88,7 @@ class CraftingSystemsStore {
             content: `<p>${GAME.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.dialog.deleteSystemConfirm.content", {systemName: craftingSystemToDelete.name})}</p>`,
             yes: async () => {
                 await this._systemRegistry.deleteCraftingSystemById(craftingSystemToDelete.id);
-                this._value.update((value) => {
-                    return value.filter(craftingSystem => craftingSystem.id !== craftingSystemToDelete.id);
-                });
+                this.remove(craftingSystemToDelete);
             }
         });
     }
@@ -127,10 +149,7 @@ class CraftingSystemsStore {
         }
         const craftingSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
         const message = GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.success`, { systemName: craftingSystem.name});
-        this._value.update((value) => {
-            value.push(craftingSystem);
-            return value;
-        });
+        this.insert(craftingSystem);
         ui.notifications.info(message);
     }
 
@@ -154,11 +173,7 @@ class CraftingSystemsStore {
         }
         const updatedCraftingSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
         const message = GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.success`, { systemName: updatedCraftingSystem.name});
-        this._value.update((value) => {
-            const craftingSystems = value.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
-            craftingSystems.push(updatedCraftingSystem);
-            return craftingSystems;
-        });
+        this.insert(updatedCraftingSystem);
         ui.notifications.info(message);
     }
 
@@ -182,19 +197,12 @@ class CraftingSystemsStore {
             sourceSystemName: sourceCraftingSystem.name,
             duplicatedSystemName: result.name
         }));
-        this._value.update((value) => {
-            value.push(result);
-            return value;
-        });
+        this.insert(result);
     }
 
     async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
         const updatedCraftingSystem = await this._systemRegistry.saveCraftingSystem(craftingSystem);
-        this._value.update((value) => {
-            const craftingSystems = value.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
-            craftingSystems.push(updatedCraftingSystem);
-            return craftingSystems;
-        });
+        this.insert(updatedCraftingSystem);
         return updatedCraftingSystem;
     }
 }
