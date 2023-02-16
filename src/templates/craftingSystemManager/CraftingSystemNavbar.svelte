@@ -33,7 +33,7 @@
         <h1>Crafting Systems</h1>
     </div>
     {#if systems && systems.length > 0}
-        <div class="fab-items">
+        <div class="fab-items fab-scrollable">
             {#each systems as system}
                 <CraftingSystemNavbarItem system="{system}" />
             {/each}
