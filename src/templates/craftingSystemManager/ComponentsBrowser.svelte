@@ -139,11 +139,13 @@
     }
 
     function disableComponent(component) {
+        // todo: implement
         throw new Error("Not implemented");
     }
 
-    function duplicateComponent(component) {
-        throw new Error("Not implemented");
+    async function openItemSheet(component) {
+        const document = await new DefaultDocumentManager().getDocumentByUuid(component.id);
+        await document.source.sheet.render(true);
     }
 
 </script>
@@ -184,7 +186,7 @@
                             <p>{component.name}</p>
                         </div>
                         <div class="fab-columns fab-component-preview">
-                            <div class="fab-column fab-component-image" >
+                            <div class="fab-column fab-component-image" data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
                                 <img src={component.imageUrl} alt={component.name} />
                             </div>
                             {#if !selectedSystem.isLocked}

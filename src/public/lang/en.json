@@ -54,7 +54,8 @@
             "buttons": {
               "edit": "Edit",
               "delete": "Delete",
-              "disable": "Disable"
+              "disable": "Disable",
+              "openSheet": "Open Item Sheet"
             }
           },
           "prompts": {
