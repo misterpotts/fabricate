@@ -99,7 +99,7 @@
     }
 
     function editComponent(component) {
-        throw new Error("Not implemented");
+        craftingSystemManager.selectedComponentStore.selectComponentById(component.id);
     }
 
     async function deleteComponent(event, component) {
@@ -192,7 +192,6 @@
                                 <button class="fab-edit-component" on:click|preventDefault={editComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
                                 <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
                                 <button class="fab-edit-component" on:click|preventDefault={disableComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
-                                <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
                             </div>
                             {/if}
                         </div>

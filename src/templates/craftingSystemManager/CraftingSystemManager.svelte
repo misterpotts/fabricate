@@ -5,7 +5,7 @@
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
     import CraftingSystemDetails from "./CraftingSystemDetails.svelte";
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
-    import CraftingSystemComponents from "./CraftingSystemComponents.svelte";
+    import ComponentsTab from "./ComponentsTab.svelte";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 </script>
 
@@ -26,7 +26,7 @@
     </TabPanel>
 
     <TabPanel>
-        <CraftingSystemComponents />
+        <ComponentsTab />
     </TabPanel>
 
     <TabPanel>

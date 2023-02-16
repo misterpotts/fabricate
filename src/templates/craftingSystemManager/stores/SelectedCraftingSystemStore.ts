@@ -22,7 +22,7 @@ class SelectedCraftingSystemStore {
             [this._selectedSystemId, this._craftingSystems],
             ([$selectedSystemId, $craftingSystems], set) => {
                 const selectedSystem = $craftingSystems.find(system => system.id === $selectedSystemId);
-                if (! selectedSystem && $craftingSystems.length > 0) {
+                if (!selectedSystem && $craftingSystems.length > 0) {
                     set($craftingSystems[0])
                 } else {
                     set(selectedSystem);

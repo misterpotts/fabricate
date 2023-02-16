@@ -2,12 +2,13 @@ import {CraftingSystemsStore} from "./stores/CraftingSystemsStore";
 import {SelectedCraftingSystemStore} from "./stores/SelectedCraftingSystemStore";
 import {GameProvider} from "../../scripts/foundry/GameProvider";
 import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
+import {SelectedComponentStore} from "./stores/SelectedComponentStore";
 
 class CraftingSystemManagerApp {
 
     private static _INSTANCE: CraftingSystemManagerApp;
     private readonly _craftingSystemsStore: CraftingSystemsStore;
-    //private readonly _selectedComponentStore;
+    private readonly _selectedComponentStore: SelectedComponentStore;
     //private readonly _selectedRecipeStore;
     //private readonly _essenceStore;
     private readonly _selectedCraftingSystemStore: SelectedCraftingSystemStore;
@@ -16,15 +17,18 @@ class CraftingSystemManagerApp {
     protected constructor({
         gameProvider,
         craftingSystemStore,
-        selectedCraftingSystemStore
+        selectedCraftingSystemStore,
+        selectedComponentStore
     }: {
         gameProvider: GameProvider;
         craftingSystemStore: CraftingSystemsStore;
         selectedCraftingSystemStore: SelectedCraftingSystemStore;
+        selectedComponentStore: SelectedComponentStore;
     }) {
         this._gameProvider = gameProvider;
         this._craftingSystemsStore = craftingSystemStore;
         this._selectedCraftingSystemStore = selectedCraftingSystemStore;
+        this._selectedComponentStore = selectedComponentStore;
     }
 
     public static init({
@@ -36,10 +40,12 @@ class CraftingSystemManagerApp {
     }) {
         const craftingSystemStore = new CraftingSystemsStore({systemRegistry, gameProvider});
         const selectedCraftingSystemStore = new SelectedCraftingSystemStore({craftingSystemStore});
+        const selectedComponentStore = new SelectedComponentStore({selectedCraftingSystemStore});
         this._INSTANCE = new CraftingSystemManagerApp({
             gameProvider,
             craftingSystemStore,
-            selectedCraftingSystemStore
+            selectedCraftingSystemStore,
+            selectedComponentStore
         });
     }
 
@@ -60,6 +66,10 @@ class CraftingSystemManagerApp {
 
     get selectedCraftingSystemStore(): SelectedCraftingSystemStore {
         return this._selectedCraftingSystemStore;
+    }
+
+    get selectedComponentStore(): SelectedComponentStore {
+        return this._selectedComponentStore;
     }
 
 }
