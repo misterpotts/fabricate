@@ -14,6 +14,9 @@
 
     craftingSystemManager.selectedCraftingSystemStore.selectedSystem.subscribe(async (system) => {
         selectedSystem = system;
+        searchMustHaveEssences = false;
+        searchMustHaveSalvage = false;
+        searchName = "";
         if (system) {
             components = await selectedSystem.getComponents();
             filteredComponents = components;

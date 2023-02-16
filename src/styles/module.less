@@ -53,7 +53,6 @@ BEGIN FABRICATE THEME STYLES
   }
 
   .window-content {
-    border-bottom: 2px solid var(--color-border-dark-1);
     overflow: hidden;
     background: var(--color-background-dark-1);
     padding: 0;
@@ -179,33 +178,34 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
-  .fab-crafting-system {
-    .fab-tab-list {
-      background: var(--color-background-dark-3);
-      border-bottom: 2px solid var(--color-border-light-1);
-      color: var(--color-text-light-secondary);
-      button {
-        border-radius: 0;
-        &.fab-selected {
-          background: var(--color-border-light-1);
-          color: var(--color-text-light-heading);
-        }
-      }
-    }
 
-    .fab-tabs {
-      .fab-tab-content {
-        .fab-tab-header {
-          color: var(--color-text-light-secondary);
-          background: var(--color-background-dark-5);
-        }
-        .fab-editable {
-          background: var(--color-background-dark-3);
-          border-radius: 4px;
-        }
+  .fab-tab-list {
+    background: var(--color-background-dark-3);
+    border-bottom: 2px solid var(--color-border-light-1);
+    color: var(--color-text-light-secondary);
+    button {
+      border-radius: 0;
+      &.fab-selected {
+        background: var(--color-border-light-1);
+        color: var(--color-text-light-heading);
       }
     }
   }
+
+  .fab-tabs {
+    .fab-tab-content {
+      border-bottom: 2px solid var(--color-border-light-1);
+      .fab-tab-header {
+        color: var(--color-text-light-secondary);
+        background: var(--color-background-dark-5);
+      }
+      .fab-editable {
+        background: var(--color-background-dark-3);
+        border-radius: 4px;
+      }
+    }
+  }
+
 
   .fab-component-grid {
     .fab-component {
@@ -229,6 +229,7 @@ BEGIN COMMON STRUCTURAL STYLES
 
 .fab-application-container {
   display: flex;
+  height: 100%;
 }
 
 .fab-vertical-nav {
@@ -346,54 +347,45 @@ BEGIN COMMON STRUCTURAL STYLES
   &.fab-grid-5 {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
-  .fab-component {
+}
 
+.fab-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 100vh;
+  .fab-tab-list {
+    min-height: 66px;
+    display: inline-flex;
+    justify-content: space-around;
+    align-content: center;
+    align-items: center;
+    button {
+      height: 46px;
+      width: auto;
+      margin: 0;
+      padding: 0 16px;
+    }
+  }
+  .fab-tab-content {
+    padding: 0 12px;
+    flex-grow: 1;
+    display: flex;
+    .fab-tab-header {
+      min-height: 46px;
+      margin: 8px 0;
+      padding: 4px 12px;
+      align-items: center;
+      h2 {
+        margin: 0;
+        font-size: var(--font-size-18);
+      }
+    }
   }
 }
 
-.fab-crafting-system {
-  flex-grow: 1;
-  display: flex;
-  position: relative;
-  .fab-tabs {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    .fab-tab-list {
-      height: 66px;
-      display: inline-flex;
-      justify-content: space-around;
-      align-content: center;
-      align-items: center;
-      button {
-        height: 46px;
-        width: auto;
-        margin: 0;
-        padding: 0 16px;
-      }
-    }
-    .fab-tab-content {
-      padding: 0 12px;
-      flex-grow: 1;
-      display: flex;
-      position: absolute;
-      right: 0;
-      top: 66px;
-      overflow-y: auto;
-      height: 100%;
-      width: 100%;
-      .fab-tab-header {
-        min-height: 46px;
-        margin: 8px 0;
-        padding: 4px 12px;
-        align-items: center;
-        h2 {
-          margin: 0;
-          font-size: var(--font-size-18);
-        }
-      }
-    }
-  }
+.fab-scrollable {
+  overflow-y: scroll;
 }
 
 .fab-system-details {
