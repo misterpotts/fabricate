@@ -13,6 +13,7 @@ BEGIN CSS VARIABLES
   --color-text-dark-header: #7b6143;
   --color-border-light-1: #7b6143;
   --color-border-light-2: #a1815c;
+  --color-border-light-3: #504e54;
   --color-border-dark-1: #26211e;
   --color-border-dark-2: #463e38;
   --color-background-dark-1: #2c2a2e;
@@ -50,6 +51,17 @@ BEGIN FABRICATE THEME STYLES
     border-radius: 3px;
     background: var(--color-border-light-1);
     border: 1px solid var(--color-border-light-2);
+  }
+
+  input[type="text"]:focus {
+    box-shadow: none;
+    border: 1px solid black;
+    outline: 1px solid white;
+  }
+
+  .fab-drop-zone {
+    border: 2px dashed var(--color-border-light-3);
+    color: var(--color-border-light-3);
   }
 
   .window-content {
@@ -178,7 +190,6 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
-
   .fab-tab-list {
     background: var(--color-background-dark-3);
     border-bottom: 2px solid var(--color-border-light-1);
@@ -206,10 +217,21 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
-
   .fab-component-grid {
     .fab-component {
       background: var(--color-background-dark-3);
+      .fab-component-name {
+        background: var(--color-background-dark-5);
+      }
+    }
+  }
+
+  .fab-system-components {
+    .fab-component-search {
+      background: var(--color-background-dark-3);
+    }
+    .fab-no-search-results {
+      font-style: italic;
     }
   }
 
@@ -335,17 +357,56 @@ BEGIN COMMON STRUCTURAL STYLES
 
 .fab-component-grid {
   display: grid;
+  column-gap: 1em;
+  row-gap: 1em;
   &.fab-grid-2 {
-    grid-template-columns: 1fr 1fr
+    grid-template-columns: repeat(2, 1fr);
   }
   &.fab-grid-3 {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns:repeat(3, 1fr);
   }
   &.fab-grid-4 {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
   }
   &.fab-grid-5 {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .fab-component {
+    display: inline-flex;
+    flex-wrap: wrap;
+    &.disabled {
+      opacity: 0.4;
+      .fab-component-name {
+        text-decoration: line-through;
+      }
+    }
+    .fab-component-name {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .fab-component-preview {
+      padding: 10px;
+    }
+    .fab-component-image {
+      flex-grow: 2;
+    }
+    .fab-enable-component {
+      margin: 4px 10px 4px 10px;
+    }
+    .fab-component-editor-buttons {
+      flex-grow: 1;
+      .fab-edit-component {
+        margin-bottom: 10px;
+        i {
+          margin: 0;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+    }
   }
 }
 
@@ -381,6 +442,19 @@ BEGIN COMMON STRUCTURAL STYLES
         font-size: var(--font-size-18);
       }
     }
+  }
+}
+
+.fab-system-components {
+  .fab-drop-zone.fab-add-component {
+    min-height: 100px;
+    display: flex;
+    font-size: var(--font-size-20);
+    justify-content: center;
+    align-items: center;
+  }
+  .fab-component-grid {
+    padding-bottom: 1em;
   }
 }
 
@@ -425,6 +499,8 @@ BEGIN COMMON STRUCTURAL STYLES
 
 .fab-system-components {
   .fab-component-search {
+    margin-bottom: 10px;
+    padding: 4px 8px;
     .fab-component-name {
       flex-grow: 2;
       .fab-label {
@@ -434,6 +510,16 @@ BEGIN COMMON STRUCTURAL STYLES
     .fab-has-essences, .fab-has-salvage {
       justify-content: flex-end;
       align-items: center;
+    }
+  }
+  .fab-no-search-results, .fab-no-components {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    p {
+      margin-top: -30px;
     }
   }
 }

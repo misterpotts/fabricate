@@ -34,7 +34,36 @@
         },
         "components": {
           "label": "Components",
-          "title": "{systemName} Components"
+          "search": {
+            "title": "Search {systemName} Components",
+            "name": "Name",
+            "hasEssences": "Has essences?",
+            "hasSalvage": "Has salvage?"
+          },
+          "addNew": "Add a Component to {systemName}",
+          "errors": {
+            "import": {
+              "noElementData": "Component import error: Could not read element data from drop event. ",
+              "invalidDocumentType": "Component import error: \"{suppliedType}\" cannot be imported as a Crafting component. Fabricate only allows the following document types to be imported as components: {allowedTypes}. ",
+              "invalidJson": "Component import error: Could not parse JSON data from drop event. "
+            }
+          },
+          "component": {
+            "imported": "Imported component {componentName} into {systemName}",
+            "deleted": "Removed component {componentName} from {systemName}",
+            "buttons": {
+              "edit": "Edit",
+              "delete": "Delete",
+              "disable": "Disable",
+              "duplicate": "Duplicate"
+            }
+          },
+          "prompts": {
+            "delete": {
+              "title": "Delete component \"{componentName}\"?",
+              "content": "<p>This will remove \"{componentName}\" from \"{systemName}\", as well as all references to it in Recipes and other Components. This action cannot be undone.</p>"
+            }
+          }
         },
         "recipes": {
           "label": "Recipes",

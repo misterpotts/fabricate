@@ -66,8 +66,8 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         id,
         name,
         imageUrl = Properties.ui.defaults.itemImageUrl,
-        essences = Combination.EMPTY(),
-        salvage = Combination.EMPTY()
+        essences = Combination.EMPTY<Essence>(),
+        salvage = Combination.EMPTY<CraftingComponentSummary>()
     }: {
         id: string;
         name: string;
