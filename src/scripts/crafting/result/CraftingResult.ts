@@ -1,5 +1,5 @@
 import {Combination} from "../../common/Combination";
-import {Recipe} from "../Recipe";
+import {Recipe} from "../../common/Recipe";
 import {CraftingCheckResult} from "../check/CraftingCheckResult";
 import {CraftingComponent} from "../../common/CraftingComponent";
 

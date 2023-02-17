@@ -6,7 +6,7 @@ import {Combination} from "../../common/Combination";
 import {SystemRegistry} from "../../registries/SystemRegistry";
 import {DefaultDocumentManager} from "../../foundry/DocumentManager";
 import FabricateApplication from "../FabricateApplication";
-import {Recipe} from "../../crafting/Recipe";
+import {Recipe} from "../../common/Recipe";
 import ComponentManagerAppFactory from "./ComponentManagerApp";
 import RecipeManagerAppFactory from "./RecipeManagerApp";
 import EditEssenceDialogFactory from "./EditEssenceDialog";

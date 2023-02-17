@@ -3,6 +3,7 @@ import {Identifiable, Serializable} from "./Identity";
 
 interface EssenceJson {
     id: string;
+    activeEffectSourceItemUuid: string;
     name: string;
     description: string;
     tooltip: string;
@@ -13,6 +14,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     private readonly _name: string;
     private readonly _id: string;
+    private readonly _activeEffectSourceItemUuid: string;
     private readonly _description: string;
     private readonly _tooltip: string;
     private readonly _iconCode: string;
@@ -21,20 +23,23 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         id,
         name,
         tooltip,
-        iconCode = Properties.ui.defaults.essenceIconCode,
-        description
+        description,
+        activeEffectSourceItemUuid,
+        iconCode = Properties.ui.defaults.essenceIconCode
     }: {
         id: string;
         name: string;
         tooltip: string;
         iconCode?: string;
         description: string;
+        activeEffectSourceItemUuid?: string;
     }) {
         this._id = id;
         this._name = name;
         this._tooltip = tooltip;
         this._iconCode = iconCode;
         this._description = description;
+        this._activeEffectSourceItemUuid = activeEffectSourceItemUuid;
     }
 
     toJson(): EssenceJson {
@@ -43,12 +48,21 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
             name: this._name,
             tooltip: this._tooltip,
             iconCode: this._iconCode,
-            description: this._description
+            description: this._description,
+            activeEffectSourceItemUuid: this._activeEffectSourceItemUuid
         }
     }
 
     get id(): string {
         return this._id;
+    }
+
+    public hasActiveEffectSource() {
+        return !!this._activeEffectSourceItemUuid;
+    }
+
+    get activeEffectSourceItemUuid(): string {
+        return this._activeEffectSourceItemUuid;
     }
 
     get name(): string {

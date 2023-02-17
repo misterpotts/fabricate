@@ -1,7 +1,7 @@
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
-import {Recipe} from "../Recipe";
+import {Recipe} from "../../common/Recipe";
 import {
     AbandonedCraftingAttempt,
     CraftingAttempt,

@@ -5,7 +5,7 @@ import {
     DefaultDropHandler,
     StateManager
 } from "./core/Applications";
-import {CombinationChoice, Recipe} from "../../crafting/Recipe";
+import {CombinationChoice, Recipe} from "../../common/Recipe";
 import {GameProvider} from "../../foundry/GameProvider";
 import Properties from "../../Properties";
 import FabricateApplication from "../FabricateApplication";

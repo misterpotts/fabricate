@@ -1,4 +1,4 @@
-import {Recipe} from "../crafting/Recipe";
+import {Recipe} from "../common/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {Essence} from "../common/Essence";
 import {Inventory} from "../actor/Inventory";

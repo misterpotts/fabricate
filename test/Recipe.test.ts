@@ -1,5 +1,5 @@
 import {expect, jest, test, beforeEach, describe} from "@jest/globals";
-import {CombinationChoice, Recipe} from "../src/scripts/crafting/Recipe";
+import {CombinationChoice, Recipe} from "../src/scripts/common/Recipe";
 
 import {
     testComponentOne,

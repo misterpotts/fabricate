@@ -64,8 +64,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "negative-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.zogQbVwUggRUWK2l": 1
                     }
@@ -78,8 +78,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "negative-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.m51mvhPcubqfPbWB": 1
                     }
@@ -92,8 +92,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "positive-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.HyicGjYWESWIdEhc": 1
                     }
@@ -106,8 +106,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "positive-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.fZsZ5EYMs9ioZ6Kk": 1
                     }
@@ -120,8 +120,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "positive-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.Ffv7X37ZT7LRzDvP": 1
                     }
@@ -134,8 +134,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "negative-energy": 2
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.8AdG3048UmUOo5Qx": 1
                     }
@@ -148,8 +148,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "negative-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.QXN2n98HnjFzSsNJ": 1
                     }
@@ -162,8 +162,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "positive-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.zgDyoqjRxwhD9cNR": 1
                     }
@@ -178,8 +178,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "positive-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.Kv4752l95eP4IeBM": 1
                     }
@@ -192,8 +192,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "fire": 2
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.EDGSJpxtSuvq7XWW": 1
                     }
@@ -206,8 +206,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "water": 2
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.sB64MUbYpMqiWCkS": 1
                     }
@@ -219,8 +219,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "air": 3
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.4U429BrJKdMKDZaR": 1
                     }
@@ -233,8 +233,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "fire": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.bNOIJaY21OSsdybw": 1
                     }
@@ -248,8 +248,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "negative-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.1lx7oTedScyEgTOm": 1
                     }
@@ -263,8 +263,8 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
                     "negative-energy": 1
                 },
                 "catalysts": {},
-                "ingredientGroups": [],
-                "resultGroups": [
+                "ingredientOptions": [],
+                "resultOptions": [
                     {
                         "Compendium.fabricate.alchemists-supplies-v16.VHUXcExXZLCDfqmM": 1
                     }

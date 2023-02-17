@@ -1,5 +1,5 @@
-import {CraftingComponent, CraftingComponentJson, CraftingComponentSummary} from "../common/CraftingComponent";
-import {CombinationChoice, Recipe, RecipeJson} from "../crafting/Recipe";
+import {CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
+import {Recipe, RecipeJson} from "../common/Recipe";
 import {Essence, EssenceJson} from "../common/Essence";
 import {
     DefaultDocumentManager,
@@ -135,18 +135,19 @@ class ComponentLoader implements PartLoader<CraftingComponent, CraftingComponent
         const itemData = await this._documentManager.getDocumentsByUuid(documentIds);
         const essences = await this._essenceCache.getAll();
         return new CraftingComponent({
-            id: componentJson.itemUuid,
-            name: itemData.get(id).name,
-            imageUrl: itemData.get(id).imageUrl ?? Properties.ui.defaults.itemImageUrl,
+            id: componentJson.id,
+            itemUuid: componentJson.itemUuid,
+            name: itemData.get(componentJson.itemUuid).name,
+            imageUrl: itemData.get(componentJson.itemUuid).imageUrl ?? Properties.ui.defaults.itemImageUrl,
             essences: combinationFromRecord(componentJson.essences, essences),
-            salvage: combinationFromRecord(componentJson.salvage, this.prepareComponentSummaries(itemData))
+            salvage: combinationFromRecord(componentJson.salvage, this.prepareComponentSummaries(componentJson.id, itemData))
         });
     }
 
-    private prepareComponentSummaries(itemData: Map<string, FabricateItemData>): Map<string, CraftingComponentSummary> {
+    private prepareComponentSummaries(componentId: string, itemData: Map<string, FabricateItemData>): Map<string, CraftingComponentSummary> {
         const summaryEntries: [string, CraftingComponentSummary][] = Array.from(itemData.values())
             .map(item => new CraftingComponentSummary({
-                id: item.uuid,
+                id: componentId,
                 name: item.name,
                 imageUrl: item.imageUrl
             }))
@@ -172,11 +173,12 @@ class ComponentLoader implements PartLoader<CraftingComponent, CraftingComponent
         const essences = await this._essenceCache.getAll();
         const components = await Promise.all(Object.values(this._sourceData).map(async componentJson => {
             return new CraftingComponent({
-                id: componentJson.itemUuid,
+                id: componentJson.id,
+                itemUuid: componentJson.itemUuid,
                 name: itemData.get(componentJson.itemUuid).name,
                 imageUrl: itemData.get(componentJson.itemUuid).imageUrl ?? Properties.ui.defaults.itemImageUrl,
                 essences: combinationFromRecord(componentJson.essences, essences),
-                salvage: combinationFromRecord(componentJson.salvage, this.prepareComponentSummaries(itemData))
+                salvage: combinationFromRecord(componentJson.salvage, this.prepareComponentSummaries(componentJson.id, itemData))
             });
         }));
         return new Map(components.map(component => [component.id, component]));
@@ -237,13 +239,14 @@ class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
         const essences = await this._essenceCache.getAll();
         const recipes = await Promise.all(Object.values(this._sourceData).map(async recipeJson => {
             return new Recipe({
-                id: recipeJson.itemUuid,
+                id: recipeJson.id,
+                itemUuid: recipeJson.itemUuid,
                 name: itemData.get(recipeJson.itemUuid).name,
                 imageUrl: itemData.get(recipeJson.itemUuid).imageUrl ?? Properties.ui.defaults.itemImageUrl,
                 essences: combinationFromRecord(recipeJson.essences, essences),
                 catalysts: this.prepareCatalysts(recipeJson.catalysts, componentsById),
-                ingredientOptions: this.prepareCombinationChoice(recipeJson.ingredientGroups, componentsById),
-                resultOptions: this.prepareCombinationChoice(recipeJson.resultGroups, componentsById)
+                ingredientOptions: this.prepareCombinationChoice(recipeJson.ingredientOptions, componentsById),
+                resultOptions: this.prepareCombinationChoice(recipeJson.resultOptions, componentsById)
             });
         }));
         return new Map(recipes.map(recipe => [recipe.id, recipe]));
@@ -255,10 +258,10 @@ class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
             throw new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: ${Object.keys(this._sourceData).join(", ")}`);
         }
         const catalystIds = recipeJson.catalysts ? Object.keys(recipeJson.catalysts) : [];
-        const ingredientIds = recipeJson.ingredientGroups
+        const ingredientIds = recipeJson.ingredientOptions
             .map(combination => Object.keys(combination))
             .reduce((left, right) => left.concat(right), []);
-        const resultIds = recipeJson.resultGroups
+        const resultIds = recipeJson.resultOptions
             .map(combination => Object.keys(combination))
             .reduce((left, right) => left.concat(right), []);
         const uniqueComponentIds = [...catalystIds, ...ingredientIds, ...resultIds]
@@ -268,13 +271,14 @@ class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
         const itemData = await this._documentManager.getDocumentByUuid(id);
         const essences = await this._essenceCache.getAll();
         return new Recipe({
-            id: recipeJson.itemUuid,
+            id: recipeJson.id,
+            itemUuid: recipeJson.itemUuid,
             name: itemData.name,
             imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
             essences: combinationFromRecord(recipeJson.essences, essences),
             catalysts: this.prepareCatalysts(recipeJson.catalysts, componentsById),
-            ingredientOptions: this.prepareCombinationChoice(recipeJson.ingredientGroups, componentsById),
-            resultOptions: this.prepareCombinationChoice(recipeJson.resultGroups, componentsById)
+            ingredientOptions: this.prepareCombinationChoice(recipeJson.ingredientOptions, componentsById),
+            resultOptions: this.prepareCombinationChoice(recipeJson.resultOptions, componentsById)
         });
     }
 

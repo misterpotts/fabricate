@@ -5,7 +5,7 @@ import {
     UnsuccessfulCraftingResult
 } from "../result/CraftingResult";
 import {CraftingCheck} from "../check/CraftingCheck";
-import {Recipe} from "../Recipe";
+import {Recipe} from "../../common/Recipe";
 import {Combination} from "../../common/Combination";
 import {CraftingCheckResult} from "../check/CraftingCheckResult";
 import {CraftingComponent} from "../../common/CraftingComponent";

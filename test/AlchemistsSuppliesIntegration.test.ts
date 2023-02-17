@@ -53,39 +53,14 @@ describe('A Crafting System Factory', () => {
         const recipeIds = Object.keys(systemSpec.parts.recipes);
         expect(recipes.length).toEqual(recipeIds.length);
         expect(recipes.map(recipe => recipe.id)).toEqual(expect.arrayContaining(recipeIds));
-        recipes.map(recipe => recipe.getNamedComponents().combineWith(recipe.getSelectedResults()))
-            .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
-            .members
+        recipes.flatMap(recipe => recipe.ingredientOptions.map(option => option.ingredients.combineWith(option.catalysts).members))
             .forEach(component => expect(components).toContain(component));
-
+        recipes.flatMap(recipe => recipe.resultOptions.map(option => option.results.members))
+            .forEach(component => expect(components).toContain(component));
         recipes.map(recipe => recipe.essences)
             .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
             .members
             .forEach(essence => expect(essences).toContain(essence));
-
-        // todo: enable when implemented with new logic
-        // expect(craftingSystem.hasRecipeCraftingCheck).toEqual(true);
-        // expect(craftingSystem.hasAlchemyCraftingCheck).toEqual(true);
-        // expect(craftingSystem.supportsAlchemy).toEqual(true);
-        // expect(craftingSystem.alchemyFormulae.size).toEqual(1);
-
-        // const alchemicalBombPartId = "90z9nOwmGnP4aUUk";
-        // expect(craftingSystem.alchemyFormulae.has(alchemicalBombPartId)).toEqual(true);
-
-        //const alchemyFormula = craftingSystem.alchemyFormulae.get(alchemicalBombPartId);
-        // const allEffects = alchemyFormula.getAllEffects();
-
-        // const damageEffectCount = allEffects.filter(effect => effect instanceof Damage5e).length;
-        // const descriptiveEffectCount = allEffects.filter(effect => effect instanceof DescriptiveEffect5e).length;
-        // const savingThrowEffectCount = allEffects.filter(effect => effect instanceof SavingThrowModifier5e).length;
-        // const diceMultiplierEffectCount = allEffects.filter(effect => effect instanceof DiceMultiplier5e).length;
-        // const aoeExtensionEffectCount = allEffects.filter(effect => effect instanceof AoeExtension5e).length;
-        // expect(allEffects.length).toEqual(8);
-        // expect(damageEffectCount).toEqual(3);
-        // expect(descriptiveEffectCount).toEqual(2);
-        // expect(savingThrowEffectCount).toEqual(1);
-        // expect(diceMultiplierEffectCount).toEqual(1);
-        // expect(aoeExtensionEffectCount).toEqual(1);
 
     });
 

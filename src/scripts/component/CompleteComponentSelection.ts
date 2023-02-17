@@ -1,5 +1,5 @@
 import {ComponentSelection} from "./ComponentSelection";
-import {Recipe} from "../crafting/Recipe";
+import {Recipe} from "../common/Recipe";
 import {Combination} from "../common/Combination";
 import {CraftingComponent} from "../common/CraftingComponent";
 

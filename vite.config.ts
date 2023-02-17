@@ -30,7 +30,18 @@ const config: UserConfig = {
         }
     },
     plugins: [
-        svelte()
+        svelte({
+            onwarn: (warning, defaultHandler) => {
+                /*
+                    Ignore Svelte accessibility warnings. Resolution path is to convert all non-button interactive
+                    element containers with a "<button>", which I'm just not doing.
+                */
+                if (warning.code.startsWith("a11y")) {
+                    return;
+                }
+                defaultHandler(warning);
+            }
+        })
     ]
 }
 

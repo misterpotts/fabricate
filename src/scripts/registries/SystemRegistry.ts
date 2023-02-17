@@ -189,13 +189,13 @@ class DefaultSystemRegistry implements SystemRegistry {
                         delete recipeJson.catalysts[uuid];
                         referenceCount++;
                     }
-                    recipeJson.ingredientGroups.forEach(ingredientGroup => {
+                    recipeJson.ingredientOptions.forEach(ingredientGroup => {
                         if (ingredientGroup[uuid]) {
                             delete ingredientGroup[uuid];
                             referenceCount++;
                         }
                     });
-                    recipeJson.resultGroups.forEach(ingredientGroup => {
+                    recipeJson.resultOptions.forEach(ingredientGroup => {
                         if (ingredientGroup[uuid]) {
                             delete ingredientGroup[uuid];
                             referenceCount++;

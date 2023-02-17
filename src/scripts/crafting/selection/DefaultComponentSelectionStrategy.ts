@@ -1,5 +1,5 @@
 import {ComponentSelectionStrategy} from "./ComponentSelectionStrategy";
-import {Recipe} from "../Recipe";
+import {Recipe} from "../../common/Recipe";
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ComponentSelection} from "../../component/ComponentSelection";

@@ -1,4 +1,4 @@
-import {Recipe} from "../Recipe";
+import {Recipe} from "../../common/Recipe";
 import {Combination} from "../../common/Combination";
 import {ComponentSelection} from "../../component/ComponentSelection";
 import {CraftingComponent} from "../../common/CraftingComponent";

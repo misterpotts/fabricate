@@ -19,14 +19,14 @@ import {
 } from "./test_data/TestRecipes";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {EssenceJson} from "../src/scripts/common/Essence";
-import {RecipeJson} from "../src/scripts/crafting/Recipe";
+import {RecipeJson} from "../src/scripts/common/Recipe";
 import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {FabricateItemData} from "../src/scripts/foundry/DocumentManager";
 
-describe('Create', () => {
+describe("Create", () => {
 
-    test('Should construct empty Part Dictionary', () => {
+    test("Should construct empty Part Dictionary", () => {
         const underTest: PartDictionary = new PartDictionaryFactory({})
             .make({
                 essences: {},
@@ -49,7 +49,7 @@ describe('Create', () => {
 
 });
 
-describe('Index and Retrieve', () => {
+describe("Index and Retrieve", () => {
 
     function rawEssenceData() {
         const essences: Record<string, EssenceJson> = {};
@@ -85,11 +85,11 @@ describe('Index and Retrieve', () => {
     const stubItemName = "Item name";
     const stubItemImageUrl = "/img/url.ext";
     const stubItemSource = {};
-    const recipeIds = Object.keys(rawRecipeData());
-    const componentIds = Object.keys(rawComponentData());
+    const recipeUuids = Object.values(rawRecipeData()).map(recipeData => recipeData.itemUuid);
+    const componentUuids = Object.values(rawComponentData()).map(componentData => componentData.itemUuid);
+    const allItemUuids = componentUuids.concat(recipeUuids);
     const itemData = new Map(
-        componentIds
-            .concat(recipeIds)
+        allItemUuids
             .map(id => [id, <FabricateItemData>{
                 name: stubItemName,
                 imageUrl: stubItemImageUrl,
@@ -99,7 +99,7 @@ describe('Index and Retrieve', () => {
     );
     const stubDocumentManager = new StubDocumentManager(itemData);
 
-    test.skip('Should delete invalid components when loading fails', async () => {
+    test.skip("Should delete invalid components when loading fails", async () => {
 
         const poisonDocumentManager = new StubDocumentManager(itemData);
         poisonDocumentManager.poison(testComponentThree.id);
@@ -117,7 +117,7 @@ describe('Index and Retrieve', () => {
 
     });
 
-    test('Should load a populated Part Dictionary from source data', async () => {
+    test("Should load a populated Part Dictionary from source data", async () => {
 
         const essences = rawEssenceData();
         const underTest: PartDictionary = new PartDictionaryFactory({documentManager: stubDocumentManager})
@@ -134,14 +134,14 @@ describe('Index and Retrieve', () => {
 
         expect(underTest.size).toBe(16);
 
-        Object.keys(essences).forEach(id => expect(underTest.hasEssence(id)).toEqual(true))
+        Object.keys(essences).forEach(id => expect(underTest.hasEssence(id)).toEqual(true));
 
         const loadedComponents = await underTest.getComponents();
         loadedComponents.forEach(component => {
             expect(underTest.hasComponent(component.id)).toEqual(true);
             expect(component.name).toEqual(stubItemName);
             expect(component.imageUrl).toEqual(stubItemImageUrl);
-            expect(componentIds).toEqual(expect.arrayContaining([component.id]));
+            expect(componentUuids).toEqual(expect.arrayContaining([component.id]));
         });
 
         const loadedRecipes = await underTest.getRecipes();
@@ -149,11 +149,11 @@ describe('Index and Retrieve', () => {
             expect(underTest.hasRecipe(recipe.id)).toEqual(true);
             expect(recipe.name).toEqual(stubItemName);
             expect(recipe.imageUrl).toEqual(stubItemImageUrl);
-            expect(recipeIds).toEqual(expect.arrayContaining([recipe.id]));
+            expect(recipeUuids).toEqual(expect.arrayContaining([recipe.id]));
         })
     });
 
-    test('Should delete and dereference components from recipes and salvage', async () => {
+    test("Should delete and dereference components from recipes and salvage", async () => {
 
         const underTest: PartDictionary = new PartDictionaryFactory({documentManager: stubDocumentManager})
             .make({
@@ -177,18 +177,18 @@ describe('Index and Retrieve', () => {
         const recipes = await underTest.getRecipes();
 
         recipes.forEach(recipe => {
-            expect(recipe.catalysts.has(componentToDelete)).toEqual(false);
-            recipe.ingredientOptions.choices.forEach(choice => {
-                expect(choice.value.has(componentToDelete)).toEqual(false);
+            recipe.ingredientOptions.forEach(option => {
+                expect(option.catalysts.has(componentToDelete)).toEqual(false);
+                expect(option.ingredients.has(componentToDelete)).toEqual(false);
             });
-            recipe.resultOptions.choices.forEach(choice => {
-                expect(choice.value.has(componentToDelete)).toEqual(false);
+            recipe.resultOptions.forEach(option => {
+                expect(option.results.has(componentToDelete)).toEqual(false);
             });
         });
 
         const components = await underTest.getComponents();
         expect(new Map(components.map(component => [component.id, component])).has(componentIdToDelete)).toEqual(false);
-        components.forEach(component => expect(component.salvage.has(componentToDelete.summarise())).toEqual(false));
+        components.forEach(component => expect(component.salvage.has(componentToDelete)).toEqual(false));
 
         const asJson = underTest.toJson();
         expect(Object.keys(asJson.components).length).toEqual(4);
@@ -196,7 +196,7 @@ describe('Index and Retrieve', () => {
 
     });
 
-    test('Should delete and dereference essences from recipes and components', async () => {
+    test("Should delete and dereference essences from recipes and components", async () => {
 
         const underTest: PartDictionary = new PartDictionaryFactory({documentManager: stubDocumentManager})
             .make({
@@ -237,7 +237,7 @@ describe('Index and Retrieve', () => {
 
     });
 
-    test('Should add and Get Recipes and Components', async () => {
+    test("Should add and Get Recipes and Components", async () => {
         const underTest: PartDictionary = new PartDictionaryFactory({})
             .make({
                 essences: {},
@@ -281,7 +281,7 @@ describe('Index and Retrieve', () => {
         await expect(underTest.getRecipe(testRecipeFour.id)).resolves.toEqual(testRecipeFour);
     });
 
-    test('Should throw errors when parts are not found', async () => {
+    test("Should throw errors when parts are not found", async () => {
 
         const underTest: PartDictionary = new PartDictionaryFactory({})
             .make({
@@ -299,7 +299,7 @@ describe('Index and Retrieve', () => {
         expect(underTest).not.toBeNull();
         expect(underTest.size).toBe(4);
 
-        const id: string = 'notAValidId';
+        const id: string = "notAValidId";
         await expect(underTest.getComponent(id)).rejects.toThrow(new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: `));
         await expect(underTest.getRecipe(id)).rejects.toThrow(new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: `));
 

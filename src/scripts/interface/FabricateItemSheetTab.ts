@@ -1,6 +1,6 @@
 import {ItemSheetModifier, SheetTab, SheetTabAction} from "./apps/core/Applications";
 import {CraftingSystem} from "../system/CraftingSystem";
-import {Recipe} from "../crafting/Recipe";
+import {Recipe} from "../common/Recipe";
 import {CraftingComponent} from "../common/CraftingComponent";
 import Properties from "../Properties";
 import {GameProvider} from "../foundry/GameProvider";
