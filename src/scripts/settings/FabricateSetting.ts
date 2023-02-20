@@ -63,26 +63,26 @@ class DefaultSettingManager<T> implements SettingManager<T> {
     private readonly _settingKey: string;
     private readonly _targetVersion: string;
     private readonly _gameProvider: GameProvider;
-    private readonly _settingsMigrators: Map<string, FabricateSettingMigrator<any, any>>;
+    private readonly _settingsMigratorsByInputVersion: Map<string, FabricateSettingMigrator<any, any>>;
 
     constructor({
         moduleId = Properties.module.id,
         settingKey,
         targetVersion,
         gameProvider = new GameProvider(),
-        settingsMigrators = new Map(),
+        settingsMigrators = [],
     }: {
         moduleId?: string;
         settingKey?: string;
         targetVersion: string
         gameProvider?: GameProvider;
-        settingsMigrators?: Map<string, FabricateSettingMigrator<any, any>>;
+        settingsMigrators?: FabricateSettingMigrator<any, any>[];
     }) {
         this._moduleId = moduleId;
         this._settingKey = settingKey;
         this._gameProvider = gameProvider;
-        this._settingsMigrators = settingsMigrators;
         this._targetVersion = targetVersion;
+        this._settingsMigratorsByInputVersion = this.mapSettingsMigrators(settingsMigrators, targetVersion);
     }
 
     public asVersionedSetting(value: T): FabricateSetting<T> {
@@ -103,6 +103,7 @@ class DefaultSettingManager<T> implements SettingManager<T> {
 
     async migrate(): Promise<MigrationResult> {
         const initialSetting = this.load();
+        console.log(initialSetting); // todo: delete me
         const result: MigrationResult = {
             initialVersion: initialSetting.version,
             finalVersion: null,
@@ -113,7 +114,7 @@ class DefaultSettingManager<T> implements SettingManager<T> {
             const migration = this.migrateSettingValue(
                 initialSetting,
                 this._targetVersion,
-                this._settingsMigrators
+                this._settingsMigratorsByInputVersion
             );
             const settingToStore = this.asVersionedSetting(migration.value);
             await this.save(settingToStore);
@@ -215,6 +216,26 @@ class DefaultSettingManager<T> implements SettingManager<T> {
         return this._settingKey;
     }
 
+    private mapSettingsMigrators(settingsMigrators: FabricateSettingMigrator<any, any>[], targetVersion: string): Map<string, FabricateSettingMigrator<any, any>> {
+        const result = new Map<string, FabricateSettingMigrator<any, any>>();
+        if (settingsMigrators.length === 0 ) {
+            return result;
+        }
+        let targetVersionOutputFound = false;
+        settingsMigrators.forEach(settingMigrator => {
+            if (result.has(settingMigrator.fromVersion)) {
+                throw new Error(`Duplicate settings migrators were found for the input version ${settingMigrator.fromVersion}. `);
+            }
+            result.set(settingMigrator.fromVersion, settingMigrator);
+            if (settingMigrator.toVersion === targetVersion) {
+                targetVersionOutputFound = true;
+            }
+        });
+        if (!targetVersionOutputFound) {
+            throw new Error(`Target version ${targetVersion} is not reachable through the configured settings migrators.`);
+        }
+        return result;
+    }
 }
 
 export {

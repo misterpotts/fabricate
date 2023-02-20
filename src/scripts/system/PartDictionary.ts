@@ -1,46 +1,20 @@
-import {CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
-import {Recipe, RecipeJson} from "../common/Recipe";
+import {CraftingComponent, CraftingComponentJson, SalvageOption, SalvageOptionJson} from "../common/CraftingComponent";
+import {
+    IngredientOption,
+    IngredientOptionJson,
+    Recipe,
+    RecipeJson,
+    ResultOption,
+    ResultOptionJson
+} from "../common/Recipe";
 import {Essence, EssenceJson} from "../common/Essence";
 import {
     DefaultDocumentManager,
-    DocumentManager,
-    FabricateItemData
+    DocumentManager, PendingFabricateItemData, FabricateItemData
 } from "../foundry/DocumentManager";
-import {Combination} from "../common/Combination";
-import Properties from "../Properties";
 import {Identifiable, Serializable} from "../common/Identity";
-
-interface PartCache<T, K> extends Serializable<Record<string, K>>{
-
-    getById(id: string): Promise<T>;
-
-    deleteById(id: string): Promise<void>;
-
-    contains(id: string): boolean;
-
-    size: number;
-
-    isEmpty(): boolean;
-
-    getAll(): Promise<Map<string, T>>;
-
-    update(value: T): Promise<void>;
-
-    clone(): PartCache<T, K>;
-}
-
-interface PartLoader<T, K> {
-    size: number;
-
-    loadById(id: string): Promise<T>;
-
-    loadAll(): Promise<Map<string, T>>;
-
-    sourceData: Record <string, K>;
-
-    contains(id: string): boolean;
-
-}
+import {Combination} from "../common/Combination";
+import {SelectableOptions} from "../common/SelectableOptions";
 
 const combinationFromRecord: <T extends Identifiable>(amounts: Record<string, number>, candidatesById: Map<string, T>) => Combination<T> = (amounts, candidatesById) => {
     if (!amounts) {
@@ -56,495 +30,667 @@ const combinationFromRecord: <T extends Identifiable>(amounts: Record<string, nu
         .reduce((left, right) => left.combineWith(right), Combination.EMPTY());
 }
 
-class EssenceLoader implements PartLoader<Essence, EssenceJson> {
+interface Dictionary<J, I extends Identifiable & Serializable<J>> {
+
+    loadAll(): Promise<I[]>;
+    loadById(id: string): Promise<I>;
+    getSourceData(): Record<string, J>;
+    isLoaded: boolean;
+    getById(id: string): I;
+    getAll(): Map<string, I>;
+    toJson(): Record<string, J>;
+    contains(id: string): boolean;
+    size: number;
+    isEmpty: boolean;
+    insert(item: I): void;
+    hasErrors: boolean;
+    entriesWithErrors: I[];
+    deleteById(id: string): void;
+
+}
+
+class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
 
     private readonly _sourceData: Record<string, EssenceJson>;
+    private readonly _documentManager: DocumentManager;
+    private readonly _entries: Map<string, Essence>;
+    private _loaded: boolean;
 
     constructor({
-        sourceData
+        sourceData,
+        documentManager,
+        entries = new Map(),
+        loaded = false
     }: {
-        sourceData: Record<string, EssenceJson>
+        sourceData: Record<string, EssenceJson>;
+        documentManager: DocumentManager;
+        entries?: Map<string, Essence>;
+        loaded?: boolean;
     }) {
         this._sourceData = sourceData;
+        this._documentManager = documentManager;
+        this._entries = entries;
+        this._loaded = loaded;
     }
 
-    public async loadById(id: string): Promise<Essence> {
-        const essenceJson = this._sourceData[id];
-        if (!essenceJson) {
-            throw new Error(`No Essence data was found for the id "${id}". Known Essence IDs for this system are: ${Object.keys(this._sourceData).join(", ")}`);
-        }
-        return new Essence({
-            id: essenceJson.id,
-            name: essenceJson.name,
-            description: essenceJson.description,
-            iconCode: essenceJson.iconCode,
-            tooltip: essenceJson.tooltip
-        });
+    public clone(): EssenceDictionary {
+        return new EssenceDictionary({
+            sourceData: this._sourceData,
+            documentManager: this._documentManager
+        })
     }
 
-    public async loadAll(): Promise<Map<string, Essence>> {
-        if (!this._sourceData) {
-            throw new Error("Cannot load essences. Source data was not defined. ");
-        }
-        const ids = Object.keys(this._sourceData);
-        const essences = await Promise.all(ids.map(id => this.loadById(id)));
-        return new Map(essences.map(essence => [essence.id, essence]));
+    get entriesWithErrors(): Essence[] {
+        return Array.from(this._entries.values()).filter(entry => entry.hasErrors);
     }
 
-    get sourceData(): Record<string, EssenceJson> {
-        return this._sourceData;
+    get hasErrors(): boolean {
+        return this.entriesWithErrors.length > 0;
     }
 
-    contains(id: string): boolean {
-        return !!this._sourceData[id];
+    get isLoaded(): boolean {
+        return this._loaded;
     }
 
     get size(): number {
-        return this._sourceData ? Object.keys(this._sourceData).length : 0;
+        return this._entries.size;
+    }
+
+    contains(id: string): boolean {
+        return this._entries.has(id);
+    }
+
+    getAll(): Map<string, Essence> {
+        return new Map(this._entries);
+    }
+
+    getById(id: string): Essence {
+        if (!this._entries.has(id)) {
+            throw new Error(`No Essence data was found for the id "${id}". Known Essence IDs for this system are: ${Array.from(this._entries.keys()).join(", ")}`);
+        }
+        return this._entries.get(id);
+    }
+
+    getSourceData(): Record<string, EssenceJson> {
+        return this._sourceData;
+    }
+
+    insert(essence: Essence): void {
+        this._entries.set(essence.id, essence);
+    }
+
+    deleteById(id: string): void {
+        this._entries.delete(id);
+    }
+
+    async loadAll(): Promise<Essence[]> {
+        if (!this._sourceData) {
+            throw new Error("Unable to load Essences. No source data was provided. ");
+        }
+        const itemUuids = Object.values(this._sourceData)
+            .filter(data => !!data.activeEffectSourceItemUuid)
+            .map(data => data.activeEffectSourceItemUuid);
+        const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
+        this._entries.clear();
+        const essences = await Promise.all(Object.keys(this._sourceData).map(id => this.loadById(id, cachedItemDataByUUid)));
+        essences.forEach(essence => this._entries.set(essence.id, essence));
+        this._loaded = true;
+        return essences;
+    }
+
+    async loadById(id: string, itemDataCache?: Map<string, FabricateItemData>): Promise<Essence> {
+        const sourceRecord = this._sourceData[id];
+        if (!sourceRecord) {
+            throw new Error(`Unable to load Essence with ID ${id}. No definition for the essence was found in source data. 
+                This can occur if an Essence is loaded before it is saved or an invalid ID is passed.`);
+        }
+        const essence = new Essence({
+            id: id,
+            name: sourceRecord.name,
+            description: sourceRecord.description,
+            iconCode: sourceRecord.iconCode,
+            tooltip: sourceRecord.tooltip,
+            activeEffectSource: sourceRecord.activeEffectSourceItemUuid ? new PendingFabricateItemData(sourceRecord.activeEffectSourceItemUuid) : null
+        });
+        if (essence.hasActiveEffectSource) {
+            let itemData: FabricateItemData;
+            if (itemDataCache.has(essence.activeEffectSource.uuid)) {
+                itemData = itemDataCache.get(essence.activeEffectSource.uuid);
+            } else {
+                itemData = await this._documentManager.getDocumentByUuid(essence.activeEffectSource.uuid);
+            }
+            essence.activeEffectSource = itemData;
+        }
+        return essence;
+    }
+
+    toJson(): Record<string, EssenceJson> {
+        return Array.from(this._entries.entries())
+            .map(entry => { return  {key: entry[0], value: entry[1].toJson() } })
+            .reduce((left, right) => {
+                left[right.key] = right.value;
+                return left;
+            }, <Record<string, EssenceJson>>{});
+    }
+
+    get isEmpty(): boolean {
+        return this._entries.size === 0;
     }
 
 }
 
-class ComponentLoader implements PartLoader<CraftingComponent, CraftingComponentJson> {
+class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingComponent> {
 
     private readonly _sourceData: Record<string, CraftingComponentJson>;
     private readonly _documentManager: DocumentManager;
-    private readonly _essenceCache: PartCache<Essence, EssenceJson>;
+    private readonly _essenceDictionary: EssenceDictionary;
+    private readonly _entries: Map<string, CraftingComponent>;
+    private _loaded: boolean;
 
     constructor({
         sourceData,
         documentManager,
-        essenceCache
+        essenceDictionary,
+        entries = new Map(),
+        loaded = false
     }: {
         sourceData: Record<string, CraftingComponentJson>;
-        documentManager:DocumentManager;
-        essenceCache: PartCache<Essence, EssenceJson>;
+        documentManager: DocumentManager;
+        essenceDictionary: EssenceDictionary;
+        entries?: Map<string, CraftingComponent>;
+        loaded?: boolean;
     }) {
         this._sourceData = sourceData;
         this._documentManager = documentManager;
-        this._essenceCache = essenceCache;
+        this._essenceDictionary = essenceDictionary;
+        this._entries = entries;
+        this._loaded = loaded;
     }
 
-    public async loadById(id: string): Promise<CraftingComponent> {
-        const componentJson = this._sourceData[id];
-        if (!componentJson) {
-            throw new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: ${Object.keys(this._sourceData).join(", ")}`);
-        }
-        const salvageIds = componentJson.salvage ? Object.keys(componentJson.salvage) : [];
-        const documentIds = [id, ...salvageIds];
-        const itemData = await this._documentManager.getDocumentsByUuid(documentIds);
-        const essences = await this._essenceCache.getAll();
-        return new CraftingComponent({
-            id: componentJson.id,
-            itemUuid: componentJson.itemUuid,
-            name: itemData.get(componentJson.itemUuid).name,
-            imageUrl: itemData.get(componentJson.itemUuid).imageUrl ?? Properties.ui.defaults.itemImageUrl,
-            essences: combinationFromRecord(componentJson.essences, essences),
-            salvage: combinationFromRecord(componentJson.salvage, this.prepareComponentSummaries(componentJson.id, itemData))
-        });
+    public clone(): ComponentDictionary {
+        return new ComponentDictionary({
+            sourceData: this._sourceData,
+            documentManager: this._documentManager,
+            essenceDictionary: this._essenceDictionary
+        })
     }
 
-    private prepareComponentSummaries(componentId: string, itemData: Map<string, FabricateItemData>): Map<string, CraftingComponentSummary> {
-        const summaryEntries: [string, CraftingComponentSummary][] = Array.from(itemData.values())
-            .map(item => new CraftingComponentSummary({
-                id: componentId,
-                name: item.name,
-                imageUrl: item.imageUrl
-            }))
-            .map(summary => [summary.id, summary]);
-        return new Map(summaryEntries);
+    get entriesWithErrors(): CraftingComponent[] {
+        return Array.from(this._entries.values()).filter(entry => entry.hasErrors);
     }
 
-    public async loadAll(): Promise<Map<string, CraftingComponent>> {
-        if (!this._sourceData) {
-            throw new Error("Cannot load components. Source data was not defined. ");
-        }
-        const uniqueItemUuids = Object.values(this._sourceData)
-            .map(definition => {
-                const theseItemIds = [definition.itemUuid];
-                if (definition.salvage) {
-                    theseItemIds.push(...Object.keys(definition.salvage))
-                }
-                return theseItemIds;
-            })
-            .reduce((left, right) => left.concat(right), [])
-            .filter((value, index, array) => array.indexOf(value) === index);
-        const itemData = await this._documentManager.getDocumentsByUuid(uniqueItemUuids);
-        const essences = await this._essenceCache.getAll();
-        const components = await Promise.all(Object.values(this._sourceData).map(async componentJson => {
-            return new CraftingComponent({
-                id: componentJson.id,
-                itemUuid: componentJson.itemUuid,
-                name: itemData.get(componentJson.itemUuid).name,
-                imageUrl: itemData.get(componentJson.itemUuid).imageUrl ?? Properties.ui.defaults.itemImageUrl,
-                essences: combinationFromRecord(componentJson.essences, essences),
-                salvage: combinationFromRecord(componentJson.salvage, this.prepareComponentSummaries(componentJson.id, itemData))
-            });
-        }));
-        return new Map(components.map(component => [component.id, component]));
+    get hasErrors(): boolean {
+        return this.entriesWithErrors.length > 0;
     }
 
-    get sourceData(): Record<string, CraftingComponentJson> {
-        return this._sourceData;
-    }
-
-    contains(id: string): boolean {
-        return !!this._sourceData[id];
+    get isLoaded(): boolean {
+        return this._loaded && this._essenceDictionary.isLoaded;
     }
 
     get size(): number {
-        return this._sourceData ? Object.keys(this._sourceData).length : 0;
+        return this._entries.size;
     }
 
+    contains(id: string): boolean {
+        return this._entries.has(id);
+    }
+
+    getAll(): Map<string, CraftingComponent> {
+        return new Map(this._entries);
+    }
+
+    getById(id: string): CraftingComponent {
+        if (!this._entries.has(id)) {
+            throw new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: ${Array.from(this._entries.keys()).join(", ")}`);
+        }
+        return this._entries.get(id);
+    }
+
+    getSourceData(): Record<string, CraftingComponentJson> {
+        return this._sourceData;
+    }
+
+    insert(craftingComponent: CraftingComponent): void {
+        this._entries.set(craftingComponent.id, craftingComponent);
+    }
+
+    deleteById(id: string): void {
+        if (!this._entries.has(id)) {
+            return;
+        }
+        const componentToDelete = this._entries.get(id);
+        this._entries.delete(id);
+        Array.from(this._entries.keys())
+            .forEach(id => {
+                const component = this._entries.get(id);
+                if (!component.isSalvageable) {
+                    return;
+                }
+                component.salvageOptions = component.salvageOptions
+                    .map(option => {
+                        if (!option.salvage.has(componentToDelete)) {
+                            return option;
+                        }
+                        option.salvage = option.salvage.without(componentToDelete);
+                        return option;
+                    });
+            });
+    }
+
+    async loadAll(): Promise<CraftingComponent[]> {
+        if (!this._sourceData) {
+            throw new Error("Unable to load Crafting components. No source data was provided. ");
+        }
+        await this.loadDependencies();
+        const itemUuids = Object.values(this._sourceData)
+            .map(data => data.itemUuid);
+        const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
+        this._entries.clear();
+        // Loads all components _without_ loading salvage data
+        Object.keys(this._sourceData)
+            .map(id => { return { id, json: this._sourceData[id] } })
+            .map(data => new CraftingComponent({
+                id: data.id,
+                itemData: cachedItemDataByUUid.get(data.json.itemUuid),
+                essences: combinationFromRecord(data.json.essences, this._essenceDictionary.getAll()),
+                disabled: data.json.disabled,
+                salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({})
+            }))
+            .forEach(component => this._entries.set(component.id, component));
+        // Iterates over components again to load their salvage data using loaded component references
+        Array.from(this._entries.values())
+            .forEach(component => {
+                const salvageOptionsConfig = this._sourceData[component.id].salvageOptions;
+                if (salvageOptionsConfig && Object.keys(salvageOptionsConfig).length > 0) {
+                    component.salvageOptions = this.buildSalvageOptions(salvageOptionsConfig, this._entries).options;
+                }
+            });
+        this._loaded = true;
+        return Array.from(this._entries.values());
+    }
+
+    async loadById(id: string): Promise<CraftingComponent> {
+        const sourceRecord = this._sourceData[id];
+        if (!sourceRecord) {
+            throw new Error(`Unable to load Crafting Component with ID ${id}. No definition for the component was found in source data. 
+                This can occur if a component is loaded before it is saved or an invalid ID is passed.`);
+        }
+        await this.loadDependencies();
+        const itemUuid = sourceRecord.itemUuid;
+        const itemData = await this._documentManager.getDocumentByUuid(itemUuid);
+        const component = new CraftingComponent({
+            id,
+            itemData,
+            disabled: sourceRecord.disabled,
+            salvageOptions: this.buildSalvageOptions(sourceRecord.salvageOptions, this._entries),
+            essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll()),
+        });
+        return component;
+    }
+
+    private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<SalvageOptionJson, SalvageOption> {
+        const options = Object.keys(salvageOptionsJson)
+            .map(name => this.buildSalvageOption(name, salvageOptionsJson[name], allComponents));
+        return new SelectableOptions<SalvageOptionJson, SalvageOption>({
+            options
+        });
+    }
+
+    private buildSalvageOption(name: string, salvageOptionJson: SalvageOptionJson, allComponents: Map<string, CraftingComponent>) : SalvageOption {
+        return new SalvageOption({
+            name,
+            salvage: combinationFromRecord(salvageOptionJson, allComponents)
+        });
+    }
+
+    private async loadDependencies() {
+        if (!this._essenceDictionary.isLoaded) {
+            await this._essenceDictionary.loadAll();
+        }
+    }
+
+    toJson(): Record<string, CraftingComponentJson> {
+        return Array.from(this._entries.entries())
+            .map(entry => { return  {key: entry[0], value: entry[1].toJson() } })
+            .reduce((left, right) => {
+                left[right.key] = right.value;
+                return left;
+            }, <Record<string, CraftingComponentJson>>{});
+    }
+
+    get isEmpty(): boolean {
+        return this._entries.size === 0;
+    }
+
+    dropEssenceReferences(essenceToDelete: Essence) {
+        Array.from(this._entries.keys())
+            .forEach(id => {
+                const component = this._entries.get(id);
+                component.essences = component.essences.without(essenceToDelete);
+            });
+    }
 }
 
-class RecipeLoader implements PartLoader<Recipe, RecipeJson> {
-
+class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     private readonly _sourceData: Record<string, RecipeJson>;
     private readonly _documentManager: DocumentManager;
-    private readonly _essenceCache: PartCache<Essence, EssenceJson>;
-    private readonly _componentCache: PartCache<CraftingComponent, CraftingComponentJson>;
+    private readonly _essenceDictionary: EssenceDictionary;
+    private readonly _componentDictionary: ComponentDictionary;
+    private readonly _entries: Map<string, Recipe>;
+    private _loaded: boolean;
 
     constructor({
         sourceData,
         documentManager,
-        essenceCache,
-        componentCache
-                }: {
+        essenceDictionary,
+        componentDictionary,
+        entries = new Map(),
+        loaded = false
+    }: {
         sourceData: Record<string, RecipeJson>;
         documentManager: DocumentManager;
-        essenceCache: PartCache<Essence, EssenceJson>;
-        componentCache: PartCache<CraftingComponent, CraftingComponentJson>;
+        essenceDictionary: EssenceDictionary;
+        componentDictionary: ComponentDictionary;
+        entries?: Map<string, Recipe>;
+        loaded?: boolean;
     }) {
         this._sourceData = sourceData;
         this._documentManager = documentManager;
-        this._essenceCache = essenceCache;
-        this._componentCache = componentCache;
+        this._essenceDictionary = essenceDictionary;
+        this._componentDictionary = componentDictionary;
+        this._entries = entries;
+        this._loaded = loaded;
     }
 
-    get sourceData(): Record<string, RecipeJson> {
-        return this._sourceData;
+    public clone(): RecipeDictionary {
+        return new RecipeDictionary({
+            sourceData: this._sourceData,
+            documentManager: this._documentManager,
+            essenceDictionary: this._essenceDictionary,
+            componentDictionary: this._componentDictionary
+        });
+    }
+
+    get entriesWithErrors(): Recipe[] {
+        return Array.from(this._entries.values()).filter(entry => entry.hasErrors);
+    }
+
+    get hasErrors(): boolean {
+        return this.entriesWithErrors.length > 0;
+    }
+
+    get isLoaded(): boolean {
+        return this._loaded && this._essenceDictionary.isLoaded;
+    }
+
+    get size(): number {
+        return this._entries.size;
     }
 
     contains(id: string): boolean {
-        return !!this._sourceData[id];
+        return this._entries.has(id);
     }
 
-    async loadAll(): Promise<Map<string, Recipe>> {
+    getAll(): Map<string, Recipe> {
+        return new Map(this._entries);
+    }
+
+    getById(id: string): Recipe {
+        if (!this._entries.has(id)) {
+            throw new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: ${Array.from(this._entries.keys()).join(", ")}`);
+        }
+        return this._entries.get(id);
+    }
+
+    getSourceData(): Record<string, RecipeJson> {
+        return this._sourceData;
+    }
+
+    insert(recipe: Recipe): void {
+        this._entries.set(recipe.id, recipe);
+    }
+
+    deleteById(id: string): void {
+        this._entries.delete(id);
+    }
+
+    async loadAll(): Promise<Recipe[]> {
         if (!this._sourceData) {
-            throw new Error("Cannot load Recipes. Source data was not defined. ");
+            throw new Error("Unable to load Recipes. No source data was provided. ");
         }
-        const componentsById = await this._componentCache.getAll();
-        const itemData = await this._documentManager.getDocumentsByUuid(Object.keys(this._sourceData));
-        const essences = await this._essenceCache.getAll();
-        const recipes = await Promise.all(Object.values(this._sourceData).map(async recipeJson => {
-            return new Recipe({
-                id: recipeJson.id,
-                itemUuid: recipeJson.itemUuid,
-                name: itemData.get(recipeJson.itemUuid).name,
-                imageUrl: itemData.get(recipeJson.itemUuid).imageUrl ?? Properties.ui.defaults.itemImageUrl,
-                essences: combinationFromRecord(recipeJson.essences, essences),
-                catalysts: this.prepareCatalysts(recipeJson.catalysts, componentsById),
-                ingredientOptions: this.prepareCombinationChoice(recipeJson.ingredientOptions, componentsById),
-                resultOptions: this.prepareCombinationChoice(recipeJson.resultOptions, componentsById)
+        await this.loadDependencies();
+        const itemUuids = Object.values(this._sourceData)
+            .map(data => data.itemUuid);
+        const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
+        this._entries.clear();
+        const recipes = await Promise.all(Object.keys(this._sourceData)
+            .map(id => this.loadById(id, cachedItemDataByUUid)));
+        recipes.forEach(recipe => this._entries.set(recipe.id, recipe));
+        this._loaded = true;
+        return Array.from(this._entries.values());
+    }
+
+    async loadById(id: string, itemDataCache?: Map<string, FabricateItemData>): Promise<Recipe> {
+        const sourceRecord = this._sourceData[id];
+        if (!sourceRecord) {
+            throw new Error(`Unable to load Recipe with ID ${id}. No definition for the recipe was found in source data. 
+                This can occur if a recipe is loaded before it is saved or an invalid ID is passed.`);
+        }
+        await this.loadDependencies();
+        const itemUuid = sourceRecord.itemUuid;
+        const itemData = itemDataCache.has(itemUuid) ? itemDataCache.get(itemUuid) : await this._documentManager.getDocumentByUuid(itemUuid);
+        const recipe = new Recipe({
+            id,
+            itemData,
+            disabled: sourceRecord.disabled,
+            ingredientOptions: this.buildIngredientOptions(sourceRecord.ingredientOptions, this._componentDictionary.getAll()),
+            resultOptions: this.buildResultOptions(sourceRecord.resultOptions, this._componentDictionary.getAll()),
+            essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll())
+        });
+        return recipe;
+    }
+
+    private buildIngredientOptions(ingredientOptionsJson: Record<string, IngredientOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<IngredientOptionJson, IngredientOption> {
+        const options = Object.keys(ingredientOptionsJson)
+            .map(name => this.buildIngredientOption(name, ingredientOptionsJson[name], allComponents));
+        return new SelectableOptions<IngredientOptionJson, IngredientOption>({
+            options
+        });
+    }
+
+    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<ResultOptionJson, ResultOption> {
+        const options = Object.keys(resultOptionsJson)
+            .map(name => this.buildResultOption(name, resultOptionsJson[name], allComponents));
+        return new SelectableOptions<ResultOptionJson, ResultOption>({
+            options
+        });
+    }
+
+    private buildIngredientOption(name: string, ingredientOptionJson: IngredientOptionJson, allComponents: Map<string, CraftingComponent>) : IngredientOption {
+        return new IngredientOption({
+            name,
+            catalysts: combinationFromRecord(ingredientOptionJson.catalysts, allComponents),
+            ingredients: combinationFromRecord(ingredientOptionJson.ingredients, allComponents)
+        });
+    }
+
+    private buildResultOption(name: string, resultOptionJson: ResultOptionJson, allComponents: Map<string, CraftingComponent>) : ResultOption {
+        return new ResultOption({
+            name,
+            results: combinationFromRecord(resultOptionJson, allComponents)
+        });
+    }
+
+    private async loadDependencies() {
+        if (!this._essenceDictionary.isLoaded) {
+            await this._essenceDictionary.loadAll();
+        }
+        if (!this._componentDictionary.isLoaded) {
+            await this._componentDictionary.loadAll();
+        }
+    }
+
+    toJson(): Record<string, RecipeJson> {
+        return Array.from(this._entries.entries())
+            .map(entry => { return  {key: entry[0], value: entry[1].toJson() } })
+            .reduce((left, right) => {
+                left[right.key] = right.value;
+                return left;
+            }, <Record<string, RecipeJson>>{});
+    }
+
+    get isEmpty(): boolean {
+        return this._entries.size === 0;
+    }
+
+    dropComponentReferences(componentToDelete: CraftingComponent) {
+        Array.from(this._entries.keys())
+            .forEach(id => {
+                const recipe = this._entries.get(id);
+                recipe.ingredientOptions = recipe.ingredientOptions
+                    .map(ingredientOption => {
+                        if (ingredientOption.ingredients.has(componentToDelete)) {
+                            ingredientOption.ingredients = ingredientOption.ingredients.without(componentToDelete);
+                        }
+                        if (ingredientOption.catalysts.has(componentToDelete)) {
+                            ingredientOption.catalysts = ingredientOption.catalysts.without(componentToDelete);
+                        }
+                        return ingredientOption;
+                    });
+                recipe.resultOptions = recipe.resultOptions
+                    .map(resultOption => {
+                        if (resultOption.results.has(componentToDelete)) {
+                            resultOption.results = resultOption.results.without(componentToDelete);
+                        }
+                        return resultOption;
+                    });
             });
-        }));
-        return new Map(recipes.map(recipe => [recipe.id, recipe]));
     }
 
-    async loadById(id: string): Promise<Recipe> {
-        const recipeJson = this._sourceData[id];
-        if (!recipeJson) {
-            throw new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: ${Object.keys(this._sourceData).join(", ")}`);
-        }
-        const catalystIds = recipeJson.catalysts ? Object.keys(recipeJson.catalysts) : [];
-        const ingredientIds = recipeJson.ingredientOptions
-            .map(combination => Object.keys(combination))
-            .reduce((left, right) => left.concat(right), []);
-        const resultIds = recipeJson.resultOptions
-            .map(combination => Object.keys(combination))
-            .reduce((left, right) => left.concat(right), []);
-        const uniqueComponentIds = [...catalystIds, ...ingredientIds, ...resultIds]
-            .filter((value, index, array) => array.indexOf(value) === index);
-        const components = await Promise.all(uniqueComponentIds.map(id => this._componentCache.getById(id)))
-        const componentsById = new Map(components.map(component => [component.id, component]));
-        const itemData = await this._documentManager.getDocumentByUuid(id);
-        const essences = await this._essenceCache.getAll();
-        return new Recipe({
-            id: recipeJson.id,
-            itemUuid: recipeJson.itemUuid,
-            name: itemData.name,
-            imageUrl: itemData.imageUrl ?? Properties.ui.defaults.itemImageUrl,
-            essences: combinationFromRecord(recipeJson.essences, essences),
-            catalysts: this.prepareCatalysts(recipeJson.catalysts, componentsById),
-            ingredientOptions: this.prepareCombinationChoice(recipeJson.ingredientOptions, componentsById),
-            resultOptions: this.prepareCombinationChoice(recipeJson.resultOptions, componentsById)
-        });
+    dropEssenceReferences(essenceToDelete: Essence) {
+        Array.from(this._entries.keys())
+            .forEach(id => {
+                const recipe = this._entries.get(id);
+                recipe.essences = recipe.essences.without(essenceToDelete);
+            });
     }
-
-    private prepareCatalysts(catalysts: Record<string, number>, componentsById: Map<string, CraftingComponent>): Combination<CraftingComponent> {
-        if (!catalysts) {
-            return Combination.EMPTY()
-        }
-        const catalystIds = Object.keys(catalysts);
-        if (catalystIds.length === 0) {
-            return Combination.EMPTY()
-        }
-        return catalystIds.map(catalystId => {
-            if (!componentsById.has(catalystId)) {
-                throw new Error(`Unable to resolve Catalyst ID "${catalystId}". `)
-            }
-            return Combination.of(componentsById.get(catalystId), catalysts[catalystId]);
-        })
-        .reduce((left, right) => left.combineWith(right), Combination.EMPTY());
-    }
-
-    private prepareCombinationChoice(ingredientGroups: Record<string, number>[], componentsById: Map<string, CraftingComponent>): CombinationChoice<CraftingComponent> {
-        if (!ingredientGroups || ingredientGroups.length === 0) {
-            return CombinationChoice.NONE();
-        }
-        const members = ingredientGroups.map(ingredientGroup => combinationFromRecord(ingredientGroup, componentsById));
-        return CombinationChoice.between(...members)
-    }
-
-    get size(): number {
-        return this._sourceData ? Object.keys(this._sourceData).length : 0;
-    }
-
 }
 
-class DefaultPartCache<T extends Identifiable & Serializable<K>, K> implements PartCache<T, K> {
-    private readonly _cache: Map<string, T>;
-    private readonly _partLoader: PartLoader<T, K>;
-
-    private _populated: boolean = false;
-
-    constructor({
-        cache = new Map(),
-        partLoader
-    }: {
-        cache?: Map<string, T>;
-        partLoader: PartLoader<T, K>;
-    }) {
-        this._cache = cache;
-        this._partLoader = partLoader;
-    }
-
-    public contains(id: string): boolean {
-        return this._cache.has(id) || !!this._partLoader.contains(id);
-    }
-
-    public async deleteById(id: string): Promise<void> {
-        if (!this._populated) {
-            await this.loadAll();
-        }
-        this._cache.delete(id);
-    }
-
-    public async getAll(): Promise<Map<string, T>> {
-        if (!this._populated) {
-            await this.loadAll();
-        }
-        return new Map(this._cache);
-    }
-
-    public async getById(id: string): Promise<T> {
-        if (this._cache.has(id)) {
-            return this._cache.get(id);
-        }
-        const loaded = await this._partLoader.loadById(id);
-        this._cache.set(loaded.id, loaded);
-        return loaded;
-    }
-
-    public async loadAll(): Promise<Map<string, T>> {
-        const loadResult = await this._partLoader.loadAll();
-        this._cache.clear();
-        Array.from(loadResult.values()).forEach(value => this._cache.set(value.id, value));
-        this._populated = true;
-        return new Map(this._cache);
-    }
-
-    get size(): number {
-        if (this._populated) {
-            return this._cache.size;
-        }
-        return this._partLoader.size;
-    }
-
-    public isEmpty(): boolean {
-        return this._cache.size === 0;
-    }
-
-    public async update(value: T): Promise<void> {
-        if (!this._populated) {
-            await this.loadAll();
-        }
-        this._cache.set(value.id, value);
-    }
-
-    public toJson(): Record<string, K> {
-        if (!this._populated) {
-            return this._partLoader.sourceData;
-        }
-        const json: Record<string, K> = {};
-        this._cache.forEach((value, id) => json[id] = value.toJson());
-        return json;
-    }
-
-    clone(): PartCache<T, K> {
-        return new DefaultPartCache({
-            cache: new Map(this._cache),
-            partLoader: this._partLoader
-        });
-    }
-
-}
-
-enum ErrorDecisionType {
-    DELETE,
-    RETAIN
-}
-
-type ErrorDecisionProvider = (partType: string, itemId: string) => Promise<ErrorDecisionType>;
 
 class PartDictionary {
 
-    private readonly _essenceCache: PartCache<Essence, EssenceJson>;
-    private readonly _componentCache: PartCache<CraftingComponent, CraftingComponentJson>;
-    private readonly _recipeCache: PartCache<Recipe, RecipeJson>;
+    private readonly _essenceDictionary: EssenceDictionary;
+    private readonly _componentDictionary: ComponentDictionary;
+    private readonly _recipeDictionary: RecipeDictionary;
 
     constructor({
-                    essenceCache,
-                    componentCache,
-                    recipeCache
-                }: {
-        essenceCache: PartCache<Essence, EssenceJson>;
-        componentCache: PartCache<CraftingComponent, CraftingComponentJson>;
-        recipeCache: PartCache<Recipe, RecipeJson>;
+        essenceDictionary,
+        componentDictionary,
+        recipeDictionary
+    }: {
+        essenceDictionary: EssenceDictionary;
+        componentDictionary: ComponentDictionary;
+        recipeDictionary: RecipeDictionary;
     }) {
-        this._essenceCache = essenceCache;
-        this._componentCache = componentCache;
-        this._recipeCache = recipeCache;
+        this._essenceDictionary = essenceDictionary;
+        this._componentDictionary = componentDictionary;
+        this._recipeDictionary = recipeDictionary;
+    }
+
+    get isLoaded(): boolean {
+        return this._essenceDictionary.isLoaded && this._componentDictionary.isLoaded && this._recipeDictionary.isLoaded;
+    }
+
+    get hasErrors(): boolean {
+        return this._essenceDictionary.hasErrors || this._componentDictionary.hasErrors || this._recipeDictionary.hasErrors;
     }
 
     public hasEssence(id: string): boolean {
-        return this._essenceCache.contains(id);
+        return this._essenceDictionary.contains(id);
     }
 
     public hasEssences(): boolean {
-        return !this._essenceCache.isEmpty();
+        return !this._essenceDictionary.isEmpty;
     }
 
     public hasComponent(id: string): boolean {
-        return this._componentCache.contains(id);
+        return this._componentDictionary.contains(id);
     }
 
     public hasRecipe(id: string): boolean {
-        return this._recipeCache.contains(id);
+        return this._recipeDictionary.contains(id);
     }
 
-    public async getRecipe(id: string): Promise<Recipe> {
-        return await this._recipeCache.getById(id);
+    public getRecipe(id: string): Recipe {
+        return this._recipeDictionary.getById(id);
     }
 
-    public async getComponent(id: string): Promise<CraftingComponent> {
-        return await this._componentCache.getById(id);
+    public getComponent(id: string): CraftingComponent {
+        return this._componentDictionary.getById(id);
     }
 
-    public async getEssence(id: string): Promise<Essence> {
-        return await this._essenceCache.getById(id);
+    public getEssence(id: string): Essence {
+        return this._essenceDictionary.getById(id);
     }
 
     get size(): number {
-        return this._recipeCache.size + this._componentCache.size + this._essenceCache.size;
+        return this._recipeDictionary.size + this._componentDictionary.size + this._essenceDictionary.size;
     }
 
-    public async getComponents(): Promise<CraftingComponent[]> {
-        const componentsById = await this._componentCache.getAll();
+    public getComponents(): CraftingComponent[] {
+        const componentsById = this._componentDictionary.getAll();
         return Array.from(componentsById.values());
     }
 
     public async getRecipes(): Promise<Recipe[]> {
-        const recipesById = await this._recipeCache.getAll();
+        const recipesById = await this._recipeDictionary.getAll();
         return Array.from(recipesById.values());
     }
 
     public async getEssences(): Promise<Essence[]> {
-        const essencesById = await this._essenceCache.getAll();
+        const essencesById = await this._essenceDictionary.getAll();
         return Array.from(essencesById.values());
     }
 
-    public async insertComponent(craftingComponent: CraftingComponent): Promise<void> {
-        return await this._componentCache.update(craftingComponent);
+    public insertComponent(craftingComponent: CraftingComponent): void {
+        this._componentDictionary.insert(craftingComponent);
     }
 
-    public async insertRecipe(recipe: Recipe): Promise<void> {
-        return await this._recipeCache.update(recipe);
+    public insertRecipe(recipe: Recipe): void {
+        this._recipeDictionary.insert(recipe);
     }
 
-    public async insertEssence(essence: Essence): Promise<void> {
-        return await this._essenceCache.update(essence);
+    public insertEssence(essence: Essence): void {
+        this._essenceDictionary.insert(essence);
     }
 
-    public async deleteComponentById(id: string): Promise<void> {
-        const componentToDelete = await this._componentCache.getById(id);
-        await this._componentCache.deleteById(id);
-        const remainingComponents = await this._componentCache.getAll();
-        remainingComponents.forEach(component => {
-            if (component.salvage.has(componentToDelete.summarise())) {
-                component.salvage = component.salvage.without(componentToDelete.summarise());
-            }
-        });
-        const recipes = await this._recipeCache.getAll();
-        recipes.forEach(recipe => {
-            if (recipe.catalysts.has(componentToDelete)) {
-                recipe.catalysts = recipe.catalysts.without(componentToDelete);
-            }
-            recipe.ingredientOptions.choices.forEach(choice => {
-                if (choice.value.has(componentToDelete)) {
-                    recipe.setIngredientOption(choice.id, choice.value.without(componentToDelete));
-                }
-            });
-            recipe.resultOptions.choices.forEach(choice => {
-                if (choice.value.has(componentToDelete)) {
-                    recipe.setResultOption(choice.id, choice.value.without(componentToDelete));
-                }
-            });
-        });
+    public deleteComponentById(id: string): void {
+        const componentToDelete = this._componentDictionary.getById(id);
+        this._componentDictionary.deleteById(id);
+        this._recipeDictionary.dropComponentReferences(componentToDelete);
     }
 
-    public async deleteRecipeById(id: string): Promise<void> {
-        return await this._recipeCache.deleteById(id);
+    public deleteRecipeById(id: string): void {
+        return this._recipeDictionary.deleteById(id);
     }
 
-    public async deleteEssenceById(id: string): Promise<void> {
-        const essenceToDelete = await this._essenceCache.getById(id);
-        await this._essenceCache.deleteById(id);
-        const components = await this._componentCache.getAll();
-        components.forEach(component => {
-            if (component.essences.has(essenceToDelete)) {
-                component.essences = component.essences.without(essenceToDelete);
-            }
-        });
-        const recipes = await this._recipeCache.getAll();
-        recipes.forEach(recipe => {
-            if (recipe.essences.has(essenceToDelete)) {
-                recipe.essences = recipe.essences.without(essenceToDelete);
-            }
-        });
+    public deleteEssenceById(id: string): void {
+        const essenceToDelete = this._essenceDictionary.getById(id);
+        this._essenceDictionary.deleteById(id);
+        this._componentDictionary.dropEssenceReferences(essenceToDelete);
+        this._recipeDictionary.dropEssenceReferences(essenceToDelete);
     }
 
     async loadAll(): Promise<void> {
-        await this._essenceCache.getAll();
-        await this._componentCache.getAll();
-        await this._recipeCache.getAll();
+        await this._essenceDictionary.loadAll();
+        await this._componentDictionary.loadAll();
+        await this._recipeDictionary.loadAll();
     }
 
     public toJson(): PartDictionaryJson {
-        const essences = this._essenceCache.toJson();
-        const components = this._componentCache.toJson();
-        const recipes = this._recipeCache.toJson();
+        const essences = this._essenceDictionary.toJson();
+        const components = this._componentDictionary.toJson();
+        const recipes = this._recipeDictionary.toJson();
         return {
             components,
             recipes,
@@ -554,11 +700,12 @@ class PartDictionary {
 
     clone() {
         return new PartDictionary({
-            essenceCache: this._essenceCache.clone(),
-            recipeCache: this._recipeCache.clone(),
-            componentCache: this._componentCache.clone()
+            essenceDictionary: this._essenceDictionary.clone(),
+            recipeDictionary: this._recipeDictionary.clone(),
+            componentDictionary: this._componentDictionary.clone()
         });
     }
+
 }
 
 class PartDictionaryFactory {
@@ -568,23 +715,28 @@ class PartDictionaryFactory {
         documentManager = new DefaultDocumentManager()
     }: {
         documentManager?: DocumentManager;
-        errorDecisionProvider?: ErrorDecisionProvider
     }) {
         this._documentManager = documentManager;
     }
 
     make(sourceData: PartDictionaryJson): PartDictionary {
-        const essenceLoader = new EssenceLoader({sourceData: sourceData.essences});
-        const essenceCache = new DefaultPartCache({partLoader: essenceLoader});
         const documentManager = this._documentManager;
-        const componentLoader = new ComponentLoader({sourceData: sourceData.components, essenceCache, documentManager});
-        const componentCache = new DefaultPartCache({partLoader: componentLoader});
-        const recipeLoader = new RecipeLoader({sourceData: sourceData.recipes, essenceCache, componentCache, documentManager});
-        const recipeCache = new DefaultPartCache({partLoader: recipeLoader});
+        const essenceDictionary = new EssenceDictionary({sourceData: sourceData.essences, documentManager});
+        const componentDictionary = new ComponentDictionary({
+            sourceData: sourceData.components,
+            documentManager,
+            essenceDictionary
+        });
+        const recipeDictionary = new RecipeDictionary({
+            sourceData: sourceData.recipes,
+            documentManager,
+            essenceDictionary,
+            componentDictionary
+        });
         return new PartDictionary({
-            essenceCache,
-            componentCache,
-            recipeCache
+            essenceDictionary,
+            componentDictionary,
+            recipeDictionary
         });
     }
 
@@ -596,4 +748,4 @@ interface PartDictionaryJson {
     essences: Record<string, EssenceJson>
 }
 
-export { PartDictionary, PartDictionaryJson, PartDictionaryFactory, ErrorDecisionProvider, ErrorDecisionType }
+export { PartDictionary, PartDictionaryJson, PartDictionaryFactory }

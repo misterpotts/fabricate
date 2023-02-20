@@ -1,16 +1,21 @@
-import {DocumentManager, FabricateItemData, ItemNotFoundError} from "../../src/scripts/foundry/DocumentManager";
+import {
+    DocumentManager,
+    FabricateItemData,
+    ItemNotFoundError,
+    LoadedFabricateItemData
+} from "../../src/scripts/foundry/DocumentManager";
 import {CraftingComponent, CraftingComponentJson} from "../../src/scripts/common/CraftingComponent";
 import {Recipe, RecipeJson} from "../../src/scripts/common/Recipe";
 
 class StubDocumentManager implements DocumentManager {
 
     private readonly _permissive: boolean;
-    private static readonly _defaultItemData: FabricateItemData = {
+    private static readonly _defaultItemData: FabricateItemData = new LoadedFabricateItemData({
         name: "Item name",
         imageUrl: "path/to/image/webp",
-        uuid: "NOT_A_UUID",
-        source: {}
-    };
+        itemUuid: "NOT_A_UUID",
+        sourceDocument: {}
+    });
 
     private readonly _itemData: Map<string, FabricateItemData>;
     private readonly _poisonIds: string[] = [];
@@ -29,20 +34,20 @@ class StubDocumentManager implements DocumentManager {
     }): StubDocumentManager {
         const itemData = new Map<string, FabricateItemData>();
         this.ingest((component: CraftingComponent) => {
-            return {
-                uuid: component.id,
+            return new LoadedFabricateItemData({
+                itemUuid: component.itemUuid,
                 name: component.name,
                 imageUrl: component.imageUrl,
-                source: component
-            }
+                sourceDocument: component
+            });
         }, craftingComponents, itemData);
         this.ingest((recipe: Recipe) => {
-            return {
-                uuid: recipe.id,
+            return new LoadedFabricateItemData({
+                itemUuid: recipe.itemUuid,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,
-                source: recipe
-            }
+                sourceDocument: recipe
+            });
         }, recipes, itemData);
         return new StubDocumentManager(itemData);
     }
@@ -50,33 +55,34 @@ class StubDocumentManager implements DocumentManager {
     public static forPartDefinitions({
        craftingComponentsJson = [],
        recipesJson = []
-   }: {
+    }: {
         craftingComponentsJson?: CraftingComponentJson[];
         recipesJson?: RecipeJson[]
     }): StubDocumentManager {
         const itemData = new Map<string, FabricateItemData>();
         const notLoaded = "NOT_LOADED";
         this.ingest((componentJson: CraftingComponentJson) => {
-            return {
-                uuid: componentJson.itemUuid,
+            return new LoadedFabricateItemData({
+                itemUuid: componentJson.itemUuid,
                 name: notLoaded,
                 imageUrl: notLoaded,
-                source: componentJson
-            }
+                sourceDocument: componentJson
+            });
         }, craftingComponentsJson, itemData);
         this.ingest((recipeJson: RecipeJson) => {
-            return {
-                uuid: recipeJson.itemUuid,
+            return new LoadedFabricateItemData({
+                itemUuid: recipeJson.itemUuid,
                 name: notLoaded,
                 imageUrl: notLoaded,
-                source: recipeJson
-            }
+                sourceDocument: recipeJson
+            })
         }, recipesJson, itemData);
         return new StubDocumentManager(itemData);
     }
 
     private static ingest<T>(mappingFunction: (part: T) => FabricateItemData, parts: T[], target: Map<string, FabricateItemData>): void {
-        parts.map(part => mappingFunction(part)).forEach(itemData => target.set(itemData.uuid, itemData));
+        parts.map(part => mappingFunction(part))
+            .forEach(itemData => target.set(itemData.uuid, itemData));
     }
 
     public async getDocumentByUuid(id: string): Promise<any> {

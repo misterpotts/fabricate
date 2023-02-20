@@ -94,7 +94,7 @@ describe("Index and Retrieve", () => {
                 name: stubItemName,
                 imageUrl: stubItemImageUrl,
                 uuid: id,
-                source: stubItemSource
+                sourceDocument: stubItemSource
             }])
     );
     const stubDocumentManager = new StubDocumentManager(itemData);
@@ -128,20 +128,18 @@ describe("Index and Retrieve", () => {
             });
 
         expect(underTest).not.toBeNull();
-        expect(underTest.size).toBe(16);
-
         await underTest.loadAll();
 
         expect(underTest.size).toBe(16);
 
         Object.keys(essences).forEach(id => expect(underTest.hasEssence(id)).toEqual(true));
 
-        const loadedComponents = await underTest.getComponents();
+        const loadedComponents = underTest.getComponents();
         loadedComponents.forEach(component => {
             expect(underTest.hasComponent(component.id)).toEqual(true);
             expect(component.name).toEqual(stubItemName);
             expect(component.imageUrl).toEqual(stubItemImageUrl);
-            expect(componentUuids).toEqual(expect.arrayContaining([component.id]));
+            expect(componentUuids).toEqual(expect.arrayContaining([component.itemUuid]));
         });
 
         const loadedRecipes = await underTest.getRecipes();
@@ -149,7 +147,7 @@ describe("Index and Retrieve", () => {
             expect(underTest.hasRecipe(recipe.id)).toEqual(true);
             expect(recipe.name).toEqual(stubItemName);
             expect(recipe.imageUrl).toEqual(stubItemImageUrl);
-            expect(recipeUuids).toEqual(expect.arrayContaining([recipe.id]));
+            expect(recipeUuids).toEqual(expect.arrayContaining([recipe.itemUuid]));
         })
     });
 
@@ -163,14 +161,14 @@ describe("Index and Retrieve", () => {
             });
 
         expect(underTest).not.toBeNull();
-        expect(underTest.size).toBe(16);
 
         await underTest.loadAll();
+        expect(underTest.size).toBe(16);
 
         const componentToDelete = testComponentThree;
         const componentIdToDelete = componentToDelete.id;
 
-        await underTest.deleteComponentById(componentIdToDelete)
+        underTest.deleteComponentById(componentIdToDelete);
 
         expect(underTest.size).toBe(15);
 
@@ -186,9 +184,11 @@ describe("Index and Retrieve", () => {
             });
         });
 
-        const components = await underTest.getComponents();
-        expect(new Map(components.map(component => [component.id, component])).has(componentIdToDelete)).toEqual(false);
-        components.forEach(component => expect(component.salvage.has(componentToDelete)).toEqual(false));
+        const components = underTest.getComponents();
+        expect(components.find(component => component.id === componentIdToDelete)).toBeUndefined();
+        components.forEach(component => {
+            expect(component.salvageOptions.find(option => option.salvage.has(componentToDelete))).toBeUndefined();
+        });
 
         const asJson = underTest.toJson();
         expect(Object.keys(asJson.components).length).toEqual(4);
@@ -206,9 +206,9 @@ describe("Index and Retrieve", () => {
             });
 
         expect(underTest).not.toBeNull();
-        expect(underTest.size).toBe(16);
 
         await underTest.loadAll();
+        expect(underTest.size).toBe(16);
 
         const essenceToDelete = elementalFire;
         const essenceIdToDelete = essenceToDelete.id;
@@ -264,21 +264,21 @@ describe("Index and Retrieve", () => {
         expect(underTest).not.toBeNull();
         expect(underTest.size).toBe(13);
 
-        await expect(underTest.getEssence(elementalFire.id)).resolves.toEqual(elementalFire);
-        await expect(underTest.getEssence(elementalEarth.id)).resolves.toEqual(elementalEarth);
-        await expect(underTest.getEssence(elementalAir.id)).resolves.toEqual(elementalAir);
-        await expect(underTest.getEssence(elementalWater.id)).resolves.toEqual(elementalWater);
+        await expect(underTest.getEssence(elementalFire.id)).toEqual(elementalFire);
+        await expect(underTest.getEssence(elementalEarth.id)).toEqual(elementalEarth);
+        await expect(underTest.getEssence(elementalAir.id)).toEqual(elementalAir);
+        await expect(underTest.getEssence(elementalWater.id)).toEqual(elementalWater);
 
-        await expect(underTest.getComponent(testComponentOne.id)).resolves.toEqual(testComponentOne);
-        await expect(underTest.getComponent(testComponentTwo.id)).resolves.toEqual(testComponentTwo);
-        await expect(underTest.getComponent(testComponentThree.id)).resolves.toEqual(testComponentThree);
-        await expect(underTest.getComponent(testComponentFour.id)).resolves.toEqual(testComponentFour);
-        await expect(underTest.getComponent(testComponentFive.id)).resolves.toEqual(testComponentFive);
+        await expect(underTest.getComponent(testComponentOne.id)).toEqual(testComponentOne);
+        await expect(underTest.getComponent(testComponentTwo.id)).toEqual(testComponentTwo);
+        await expect(underTest.getComponent(testComponentThree.id)).toEqual(testComponentThree);
+        await expect(underTest.getComponent(testComponentFour.id)).toEqual(testComponentFour);
+        await expect(underTest.getComponent(testComponentFive.id)).toEqual(testComponentFive);
 
-        await expect(underTest.getRecipe(testRecipeOne.id)).resolves.toEqual(testRecipeOne);
-        await expect(underTest.getRecipe(testRecipeTwo.id)).resolves.toEqual(testRecipeTwo);
-        await expect(underTest.getRecipe(testRecipeThree.id)).resolves.toEqual(testRecipeThree);
-        await expect(underTest.getRecipe(testRecipeFour.id)).resolves.toEqual(testRecipeFour);
+        await expect(underTest.getRecipe(testRecipeOne.id)).toEqual(testRecipeOne);
+        await expect(underTest.getRecipe(testRecipeTwo.id)).toEqual(testRecipeTwo);
+        await expect(underTest.getRecipe(testRecipeThree.id)).toEqual(testRecipeThree);
+        await expect(underTest.getRecipe(testRecipeFour.id)).toEqual(testRecipeFour);
     });
 
     test("Should throw errors when parts are not found", async () => {
@@ -300,8 +300,8 @@ describe("Index and Retrieve", () => {
         expect(underTest.size).toBe(4);
 
         const id: string = "notAValidId";
-        await expect(underTest.getComponent(id)).rejects.toThrow(new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: `));
-        await expect(underTest.getRecipe(id)).rejects.toThrow(new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: `));
+        await expect(() => underTest.getComponent(id)).toThrow(new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: iyeUGBbSts0ij92X, tdyV4AWuTMkXbepw, Ra2Z1ujre76weR0i`));
+        await expect(() => underTest.getRecipe(id)).toThrow(new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: z2ixo2m312l`));
 
     });
 

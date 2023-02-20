@@ -2,7 +2,7 @@ import {Identifiable, Serializable} from "./Identity";
 
 class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements Serializable<Record<string, J>> {
 
-    private readonly _options: Map<string, T>;
+    private _options: Map<string, T>;
     private _selectedOptionId?: string;
 
     constructor({
@@ -24,6 +24,10 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         this._selectedOptionId = name;
     }
 
+    public deselect() {
+        this._selectedOptionId = "";
+    }
+
     private validateSelection(selection: string, options: Map<string, T>) {
         if (!options.has(selection)) {
             throw new Error(`${selection} is not a valid ingredient option. Available options are: ${Array.from(options.keys()).join(", ")}. `);
@@ -35,7 +39,11 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     }
 
     get options(): T[] {
-        return Array.from(this.options.values());
+        return Array.from(this._options.values());
+    }
+
+    set options(values: T[]) {
+        this._options = new Map(values.map(value => [value.id, value]));
     }
 
     get selectedOptionId(): string {

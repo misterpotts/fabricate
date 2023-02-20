@@ -130,7 +130,7 @@ describe("Settings Manager", () => {
             gameProvider: stubGameProvider,
             targetVersion: targetVersion,
             settingKey: craftingSystemsKey,
-            settingsMigrators: new Map([["1", stubSettingMigrator], ["0", noOpSettingsMigrator]])
+            settingsMigrators: [stubSettingMigrator, noOpSettingsMigrator]
         });
         const testSystemId = "abc123";
         const name = "Name";

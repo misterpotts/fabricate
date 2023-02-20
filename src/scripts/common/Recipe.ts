@@ -1,12 +1,11 @@
 import {Combination} from "./Combination";
-import Properties from "../Properties";
 import {Identifiable, Serializable} from "./Identity";
 import {CraftingComponent} from "./CraftingComponent";
 import {Essence} from "./Essence";
 import {SelectableOptions} from "./SelectableOptions";
+import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../foundry/DocumentManager";
 
 interface RecipeJson {
-    id: string;
     itemUuid: string;
     disabled: boolean;
     essences: Record<string, number>,
@@ -23,8 +22,8 @@ interface IngredientOptionJson {
 
 class IngredientOption implements Identifiable, Serializable<IngredientOptionJson> {
 
-    private readonly _catalysts: Combination<CraftingComponent>;
-    private readonly _ingredients: Combination<CraftingComponent>;
+    private _catalysts: Combination<CraftingComponent>;
+    private _ingredients: Combination<CraftingComponent>;
     private readonly _name: string;
 
     constructor({
@@ -39,6 +38,22 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
         this._name = name;
         this._catalysts = catalysts;
         this._ingredients = ingredients;
+    }
+
+    get requiresCatalysts(): boolean {
+        return !this._catalysts.isEmpty();
+    }
+
+    get requiresIngredients(): boolean {
+        return !this._ingredients.isEmpty();
+    }
+
+    set catalysts(value: Combination<CraftingComponent>) {
+        this._catalysts = value;
+    }
+
+    set ingredients(value: Combination<CraftingComponent>) {
+        this._ingredients = value;
     }
 
     get catalysts(): Combination<CraftingComponent> {
@@ -68,7 +83,7 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
 
 class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
 
-    private readonly _results: Combination<CraftingComponent>;
+    private _results: Combination<CraftingComponent>;
     private readonly _name: string;
 
     constructor({
@@ -84,6 +99,10 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
 
     get results(): Combination<CraftingComponent> {
         return this._results;
+    }
+
+    set results(value: Combination<CraftingComponent>) {
+        this._results = value;
     }
 
     get name(): string {
@@ -107,9 +126,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     *  =========================== */
 
     private readonly _id: string;
-    private readonly _itemUuid: string;
-    private readonly _name: string;
-    private readonly _imageUrl: string;
+    private readonly _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
     private _ingredientOptions: SelectableOptions<IngredientOptionJson, IngredientOption>;
     private _resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
@@ -121,28 +138,22 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     constructor({
         id,
-        itemUuid,
-        name,
         disabled,
-        imageUrl = Properties.ui.defaults.recipeImageUrl,
         essences = Combination.EMPTY(),
+        itemData = NoFabricateItemData.INSTANCE(),
         resultOptions = new SelectableOptions({}),
         ingredientOptions = new SelectableOptions({})
     }: {
         id: string;
-        itemUuid: string;
-        name: string;
+        itemData?: FabricateItemData;
         disabled?: boolean;
-        imageUrl?: string;
         essences?: Combination<Essence>;
         resultOptions?: SelectableOptions<ResultOptionJson, ResultOption>;
         ingredientOptions?: SelectableOptions<IngredientOptionJson, IngredientOption>;
     }) {
         this._id = id;
-        this._itemUuid = itemUuid;
-        this._name = name;
+        this._itemData = itemData;
         this._disabled = disabled;
-        this._imageUrl = imageUrl;
         this._ingredientOptions = ingredientOptions;
         this._essences = essences;
         this._resultOptions = resultOptions;
@@ -157,15 +168,15 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     get itemUuid(): string {
-        return this._itemUuid;
+        return this._itemData.uuid;
     }
 
     get name(): string {
-        return this._name;
+        return this._itemData.name;
     }
 
     get imageUrl(): string {
-        return this._imageUrl;
+        return this._itemData.imageUrl;
     }
 
     get ingredientOptionsById(): Map<string, IngredientOption> {
@@ -249,10 +260,21 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._resultOptions.select(combinationId);
     }
 
+    set ingredientOptions(options: IngredientOption[]) {
+        this._ingredientOptions = new SelectableOptions<IngredientOptionJson, IngredientOption>({
+            options
+        });
+    }
+
+    set resultOptions(options: ResultOption[]) {
+        this._resultOptions = new SelectableOptions<ResultOptionJson, ResultOption>({
+            options
+        });
+    }
+
     public toJson(): RecipeJson {
         return {
-            id: this._id,
-            itemUuid: this._itemUuid,
+            itemUuid: this._itemData.uuid,
             disabled: this._disabled,
             essences: this._essences.toJson(),
             resultOptions: this._resultOptions.toJson(),
@@ -288,6 +310,22 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     deleteResultOptionById(id: string) {
         this._resultOptions.deleteById(id);
+    }
+
+    get hasErrors(): boolean {
+        return this._itemData.hasErrors;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return this._itemData.errors;
+    }
+
+    deselectIngredients() {
+        this._ingredientOptions.deselect();
+    }
+
+    deselectResults() {
+        this._resultOptions.deselect();
     }
 
 }

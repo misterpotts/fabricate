@@ -1,8 +1,8 @@
 import Properties from "../Properties";
 import {Identifiable, Serializable} from "./Identity";
+import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../foundry/DocumentManager";
 
 interface EssenceJson {
-    id: string;
     activeEffectSourceItemUuid: string;
     name: string;
     description: string;
@@ -14,7 +14,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     private readonly _name: string;
     private readonly _id: string;
-    private readonly _activeEffectSourceItemUuid: string;
+    private _activeEffectSource: FabricateItemData;
     private readonly _description: string;
     private readonly _tooltip: string;
     private readonly _iconCode: string;
@@ -24,7 +24,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         name,
         tooltip,
         description,
-        activeEffectSourceItemUuid,
+        activeEffectSource = NoFabricateItemData.INSTANCE(),
         iconCode = Properties.ui.defaults.essenceIconCode
     }: {
         id: string;
@@ -32,24 +32,23 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         tooltip: string;
         iconCode?: string;
         description: string;
-        activeEffectSourceItemUuid?: string;
+        activeEffectSource?: FabricateItemData;
     }) {
         this._id = id;
         this._name = name;
         this._tooltip = tooltip;
         this._iconCode = iconCode;
         this._description = description;
-        this._activeEffectSourceItemUuid = activeEffectSourceItemUuid;
+        this._activeEffectSource = activeEffectSource;
     }
 
     toJson(): EssenceJson {
         return {
-            id: this._id,
             name: this._name,
             tooltip: this._tooltip,
             iconCode: this._iconCode,
             description: this._description,
-            activeEffectSourceItemUuid: this._activeEffectSourceItemUuid
+            activeEffectSourceItemUuid: this._activeEffectSource?.uuid
         }
     }
 
@@ -57,12 +56,16 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._id;
     }
 
-    public hasActiveEffectSource() {
-        return !!this._activeEffectSourceItemUuid;
+    get hasActiveEffectSource(): boolean {
+        return !!this._activeEffectSource;
     }
 
-    get activeEffectSourceItemUuid(): string {
-        return this._activeEffectSourceItemUuid;
+    get activeEffectSource(): FabricateItemData {
+        return this._activeEffectSource;
+    }
+
+    set activeEffectSource(value: FabricateItemData) {
+        this._activeEffectSource = value;
     }
 
     get name(): string {
@@ -81,11 +84,15 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._iconCode;
     }
 
-    get icon(): string {
-        if (this.iconCode) {
-            return `<i class="fas fa-${this._iconCode}" title="${this.description}"></i>`;
+    get hasErrors(): boolean {
+        if (!this._activeEffectSource) {
+            return false;
         }
-        return this.name;
+        return this._activeEffectSource.hasErrors;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return this._activeEffectSource.errors;
     }
 
 }

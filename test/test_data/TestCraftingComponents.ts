@@ -4,37 +4,50 @@ import {Combination, Unit} from "../../src/scripts/common/Combination";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import Properties from "../../src/scripts/Properties";
 import {SelectableOptions} from "../../src/scripts/common/SelectableOptions";
+import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 
 const testComponentOne: CraftingComponent = new CraftingComponent({
     id: "iyeUGBbSts0ij92X",
-    itemUuid: "Compendium.module.compendium-name.iyeUGBbSts0ij92X",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Component One",
+        imageUrl: Properties.ui.defaults.itemImageUrl,
+        itemUuid: "Compendium.module.compendium-name.iyeUGBbSts0ij92X",
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([new Unit(elementalEarth, 2)]),
-    name: "Test Component One",
-    imageUrl: Properties.ui.defaults.itemImageUrl
 });
 
 const testComponentTwo: CraftingComponent = new CraftingComponent({
     id: "Ie7NoXMja9wI6xya",
-    itemUuid: "Compendium.module.compendium-name.Ie7NoXMja9wI6xya",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Component Two",
+        itemUuid: "Compendium.module.compendium-name.Ie7NoXMja9wI6xya",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([new Unit(elementalFire, 2)]),
-    name: "Test Component Two",
-    imageUrl: Properties.ui.defaults.itemImageUrl
 });
 
 const testComponentThree: CraftingComponent = new CraftingComponent({
     id: "tdyV4AWuTMkXbepw",
-    itemUuid: "Compendium.module.compendium-name.tdyV4AWuTMkXbepw",
+    itemData: new LoadedFabricateItemData({
+        itemUuid: "Compendium.module.compendium-name.tdyV4AWuTMkXbepw",
+        name: "Test Component Three",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([new Unit(elementalWater, 2)]),
-    name: "Test Component Three",
-    imageUrl: Properties.ui.defaults.itemImageUrl
 });
 
 const testComponentFour: CraftingComponent = new CraftingComponent({
     id: "Ra2Z1ujre76weR0i",
-    itemUuid: "Compendium.module.compendium-name.Ra2Z1ujre76weR0i",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Component Four",
+        itemUuid: "Compendium.module.compendium-name.Ra2Z1ujre76weR0i",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([new Unit(elementalAir, 2)]),
-    name: "Test Component Four",
-    imageUrl: Properties.ui.defaults.itemImageUrl,
     salvageOptions: new SelectableOptions({
         options: [
             new SalvageOption({
@@ -47,13 +60,16 @@ const testComponentFour: CraftingComponent = new CraftingComponent({
 
 const testComponentFive: CraftingComponent = new CraftingComponent({
     id:"74K6TAuSg2xzd209",
-    itemUuid: "Compendium.module.compendium-name.74K6TAuSg2xzd209",
+    itemData: new LoadedFabricateItemData({
+        itemUuid: "Compendium.module.compendium-name.74K6TAuSg2xzd209",
+        name: "Test Component Five",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([
         new Unit(elementalFire, 1),
         new Unit(elementalEarth, 3)
     ]),
-    name: "Test Component Five",
-    imageUrl: Properties.ui.defaults.itemImageUrl,
     salvageOptions: new SelectableOptions({
         options: [
             new SalvageOption({
@@ -69,18 +85,24 @@ const testComponentFive: CraftingComponent = new CraftingComponent({
 
 const testComponentSix: CraftingComponent = new CraftingComponent({
     id: "rgTv21iOSwjK1882",
-    itemUuid: "Compendium.module.compendium-name.rgTv21iOSwjK1882",
-    essences: Combination.ofUnits([new Unit(elementalWater, 1)]),
-    name: "Test Component Six",
-    imageUrl: Properties.ui.defaults.itemImageUrl
+    itemData: new LoadedFabricateItemData({
+        name: "Test Component Six",
+        itemUuid: "Compendium.module.compendium-name.rgTv21iOSwjK1882",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
+    essences: Combination.ofUnits([new Unit(elementalWater, 1)])
 });
 
 const testComponentSeven: CraftingComponent = new CraftingComponent({
     id: "u9jwSlvIUhlQiEe1",
-    itemUuid: "Compendium.module.compendium-name.u9jwSlvIUhlQiEe1",
-    essences: Combination.ofUnits([new Unit(elementalAir, 1)]),
-    name: "Test Component Seven",
-    imageUrl: Properties.ui.defaults.itemImageUrl
+    itemData: new LoadedFabricateItemData({
+        name: "Test Component Seven",
+        itemUuid: "Compendium.module.compendium-name.u9jwSlvIUhlQiEe1",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
+    essences: Combination.ofUnits([new Unit(elementalAir, 1)])
 });
 
 export {

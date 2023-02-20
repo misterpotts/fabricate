@@ -3,6 +3,8 @@ import {Combination, Unit} from "../../src/scripts/common/Combination";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import {SelectableOptions} from "../../src/scripts/common/SelectableOptions";
+import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
+import Properties from "../../src/scripts/Properties";
 
 /**
 * Essences: None
@@ -12,8 +14,12 @@ import {SelectableOptions} from "../../src/scripts/common/SelectableOptions";
 * */
 const testRecipeOne: Recipe = new Recipe({
     id: "z2ixo2m312l",
-    itemUuid: "Compendium.module.compendium-name.z2ixo2m312l",
-    name: "Test Recipe One",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Recipe One",
+        itemUuid: "Compendium.module.compendium-name.z2ixo2m312l",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     ingredientOptions: new SelectableOptions({
         options: [
             new IngredientOption({
@@ -44,8 +50,12 @@ const testRecipeOne: Recipe = new Recipe({
 * */
 const testRecipeTwo: Recipe = new Recipe({
     id: "fzv66f90sd",
-    itemUuid: "Compendium.module.compendium-name.fzv66f90sd",
-    name: "Test Recipe Two",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Recipe Two",
+        itemUuid: "Compendium.module.compendium-name.fzv66f90sd",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     ingredientOptions: new SelectableOptions({
         options: [
             new IngredientOption({
@@ -73,8 +83,12 @@ const testRecipeTwo: Recipe = new Recipe({
 * */
 const testRecipeThree: Recipe = new Recipe({
     id: "5pux8ghlct",
-    itemUuid: "Compendium.module.compendium-name.5pux8ghlct",
-    name: "Test Recipe Three",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Recipe Three",
+        itemUuid: "Compendium.module.compendium-name.5pux8ghlct",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 3),
         new Unit(elementalFire, 1)
@@ -97,8 +111,12 @@ const testRecipeThree: Recipe = new Recipe({
 * */
 const testRecipeFour: Recipe = new Recipe({
     id: "3lieym2gjef",
-    itemUuid: "Compendium.module.compendium-name.3lieym2gjef",
-    name: "Test Recipe Four",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Recipe Four",
+        itemUuid: "Compendium.module.compendium-name.3lieym2gjef",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 1),
         new Unit(elementalWater, 2)
@@ -130,8 +148,12 @@ const testRecipeFour: Recipe = new Recipe({
 * */
 const testRecipeFive: Recipe = new Recipe({
     id: "fequ5qvoqh",
-    itemUuid: "Compendium.module.compendium-name.fequ5qvoqh",
-    name: "Test Recipe Five",
+    itemData: new LoadedFabricateItemData({
+        itemUuid: "Compendium.module.compendium-name.fequ5qvoqh",
+        name: "Test Recipe Five",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([
         new Unit(elementalFire, 1),
         new Unit(elementalWater, 1)
@@ -162,8 +184,12 @@ const testRecipeFive: Recipe = new Recipe({
 * */
 const testRecipeSix: Recipe = new Recipe({
     id: "bx8luu4cpd",
-    itemUuid: "Compendium.module.compendium-name.bx8luu4cpd",
-    name: "Test Recipe Six",
+    itemData: new LoadedFabricateItemData({
+        name: "Test Recipe Six",
+        itemUuid: "Compendium.module.compendium-name.bx8luu4cpd",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 3),
         new Unit(elementalWater, 1)
@@ -205,8 +231,12 @@ const testRecipeSix: Recipe = new Recipe({
 * */
 const testRecipeSeven: Recipe = new Recipe({
     id: "8kimdf8z83",
-    itemUuid: "Compendium.module.compendium-name.8kimdf8z83",
-    name: "Test Recipe Seven",
+    itemData: new LoadedFabricateItemData({
+        itemUuid: "Compendium.module.compendium-name.8kimdf8z83",
+        name: "Test Recipe Seven",
+        imageUrl: Properties.ui.defaults.recipeImageUrl,
+        sourceDocument: {}
+    }),
     ingredientOptions: new SelectableOptions({
         options: [
             new IngredientOption({

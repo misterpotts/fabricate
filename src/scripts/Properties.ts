@@ -60,7 +60,7 @@ const Properties = {
     settings: {
         craftingSystems: {
             key: "craftingSystems",
-            targetVersion: "1"
+            targetVersion: "2"
         }
     }
 };

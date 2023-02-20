@@ -1,7 +1,7 @@
-import {Dnd5EAlchemicalEffectName} from "../5e/AlchemicalEffect5E";
-import {ThresholdType} from "../crafting/check/Threshold";
+import {Dnd5EAlchemicalEffectName} from "../../5e/AlchemicalEffect5E";
+import {ThresholdType} from "../../crafting/check/Threshold";
 import AbilityType = DND5e.AbilityType;
-import {WastageType} from "../common/ComponentConsumptionCalculator";
+import {WastageType} from "../../common/ComponentConsumptionCalculator";
 
 interface DnD5EToolSpecification {
     name: string;

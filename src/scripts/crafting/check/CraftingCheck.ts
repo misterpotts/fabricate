@@ -10,7 +10,7 @@ import {DiceRoller} from "../../foundry/DiceRoller";
 import {OutcomeType} from "../result/OutcomeType";
 import {ThresholdCalculator} from "./Threshold";
 import {GameSystemRollModifierProvider} from "./GameSystemRollModifierProvider";
-import {DnD5ECraftingCheckSpec} from "../../system_definitions/DnD5e";
+import {DnD5ECraftingCheckSpec} from "../../system/definitions/DnD5e";
 
 interface CraftingCheck<A extends Actor> {
 

@@ -1,11 +1,10 @@
 import {StringIdentity, Combination} from "./Combination";
-import Properties from "../Properties";
 import {Identifiable, Serializable} from "./Identity";
 import {Essence} from "./Essence";
 import {SelectableOptions} from "./SelectableOptions";
+import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../foundry/DocumentManager";
 
 interface CraftingComponentJson {
-    id: string;
     itemUuid: string;
     disabled: boolean;
     essences: Record<string, number>;
@@ -16,7 +15,7 @@ type SalvageOptionJson = Record<string, number>;
 
 class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
-    private readonly _salvage: Combination<CraftingComponent>;
+    private _salvage: Combination<CraftingComponent>;
     private readonly _name: string;
 
     constructor({
@@ -32,6 +31,10 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
     get salvage(): Combination<CraftingComponent> {
         return this._salvage;
+    }
+
+    set salvage(value: Combination<CraftingComponent>) {
+        this._salvage = value;
     }
 
     get isEmpty(): boolean {
@@ -56,46 +59,44 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
 
     private static readonly _NONE: CraftingComponent = new CraftingComponent({
         id: "NO_ID",
-        itemUuid: "NO_ITEM_ID",
-        name: "NO_NAME",
+        itemData: NoFabricateItemData.INSTANCE(),
         disabled: true,
-        imageUrl: Properties.ui.defaults.itemImageUrl,
         essences: Combination.EMPTY(),
         salvageOptions: new SelectableOptions({})
     });
 
     private readonly _id: string;
-    private readonly _itemUuid: string;
-    private readonly _name: string;
-    private readonly _imageUrl: string;
+    private _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
     private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
     private _disabled: boolean;
 
     constructor({
         id,
-        itemUuid,
-        name,
+        itemData = NoFabricateItemData.INSTANCE(),
         disabled = false,
-        imageUrl = Properties.ui.defaults.itemImageUrl,
         essences = Combination.EMPTY<Essence>(),
         salvageOptions = new SelectableOptions({})
     }: {
         id: string;
-        itemUuid: string;
-        name: string;
+        itemData?: FabricateItemData;
         disabled?: boolean;
-        imageUrl?: string;
         essences?: Combination<Essence>;
         salvageOptions?: SelectableOptions<SalvageOptionJson, SalvageOption>;
     }) {
         this._id = id;
-        this._itemUuid = itemUuid;
-        this._name = name;
+        this._itemData = itemData;
         this._disabled = disabled;
-        this._imageUrl = imageUrl;
         this._essences = essences;
         this._salvageOptions = salvageOptions;
+    }
+
+    set itemData(itemData: FabricateItemData) {
+        this._itemData = itemData;
+    }
+
+    get itemData(): FabricateItemData {
+        return this._itemData;
     }
 
     get id(): string {
@@ -103,7 +104,7 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
     }
 
     get itemUuid(): string {
-        return this._itemUuid;
+        return this._itemData.uuid;
     }
 
     public static NONE() {
@@ -111,19 +112,23 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
     }
 
     get name(): string {
-        return this._name;
+        return this._itemData.name;
     }
 
     get imageUrl(): string {
-        return this._imageUrl;
+        return this._itemData.imageUrl;
     }
 
     get essences(): Combination<Essence> {
         return this._essences;
     }
 
-    get salvage(): Combination<CraftingComponent> {
+    get selectedSalvage(): Combination<CraftingComponent> {
         return this._salvageOptions.selectedOption.salvage;
+    }
+
+    public selectSalvageOption(combinationId: string) {
+        return this._salvageOptions.select(combinationId);
     }
 
     get disabled(): boolean {
@@ -135,8 +140,8 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
             return true;
         }
         return this._salvageOptions.options
-            .map(option => option.salvage.isEmpty())
-            .reduce((left, right) => left && right, true);
+            .map(option => !option.salvage.isEmpty())
+            .reduce((left, right) => left || right, false);
     }
 
     public get hasEssences(): boolean {
@@ -145,9 +150,8 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
 
     public toJson(): CraftingComponentJson {
         return {
-            id: this._id,
             disabled: this._disabled,
-            itemUuid: this._itemUuid,
+            itemUuid: this._itemData.uuid,
             essences: this._essences.toJson(),
             salvageOptions: this._salvageOptions.toJson()
         }
@@ -168,6 +172,18 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         this._salvageOptions.add(value);
     }
 
+    set salvageOptions(options: SalvageOption[]) {
+        this._salvageOptions = new SelectableOptions<SalvageOptionJson, SalvageOption>({ options });
+    }
+
+    get salvageOptions(): SalvageOption[] {
+        return this._salvageOptions.options;
+    }
+
+    get salvageOptionsById(): Map<string, SalvageOption> {
+        return this._salvageOptions.optionsByName;
+    }
+
     public setSalvageOption(value: SalvageOption) {
         this._salvageOptions.set(value);
     }
@@ -176,6 +192,17 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         this._salvageOptions.deleteById(id);
     }
 
+    get hasErrors(): boolean {
+        return this._itemData.hasErrors;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return this._itemData.errors;
+    }
+
+    deselectSalvage() {
+        this._salvageOptions.deselect();
+    }
 }
 
 export { CraftingComponent, StringIdentity, CraftingComponentJson, SalvageOptionJson, SalvageOption }

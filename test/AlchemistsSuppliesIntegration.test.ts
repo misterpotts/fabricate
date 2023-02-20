@@ -3,7 +3,7 @@ import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {SYSTEM_DATA as AlchemistsSupplies} from "../src/scripts/system_definitions/AlchemistsSuppliesV16"
+import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as AlchemistsSupplies} from "../src/scripts/system/definitions/AlchemistsSuppliesV16"
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {Combination} from "../src/scripts/common/Combination";
 
@@ -55,7 +55,7 @@ describe('A Crafting System Factory', () => {
         expect(recipes.map(recipe => recipe.id)).toEqual(expect.arrayContaining(recipeIds));
         recipes.flatMap(recipe => recipe.ingredientOptions.map(option => option.ingredients.combineWith(option.catalysts).members))
             .forEach(component => expect(components).toContain(component));
-        recipes.flatMap(recipe => recipe.resultOptions.map(option => option.results.members))
+        recipes.flatMap(recipe => recipe.resultOptions.flatMap(option => option.results.members))
             .forEach(component => expect(components).toContain(component));
         recipes.map(recipe => recipe.essences)
             .reduce((left, right) => left.combineWith(right), Combination.EMPTY())

@@ -145,7 +145,7 @@
 
     async function openItemSheet(component) {
         const document = await new DefaultDocumentManager().getDocumentByUuid(component.id);
-        await document.source.sheet.render(true);
+        await document.sourceDocument.sheet.render(true);
     }
 
 </script>

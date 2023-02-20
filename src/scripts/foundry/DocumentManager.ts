@@ -1,8 +1,151 @@
+import Properties from "../Properties";
+
+enum FabricateItemDataErrorCodeType {
+    ITEM_NOT_FOUND = "itemNotFound",
+    ITEM_NOT_LOADED = "itemNotLoaded",
+}
+
 interface FabricateItemData {
     uuid: string;
     name: string;
     imageUrl: string;
-    source: any;
+    sourceDocument: any;
+    errors: ItemLoadingError[];
+    hasErrors: boolean;
+    loaded: boolean;
+}
+
+class NoFabricateItemData implements FabricateItemData {
+
+    private static readonly _INSTANCE = new NoFabricateItemData();
+
+    public static INSTANCE(): NoFabricateItemData {
+        return NoFabricateItemData._INSTANCE;
+    }
+
+    get loaded(): boolean {
+        return false;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return []
+    }
+
+    get hasErrors(): boolean {
+        return false;
+    }
+
+    get imageUrl(): string {
+        return Properties.ui.defaults.itemImageUrl;
+    }
+
+    get name(): string {
+        return "NO_NAME";
+    }
+
+    get sourceDocument(): any {
+        return null;
+    }
+
+    get uuid(): string {
+        return "NO_UUID";
+    }
+
+}
+
+class PendingFabricateItemData implements FabricateItemData {
+
+    private readonly _itemUuid: string;
+
+    constructor(itemUuid?: string) {
+        this._itemUuid = itemUuid;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return [];
+    }
+
+    get hasErrors(): boolean {
+        return false;
+    }
+
+    get imageUrl(): string {
+        return null;
+    }
+
+    get loaded(): boolean {
+        return false;
+    }
+
+    get name(): string {
+        return null;
+    }
+
+    get sourceDocument(): any {
+        return null;
+    }
+
+    get uuid(): string {
+        return this._itemUuid;
+    }
+
+}
+
+class LoadedFabricateItemData implements FabricateItemData {
+    private readonly _errors: ItemLoadingError[];
+    private readonly _itemUuid: string;
+    private readonly _name: string;
+    private readonly _imageUrl: string;
+    private readonly _sourceDocument: any;
+
+    constructor({
+        name,
+        itemUuid,
+        imageUrl,
+        errors = [],
+        sourceDocument
+    }: {
+        itemUuid: string;
+        name: string;
+        imageUrl: string;
+        sourceDocument: any;
+        errors?: ItemLoadingError[];
+    }) {
+        this._errors = errors;
+        this._itemUuid = itemUuid;
+        this._name = name;
+        this._imageUrl = imageUrl;
+        this._sourceDocument = sourceDocument;
+    }
+
+    get loaded(): boolean {
+        return !this.hasErrors && !!this.sourceDocument;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return this._errors;
+    }
+
+    get hasErrors(): boolean {
+        return this.errors.length > 0;
+    }
+
+    get imageUrl(): string {
+        return this._imageUrl;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get sourceDocument(): any {
+        return this._sourceDocument;
+    }
+
+    get uuid(): string {
+        return this._itemUuid;
+    }
+
 }
 
 interface DocumentManager {
@@ -13,9 +156,16 @@ interface DocumentManager {
 
 }
 
-class ItemNotFoundError extends Error {
+interface ItemLoadingError {
+    message: string;
+    code: string;
+}
+
+class ItemNotFoundError extends Error implements ItemLoadingError {
 
     private static readonly formatErrorMessage = (id: string) => `Item with id ${id} was not found. `;
+    private static readonly _code: string = FabricateItemDataErrorCodeType.ITEM_NOT_FOUND;
+
     private readonly _itemUuid: string;
 
     constructor(itemUuid: string) {
@@ -27,6 +177,14 @@ class ItemNotFoundError extends Error {
         return this._itemUuid;
     }
 
+    get message(): string {
+        return super.message;
+    }
+
+    get code(): string {
+        return ItemNotFoundError._code;
+    }
+
 }
 
 class DefaultDocumentManager implements DocumentManager {
@@ -36,27 +194,33 @@ class DefaultDocumentManager implements DocumentManager {
         if (document) {
             return this.formatItemData(document);
         }
-        throw new ItemNotFoundError(id);
+        return this.formatItemData(document, [new ItemNotFoundError(id)])
     }
 
     public async getDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>> {
         const itemData = await Promise.all(ids.map(id => this.getDocumentByUuid(id).catch(e => e)));
-        const firstErrorResult = itemData.find(result => result instanceof Error);
-        if (firstErrorResult) {
-            throw firstErrorResult;
-        }
-        return new Map(itemData.map(item => [item.uuid,item]));
+        return new Map(itemData.map(item => [item.uuid, item]));
     }
 
-    private formatItemData(document: any): FabricateItemData {
-        return <FabricateItemData> {
-            uuid: document.uuid,
+    private formatItemData(document: any, errors: ItemLoadingError[] = []): FabricateItemData {
+        return new LoadedFabricateItemData({
+            itemUuid: document.uuid,
             name: document.name,
             imageUrl: document.img,
-            source: document
-        }
+            sourceDocument: document,
+            errors: errors,
+        });
     }
 
 }
 
-export { FabricateItemData, DocumentManager, DefaultDocumentManager, ItemNotFoundError }
+export {
+    FabricateItemData,
+    DocumentManager,
+    DefaultDocumentManager,
+    ItemNotFoundError,
+    ItemLoadingError,
+    NoFabricateItemData,
+    LoadedFabricateItemData,
+    PendingFabricateItemData
+}

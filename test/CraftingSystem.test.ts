@@ -168,7 +168,7 @@ describe('Crafting ', () => {
 
         test('should succeed for recipe with sufficient ingredients',async () => {
 
-            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeTwo.getNamedComponents());
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeTwo.ingredientOptions[0].ingredients.combineWith(testRecipeTwo.ingredientOptions[0].catalysts));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeTwo);
 
@@ -241,7 +241,7 @@ describe('Crafting ', () => {
 
         test('should succeed for recipe with sufficient ingredients and successful check',async () => {
 
-            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeTwo.getSelectedIngredients());
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeTwo.getSelectedIngredients().ingredients.combineWith(testRecipeTwo.getSelectedIngredients().catalysts));
             stubEvaluateMethod.returns(new RollResult(11, "dummy dice expression"));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeTwo);
@@ -253,7 +253,7 @@ describe('Crafting ', () => {
 
         test('should fail for recipe with sufficient ingredients and unsuccessful check',async () => {
 
-            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeTwo.getSelectedIngredients());
+            Sinon.stub(stubInventory, 'ownedComponents').get(() => testRecipeTwo.getSelectedIngredients().ingredients.combineWith(testRecipeTwo.getSelectedIngredients().catalysts));
             stubEvaluateMethod.returns(new RollResult(8, "dummy dice expression"));
 
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeTwo);

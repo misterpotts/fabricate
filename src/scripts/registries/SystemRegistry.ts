@@ -1,7 +1,7 @@
 import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
 import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
 import {FabricateSetting, SettingManager} from "../settings/FabricateSetting";
-import {SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system_definitions/AlchemistsSuppliesV16";
+import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system/definitions/AlchemistsSuppliesV16";
 
 interface SystemRegistry {
 
@@ -28,8 +28,6 @@ interface SystemRegistry {
     getDefaultSettingValue(): FabricateSetting<Record<string, CraftingSystemJson>>;
 
     createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem>;
-
-    handleItemDeleted(uuid: string): Promise<void>;
 
     hasCraftingSystem(id: string): Promise<boolean>;
 }
@@ -160,51 +158,6 @@ class DefaultSystemRegistry implements SystemRegistry {
     public async createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem> {
         const craftingSystem = await this._craftingSystemFactory.make(systemDefinition);
         return this.saveCraftingSystem(craftingSystem);
-    }
-
-    public async handleItemDeleted(uuid: string): Promise<void> {
-        const systemsJson = await this._settingsManager.read();
-        let referenceCount = 0;
-        let recipeCount = 0;
-        let componentCount = 0;
-        Object.values(systemsJson).forEach(craftingSystemJson => {
-            if (craftingSystemJson.parts.components[uuid]) {
-                delete craftingSystemJson.parts.components[uuid];
-                componentCount++;
-            }
-            Object.values(craftingSystemJson.parts.components)
-                .forEach(componentJson => {
-                    if (componentJson.salvage[uuid]) {
-                        delete componentJson.salvage[uuid];
-                        referenceCount++;
-                    }
-                });
-            if (craftingSystemJson.parts.recipes[uuid]) {
-                delete craftingSystemJson.parts.recipes[uuid];
-                recipeCount++;
-            }
-            Object.values(craftingSystemJson.parts.recipes)
-                .forEach(recipeJson => {
-                    if (recipeJson.catalysts[uuid]) {
-                        delete recipeJson.catalysts[uuid];
-                        referenceCount++;
-                    }
-                    recipeJson.ingredientOptions.forEach(ingredientGroup => {
-                        if (ingredientGroup[uuid]) {
-                            delete ingredientGroup[uuid];
-                            referenceCount++;
-                        }
-                    });
-                    recipeJson.resultOptions.forEach(ingredientGroup => {
-                        if (ingredientGroup[uuid]) {
-                            delete ingredientGroup[uuid];
-                            referenceCount++;
-                        }
-                    });
-                });
-        });
-        await this._settingsManager.write(systemsJson);
-        console.info(`Deleted ${recipeCount} Recipes, ${componentCount} Components and ${referenceCount} references to the Item with UUID ${uuid} across ${Object.keys(systemsJson).length} Crafting Systems. `);
     }
 
 }

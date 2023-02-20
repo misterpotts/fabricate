@@ -2,8 +2,8 @@ import Properties from "./Properties";
 import {GameProvider} from "./foundry/GameProvider";
 import FabricateApplication from "./interface/FabricateApplication";
 import {
-    DefaultSettingManager, FabricateSetting,
-    FabricateSettingMigrator,
+    DefaultSettingManager,
+    FabricateSetting,
     SettingManager,
     SettingState
 } from "./settings/FabricateSetting";
@@ -13,6 +13,7 @@ import {CraftingSystemJson} from "./system/CraftingSystem";
 import {DefaultInventoryRegistry} from "./registries/InventoryRegistry";
 import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
+import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
 
 Hooks.once("ready", () => {
     // todo: deleteme
@@ -22,8 +23,7 @@ Hooks.once("ready", () => {
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
 Hooks.on("deleteItem", async (item: any, _app: unknown, _id: string) => {
-    console.log(`Item UUID ${item.uuid} deleted`);
-    await FabricateApplication.systemRegistry.handleItemDeleted(item.uuid);
+    console.log(`Item UUID ${item.uuid} deleted. Fabricate currently takes no action when you do this. `);
 });
 
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
@@ -93,12 +93,14 @@ Hooks.once('init', async () => {
     const gameProvider = new GameProvider();
     const gameObject = gameProvider.globalGameObject();
 
+
+    const v2settingMigrator = new V2CraftingSystemSettingMigrator();
     const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
         gameProvider: gameProvider,
         moduleId: Properties.module.id,
         settingKey: Properties.settings.craftingSystems.key,
         targetVersion: Properties.settings.craftingSystems.targetVersion,
-        settingsMigrators: new Map<string, FabricateSettingMigrator<any, any>>() // still on v1 :shrug:
+        settingsMigrators: [v2settingMigrator]
     });
 
     /*
