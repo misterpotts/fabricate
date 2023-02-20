@@ -17,7 +17,6 @@ import {
 import {Identifiable, Serializable} from "../common/Identity";
 import {Combination} from "../common/Combination";
 import {SelectableOptions} from "../common/SelectableOptions";
-
 const combinationFromRecord: <T extends Identifiable>(amounts: Record<string, number>, candidatesById: Map<string, T>) => Combination<T> = (amounts, candidatesById) => {
     if (!amounts) {
         return Combination.EMPTY();
@@ -36,7 +35,7 @@ interface Dictionary<J, I extends Identifiable & Serializable<J>> {
 
     loadAll(): Promise<I[]>;
     loadById(id: string): Promise<I>;
-    getSourceData(): Record<string, J>;
+    sourceData: Record<string, J>;
     isLoaded: boolean;
     getById(id: string): I;
     getAll(): Map<string, I>;
@@ -53,7 +52,7 @@ interface Dictionary<J, I extends Identifiable & Serializable<J>> {
 
 class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
 
-    private readonly _sourceData: Record<string, EssenceJson>;
+    private _sourceData: Record<string, EssenceJson>;
     private readonly _documentManager: DocumentManager;
     private readonly _entries: Map<string, Essence>;
     private _loaded: boolean;
@@ -113,8 +112,12 @@ class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
         return this._entries.get(id);
     }
 
-    getSourceData(): Record<string, EssenceJson> {
+    get sourceData(): Record<string, EssenceJson> {
         return this._sourceData;
+    }
+
+    set sourceData(value: Record<string, EssenceJson>) {
+        this._sourceData = value;
     }
 
     insert(essence: Essence): void {
@@ -183,7 +186,7 @@ class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
 
 class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingComponent> {
 
-    private readonly _sourceData: Record<string, CraftingComponentJson>;
+    private _sourceData: Record<string, CraftingComponentJson>;
     private readonly _documentManager: DocumentManager;
     private readonly _essenceDictionary: EssenceDictionary;
     private readonly _entries: Map<string, CraftingComponent>;
@@ -248,8 +251,12 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
         return this._entries.get(id);
     }
 
-    getSourceData(): Record<string, CraftingComponentJson> {
+    get sourceData(): Record<string, CraftingComponentJson> {
         return this._sourceData;
+    }
+
+    set sourceData(value: Record<string, CraftingComponentJson>) {
+        this._sourceData = value;
     }
 
     insert(craftingComponent: CraftingComponent): void {
@@ -373,7 +380,7 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
 }
 
 class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
-    private readonly _sourceData: Record<string, RecipeJson>;
+    private _sourceData: Record<string, RecipeJson>;
     private readonly _documentManager: DocumentManager;
     private readonly _essenceDictionary: EssenceDictionary;
     private readonly _componentDictionary: ComponentDictionary;
@@ -443,8 +450,12 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         return this._entries.get(id);
     }
 
-    getSourceData(): Record<string, RecipeJson> {
+    get sourceData(): Record<string, RecipeJson> {
         return this._sourceData;
+    }
+
+    set sourceData(value: Record<string, RecipeJson>) {
+        this._sourceData = value;
     }
 
     insert(recipe: Recipe): void {
@@ -681,9 +692,35 @@ class PartDictionary {
         this._recipeDictionary.dropEssenceReferences(essenceToDelete);
     }
 
-    async loadAll(): Promise<void> {
+    async loadAll(updatedSource?: PartDictionaryJson): Promise<void> {
+        if (updatedSource) {
+            this._essenceDictionary.sourceData = updatedSource.essences;
+            this._componentDictionary.sourceData = updatedSource.components;
+            this._recipeDictionary.sourceData = updatedSource.recipes;
+        }
         await this._essenceDictionary.loadAll();
         await this._componentDictionary.loadAll();
+        await this._recipeDictionary.loadAll();
+    }
+    
+    async loadEssences(updatedSource?: Record<string, EssenceJson>): Promise<void> {
+        if (updatedSource) {
+            this._essenceDictionary.sourceData = updatedSource;
+        }
+        await this._essenceDictionary.loadAll();
+    }
+
+    async loadComponents(updatedSource?: Record<string, CraftingComponentJson>): Promise<void> {
+        if (updatedSource) {
+            this._componentDictionary.sourceData = updatedSource;
+        }
+        await this._componentDictionary.loadAll();
+    }
+
+    async loadRecipes(updatedSource?: Record<string, RecipeJson>): Promise<void> {
+        if (updatedSource) {
+            this._recipeDictionary.sourceData = updatedSource;
+        }
         await this._recipeDictionary.loadAll();
     }
 

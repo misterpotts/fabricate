@@ -38,7 +38,11 @@ class SelectedCraftingSystemStore {
         if (!craftingSystem) {
             craftingSystem = $craftingSystems[0];
         }
-        await craftingSystem.loadPartDictionary();
+        if (!craftingSystem.isLoaded) {
+            await craftingSystem.loadPartDictionary();
+        } else {
+            await craftingSystem.reload();
+        }
         return craftingSystem;
     }
 

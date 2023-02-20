@@ -1,6 +1,6 @@
-import {Recipe} from "../common/Recipe";
-import {CraftingComponent} from "../common/CraftingComponent";
-import {Essence} from "../common/Essence";
+import {Recipe, RecipeJson} from "../common/Recipe";
+import {CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
+import {Essence, EssenceJson} from "../common/Essence";
 import {Inventory} from "../actor/Inventory";
 import {Combination} from "../common/Combination";
 import {CraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
@@ -207,8 +207,28 @@ class CraftingSystem {
         this._enabled = value;
     }
 
-    public async loadPartDictionary(): Promise<void> {
-        await this._partDictionary.loadAll();
+    public async reload(): Promise<void> {
+        return this.loadPartDictionary(this._partDictionary.toJson());
+    }
+
+    public async loadPartDictionary(updatedSource?: PartDictionaryJson): Promise<void> {
+        await this._partDictionary.loadAll(updatedSource);
+    }
+
+    public async loadEssences(updatedSource?: Record<string, EssenceJson>): Promise<void> {
+        await this._partDictionary.loadEssences(updatedSource);
+    }
+
+    public async loadComponents(updatedSource?: Record<string, CraftingComponentJson>): Promise<void> {
+        await this._partDictionary.loadComponents(updatedSource);
+    }
+
+    public async loadRecipes(updatedSource?: Record<string, RecipeJson>): Promise<void> {
+        await this._partDictionary.loadRecipes(updatedSource);
+    }
+
+    get isLoaded(): boolean {
+        return this._partDictionary.isLoaded;
     }
 
     public async craft(actor: Actor, inventory: Inventory, recipe: Recipe): Promise<CraftingResult> {
