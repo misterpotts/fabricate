@@ -123,6 +123,9 @@ class DefaultSettingManager<T> implements SettingManager<T> {
             result.finalVersion = this._targetVersion
             return result;
         } catch (e: any) {
+            if (e instanceof Error) {
+                console.error(e.stack);
+            }
             return result;
         }
     }

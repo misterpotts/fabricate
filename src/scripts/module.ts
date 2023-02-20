@@ -15,11 +15,6 @@ import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
 import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
 
-Hooks.once("ready", () => {
-    // todo: deleteme
-    FabricateApplication.craftingSystemManagerApp.render(true);
-});
-
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
 Hooks.on("deleteItem", async (item: any, _app: unknown, _id: string) => {
@@ -88,7 +83,7 @@ async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSy
     return craftingSystemSettingManager;
 }
 
-Hooks.once('init', async () => {
+Hooks.once('ready', async () => {
 
     const gameProvider = new GameProvider();
     const gameObject = gameProvider.globalGameObject();
@@ -131,4 +126,7 @@ Hooks.once('init', async () => {
     gameObject[Properties.module.id].SystemRegistry = systemRegistry;
     // @ts-ignore
     gameObject[Properties.module.id].InventoryRegistry = inventoryRegistry;
+
+    // todo: deleteme
+    FabricateApplication.craftingSystemManagerApp.render(true);
 });

@@ -21,13 +21,25 @@ class SelectedCraftingSystemStore {
         this._selectedSystem = derived(
             [this._selectedSystemId, this._craftingSystems],
             ([$selectedSystemId, $craftingSystems], set) => {
-                const selectedSystem = $craftingSystems.find(system => system.id === $selectedSystemId);
-                if (!selectedSystem && $craftingSystems.length > 0) {
-                    set($craftingSystems[0])
-                } else {
-                    set(selectedSystem);
-                }
+                Promise.resolve(this.loadSelectedSystem($selectedSystemId, $craftingSystems))
+                    .then(craftingSystem => set(craftingSystem))
+                    .catch((e: any) => {
+                        console.error(e.stack || e);
+                        set(null);
+                    });
             });
+    }
+
+    private async loadSelectedSystem($selectedSystemId: string, $craftingSystems: CraftingSystem[]): Promise<CraftingSystem> {
+        if (!$craftingSystems || $craftingSystems.length === 0) {
+            return null;
+        }
+        let craftingSystem = $craftingSystems.find(system => system.id === $selectedSystemId);
+        if (!craftingSystem) {
+            craftingSystem = $craftingSystems[0];
+        }
+        await craftingSystem.loadPartDictionary();
+        return craftingSystem;
     }
 
     get selectedSystemId(): Writable<string> {

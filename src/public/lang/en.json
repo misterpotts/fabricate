@@ -124,7 +124,7 @@
         "settings": {
           "migration": {
             "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
-            "completed": "Fabricate has finished migrating your crafting system settings!"
+            "finished": "Fabricate has finished migrating your crafting system settings!"
           },
           "errors": {
             "summary": "Fabricate was unable to read the setting for the key {settingKey}. Caused by:",

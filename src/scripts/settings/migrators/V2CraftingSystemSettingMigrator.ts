@@ -5,7 +5,7 @@ import {EssenceJson} from "../../common/Essence";
 import {CraftingComponentJson, SalvageOptionJson} from "../../common/CraftingComponent";
 import {IngredientOptionJson, RecipeJson, ResultOptionJson} from "../../common/Recipe";
 
-class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<V1SystemJson, CraftingSystemJson> {
+class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record<string, V1SystemJson>, Record<string, CraftingSystemJson>> {
 
     private static readonly _FROM_VERSION: string = "1";
     private static readonly _TO_VERSION: string = "2";
@@ -18,16 +18,24 @@ class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<V1Syst
         return V2CraftingSystemSettingMigrator._TO_VERSION;
     }
 
-    perform(from: V1SystemJson): CraftingSystemJson {
+    perform(from: Record<string, V1SystemJson>): Record<string, CraftingSystemJson> {
+        const result: Record<string, CraftingSystemJson> = {};
+        Object.keys(from).forEach(systemId => {
+            result[systemId] = this.migrateCraftingSystem(from[systemId]);
+        })
+        return result;
+    }
+
+    private migrateCraftingSystem(inputSystem: V1SystemJson): CraftingSystemJson {
         return {
-            id: from.id,
-            details: from.details,
-            locked: from.locked,
-            enabled: from.enabled,
+            id: inputSystem.id,
+            details: inputSystem.details,
+            locked: inputSystem.locked,
+            enabled: inputSystem.enabled,
             parts: {
-                essences: this.migrateEssences(from.parts.essences),
-                components: this.migrateComponents(from.parts.components),
-                recipes: this.migrateRecipes(from.parts.recipes)
+                essences: this.migrateEssences(inputSystem.parts.essences),
+                components: this.migrateComponents(inputSystem.parts.components),
+                recipes: this.migrateRecipes(inputSystem.parts.recipes)
             }
         };
     }

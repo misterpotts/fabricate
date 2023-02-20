@@ -10,7 +10,9 @@ import {
 import {Essence, EssenceJson} from "../common/Essence";
 import {
     DefaultDocumentManager,
-    DocumentManager, PendingFabricateItemData, FabricateItemData
+    DocumentManager,
+    FabricateItemData,
+    PendingFabricateItemData
 } from "../foundry/DocumentManager";
 import {Identifiable, Serializable} from "../common/Identity";
 import {Combination} from "../common/Combination";
@@ -318,14 +320,13 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
         await this.loadDependencies();
         const itemUuid = sourceRecord.itemUuid;
         const itemData = await this._documentManager.getDocumentByUuid(itemUuid);
-        const component = new CraftingComponent({
+        return new CraftingComponent({
             id,
             itemData,
             disabled: sourceRecord.disabled,
             salvageOptions: this.buildSalvageOptions(sourceRecord.salvageOptions, this._entries),
             essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll()),
         });
-        return component;
     }
 
     private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<SalvageOptionJson, SalvageOption> {
@@ -479,7 +480,7 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         await this.loadDependencies();
         const itemUuid = sourceRecord.itemUuid;
         const itemData = itemDataCache.has(itemUuid) ? itemDataCache.get(itemUuid) : await this._documentManager.getDocumentByUuid(itemUuid);
-        const recipe = new Recipe({
+        return new Recipe({
             id,
             itemData,
             disabled: sourceRecord.disabled,
@@ -487,7 +488,6 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
             resultOptions: this.buildResultOptions(sourceRecord.resultOptions, this._componentDictionary.getAll()),
             essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll())
         });
-        return recipe;
     }
 
     private buildIngredientOptions(ingredientOptionsJson: Record<string, IngredientOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<IngredientOptionJson, IngredientOption> {
@@ -647,8 +647,8 @@ class PartDictionary {
         return Array.from(recipesById.values());
     }
 
-    public async getEssences(): Promise<Essence[]> {
-        const essencesById = await this._essenceDictionary.getAll();
+    public getEssences(): Essence[] {
+        const essencesById = this._essenceDictionary.getAll();
         return Array.from(essencesById.values());
     }
 

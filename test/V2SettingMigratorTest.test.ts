@@ -107,8 +107,9 @@ describe("Migrating from V1 to V2", () => {
         const childsPlay = V1_CHILDS_PLAY_SYSTEM_DEFINITION;
         const underTest = new V2CraftingSystemSettingMigrator();
 
-        const result = underTest.perform(childsPlay);
-
+        const resultSystems = underTest.perform({[childsPlay.id]: childsPlay});
+        expect(resultSystems).not.toBeNull();
+        const result = resultSystems[childsPlay.id];
         expect(result).not.toBeNull();
 
         expect(result.id).toEqual(childsPlay.id);
@@ -148,7 +149,10 @@ describe("Migrating from V1 to V2", () => {
         const alchemistsSupplies = V1_ALCHEMISTS_SUPPLIES_SYSTEM_DEFINITION;
         const underTest = new V2CraftingSystemSettingMigrator();
 
-        const result = underTest.perform(alchemistsSupplies);
+        const resultSystems = underTest.perform({[alchemistsSupplies.id]: alchemistsSupplies});
+        expect(resultSystems).not.toBeNull();
+        const result = resultSystems[alchemistsSupplies.id];
+        expect(result).not.toBeNull();
 
         expect(result).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.definition);
 

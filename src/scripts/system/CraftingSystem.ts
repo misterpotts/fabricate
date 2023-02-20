@@ -111,15 +111,15 @@ class CraftingSystem {
         return this._partDictionary.hasEssences();
     }
 
-    public async getEssences(): Promise<Essence[]> {
-        return await this._partDictionary.getEssences();
+    public getEssences(): Essence[] {
+        return this._partDictionary.getEssences();
     }
 
-    public async getEssenceById(id: string): Promise<Essence> {
-        return await this._partDictionary.getEssence(id);
+    public getEssenceById(id: string): Essence {
+        return this._partDictionary.getEssence(id);
     }
 
-    public deleteEssenceById(id: string): Promise<void> {
+    public deleteEssenceById(id: string): void {
         return this._partDictionary.deleteEssenceById(id);
     }
 
@@ -127,19 +127,19 @@ class CraftingSystem {
         return this._partDictionary.insertEssence(essence);
     }
 
-    public async getComponents(): Promise<CraftingComponent[]> {
-        return await this._partDictionary.getComponents();
+    public getComponents(): CraftingComponent[] {
+        return this._partDictionary.getComponents();
     }
 
     public hasComponent(id: string) {
         return this._partDictionary.hasComponent(id);
     }
 
-    public async getComponentById(id: string): Promise<CraftingComponent> {
-        return await this._partDictionary.getComponent(id);
+    public getComponentById(id: string): CraftingComponent {
+        return this._partDictionary.getComponent(id);
     }
 
-    public deleteComponentById(id: string): Promise<void> {
+    public deleteComponentById(id: string): void {
         return this._partDictionary.deleteComponentById(id);
     }
 
@@ -155,11 +155,11 @@ class CraftingSystem {
         return this._partDictionary.hasRecipe(id);
     }
 
-    public async getRecipeById(id: string): Promise<Recipe> {
-        return await this._partDictionary.getRecipe(id);
+    public getRecipeById(id: string): Recipe {
+        return this._partDictionary.getRecipe(id);
     }
 
-    public deleteRecipeById(id: string): Promise<void> {
+    public deleteRecipeById(id: string): void {
         return this._partDictionary.deleteRecipeById(id);
     }
 
