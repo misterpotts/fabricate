@@ -1,55 +1,44 @@
-import {writable, derived, Writable, Readable} from "svelte/store";
-import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {writable, Writable, Readable, get} from "svelte/store";
 import {CraftingComponent} from "../../../scripts/common/CraftingComponent";
-import {SelectedCraftingSystemStore} from "./SelectedCraftingSystemStore";
+import {CraftingSystemStore, CraftingSystemStoreState} from "./CraftingSystemStore";
 
 class SelectedComponentStore {
 
-    private readonly _selectedComponentId: Writable<string> = writable(null);
-    private readonly _selectedSystem: Readable<CraftingSystem>;
-    private readonly _selectedComponent: Readable<CraftingComponent>;
+    private readonly _selectedComponent: Writable<CraftingComponent>;
+    private readonly _craftingSystems: Readable<CraftingSystemStoreState>;
 
     constructor({
-        selectedComponentId,
-        selectedCraftingSystemStore
+        craftingSystemStore,
+        selectedComponent
     }: {
-        selectedComponentId?: string;
-        selectedCraftingSystemStore: SelectedCraftingSystemStore;
+        selectedComponent?: CraftingComponent;
+        craftingSystemStore: CraftingSystemStore;
     }) {
-        this._selectedComponentId = writable(selectedComponentId);
-        this._selectedSystem = selectedCraftingSystemStore.selectedSystem;
-
-        this._selectedComponent = derived(
-            [this._selectedComponentId, this._selectedSystem],
-            ([$selectedComponentId, $selectedSystem], set) => {
-                if (!$selectedSystem.hasComponent($selectedComponentId)) {
-                    set(null);
-                } else {
-                    Promise.resolve($selectedSystem.getComponentById($selectedComponentId))
-                        .then(component => set(component))
-                        .catch((e: any) => {
-                            console.error(e.stack || e);
-                            set(null);
-                        });
-                }
-            });
+        this._selectedComponent = writable(selectedComponent);
+        this._craftingSystems = craftingSystemStore.value;
+        this._craftingSystems.subscribe(craftingSystemStore => {
+            const selectedComponent = get(this._selectedComponent);
+            if (!selectedComponent) {
+                return;
+            }
+            if (!craftingSystemStore.selectedSystem || !craftingSystemStore.selectedSystem.hasComponent(selectedComponent.id)) {
+                this._selectedComponent.update(() => null);
+            }
+        });
     }
 
-    get selectedComponentId(): Writable<string> {
-        return this._selectedComponentId;
-    }
-
-    get selectedComponent(): Readable<CraftingComponent> {
+    get selectedComponent(): Writable<CraftingComponent> {
         return this._selectedComponent;
     }
 
-    public selectComponentById(componentId: string) {
-        this._selectedComponentId.update(() => componentId);
+    public selectComponent(component: CraftingComponent) {
+        this._selectedComponent.update(() => component);
     }
 
     deselect() {
-        this._selectedComponentId.update(() => null);
+        this._selectedComponent.update(() => null);
     }
+
 }
 
 export { SelectedComponentStore }

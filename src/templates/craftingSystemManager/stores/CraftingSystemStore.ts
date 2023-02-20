@@ -1,6 +1,6 @@
 import {SystemRegistry} from "../../../scripts/registries/SystemRegistry";
 import {GameProvider} from "../../../scripts/foundry/GameProvider";
-import {writable, Writable} from "svelte/types/runtime/store";
+import {writable, Writable} from "svelte/store";
 import {CraftingSystem, CraftingSystemJson} from "../../../scripts/system/CraftingSystem";
 import Properties from "../../../scripts/Properties";
 import {get} from "svelte/store";
@@ -94,7 +94,7 @@ class CraftingSystemStoreState {
 
 }
 
-class CraftingSystemStoreNew {
+class CraftingSystemStore {
 
     private _systemRegistry: SystemRegistry
     private _gameProvider: GameProvider
@@ -109,6 +109,10 @@ class CraftingSystemStoreNew {
     }) {
         this._systemRegistry = systemRegistry;
         this._gameProvider = gameProvider;
+    }
+
+    get value(): Writable<CraftingSystemStoreState> {
+        return this._value;
     }
 
     public async create(): Promise<CraftingSystem> {
@@ -271,6 +275,10 @@ class CraftingSystemStoreNew {
         this._value.update(() => state);
     }
 
+    async select(system: CraftingSystem): Promise<void> {
+        const state = await get(this._value).select(system);
+        this._value.update(() => state);
+    }
 }
 
-export { CraftingSystemStoreState, CraftingSystemStoreNew }
+export { CraftingSystemStoreState, CraftingSystemStore }

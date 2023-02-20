@@ -4,7 +4,7 @@
     import ComponentEditor from "./ComponentEditor.svelte";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
-    export let selectedComponent;
+    let selectedComponent;
 
     craftingSystemManager.selectedComponentStore.selectedComponent.subscribe(component => {
         selectedComponent = component;

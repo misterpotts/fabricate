@@ -15,13 +15,13 @@
 
     let filteredComponents = [];
 
-    craftingSystemManager.selectedCraftingSystemStore.selectedSystem.subscribe(async (system) => {
-        selectedSystem = system;
+    craftingSystemManager.craftingSystemsStore.value.subscribe(async (value) => {
+        selectedSystem = value.selectedSystem;
         searchMustHaveEssences = false;
         searchMustHaveSalvage = false;
         searchName = "";
-        if (system) {
-            components = await selectedSystem.getComponents();
+        if (selectedSystem) {
+            components = selectedSystem.getComponents();
             filteredComponents = components;
         }
     });
@@ -99,7 +99,7 @@
     }
 
     function editComponent(component) {
-        craftingSystemManager.selectedComponentStore.selectComponentById(component.id);
+        craftingSystemManager.selectedComponentStore.selectComponent(component);
     }
 
     async function deleteComponent(event, component) {

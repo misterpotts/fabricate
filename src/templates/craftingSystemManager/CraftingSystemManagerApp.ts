@@ -1,33 +1,28 @@
-import {CraftingSystemsStore} from "./stores/CraftingSystemsStore";
-import {SelectedCraftingSystemStore} from "./stores/SelectedCraftingSystemStore";
 import {GameProvider} from "../../scripts/foundry/GameProvider";
 import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import {SelectedComponentStore} from "./stores/SelectedComponentStore";
+import {CraftingSystemStore} from "./stores/CraftingSystemStore";
 
 class CraftingSystemManagerApp {
 
     private static _INSTANCE: CraftingSystemManagerApp;
-    private readonly _craftingSystemsStore: CraftingSystemsStore;
+    private readonly _craftingSystemsStore: CraftingSystemStore;
     private readonly _selectedComponentStore: SelectedComponentStore;
     //private readonly _selectedRecipeStore;
     //private readonly _essenceStore;
-    private readonly _selectedCraftingSystemStore: SelectedCraftingSystemStore;
     private readonly _gameProvider: GameProvider;
 
     protected constructor({
         gameProvider,
         craftingSystemStore,
-        selectedCraftingSystemStore,
         selectedComponentStore
     }: {
         gameProvider: GameProvider;
-        craftingSystemStore: CraftingSystemsStore;
-        selectedCraftingSystemStore: SelectedCraftingSystemStore;
+        craftingSystemStore: CraftingSystemStore;
         selectedComponentStore: SelectedComponentStore;
     }) {
         this._gameProvider = gameProvider;
         this._craftingSystemsStore = craftingSystemStore;
-        this._selectedCraftingSystemStore = selectedCraftingSystemStore;
         this._selectedComponentStore = selectedComponentStore;
     }
 
@@ -38,13 +33,11 @@ class CraftingSystemManagerApp {
         gameProvider: GameProvider,
         systemRegistry: SystemRegistry
     }) {
-        const craftingSystemStore = new CraftingSystemsStore({systemRegistry, gameProvider});
-        const selectedCraftingSystemStore = new SelectedCraftingSystemStore({craftingSystemStore});
-        const selectedComponentStore = new SelectedComponentStore({selectedCraftingSystemStore});
+        const craftingSystemStore = new CraftingSystemStore({systemRegistry, gameProvider});
+        const selectedComponentStore = new SelectedComponentStore({craftingSystemStore});
         this._INSTANCE = new CraftingSystemManagerApp({
             gameProvider,
             craftingSystemStore,
-            selectedCraftingSystemStore,
             selectedComponentStore
         });
     }
@@ -60,12 +53,8 @@ class CraftingSystemManagerApp {
         return this._gameProvider.globalGameObject().i18n;
     }
 
-    get craftingSystemsStore(): CraftingSystemsStore {
+    get craftingSystemsStore(): CraftingSystemStore {
         return this._craftingSystemsStore;
-    }
-
-    get selectedCraftingSystemStore(): SelectedCraftingSystemStore {
-        return this._selectedCraftingSystemStore;
     }
 
     get selectedComponentStore(): SelectedComponentStore {

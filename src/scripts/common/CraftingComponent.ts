@@ -137,7 +137,7 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
 
     get isSalvageable(): boolean {
         if (this._salvageOptions.isEmpty) {
-            return true;
+            return false;
         }
         return this._salvageOptions.options
             .map(option => !option.salvage.isEmpty())

@@ -5,10 +5,13 @@
     export let system;
 
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
-    const selectedCraftingSystem = craftingSystemManager.selectedCraftingSystemStore.selectedSystem;
+    let selectedCraftingSystem;
+    craftingSystemManager.craftingSystemsStore.value.subscribe(value => {
+        selectedCraftingSystem = value.selectedSystem;
+    });
 
-    function selectSystem() {
-        craftingSystemManager.selectedCraftingSystemStore.selectSystemById(system.id);
+    async function selectSystem() {
+        await craftingSystemManager.craftingSystemsStore.select(system);
     }
 
     async function deleteSystem() {
@@ -29,12 +32,12 @@
 </script>
 
 <!-- CraftingSystemNavbarItem.svelte -->
-<div class="fab-nav-item" class:fab-selected={$selectedCraftingSystem === system} on:click={selectSystem}>
+<div class="fab-nav-item" class:fab-selected={selectedCraftingSystem === system} on:click={selectSystem}>
     <div class="fab-button">
         <i class="fa-solid fa-circle"></i><p>{system.name} {#if system.isLocked}<i class="fa-solid fa-lock"></i>{/if}</p>{#if system.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
     </div>
-    {#if $selectedCraftingSystem !== system}<hr />{/if}
-    {#if $selectedCraftingSystem === system}
+    {#if selectedCraftingSystem !== system}<hr />{/if}
+    {#if selectedCraftingSystem === system}
         <div class="fab-context-menu">
             <p class="fab-description">{system.summary}</p>
             <hr />

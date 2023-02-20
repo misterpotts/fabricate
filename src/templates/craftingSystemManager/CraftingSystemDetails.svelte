@@ -15,14 +15,14 @@
     let description = "No description";
     let enabled = false;
 
-    craftingSystemManager.selectedCraftingSystemStore.selectedSystem.subscribe((system) => {
-        selectedSystem = system;
-        if (system) {
-            name = system.name;
-            author = system.author;
-            summary = system.summary;
-            description = system.description;
-            enabled = system.enabled;
+    craftingSystemManager.craftingSystemsStore.value.subscribe((value) => {
+        selectedSystem = value.selectedSystem;
+        if (selectedSystem) {
+            name = selectedSystem.name;
+            author = selectedSystem.author;
+            summary = selectedSystem.summary;
+            description = selectedSystem.description;
+            enabled = selectedSystem.enabled;
         }
     });
 

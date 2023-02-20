@@ -8,18 +8,16 @@
     let craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     onMount(async () => {
-        await craftingSystemManager.craftingSystemsStore.loadAll();
+        await craftingSystemManager.craftingSystemsStore.init();
         craftingSystemManager.craftingSystemsStore.value
-            .subscribe((value) => systems = value);
-        if (systems.length > 0) {
-            craftingSystemManager.selectedCraftingSystemStore.selectSystemById(systems[0].id);
-        }
+            .subscribe((value) => {
+                systems = value.craftingSystems;
+            });
     });
 
     async function createCraftingSystem() {
         const craftingSystemManager = CraftingSystemManagerApp.getInstance();
-        const created = await craftingSystemManager.craftingSystemsStore.create();
-        craftingSystemManager.selectedCraftingSystemStore.selectSystemById(created.id);
+        await craftingSystemManager.craftingSystemsStore.create();
     }
 
     async function importCraftingSystem() {
