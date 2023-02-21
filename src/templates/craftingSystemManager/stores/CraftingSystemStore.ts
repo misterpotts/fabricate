@@ -42,7 +42,7 @@ class CraftingSystemStoreState {
     public async insert(candidate: CraftingSystem): Promise<CraftingSystemStoreState> {
         const otherSystems = this._craftingSystems.filter(system => system.id !== candidate.id);
         otherSystems.push(candidate);
-        await candidate.loadPartDictionary(candidate.toJson().parts); // todo: resolve this idiosyncrasy and remove cached source data from dictionaries
+        await candidate.loadPartDictionary();
         this._craftingSystems = this.sort(otherSystems);
         this._selectedSystem = this.selectSystem(this._craftingSystems, candidate);
         return this;

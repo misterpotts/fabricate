@@ -157,6 +157,16 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         }
     }
 
+    public clone(cloneId: string): CraftingComponent {
+        return new CraftingComponent({
+            id: cloneId,
+            itemData: NoFabricateItemData.INSTANCE(),
+            salvageOptions: this._salvageOptions.clone(),
+            disabled: this._disabled,
+            essences: this._essences.clone()
+        });
+    }
+
     set disabled(value: boolean) {
         this._disabled = value;
     }

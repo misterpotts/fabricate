@@ -109,6 +109,11 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         this._selectedOptionId = null;
     }
 
+    clone(): SelectableOptions<J, T> {
+        return new SelectableOptions<J, T>({
+            options: Array.from(this._options.values())
+        })
+    }
 }
 
 export { SelectableOptions }

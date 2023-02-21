@@ -151,7 +151,7 @@ class CraftingSystem {
         return this._partDictionary.deleteComponentById(id);
     }
 
-    public async editComponent(component: CraftingComponent): Promise<void> {
+    public editComponent(component: CraftingComponent): void {
         return this._partDictionary.insertComponent(component);
     }
 
@@ -216,11 +216,14 @@ class CraftingSystem {
     }
 
     public async reload(): Promise<void> {
-        return this.loadPartDictionary(this._partDictionary.toJson());
+        return this.loadPartDictionary();
     }
 
-    public async loadPartDictionary(updatedSource?: PartDictionaryJson): Promise<void> {
-        await this._partDictionary.loadAll(updatedSource);
+    public async loadPartDictionary(): Promise<void> {
+        if (!this.isLoaded) {
+            await this._partDictionary.loadAll();
+        }
+        await this._partDictionary.loadAll(this._partDictionary.toJson());
     }
 
     public async loadEssences(updatedSource?: Record<string, EssenceJson>): Promise<void> {

@@ -18,9 +18,16 @@ interface FabricateItemData {
 class NoFabricateItemData implements FabricateItemData {
 
     private static readonly _INSTANCE = new NoFabricateItemData();
+    private static readonly _UUID = "NO_UUID";
+    private static readonly _NAME = "NO_NAME";
+    private static readonly _IMAGE_URL = Properties.ui.defaults.noItemImageUrl;
 
     public static INSTANCE(): NoFabricateItemData {
         return NoFabricateItemData._INSTANCE;
+    }
+
+    public static UUID() {
+        return NoFabricateItemData._UUID;
     }
 
     get loaded(): boolean {
@@ -36,11 +43,11 @@ class NoFabricateItemData implements FabricateItemData {
     }
 
     get imageUrl(): string {
-        return Properties.ui.defaults.itemImageUrl;
+        return NoFabricateItemData._IMAGE_URL;
     }
 
     get name(): string {
-        return "NO_NAME";
+        return NoFabricateItemData._NAME;
     }
 
     get sourceDocument(): any {
@@ -48,7 +55,7 @@ class NoFabricateItemData implements FabricateItemData {
     }
 
     get uuid(): string {
-        return "NO_UUID";
+        return NoFabricateItemData.UUID();
     }
 
 }

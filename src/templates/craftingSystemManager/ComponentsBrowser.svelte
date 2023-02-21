@@ -1,9 +1,8 @@
-<script lang="js">
+<script lang="ts">
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
     import Properties from "../../scripts/Properties";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {CraftingComponent} from "../../scripts/common/CraftingComponent";
-    import {Combination} from "../../scripts/common/Combination";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     let selectedSystem;
@@ -154,6 +153,13 @@
         throw new Error("Not implemented");
     }
 
+    async function duplicateComponent(component) {
+        const clonedComponent = component.clone(randomID());
+        selectedSystem.editComponent(clonedComponent);
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        throw new Error("Not implemented");
+    }
+
     async function openItemSheet(component) {
         const document = await new DefaultDocumentManager().getDocumentByUuid(component.id);
         await document.sourceDocument.sheet.render(true);
@@ -205,6 +211,7 @@
                                 <button class="fab-edit-component" on:click|preventDefault={editComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
                                 <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
                                 <button class="fab-edit-component" on:click|preventDefault={disableComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
                             </div>
                             {/if}
                         </div>

@@ -32,6 +32,7 @@ const Properties = {
         defaults: {
             essenceIconCode: "fa-solid fa-mortar-pestle",
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
+            noItemImageUrl: "icons/svg/cancel.svg",
             recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp"
         },
         buttons: {
