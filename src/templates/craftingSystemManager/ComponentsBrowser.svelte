@@ -74,16 +74,27 @@
                 ui.notifications.warn(message);
             }
             const documentUUID = dropData.uuid;
-            const document = await new DefaultDocumentManager().getDocumentByUuid(documentUUID);
+            if (selectedSystem.includesItem(documentUUID)) {
+                const existingComponent = selectedSystem.getComponentByItemUuid(documentUUID);
+                const message = craftingSystemManager.i18n.format(
+                    `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.itemAlreadyIncluded`,
+                    {
+                        itemUuid: documentUUID,
+                        componentName: existingComponent.name,
+                        systemName: selectedSystem.name
+                    }
+                );
+                ui.notifications.warn(message);
+                return;
+            }
+            const fabricateItemData = await new DefaultDocumentManager().getDocumentByUuid(documentUUID);
             const craftingComponent = new CraftingComponent({
-                id: document.uuid,
-                name: document.name,
-                imageUrl: document.imageUrl,
-                essences: Combination.EMPTY(),
-                salvage: Combination.EMPTY()
+                id: randomID(),
+                itemData: fabricateItemData
             });
             await selectedSystem.editComponent(craftingComponent);
             await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+            await craftingSystemManager.craftingSystemsStore.reloadComponents();
             const message = craftingSystemManager.i18n.format(
                 `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.imported`,
                 {

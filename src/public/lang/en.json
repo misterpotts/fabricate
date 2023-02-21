@@ -45,7 +45,8 @@
             "import": {
               "noElementData": "Component import error: Could not read element data from drop event. ",
               "invalidDocumentType": "Component import error: \"{suppliedType}\" cannot be imported as a Crafting component. Fabricate only allows the following document types to be imported as components: {allowedTypes}. ",
-              "invalidJson": "Component import error: Could not parse JSON data from drop event. "
+              "invalidJson": "Component import error: Could not parse JSON data from drop event. ",
+              "itemAlreadyIncluded": "Cannot import item with UUID {itemUuid}. {componentName} already exists in {systemName}. "
             }
           },
           "component": {

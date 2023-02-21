@@ -17,6 +17,7 @@ import {
 import {Identifiable, Serializable} from "../common/Identity";
 import {Combination} from "../common/Combination";
 import {SelectableOptions} from "../common/SelectableOptions";
+import {MultiKeyHashMap, MultiKeyMap} from "../common/MultiKeyMap";
 const combinationFromRecord: <T extends Identifiable>(amounts: Record<string, number>, candidatesById: Map<string, T>) => Combination<T> = (amounts, candidatesById) => {
     if (!amounts) {
         return Combination.EMPTY();
@@ -189,20 +190,21 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
     private _sourceData: Record<string, CraftingComponentJson>;
     private readonly _documentManager: DocumentManager;
     private readonly _essenceDictionary: EssenceDictionary;
-    private readonly _entries: Map<string, CraftingComponent>;
+    // as Map<ComponentID, ItemUUID, CraftingComponent>
+    private readonly _entries: MultiKeyMap<string, string, CraftingComponent>;
     private _loaded: boolean;
 
     constructor({
         sourceData,
         documentManager,
         essenceDictionary,
-        entries = new Map(),
+        entries = new MultiKeyHashMap(),
         loaded = false
     }: {
         sourceData: Record<string, CraftingComponentJson>;
         documentManager: DocumentManager;
         essenceDictionary: EssenceDictionary;
-        entries?: Map<string, CraftingComponent>;
+        entries?: MultiKeyMap<string, string, CraftingComponent>;
         loaded?: boolean;
     }) {
         this._sourceData = sourceData;
@@ -237,18 +239,18 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
     }
 
     contains(id: string): boolean {
-        return this._entries.has(id);
+        return this._entries.has({left: id});
     }
 
     getAll(): Map<string, CraftingComponent> {
-        return new Map(this._entries);
+        return new Map(Array.from(this._entries.values()).map(value => [value.id, value]));
     }
 
     getById(id: string): CraftingComponent {
-        if (!this._entries.has(id)) {
-            throw new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: ${Array.from(this._entries.keys()).join(", ")}`);
+        if (!this._entries.has({left: id})) {
+            throw new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: ${Array.from(this._entries.leftKeys()).join(", ")}`);
         }
-        return this._entries.get(id);
+        return this._entries.get({left: id});
     }
 
     get sourceData(): Record<string, CraftingComponentJson> {
@@ -260,18 +262,18 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
     }
 
     insert(craftingComponent: CraftingComponent): void {
-        this._entries.set(craftingComponent.id, craftingComponent);
+        this._entries.set(craftingComponent.id, craftingComponent.itemUuid, craftingComponent);
     }
 
     deleteById(id: string): void {
-        if (!this._entries.has(id)) {
+        if (!this._entries.has({left: id})) {
             return;
         }
-        const componentToDelete = this._entries.get(id);
-        this._entries.delete(id);
-        Array.from(this._entries.keys())
+        const componentToDelete = this._entries.get({left: id});
+        this._entries.delete({left: id});
+        Array.from(this._entries.leftKeys())
             .forEach(id => {
-                const component = this._entries.get(id);
+                const component = this._entries.get({left: id});
                 if (!component.isSalvageable) {
                     return;
                 }
@@ -305,13 +307,13 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
                 disabled: data.json.disabled,
                 salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({})
             }))
-            .forEach(component => this._entries.set(component.id, component));
+            .forEach(component => this._entries.set(component.id, component.itemUuid, component));
         // Iterates over components again to load their salvage data using loaded component references
         Array.from(this._entries.values())
             .forEach(component => {
                 const salvageOptionsConfig = this._sourceData[component.id].salvageOptions;
                 if (salvageOptionsConfig && Object.keys(salvageOptionsConfig).length > 0) {
-                    component.salvageOptions = this.buildSalvageOptions(salvageOptionsConfig, this._entries).options;
+                    component.salvageOptions = this.buildSalvageOptions(salvageOptionsConfig, this._entries.rightSingleKeyMap()).options;
                 }
             });
         this._loaded = true;
@@ -331,7 +333,7 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
             id,
             itemData,
             disabled: sourceRecord.disabled,
-            salvageOptions: this.buildSalvageOptions(sourceRecord.salvageOptions, this._entries),
+            salvageOptions: this.buildSalvageOptions(sourceRecord.salvageOptions, this._entries.rightSingleKeyMap()),
             essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll()),
         });
     }
@@ -358,7 +360,7 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
     }
 
     toJson(): Record<string, CraftingComponentJson> {
-        return Array.from(this._entries.entries())
+        return Array.from(this._entries.leftSingleKeyMap().entries())
             .map(entry => { return  {key: entry[0], value: entry[1].toJson() } })
             .reduce((left, right) => {
                 left[right.key] = right.value;
@@ -371,11 +373,18 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
     }
 
     dropEssenceReferences(essenceToDelete: Essence) {
-        Array.from(this._entries.keys())
-            .forEach(id => {
-                const component = this._entries.get(id);
+        Array.from(this._entries.values())
+            .forEach(component => {
                 component.essences = component.essences.without(essenceToDelete);
             });
+    }
+
+    containsItem(itemUuid: string) {
+        return this._entries.has({right: itemUuid});
+    }
+
+    getByItemUuid(uuid: string) {
+        return this._entries.get({right: uuid});
     }
 }
 
@@ -743,6 +752,13 @@ class PartDictionary {
         });
     }
 
+    hasComponentUuid(itemUuid: string) {
+        return this._componentDictionary.containsItem(itemUuid);
+    }
+
+    getComponentByItemUuid(uuid: string) {
+        return this._componentDictionary.getByItemUuid(uuid);
+    }
 }
 
 class PartDictionaryFactory {

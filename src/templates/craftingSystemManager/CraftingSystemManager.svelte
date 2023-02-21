@@ -37,7 +37,7 @@
         <h2>Essences</h2>
     </TabPanel>
 
-    <TabPanel style="height:100%">
+    <TabPanel>
         <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center"><i class="fa-solid fa-heart-crack" style="margin-right: 10px;"></i> Not yet implemented</div>
     </TabPanel>
 

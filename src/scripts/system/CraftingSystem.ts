@@ -135,8 +135,16 @@ class CraftingSystem {
         return this._partDictionary.hasComponent(id);
     }
 
+    public includesItem(itemUuid: string) {
+        return this._partDictionary.hasComponentUuid(itemUuid);
+    }
+
     public getComponentById(id: string): CraftingComponent {
         return this._partDictionary.getComponent(id);
+    }
+
+    public getComponentByItemUuid(uuid: string): CraftingComponent {
+        return this._partDictionary.getComponentByItemUuid(uuid);
     }
 
     public deleteComponentById(id: string): void {
