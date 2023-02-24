@@ -33,7 +33,7 @@
 
 <!-- CraftingSystemNavbarItem.svelte -->
 <div class="fab-nav-item" class:fab-selected={selectedCraftingSystem === system} on:click={selectSystem}>
-    <div class="fab-button">
+    <div class="fab-button" data-tooltip="{system.hasErrors ? craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.items.systemHasError`) : null}">
         <i class="fa-solid fa-circle"></i><p>{system.name} {#if system.isLocked}<i class="fa-solid fa-lock"></i>{/if}</p>{#if system.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
     </div>
     {#if selectedCraftingSystem !== system}<hr />{/if}

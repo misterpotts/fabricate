@@ -3,6 +3,22 @@ import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import {SelectedComponentStore} from "./stores/SelectedComponentStore";
 import {CraftingSystemStore} from "./stores/CraftingSystemStore";
 
+class I18NExtension {
+
+    private readonly _i18n: Localization;
+
+    constructor(i18n: Localization) {
+        this._i18n = i18n;
+    }
+
+    public localizeAll(basePath: string, childPaths: string[], lineBreak = true) {
+        return childPaths
+            .map(childPath => this._i18n.localize(`${basePath}.${childPath}`))
+            .join(lineBreak ? "\n" : ", ");
+    }
+
+}
+
 class CraftingSystemManagerApp {
 
     private static _INSTANCE: CraftingSystemManagerApp;
@@ -51,6 +67,10 @@ class CraftingSystemManagerApp {
 
     get i18n() {
         return this._gameProvider.globalGameObject().i18n;
+    }
+
+    get i18nExtension() {
+        return new I18NExtension(this._gameProvider.globalGameObject().i18n);
     }
 
     get craftingSystemsStore(): CraftingSystemStore {

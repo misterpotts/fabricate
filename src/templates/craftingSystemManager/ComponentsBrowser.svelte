@@ -136,7 +136,7 @@
         if (!doDelete) {
             return;
         }
-        await selectedSystem.deleteComponentById(component.id);
+        selectedSystem.deleteComponentById(component.id);
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         const message = craftingSystemManager.i18n.format(
             `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.deleted`,
@@ -148,9 +148,34 @@
         ui.notifications.info(message);
     }
 
-    function disableComponent(component) {
-        // todo: implement
-        throw new Error("Not implemented");
+    async function disableComponent(component) {
+        component.isDisabled = true;
+        selectedSystem.editComponent(component);
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        const message = craftingSystemManager.i18n.format(
+            `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.disabled`,
+            {
+                componentName: component.name
+            }
+        );
+        ui.notifications.info(message);
+    }
+
+    async function enableComponent(component) {
+        component.isDisabled = false;
+        selectedSystem.editComponent(component);
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        const message = craftingSystemManager.i18n.format(
+            `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.enabled`,
+            {
+                componentName: component.name
+            }
+        );
+        ui.notifications.info(message);
+    }
+
+    async function toggleComponentDisabled(component) {
+        return component.isDisabled ? enableComponent(component) : disableComponent(component);
     }
 
     async function duplicateComponent(component) {
@@ -197,20 +222,26 @@
         <div class="fab-row">
             <div class="fab-component-grid fab-grid-4">
                 {#each filteredComponents as component}
-                    <!-- add class "disabled" to disable -->
-                    <div class="fab-component">
+                    <div class="fab-component" class:fab-disabled={component.isDisabled} class:fab-error={component.hasErrors}>
                         <div class="fab-component-name" >
                             <p>{component.name}</p>
+                            {#if component.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
                         </div>
                         <div class="fab-columns fab-component-preview">
-                            <div class="fab-column fab-component-image" data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
-                                <img src={component.imageUrl} alt={component.name} />
-                            </div>
+                            {#if !component.hasErrors}
+                                <div class="fab-column fab-component-image" data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
+                                    <img src={component.imageUrl} alt={component.name} />
+                                </div>
+                            {:else}
+                                <div class="fab-column fab-component-image" data-tooltip="{craftingSystemManager.i18nExtension.localizeAll(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.errors`, component.errorCodes)}">
+                                    <img src={component.imageUrl} alt={component.name} />
+                                </div>
+                            {/if}
                             {#if !selectedSystem.isLocked}
                             <div class="fab-column fab-component-editor-buttons">
                                 <button class="fab-edit-component" on:click|preventDefault={editComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
                                 <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
-                                <button class="fab-edit-component" on:click|preventDefault={disableComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
                                 <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
                             </div>
                             {/if}

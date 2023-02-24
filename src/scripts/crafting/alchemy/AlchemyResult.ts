@@ -2,11 +2,10 @@ import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {AlchemicalCombination, NoAlchemicalCombination} from "./AlchemicalEffect";
-import {CraftingChatMessage, IconType} from "../../interface/CraftingChatMessage";
 
 interface AlchemyResult {
 
-    describe(): CraftingChatMessage;
+    describe(): string;
 
     consumed: Combination<CraftingComponent>;
 
@@ -39,12 +38,8 @@ class NoAlchemyResult implements AlchemyResult {
         return this._consumed;
     }
 
-    describe(): CraftingChatMessage {
-        return new CraftingChatMessage({
-            title: "Crafting not attempted",
-            description: this._description,
-            iconType: IconType.FAILURE
-        });
+    describe() {
+        return this._description;
     }
 
     get effects(): AlchemicalCombination {
@@ -80,13 +75,8 @@ class SuccessfulAlchemyResult implements AlchemyResult {
         return this._consumed;
     }
 
-    describe(): CraftingChatMessage {
-        return new CraftingChatMessage({
-            iconType: IconType.RANDOM,
-            consumedItems: this._consumed,
-            createdItems: Combination.of(this._baseComponent, 1), // todo - find a suitable way to display the custom item data
-            description: this._detail
-        });
+    describe() {
+        return this._detail;
     }
 
     get effects(): AlchemicalCombination {
@@ -115,11 +105,8 @@ class UnsuccessfulAlchemyResult implements AlchemyResult {
         return this._consumed;
     }
 
-    describe(): CraftingChatMessage {
-        return new CraftingChatMessage({
-            iconType: IconType.FAILURE,
-            description: `Alchemy attempt failed. ${this._description}. `
-        });
+    describe() {
+        return `Alchemy attempt failed. ${this._description}. `;
     }
 
     applyToBaseItemData(baseItemData: ItemData): ItemData {

@@ -1,4 +1,4 @@
-import {V1SystemJson} from "../../src/scripts/system/versions/V1Json";
+import {V1SystemJson} from "../../src/scripts/system/setting_versions/V1Json";
 
 const V1_CHILDS_PLAY_SYSTEM_DEFINITION: V1SystemJson = {
   "id": "VMjcCEagWtutgKi3",

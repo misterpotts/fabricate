@@ -1,7 +1,7 @@
 import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
 import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
 import {FabricateSetting, SettingManager} from "../settings/FabricateSetting";
-import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system/definitions/AlchemistsSuppliesV16";
+import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system/bundled/AlchemistsSuppliesV16";
 
 interface SystemRegistry {
 

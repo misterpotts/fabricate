@@ -1,6 +1,6 @@
 import {FabricateSettingMigrator} from "../FabricateSetting";
 import {CraftingSystemJson} from "../../system/CraftingSystem";
-import {V1ComponentJson, V1EssenceJson, V1RecipeJson, V1SystemJson} from "../../system/versions/V1Json";
+import {V1ComponentJson, V1EssenceJson, V1RecipeJson, V1SystemJson} from "../../system/setting_versions/V1Json";
 import {EssenceJson} from "../../common/Essence";
 import {CraftingComponentJson, SalvageOptionJson} from "../../common/CraftingComponent";
 import {IngredientOptionJson, RecipeJson, ResultOptionJson} from "../../common/Recipe";

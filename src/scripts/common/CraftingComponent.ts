@@ -69,7 +69,7 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
     private _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
     private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
-    private _disabled: boolean;
+    private _isDisabled: boolean;
 
     constructor({
         id,
@@ -86,7 +86,7 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
     }) {
         this._id = id;
         this._itemData = itemData;
-        this._disabled = disabled;
+        this._isDisabled = disabled;
         this._essences = essences;
         this._salvageOptions = salvageOptions;
     }
@@ -131,8 +131,8 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         return this._salvageOptions.select(combinationId);
     }
 
-    get disabled(): boolean {
-        return this._disabled;
+    get isDisabled(): boolean {
+        return this._isDisabled;
     }
 
     get isSalvageable(): boolean {
@@ -150,8 +150,8 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
 
     public toJson(): CraftingComponentJson {
         return {
-            disabled: this._disabled,
-            itemUuid: this._itemData.uuid,
+            disabled: this._isDisabled,
+            itemUuid: this._itemData.toJson().uuid,
             essences: this._essences.toJson(),
             salvageOptions: this._salvageOptions.toJson()
         }
@@ -162,13 +162,13 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
             id: cloneId,
             itemData: NoFabricateItemData.INSTANCE(),
             salvageOptions: this._salvageOptions.clone(),
-            disabled: this._disabled,
+            disabled: this._isDisabled,
             essences: this._essences.clone()
         });
     }
 
-    set disabled(value: boolean) {
-        this._disabled = value;
+    set isDisabled(value: boolean) {
+        this._isDisabled = value;
     }
 
     set essences(value: Combination<Essence>) {
@@ -210,9 +210,14 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         return this._itemData.errors;
     }
 
+    get errorCodes(): string[] {
+        return this._itemData.errors.map(error => error.code);
+    }
+
     deselectSalvage() {
         this._salvageOptions.deselect();
     }
+
 }
 
 export { CraftingComponent, StringIdentity, CraftingComponentJson, SalvageOptionJson, SalvageOption }

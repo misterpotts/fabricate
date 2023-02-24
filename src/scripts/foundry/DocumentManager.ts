@@ -2,7 +2,61 @@ import Properties from "../Properties";
 
 enum FabricateItemDataErrorCodeType {
     ITEM_NOT_FOUND = "itemNotFound",
-    ITEM_NOT_LOADED = "itemNotLoaded",
+    ITEM_NOT_SET = "itemNotSet",
+}
+
+interface ItemLoadingError {
+    message: string;
+    code: string;
+}
+
+class ItemNotFoundError extends Error implements ItemLoadingError {
+
+    private static readonly formatErrorMessage = (id: string) => `Item with id ${id} was not found. `;
+    private static readonly _code: string = FabricateItemDataErrorCodeType.ITEM_NOT_FOUND;
+
+    private readonly _itemUuid: string;
+
+    constructor(itemUuid: string) {
+        super(ItemNotFoundError.formatErrorMessage(itemUuid));
+        this._itemUuid = itemUuid;
+    }
+
+    get itemUuid(): string {
+        return this._itemUuid;
+    }
+
+    get message(): string {
+        return super.message;
+    }
+
+    get code(): string {
+        return ItemNotFoundError._code;
+    }
+
+}
+
+class ItemNotConfiguredError extends Error implements ItemLoadingError {
+
+    private static readonly formatErrorMessage = () => `This component has no Item associated with it. `;
+    private static readonly _code: string = FabricateItemDataErrorCodeType.ITEM_NOT_SET;
+
+    constructor() {
+        super(ItemNotConfiguredError.formatErrorMessage());
+    }
+
+    get message(): string {
+        return super.message;
+    }
+
+    get code(): string {
+        return ItemNotConfiguredError._code;
+    }
+
+}
+
+interface FabricateItemDataJson {
+    uuid?: string;
 }
 
 interface FabricateItemData {
@@ -13,13 +67,15 @@ interface FabricateItemData {
     errors: ItemLoadingError[];
     hasErrors: boolean;
     loaded: boolean;
+    toJson(): FabricateItemDataJson;
 }
 
 class NoFabricateItemData implements FabricateItemData {
 
     private static readonly _INSTANCE = new NoFabricateItemData();
-    private static readonly _UUID = "NO_UUID";
-    private static readonly _NAME = "NO_NAME";
+    private static readonly _UUID = "NO_ITEM_UUID";
+    private static readonly _NAME = "No Item Configured";
+    private static readonly _ERRORS = [new ItemNotConfiguredError()];
     private static readonly _IMAGE_URL = Properties.ui.defaults.noItemImageUrl;
 
     public static INSTANCE(): NoFabricateItemData {
@@ -35,11 +91,11 @@ class NoFabricateItemData implements FabricateItemData {
     }
 
     get errors(): ItemLoadingError[] {
-        return []
+        return NoFabricateItemData._ERRORS;
     }
 
     get hasErrors(): boolean {
-        return false;
+        return true;
     }
 
     get imageUrl(): string {
@@ -56,6 +112,10 @@ class NoFabricateItemData implements FabricateItemData {
 
     get uuid(): string {
         return NoFabricateItemData.UUID();
+    }
+
+    toJson(): FabricateItemDataJson {
+        return { uuid: null };
     }
 
 }
@@ -94,6 +154,10 @@ class PendingFabricateItemData implements FabricateItemData {
 
     get uuid(): string {
         return this._itemUuid;
+    }
+
+    toJson(): FabricateItemDataJson {
+        throw new Error("Pending item data should never be serialised. ");
     }
 
 }
@@ -153,6 +217,60 @@ class LoadedFabricateItemData implements FabricateItemData {
         return this._itemUuid;
     }
 
+    toJson(): FabricateItemDataJson {
+        return { uuid: this._itemUuid };
+    }
+
+}
+
+class BrokenFabricateItemData implements FabricateItemData {
+    private readonly _errors: ItemLoadingError[];
+    private readonly _itemUuid: string;
+    private readonly _imageUrl: string = Properties.ui.defaults.erroredItemImageUrl;
+
+    constructor({
+        itemUuid,
+        errors = []
+    }: {
+        itemUuid: string;
+        errors: ItemLoadingError[];
+    }) {
+        this._errors = errors;
+        this._itemUuid = itemUuid;
+    }
+
+    get loaded(): boolean {
+        return false;
+    }
+
+    get errors(): ItemLoadingError[] {
+        return this._errors;
+    }
+
+    get hasErrors(): boolean {
+        return true;
+    }
+
+    get imageUrl(): string {
+        return this._imageUrl;
+    }
+
+    get name(): string {
+        return `UUID: ${this._itemUuid}. `;
+    }
+
+    get sourceDocument(): any {
+        return null;
+    }
+
+    get uuid(): string {
+        return this._itemUuid;
+    }
+
+    toJson(): FabricateItemDataJson {
+        return { uuid: this._itemUuid };
+    }
+
 }
 
 interface DocumentManager {
@@ -163,45 +281,21 @@ interface DocumentManager {
 
 }
 
-interface ItemLoadingError {
-    message: string;
-    code: string;
-}
-
-class ItemNotFoundError extends Error implements ItemLoadingError {
-
-    private static readonly formatErrorMessage = (id: string) => `Item with id ${id} was not found. `;
-    private static readonly _code: string = FabricateItemDataErrorCodeType.ITEM_NOT_FOUND;
-
-    private readonly _itemUuid: string;
-
-    constructor(itemUuid: string) {
-        super(ItemNotFoundError.formatErrorMessage(itemUuid));
-        this._itemUuid = itemUuid;
-    }
-
-    get itemUuid(): string {
-        return this._itemUuid;
-    }
-
-    get message(): string {
-        return super.message;
-    }
-
-    get code(): string {
-        return ItemNotFoundError._code;
-    }
-
-}
-
 class DefaultDocumentManager implements DocumentManager {
 
     public async getDocumentByUuid(id: string): Promise<FabricateItemData> {
+        if (!id) {
+            return new NoFabricateItemData();
+        }
         const document = await fromUuid(id);
         if (document) {
             return this.formatItemData(document);
+        } else {
+            return new BrokenFabricateItemData({
+                itemUuid: id,
+                errors: [new ItemNotFoundError(id)]
+            });
         }
-        return this.formatItemData(document, [new ItemNotFoundError(id)])
     }
 
     public async getDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>> {
@@ -229,5 +323,8 @@ export {
     ItemLoadingError,
     NoFabricateItemData,
     LoadedFabricateItemData,
-    PendingFabricateItemData
+    PendingFabricateItemData,
+    ItemNotConfiguredError,
+    BrokenFabricateItemData,
+    FabricateItemDataJson
 }

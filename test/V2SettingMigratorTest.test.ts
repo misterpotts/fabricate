@@ -1,12 +1,12 @@
 import {describe, expect, test} from "@jest/globals";
-import {V1ComponentJson, V1EssenceJson, V1RecipeJson} from "../src/scripts/system/versions/V1Json";
+import {V1ComponentJson, V1EssenceJson, V1RecipeJson} from "../src/scripts/system/setting_versions/V1Json";
 import {EssenceJson} from "../src/scripts/common/Essence";
 import V1_CHILDS_PLAY_SYSTEM_DEFINITION from "./resources/V1ChildsPlaySystemSpec";
 import {V2CraftingSystemSettingMigrator} from "../src/scripts/settings/migrators/V2CraftingSystemSettingMigrator";
 import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {RecipeJson} from "../src/scripts/common/Recipe";
 import { V1_ALCHEMISTS_SUPPLIES_SYSTEM_DEFINITION } from "./resources/V1AlchemistsSuppliesSystemSpec";
-import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/definitions/AlchemistsSuppliesV16";
+import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/bundled/AlchemistsSuppliesV16";
 
 function expectEssenceMigrationSuccess(before: V1EssenceJson, allAfter: Record<string, EssenceJson>) {
     expect(allAfter[before.id]).not.toBeNull();

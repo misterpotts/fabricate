@@ -52,12 +52,18 @@
           "component": {
             "imported": "Imported component {componentName} into {systemName}",
             "deleted": "Removed component {componentName} from {systemName}",
+            "disabled": "Disabled component {componentName}",
+            "enabled": "Enabled component {componentName}",
             "buttons": {
               "edit": "Edit",
               "delete": "Delete",
-              "disable": "Disable",
+              "disable": "Toggle disabled",
               "duplicate": "Duplicate",
               "openSheet": "Open Item Sheet"
+            },
+            "errors": {
+              "itemNotFound": "The item does not exist or has been deleted.",
+              "itemNotSet": "No item configured. You can set one in the component editor."
             }
           },
           "prompts": {
@@ -115,6 +121,9 @@
           "duplicate": "Duplicate",
           "delete": "Delete",
           "create": "Create"
+        },
+        "items": {
+          "systemHasError": "This crafting system has one or more errors!"
         }
       }
     },

@@ -260,6 +260,10 @@ class CraftingSystem {
         return alchemyResult;
     }
 
+    get hasErrors(): boolean {
+        return this._partDictionary.hasErrors;
+    }
+
     toJson(): CraftingSystemJson {
         return {
             id: this._id,
