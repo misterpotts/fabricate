@@ -49,6 +49,9 @@
 </script>
 
 <div class="fab-system-details fab-column">
+    <div class="fab-hero-banner">
+        <img src="{Properties.ui.banners.detailsEditor}" >
+    </div>
     {#if loading}
         <div class="loading" transition:fade="{{duration: 100}}">
             <div class="loading-inner">

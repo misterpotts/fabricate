@@ -35,11 +35,15 @@
     </TabPanel>
 
     <TabPanel>
-        <h2>Recipes</h2>
+        <div class="fab-hero-banner">
+            <img src="{Properties.ui.banners.recipeEditor}" >
+        </div>
     </TabPanel>
 
     <TabPanel>
-        <h2>Essences</h2>
+        <div class="fab-hero-banner">
+            <img src="{Properties.ui.banners.essenceEditor}" >
+        </div>
     </TabPanel>
 
     <TabPanel>

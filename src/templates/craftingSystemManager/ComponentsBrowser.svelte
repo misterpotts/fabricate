@@ -193,6 +193,9 @@
 </script>
 
 <div class="fab-system-components fab-column">
+    <div class="fab-hero-banner fab-row">
+        <img src="{Properties.ui.banners.componentEditor}" >
+    </div>
     {#if !selectedSystem.isLocked}
         <div class="fab-tab-header fab-row">
             <h2>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.addNew`, { systemName: selectedSystem?.name })}</h2>

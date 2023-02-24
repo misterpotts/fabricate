@@ -262,6 +262,13 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
+  .fab-hero-banner {
+    border: 1px solid var(--color-border-dark-2);
+    button {
+      background: var(--color-background-dark-2);
+    }
+  }
+
 }
 
 /*
@@ -470,6 +477,26 @@ BEGIN COMMON STRUCTURAL STYLES
         font-size: var(--font-size-18);
       }
     }
+  }
+}
+
+.fab-hero-banner {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 100px;
+  max-height: 100px;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  position: relative;
+  img {
+    width: 100%;
+  }
+  .fab-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
   }
 }
 

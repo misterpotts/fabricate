@@ -22,7 +22,7 @@ import {EssenceJson} from "../src/scripts/common/Essence";
 import {RecipeJson} from "../src/scripts/common/Recipe";
 import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
-import {FabricateItemData} from "../src/scripts/foundry/DocumentManager";
+import {LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 
 describe("Create", () => {
 
@@ -90,12 +90,12 @@ describe("Index and Retrieve", () => {
     const allItemUuids = componentUuids.concat(recipeUuids);
     const itemData = new Map(
         allItemUuids
-            .map(id => [id, <FabricateItemData>{
+            .map(id => [id, new LoadedFabricateItemData({
                 name: stubItemName,
                 imageUrl: stubItemImageUrl,
-                uuid: id,
+                itemUuid: id,
                 sourceDocument: stubItemSource
-            }])
+            })])
     );
     const stubDocumentManager = new StubDocumentManager(itemData);
 

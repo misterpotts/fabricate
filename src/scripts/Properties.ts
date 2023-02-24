@@ -36,6 +36,12 @@ const Properties = {
             erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",
             recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp"
         },
+        banners: {
+            componentEditor: "modules/fabricate/assets/components-hero-banner.webp",
+            detailsEditor: "modules/fabricate/assets/details-hero-banner.webp",
+            recipeEditor: "modules/fabricate/assets/recipes-hero-banner.webp",
+            essenceEditor: "modules/fabricate/assets/essences-hero-banner.webp"
+        },
         buttons: {
             openCraftingSystemManager: {
                 class: "open-crafting-system-manager"
