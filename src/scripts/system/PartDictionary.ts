@@ -389,8 +389,8 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
             });
     }
 
-    containsItem(itemUuid: string) {
-        return this._entriesById.has(itemUuid);
+    containsItemByUuid(itemUuid: string) {
+        return this._entriesByItemUuid.has(itemUuid);
 }
 
     getByItemUuid(uuid: string) {
@@ -763,7 +763,7 @@ class PartDictionary {
     }
 
     hasComponentUuid(itemUuid: string) {
-        return this._componentDictionary.containsItem(itemUuid);
+        return this._componentDictionary.containsItemByUuid(itemUuid);
     }
 
     getComponentByItemUuid(uuid: string) {

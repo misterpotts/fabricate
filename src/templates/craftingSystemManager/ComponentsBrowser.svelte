@@ -73,7 +73,7 @@
                 ui.notifications.warn(message);
             }
             const documentUUID = dropData.uuid;
-            if (selectedSystem.includesItem(documentUUID)) {
+            if (selectedSystem.includesComponentByItemUuid(documentUUID)) {
                 const existingComponent = selectedSystem.getComponentByItemUuid(documentUUID);
                 const message = craftingSystemManager.i18n.format(
                     `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.itemAlreadyIncluded`,

@@ -99,8 +99,8 @@ class CraftingSystem {
         return this._details;
     }
 
-    public hasPart(itemUuid: string): boolean {
-        return this._partDictionary.hasComponent(itemUuid) || this._partDictionary.hasRecipe(itemUuid);
+    public hasPart(id: string): boolean {
+        return this._partDictionary.hasComponent(id) || this._partDictionary.hasRecipe(id);
     }
 
     public hasEssence(id: string) {
@@ -135,7 +135,7 @@ class CraftingSystem {
         return this._partDictionary.hasComponent(id);
     }
 
-    public includesItem(itemUuid: string) {
+    public includesComponentByItemUuid(itemUuid: string) {
         return this._partDictionary.hasComponentUuid(itemUuid);
     }
 

@@ -281,9 +281,16 @@ class CraftingSystemStore {
     }
 
     async reloadComponents(): Promise<void> {
-        const state = await get(this._value);
+        const state = get(this._value);
         await state.selectedSystem.loadComponents();
         this._value.update(() => state);
+    }
+
+    async handleItemDeleted(uuid: string) {
+        const state = get(this._value);
+        if (state.selectedSystem.includesComponentByItemUuid(uuid)) {
+            await this.reloadComponents();
+        }
     }
 }
 

@@ -44,6 +44,7 @@ class SvelteApplication extends Application {
     get component(): SvelteComponent {
         return this._component;
     }
+
 }
 
 export { SvelteApplication, SvelteComponentConfig, SvelteComponentConstructor }

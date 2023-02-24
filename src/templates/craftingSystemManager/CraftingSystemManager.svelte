@@ -6,7 +6,12 @@
     import CraftingSystemDetails from "./CraftingSystemDetails.svelte";
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./ComponentsTab.svelte";
+    import {FabricateEventBus, ItemDeleted} from "../FabricateEventBus";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+
+    FabricateEventBus.register(ItemDeleted.eventType, (event) => {
+        craftingSystemManager.craftingSystemsStore.handleItemDeleted(event.document.uuid);
+    });
 </script>
 
 <CraftingSystemNavbar />

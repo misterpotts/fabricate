@@ -14,11 +14,14 @@ import {DefaultInventoryRegistry} from "./registries/InventoryRegistry";
 import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
 import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
+import {FabricateEventBus, ItemDeleted} from "../templates/FabricateEventBus";
+
 
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
 Hooks.on("deleteItem", async (item: any, _app: unknown, _id: string) => {
-    console.log(`Item UUID ${item.uuid} deleted. Fabricate currently takes no action when you do this. `);
+    const itemDeletedEvent = new ItemDeleted(item);
+    FabricateEventBus.dispatch(itemDeletedEvent);
 });
 
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
@@ -76,7 +79,7 @@ async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSy
             ui.notifications.error(gameObject.i18n.format(
                 "fabricate.ui.notifications.settings.errors.migration",
                 { settingKey: craftingSystemSettingManager.settingKey }
-                ));
+            ));
         }
     }
 

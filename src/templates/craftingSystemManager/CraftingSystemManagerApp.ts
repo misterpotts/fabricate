@@ -2,6 +2,7 @@ import {GameProvider} from "../../scripts/foundry/GameProvider";
 import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import {SelectedComponentStore} from "./stores/SelectedComponentStore";
 import {CraftingSystemStore} from "./stores/CraftingSystemStore";
+import Properties from "../../scripts/Properties";
 
 class I18NExtension {
 
@@ -22,6 +23,7 @@ class I18NExtension {
 class CraftingSystemManagerApp {
 
     private static _INSTANCE: CraftingSystemManagerApp;
+    private static _ID: string = `${Properties.module.id}-crafting-system-manager`;
     private readonly _craftingSystemsStore: CraftingSystemStore;
     private readonly _selectedComponentStore: SelectedComponentStore;
     //private readonly _selectedRecipeStore;
@@ -79,6 +81,10 @@ class CraftingSystemManagerApp {
 
     get selectedComponentStore(): SelectedComponentStore {
         return this._selectedComponentStore;
+    }
+
+    static get ID(): string {
+        return CraftingSystemManagerApp._ID;
     }
 
 }
