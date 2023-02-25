@@ -15,42 +15,42 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
             "water": {
                 "name": "Water",
                 "description": "Elemental water, one of the fundamental forces of nature",
-                "iconCode": "tint",
+                "iconCode": "fa-solid fa-droplet",
                 "tooltip": "Elemental water",
                 "activeEffectSourceItemUuid": null
             },
             "earth": {
                 "name": "Earth",
                 "description": "Elemental earth, one of the fundamental forces of nature",
-                "iconCode": "mountain",
+                "iconCode": "fa-solid fa-mountain",
                 "tooltip": "Elemental earth",
                 "activeEffectSourceItemUuid": null
             },
             "air": {
                 "name": "Air",
                 "description": "Elemental air, one of the fundamental forces of nature",
-                "iconCode": "wind",
+                "iconCode": "fa-solid fa-wind",
                 "tooltip": "Elemental air",
                 "activeEffectSourceItemUuid": null
             },
             "fire": {
                 "name": "Fire",
                 "description": "Elemental fire, one of the fundamental forces of nature",
-                "iconCode": "fire",
+                "iconCode": "fa-solid fa-fire",
                 "tooltip": "Elemental fire",
                 "activeEffectSourceItemUuid": null
             },
             "negative-energy": {
                 "name": "Negative Energy",
                 "description": "Negative Energy - The essence of death and destruction",
-                "iconCode": "moon",
+                "iconCode": "fa-solid fa-moon",
                 "tooltip": "Negative energy",
                 "activeEffectSourceItemUuid": null
             },
             "positive-energy": {
                 "name": "Positive Energy",
                 "description": "Positive Energy - The essence of life and creation",
-                "iconCode": "sun",
+                "iconCode": "fa-solid fa-sun",
                 "tooltip": "Positive energy",
                 "activeEffectSourceItemUuid": null
             }

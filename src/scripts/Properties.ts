@@ -40,7 +40,8 @@ const Properties = {
             componentEditor: "modules/fabricate/assets/components-hero-banner.webp",
             detailsEditor: "modules/fabricate/assets/details-hero-banner.webp",
             recipeEditor: "modules/fabricate/assets/recipes-hero-banner.webp",
-            essenceEditor: "modules/fabricate/assets/essences-hero-banner.webp"
+            essenceEditor: "modules/fabricate/assets/essences-hero-banner.webp",
+            alchemyEditor: "modules/fabricate/assets/alchemy-hero-banner.webp",
         },
         buttons: {
             openCraftingSystemManager: {

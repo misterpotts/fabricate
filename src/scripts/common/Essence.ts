@@ -12,12 +12,12 @@ interface EssenceJson {
 
 class Essence implements Identifiable, Serializable<EssenceJson> {
 
-    private readonly _name: string;
     private readonly _id: string;
+    private _name: string;
     private _activeEffectSource: FabricateItemData;
-    private readonly _description: string;
-    private readonly _tooltip: string;
-    private readonly _iconCode: string;
+    private _description: string;
+    private _tooltip: string;
+    private _iconCode: string;
 
     constructor({
         id,
@@ -64,9 +64,6 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._activeEffectSource;
     }
 
-    set activeEffectSource(value: FabricateItemData) {
-        this._activeEffectSource = value;
-    }
 
     get name(): string {
         return this._name;
@@ -93,6 +90,26 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     get errors(): ItemLoadingError[] {
         return this._activeEffectSource.errors;
+    }
+
+    set activeEffectSource(value: FabricateItemData) {
+        this._activeEffectSource = value;
+    }
+
+    set name(value: string) {
+        this._name = value;
+    }
+
+    set description(value: string) {
+        this._description = value;
+    }
+
+    set tooltip(value: string) {
+        this._tooltip = value;
+    }
+
+    set iconCode(value: string) {
+        this._iconCode = value;
     }
 
 }

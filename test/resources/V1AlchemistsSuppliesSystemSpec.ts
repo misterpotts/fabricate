@@ -416,42 +416,42 @@ const V1_ALCHEMISTS_SUPPLIES_SYSTEM_DEFINITION: V1SystemJson = {
                 "name": "Water",
                 "id": "water",
                 "description": "Elemental water, one of the fundamental forces of nature",
-                "iconCode": "tint",
+                "iconCode": "fa-solid fa-droplet",
                 "tooltip": "Elemental water"
             },
             "earth": {
                 "name": "Earth",
-                "id": "earth",
+                "id": "fa-solid fa-mountain",
                 "description": "Elemental earth, one of the fundamental forces of nature",
-                "iconCode": "mountain",
+                "iconCode": "fa-solid fa-mountain",
                 "tooltip": "Elemental earth"
             },
             "air": {
                 "name": "Air",
                 "id": "air",
                 "description": "Elemental air, one of the fundamental forces of nature",
-                "iconCode": "wind",
+                "iconCode": "fa-solid fa-wind",
                 "tooltip": "Elemental air"
             },
             "fire": {
                 "name": "Fire",
                 "id": "fire",
                 "description": "Elemental fire, one of the fundamental forces of nature",
-                "iconCode": "fire",
+                "iconCode": "fa-solid fa-fire",
                 "tooltip": "Elemental fire"
             },
             "negative-energy": {
                 "name": "Negative Energy",
                 "id": "negative-energy",
                 "description": "Negative Energy - The essence of death and destruction",
-                "iconCode": "moon",
+                "iconCode": "fa-solid fa-moon",
                 "tooltip": "Negative energy"
             },
             "positive-energy": {
                 "name": "Positive Energy",
                 "id": "positive-energy",
                 "description": "Positive Energy - The essence of life and creation",
-                "iconCode": "sun",
+                "iconCode": "fa-solid fa-sun",
                 "tooltip": "Positive energy"
             }
         }

@@ -75,8 +75,8 @@ class DefaultSystemRegistry implements SystemRegistry {
 
     public async getAllCraftingSystems(): Promise<Map<string, CraftingSystem>> {
         const allCraftingSystems = await Promise.all([
-            this.getEmbeddedSystems(),
-            this.getUserDefinedSystems()
+            this.getUserDefinedSystems(),
+            this.getEmbeddedSystems()
         ]);
         return new Map(allCraftingSystems
             .flatMap(systemsById => <CraftingSystem[]>Array.from(systemsById.values()))

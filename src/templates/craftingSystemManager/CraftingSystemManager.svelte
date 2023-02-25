@@ -7,6 +7,7 @@
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./ComponentsTab.svelte";
     import {FabricateEventBus, ItemDeleted} from "../FabricateEventBus";
+    import EssenceEditor from "./EssenceEditor.svelte";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     FabricateEventBus.register(ItemDeleted.eventType, (event) => {
@@ -41,13 +42,16 @@
     </TabPanel>
 
     <TabPanel>
-        <div class="fab-hero-banner">
-            <img src="{Properties.ui.banners.essenceEditor}" >
-        </div>
+        <EssenceEditor />
     </TabPanel>
 
     <TabPanel>
-        <div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center"><i class="fa-solid fa-heart-crack" style="margin-right: 10px;"></i> Not yet implemented</div>
+        <div class="fab-column">
+            <div class="fab-hero-banner fab-row">
+                <img src="{Properties.ui.banners.alchemyEditor}" >
+            </div>
+            <div style="display: inline-flex; height: 100%; width: 100%; align-items: center; justify-content: center"><i class="fa-solid fa-heart-crack" style="margin-right: 10px;"></i> Not yet implemented</div>
+        </div>
     </TabPanel>
 
 </Tabs>
