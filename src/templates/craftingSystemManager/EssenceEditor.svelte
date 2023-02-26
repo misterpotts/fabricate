@@ -53,6 +53,13 @@
         selectedSystem.editEssence(createdEssence);
         loading = true;
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        const message = craftingSystemManager.i18n.format(
+            `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.created`,
+            {
+                systemName: selectedSystem.name
+            }
+        );
+        ui.notifications.info(message);
         loading = false;
     }
 
@@ -87,6 +94,14 @@
         selectedSystem.deleteEssenceById(essence.id);
         loading = true;
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        const message = craftingSystemManager.i18n.format(
+            `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.deleted`,
+            {
+                essenceName: essence.name,
+                systemName: selectedSystem.name
+            }
+        );
+        ui.notifications.info(message);
         loading = false;
     }
 
@@ -104,7 +119,7 @@
     }
 
     let scheduledUpdate;
-    async function updateEssence(essence) {
+    async function updateEssence() {
         clearTimeout(scheduledUpdate);
         scheduledUpdate = setTimeout(async () => {
             loading = true;
@@ -156,7 +171,7 @@
     </div>
     {#if !selectedSystem.isLocked}
         <div class="fab-row">
-            <button class="fab-new-essence" on:click={createEssence}><i class="fa-solid fa-mortar-pestle"></i> New Essence</button>
+            <button class="fab-new-essence" on:click={createEssence}><i class="fa-solid fa-mortar-pestle"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.buttons.create`)}</button>
         </div>
     {/if}
     {#if selectedSystem.hasEssences}
@@ -164,7 +179,7 @@
             {#each essences as essence}
                 <div class="fab-essence-ae-source fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">Active Effect Source</p>
+                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.activeEffectSource`)}:</p>
                         {#if !selectedSystem?.isLocked}
                             {#if essence.hasActiveEffectSource}
                                 <button on:auxclick={(e) => removeActiveEffectSource(e, essence)} on:click={openActiveEffectSourceItemSheet(essence)} on:drop|preventDefault={(e) => addActiveEffectSource(e, essence)}>
@@ -177,14 +192,14 @@
                             {#if essence.hasActiveEffectSource}
                                 <img src="{essence.activeEffectSource.imageUrl}" data-tooltip="{essence.activeEffectSource.name}" />
                             {:else}
-                                <div>No active effect source. </div>
+                                <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.info.noAeSource`)}</p>
                             {/if}
                         {/if}
                     </div>
                 </div>
                 <div class="fab-essence-icon fab-column">
                     <div class="fab-row" style="position:relative;">
-                        <p class="fab-label">Icon: </p>
+                        <p class="fab-label">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.icon`)}: </p>
                         {#if !selectedSystem?.isLocked}
                             <button class="fab-essence-icon-btn" on:click={showEssenceIconModal(essence)}>
                                 <i class="{essence.iconCode}"></i>
@@ -208,7 +223,7 @@
                 </div>
                 <div class="fab-essence-name fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">Name: </p>
+                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.name`)}: </p>
                         {#if !selectedSystem?.isLocked}
                             <div class="fab-editable" contenteditable="true" bind:textContent={essence.name} on:input={updateEssence(essence)}>{essence.name}</div>
                         {:else}
@@ -218,7 +233,7 @@
                 </div>
                 <div class="fab-essence-tooltip fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">Tooltip: </p>
+                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.tooltip`)}: </p>
                         {#if !selectedSystem?.isLocked}
                             <div class="fab-editable" contenteditable="true" bind:textContent={essence.tooltip} on:input={updateEssence(essence)}>{essence.tooltip}</div>
                         {:else}
@@ -228,7 +243,7 @@
                 </div>
                 <div class="fab-essence-description fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">Description: </p>
+                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.description`)}: </p>
                         {#if !selectedSystem?.isLocked}
                             <div class="fab-editable" contenteditable="true" bind:textContent={essence.description} on:input={updateEssence(essence)}>{essence.description}</div>
                         {:else}
@@ -239,7 +254,7 @@
                 {#if !selectedSystem.isLocked}
                 <div class="fab-delete-essence fab-column">
                     <div class="fab-row">
-                        <button class="fab-delete-essence" on:click={(e) => deleteEssence(e, essence)}><i class="fa-solid fa-trash"></i> Delete Essence</button>
+                        <button class="fab-delete-essence" on:click={(e) => deleteEssence(e, essence)}><i class="fa-solid fa-trash"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.buttons.delete`)}</button>
                     </div>
                 </div>
                     <div class="fab-grid-spacer"></div>
@@ -250,8 +265,8 @@
         </div>
     {:else}
         <div class="fab-no-essences">
-            <p>This Crafting System has no essences. </p>
-            {#if !selectedSystem.isLocked}<p>Click the button above to add your first one!</p>{/if}
+            <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.info.noEssences`)}</p>
+            {#if !selectedSystem.isLocked}<p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.info.createFirst`)}</p>{/if}
         </div>
     {/if}
 </div>

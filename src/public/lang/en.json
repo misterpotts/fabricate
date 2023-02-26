@@ -96,6 +96,28 @@
               "title": "Delete essence \"{essenceName}\"?",
               "content": "<p>This will remove \"{essenceName}\" from \"{systemName}\", as well as all references to it in Recipes and Components. This action cannot be undone.</p>"
             }
+          },
+          "buttons": {
+            "create": "New Essence"
+          },
+          "essence": {
+            "created": "Added a new Essence to {systemName}",
+            "deleted": "Deleted {essenceName} from {systemName}",
+            "labels": {
+              "activeEffectSource": "Active Effect Source",
+              "icon": "Icon",
+              "name": "Name",
+              "tooltip": "Tooltip",
+              "description": "Description"
+            },
+            "info": {
+              "noAeSource": "No Active Effect Source",
+              "noEssences": "This Crafting System has no essences.",
+              "createFirst": "Click the button above to add your first one!"
+            },
+            "buttons": {
+              "delete": "Delete Essence"
+            }
           }
         },
         "alchemy": {
