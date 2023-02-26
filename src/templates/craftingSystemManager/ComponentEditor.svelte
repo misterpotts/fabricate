@@ -149,7 +149,7 @@
         </div>
     </div>
     <div class="fab-row fab-columns">
-        <div class="fab-column">
+        <div class="fab-column fab-salvage-opts">
             <div class="fab-row">
                 <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.salvageHeading`)}</h3>
             </div>
