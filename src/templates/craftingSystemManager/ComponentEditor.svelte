@@ -79,7 +79,7 @@
             <button class="fab-deselect-component" on:click={deselectComponent}><i class="fa-solid fa-circle-chevron-left"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.deselect`)}</button>
         </div>
     </div>
-    <div class="fab-tab-header fab-row">
+    <div class="fab-tab-header fab-row" class:fab-error={selectedComponent.hasErrors}>
         <img src="{selectedComponent.imageUrl}" width="48px" height="48px" />
         <h2 class="fab-component-name">{selectedComponent.name}</h2>
         <div class="fab-drop-zone fab-swap-item" on:drop|preventDefault={(e) => replaceItem(e)}>
