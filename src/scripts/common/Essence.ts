@@ -1,6 +1,6 @@
 import Properties from "../Properties";
 import {Identifiable, Serializable} from "./Identity";
-import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../foundry/DocumentManager";
+import {FabricateItemData, ItemLoadingError} from "../foundry/DocumentManager";
 
 interface EssenceJson {
     activeEffectSourceItemUuid: string;
@@ -24,7 +24,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         name,
         tooltip,
         description,
-        activeEffectSource = NoFabricateItemData.INSTANCE(),
+        activeEffectSource,
         iconCode = Properties.ui.defaults.essenceIconCode
     }: {
         id: string;

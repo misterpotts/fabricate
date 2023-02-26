@@ -51,8 +51,8 @@
         }, 500);
     }
 
-    async function importComponent(e) {
-        const elementData = e
+    async function importComponent(event) {
+        const elementData = event
             ?.dataTransfer
             ?.getData("text");
         if (!elementData) {

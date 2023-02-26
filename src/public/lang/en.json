@@ -16,6 +16,17 @@
       "essence": {
         "singular": "Essence",
         "plural": "Essences"
+      },
+      "activeEffectSource": {
+        "singular": "Active Effect Source",
+        "plural": "Active Effect Sources"
+      }
+    },
+    "DropEventParser": {
+      "errors": {
+        "noElementData": "{partType} import error: Could not read element data from drop event. ",
+        "invalidDocumentType": "{partType} import error: \"{suppliedType}\" cannot be imported as a {partType}. Fabricate only allows the following document types: {allowedTypes}. ",
+        "invalidJson": "{partType} import error: Could not parse JSON data from drop event. "
       }
     },
     "CraftingSystemManagerApp": {
@@ -79,7 +90,13 @@
         },
         "essences": {
           "label": "Essences",
-          "title": "{systemName} Essences"
+          "title": "{systemName} Essences",
+          "prompts": {
+            "delete": {
+              "title": "Delete essence \"{essenceName}\"?",
+              "content": "<p>This will remove \"{essenceName}\" from \"{systemName}\", as well as all references to it in Recipes and Components. This action cannot be undone.</p>"
+            }
+          }
         },
         "alchemy": {
           "label": "Alchemy",
