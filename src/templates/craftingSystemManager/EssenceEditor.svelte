@@ -50,8 +50,8 @@
             iconCode: "fa-solid fa-mortar-pestle",
             description: `A new Essence added to ${selectedSystem.name}`
         });
-        selectedSystem.editEssence(createdEssence);
         loading = true;
+        selectedSystem.editEssence(createdEssence);
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         const message = craftingSystemManager.i18n.format(
             `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.created`,
@@ -61,10 +61,6 @@
         );
         ui.notifications.info(message);
         loading = false;
-    }
-
-    function editEssenceIcon(essence) {
-        throw new Error("Not implemented!");
     }
 
     async function deleteEssence(event, essence) {
@@ -91,8 +87,8 @@
         if (!doDelete) {
             return;
         }
-        selectedSystem.deleteEssenceById(essence.id);
         loading = true;
+        selectedSystem.deleteEssenceById(essence.id);
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         const message = craftingSystemManager.i18n.format(
             `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.deleted`,
@@ -159,8 +155,8 @@
 </script>
 
 {#if loading}
-    <div class="loading" transition:fade="{{duration: 100}}">
-        <div class="loading-inner">
+    <div class="fab-loading" transition:fade="{{duration: 100}}">
+        <div class="fab-loading-inner">
             <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
         </div>
     </div>

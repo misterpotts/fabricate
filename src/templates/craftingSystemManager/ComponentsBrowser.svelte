@@ -3,6 +3,7 @@
     import Properties from "../../scripts/Properties";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+    import {DropEventParser} from "./DropEventParser";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     let selectedSystem;
@@ -52,60 +53,41 @@
     }
 
     async function importComponent(event) {
-        const elementData = event
-            ?.dataTransfer
-            ?.getData("text");
-        if (!elementData) {
-            const message = craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.noElementData`);
-            ui.notifications.warn(message);
-        }
-        try {
-            const dropData = JSON.parse(elementData);
-            const documentType = dropData.type;
-            if (!Properties.module.documents.supportedTypes.includes(documentType)) {
-                const message = craftingSystemManager.i18n.format(
-                    `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.invalidDocumentType`,
-                    {
-                        suppliedType: documentType,
-                        allowedTypes: Properties.module.documents.supportedTypes.join(", ")
-                    }
-                );
-                ui.notifications.warn(message);
-            }
-            const documentUUID = dropData.uuid;
-            if (selectedSystem.includesComponentByItemUuid(documentUUID)) {
-                const existingComponent = selectedSystem.getComponentByItemUuid(documentUUID);
-                const message = craftingSystemManager.i18n.format(
-                    `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.itemAlreadyIncluded`,
-                    {
-                        itemUuid: documentUUID,
-                        componentName: existingComponent.name,
-                        systemName: selectedSystem.name
-                    }
-                );
-                ui.notifications.warn(message);
-                return;
-            }
-            const fabricateItemData = await new DefaultDocumentManager().getDocumentByUuid(documentUUID);
-            const craftingComponent = new CraftingComponent({
-                id: randomID(),
-                itemData: fabricateItemData
-            });
-            await selectedSystem.editComponent(craftingComponent);
-            await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-            await craftingSystemManager.craftingSystemsStore.reloadComponents();
+        const dropEventParser = new DropEventParser({
+            event,
+            i18n: craftingSystemManager.i18n,
+            documentManager: new DefaultDocumentManager(),
+            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`)
+        })
+        const itemData = await dropEventParser.parse();
+        if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
+            const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
             const message = craftingSystemManager.i18n.format(
-                `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.imported`,
+                `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.itemAlreadyIncluded`,
                 {
-                    componentName: craftingComponent.name,
+                    itemUuid: itemData.uuid,
+                    componentName: existingComponent.name,
                     systemName: selectedSystem.name
                 }
             );
-            ui.notifications.info(message);
-        } catch (e) {
-            const message = craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.invalidJson`);
-            ui.notifications.error(message);
+            ui.notifications.warn(message);
+            return;
         }
+        const craftingComponent = new CraftingComponent({
+            id: randomID(),
+            itemData: itemData
+        });
+        selectedSystem.editComponent(craftingComponent);
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        await craftingSystemManager.craftingSystemsStore.reloadComponents();
+        const message = craftingSystemManager.i18n.format(
+            `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.imported`,
+            {
+                componentName: craftingComponent.name,
+                systemName: selectedSystem.name
+            }
+        );
+        ui.notifications.info(message);
     }
 
     function editComponent(component) {

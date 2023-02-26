@@ -49,8 +49,8 @@
 </script>
 
 {#if loading}
-    <div class="loading" transition:fade="{{duration: 100}}">
-        <div class="loading-inner">
+    <div class="fab-loading" transition:fade="{{duration: 100}}">
+        <div class="fab-loading-inner">
             <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
         </div>
     </div>

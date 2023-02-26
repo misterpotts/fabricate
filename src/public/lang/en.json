@@ -65,16 +65,24 @@
             "deleted": "Removed component {componentName} from {systemName}",
             "disabled": "Disabled component {componentName}",
             "enabled": "Enabled component {componentName}",
+            "replaced": "Replaced {previousItemName} with {itemName} in {systemName}",
             "buttons": {
               "edit": "Edit",
               "delete": "Delete",
               "disable": "Toggle disabled",
               "duplicate": "Duplicate",
-              "openSheet": "Open Item Sheet"
+              "openSheet": "Open Item Sheet",
+              "deselect": "Go Back"
             },
             "errors": {
               "itemNotFound": "The item does not exist or has been deleted.",
               "itemNotSet": "No item configured. You can set one in the component editor."
+            },
+            "labels": {
+              "salvageHeading": "Salvage",
+              "availableComponentsHeading": "Available Components",
+              "essencesHeading": "Essences",
+              "replaceItem": "Drop an item to replace"
             }
           },
           "prompts": {

@@ -123,7 +123,7 @@ class CraftingSystem {
         return this._partDictionary.deleteEssenceById(id);
     }
 
-    public async editEssence(essence: Essence): Promise<void> {
+    public editEssence(essence: Essence): void {
         return this._partDictionary.insertEssence(essence);
     }
 
