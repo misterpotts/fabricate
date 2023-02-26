@@ -83,6 +83,10 @@
               "availableComponentsHeading": "Available Components",
               "essencesHeading": "Essences",
               "replaceItem": "Drop an item to replace"
+            },
+            "info": {
+              "noAvailableSalvage": "Add other components to {systemName} to be able to add them as Salvage to {componentName}. ",
+              "noAvailableEssences": "Add essences to {systemName} to be able to add them to {componentName}. "
             }
           },
           "prompts": {

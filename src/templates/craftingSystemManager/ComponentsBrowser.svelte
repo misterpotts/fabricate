@@ -164,7 +164,6 @@
         const clonedComponent = component.clone(randomID());
         selectedSystem.editComponent(clonedComponent);
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        throw new Error("Not implemented");
     }
 
     async function openItemSheet(component) {
@@ -208,7 +207,7 @@
             <div class="fab-component-grid fab-grid-4">
                 {#each filteredComponents as component}
                     <div class="fab-component" class:fab-disabled={component.isDisabled} class:fab-error={component.hasErrors}>
-                        <div class="fab-component-name" >
+                        <div class="fab-component-name">
                             <p>{component.name}</p>
                             {#if component.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
                         </div>

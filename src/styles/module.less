@@ -291,6 +291,20 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
+  .fab-component-editor {
+    .fab-component-essences {
+      border: 1px solid var(--color-border-dark-1);
+      .fab-component-essence-adjustment {
+        button.fab-increment-essence, button.fab-decrement-essence {
+          background: var(--color-background-dark-2);
+        }
+        .fab-essence-amount {
+          background: var(--color-background-dark-3);
+        }
+      }
+    }
+  }
+
 }
 
 /*
@@ -483,7 +497,6 @@ BEGIN COMMON STRUCTURAL STYLES
   }
   .fab-row {
     display: flex;
-    align-items: center;
     flex-direction: row;
   }
 }
@@ -804,6 +817,58 @@ div.fab-editable {
   }
   .fab-swap-item {
     padding: 16px 8px;
+  }
+  .fab-component-essences {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-row-gap: 1em;
+    grid-column-gap: 1em;
+    padding: 8px;
+    .fab-no-essence-opts {
+      min-width: 460px;
+      min-height: 52px;
+      text-align: center;
+      vertical-align: center;
+      font-style: italic;
+      grid-area: 2 / 2;
+    }
+    .fab-component-essence-adjustment {
+      display: inline-flex;
+      button.fab-increment-essence, button.fab-decrement-essence {
+        max-width: 28px;
+        i {
+          margin: 0;
+        }
+      }
+      .fab-essence-amount {
+        width: 100%;
+        margin: 0 4px 0 4px;
+        border-radius: 4px;
+        padding: 4px 8px;
+        display: inline-flex;
+        justify-content: center;
+        .fab-essence-icon {
+          margin: 0 8px 0 8px;
+        }
+      }
+    }
+  }
+  .fab-salvage-source {
+    max-height: 240px;
+    padding-right: 6px;
+    .fab-component-name {
+      font-size: var(--font-size-12);
+    }
+    .fab-component-preview {
+      padding: 5px;
+    }
+  }
+  .fab-salvage-search {
+    margin-bottom: 6px;
+    .fab-label {
+      margin-right: 10px;
+    }
   }
 }
 
