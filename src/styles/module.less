@@ -812,7 +812,25 @@ div.fab-editable {
   }
 }
 
+.fab-search {
+  position: relative;
+}
+
+button.clear-search {
+  position: absolute;
+  top: 7px;
+  right: 1px;
+  width: 14px;
+}
+
 .fab-component-editor {
+  .fab-no-salvage-opts {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100px;
+  }
   .fab-salvage-opts {
     height: 100%;
   }
@@ -860,6 +878,7 @@ div.fab-editable {
   }
   .fab-salvage-source {
     max-height: 240px;
+    min-height: 100px;
     padding-right: 6px;
     .fab-component-name {
       font-size: var(--font-size-12);

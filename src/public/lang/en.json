@@ -49,7 +49,8 @@
             "title": "Search {systemName} Components",
             "name": "Name",
             "hasEssences": "Has essences?",
-            "hasSalvage": "Has salvage?"
+            "hasSalvage": "Has salvage?",
+            "clear": "Clear search"
           },
           "addNew": "Add a Component to {systemName}",
           "errors": {
@@ -86,6 +87,7 @@
             },
             "info": {
               "noAvailableSalvage": "Add other components to {systemName} to be able to add them as Salvage to {componentName}. ",
+              "noMatchingSalvage": "No matching components found. ",
               "noAvailableEssences": "Add essences to {systemName} to be able to add them to {componentName}. "
             }
           },

@@ -124,6 +124,12 @@
         }, 500);
     }
 
+    function clearSearch() {
+        clearTimeout(scheduledSearch);
+        searchName = "";
+        availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
+    }
+
 </script>
 
 {#if loading}
@@ -158,9 +164,10 @@
             <div class="fab-row">
                 <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.availableComponentsHeading`)}</h3>
             </div>
-            <div class="fab-row fab-salvage-search">
+            <div class="fab-row fab-search fab-salvage-search">
                 <p class="fab-label fab-inline">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.name`)}: </p>
                 <input type="text" bind:value={searchName} on:input={updateSearch} />
+                <button class="clear-search" data-tooltip={craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
             </div>
             <div class="fab-row">
                 {#if availableComponents.length > 0}
@@ -178,8 +185,10 @@
                             </div>
                         {/each}
                     </div>
+                {:else if searchName}
+                    <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noMatchingSalvage`)}</p></div>
                 {:else}
-                    <div><p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noAvailableSalvage`)}</p></div>
+                    <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noAvailableSalvage`, { systemName: selectedSystem.name, componentName: selectedComponent.name })}</p></div>
                 {/if}
             </div>
         </div>
