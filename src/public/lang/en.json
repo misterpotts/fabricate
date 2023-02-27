@@ -87,7 +87,7 @@
             },
             "info": {
               "noAvailableSalvage": "Add other components to {systemName} to be able to add them as Salvage to {componentName}. ",
-              "noMatchingSalvage": "No matching components found. ",
+              "noMatchingSalvage": "No matching components. ",
               "noAvailableEssences": "Add essences to {systemName} to be able to add them to {componentName}. "
             }
           },

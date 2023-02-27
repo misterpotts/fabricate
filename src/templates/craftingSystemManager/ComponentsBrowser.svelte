@@ -52,6 +52,12 @@
         }, 500);
     }
 
+    function clearSearch() {
+        clearTimeout(scheduledSearch);
+        searchName = "";
+        filteredComponents = searchComponents();
+    }
+
     async function importComponent(event) {
         const dropEventParser = new DropEventParser({
             event,
@@ -189,9 +195,10 @@
         <h2>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.title`, { systemName: selectedSystem?.name })}</h2>
     </div>
     <div class="fab-row fab-columns fab-component-search">
-        <div class="fab-column fab-row fab-component-name">
+        <div class="fab-column fab-row fab-search fab-component-name">
             <p class="fab-label fab-inline">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.name`)}</p>
             <input type="text" bind:value={searchName} on:input={updateSearch} />
+            <button class="clear-search" data-tooltip={craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
         </div>
         <div class="fab-column fab-row fab-has-essences">
             <p class="fab-label fab-inline">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.hasEssences`)}</p>
