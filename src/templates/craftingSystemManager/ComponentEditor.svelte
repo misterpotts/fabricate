@@ -10,7 +10,6 @@
     import {Tab, Tabs} from "../common/FabricateTabs.js";
     import TabList from "../common/TabList.svelte";
     import TabPanel from "../common/TabPanel.svelte";
-    import {CraftingSystemDetails} from "../../scripts/system/CraftingSystemDetails";
 
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
