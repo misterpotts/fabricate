@@ -199,6 +199,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._disabled = value;
     }
 
+    get isDisabled(): boolean {
+        return this._disabled;
+    }
+
     get resultOptionsById(): Map<string, ResultOption> {
         return this._resultOptions.optionsByName;
     }

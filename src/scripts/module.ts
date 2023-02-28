@@ -15,7 +15,6 @@ import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
 import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
 import {FabricateEventBus, ItemDeleted} from "../templates/FabricateEventBus";
-import HeaderButton = Application.HeaderButton;
 
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
@@ -24,7 +23,7 @@ Hooks.on("deleteItem", async (item: any, _app: unknown, _id: string) => {
     FabricateEventBus.dispatch(itemDeletedEvent);
 });
 
-Hooks.on("getItemSheetHeaderButtons", async (itemSheet: ItemSheet, headerButtons: HeaderButton[]) => {
+Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
     if (!itemSheet.actor) {
         console.log("Not owned, not intractable. ");
         return;
@@ -39,6 +38,8 @@ Hooks.on("getItemSheetHeaderButtons", async (itemSheet: ItemSheet, headerButtons
         return;
     }
     // todo: optimise by partially loading recipes/components/essences without fetching related item data or populating references
+    // this would allow for me to use the getItemSheetHeaderButtons hook, though I'd lose tooltips
+    // more importantly though I could load individual items only as needed
     const allCraftingSystems = await FabricateApplication.systemRegistry.getAllCraftingSystems();
     const loadedSystems = await Promise.all(Array.from(allCraftingSystems.values())
         .map(async craftingSystem => {
@@ -47,28 +48,42 @@ Hooks.on("getItemSheetHeaderButtons", async (itemSheet: ItemSheet, headerButtons
         }));
     const headerButtonsToAdd = loadedSystems.filter(craftingSystem => craftingSystem.includesItemUuid(sourceItemUuid))
         .flatMap(craftingSystem => {
-            const additionalHeaderButtons: HeaderButton[] = [];
+            const additionalHeaderButtons = [];
             if (craftingSystem.includesRecipeByItemUuid(sourceItemUuid)) {
                 const recipe = craftingSystem.getRecipeByItemUuid(sourceItemUuid);
-                additionalHeaderButtons.push({
-                    label: `Craft (${craftingSystem.name})`,
-                    class: "fab-item-sheet-header-button",
-                    icon: "fa-solid fa-screwdriver-wrench",
-                    onclick: () => { console.log(`Clicked craft Recipe ${recipe.name}`); }
-                });
+                if (!recipe.isDisabled) {
+                    additionalHeaderButtons.push({
+                        label: "Craft",
+                        tooltip: craftingSystem.name,
+                        icon: "fa-solid fa-screwdriver-wrench",
+                        onclick: () => { console.log(`Clicked craft Recipe ${recipe.name}`); }
+                    });
+                }
             }
             if (craftingSystem.includesComponentByItemUuid(sourceItemUuid)) {
                 const craftingComponent = craftingSystem.getComponentByItemUuid(sourceItemUuid);
-                additionalHeaderButtons.push({
-                    label: `Salvage (${craftingSystem.name})`,
-                    class: "fab-item-sheet-header-button",
-                    icon: "fa-solid fa-recycle",
-                    onclick: () => { console.log(`Clicked salvage Crafting Component ${craftingComponent.name}`); }
-                });
+                if (craftingComponent.isSalvageable && !craftingComponent.isDisabled) {
+                    additionalHeaderButtons.push({
+                        label: "Salvage",
+                        tooltip: craftingSystem.name,
+                        class: "fab-item-sheet-header-button",
+                        icon: "fa-solid fa-recycle",
+                        onclick: () => { console.log(`Clicked salvage Crafting Component ${craftingComponent.name}`); }
+                    });
+                }
             }
             return additionalHeaderButtons;
         });
-    headerButtons.unshift(...headerButtonsToAdd);
+    const header = html.find(".window-header");
+    if (!header) {
+        throw new Error("Fabricate was unable to render header buttons for the Item Sheet application");
+    }
+    let title = header.children(".window-title");
+    headerButtonsToAdd.forEach(headerButton => {
+        const button = $(`<a class="header-button ${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i> ${headerButton.label}</a>`);
+        button.click(() => headerButton.onclick());
+        button.insertAfter(title);
+    });
 });
 
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
