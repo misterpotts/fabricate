@@ -139,12 +139,24 @@ class CraftingSystem {
         return this._partDictionary.hasComponentUuid(itemUuid);
     }
 
+    public includesRecipeByItemUuid(itemUuid: string) {
+        return this._partDictionary.hasRecipeUuid(itemUuid);
+    }
+
+    public includesItemUuid(itemUuid: string) {
+        return this.includesComponentByItemUuid(itemUuid) || this.includesRecipeByItemUuid(itemUuid);
+    }
+
     public getComponentById(id: string): CraftingComponent {
         return this._partDictionary.getComponent(id);
     }
 
     public getComponentByItemUuid(uuid: string): CraftingComponent {
         return this._partDictionary.getComponentByItemUuid(uuid);
+    }
+
+    public getRecipeByItemUuid(uuid: string): Recipe {
+        return this._partDictionary.getRecipeByItemUuid(uuid);
     }
 
     public deleteComponentById(id: string): void {
@@ -155,8 +167,8 @@ class CraftingSystem {
         return this._partDictionary.insertComponent(component);
     }
 
-    public async getRecipes(): Promise<Recipe[]> {
-        return await this._partDictionary.getRecipes();
+    public getRecipes(): Recipe[] {
+        return this._partDictionary.getRecipes();
     }
 
     public hasRecipe(id: string) {

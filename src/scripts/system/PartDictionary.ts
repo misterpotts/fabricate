@@ -391,7 +391,7 @@ class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingC
 
     containsItemByUuid(itemUuid: string) {
         return this._entriesByItemUuid.has(itemUuid);
-}
+    }
 
     getByItemUuid(uuid: string) {
         return this._entriesByItemUuid.get(uuid);
@@ -403,7 +403,8 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     private readonly _documentManager: DocumentManager;
     private readonly _essenceDictionary: EssenceDictionary;
     private readonly _componentDictionary: ComponentDictionary;
-    private readonly _entries: Map<string, Recipe>;
+    private readonly _entriesById: Map<string, Recipe>;
+    private readonly _entriesByItemUuid: Map<string, Recipe>;
     private _loaded: boolean;
 
     constructor({
@@ -411,21 +412,24 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         documentManager,
         essenceDictionary,
         componentDictionary,
-        entries = new Map(),
+        entriesById = new Map(),
+        entriesByItemUuid = new Map(),
         loaded = false
     }: {
         sourceData: Record<string, RecipeJson>;
         documentManager: DocumentManager;
         essenceDictionary: EssenceDictionary;
         componentDictionary: ComponentDictionary;
-        entries?: Map<string, Recipe>;
+        entriesById?: Map<string, Recipe>;
+        entriesByItemUuid?: Map<string, Recipe>;
         loaded?: boolean;
     }) {
         this._sourceData = sourceData;
         this._documentManager = documentManager;
         this._essenceDictionary = essenceDictionary;
         this._componentDictionary = componentDictionary;
-        this._entries = entries;
+        this._entriesById = entriesById;
+        this._entriesByItemUuid = entriesByItemUuid;
         this._loaded = loaded;
     }
 
@@ -439,7 +443,7 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     get entriesWithErrors(): Recipe[] {
-        return Array.from(this._entries.values()).filter(entry => entry.hasErrors);
+        return Array.from(this._entriesById.values()).filter(entry => entry.hasErrors);
     }
 
     get hasErrors(): boolean {
@@ -451,22 +455,22 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     get size(): number {
-        return this._entries.size;
+        return this._entriesById.size;
     }
 
     contains(id: string): boolean {
-        return this._entries.has(id);
+        return this._entriesById.has(id);
     }
 
     getAll(): Map<string, Recipe> {
-        return new Map(this._entries);
+        return new Map(this._entriesById);
     }
 
     getById(id: string): Recipe {
-        if (!this._entries.has(id)) {
-            throw new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: ${Array.from(this._entries.keys()).join(", ")}`);
+        if (!this._entriesById.has(id)) {
+            throw new Error(`No Recipe data was found for the id "${id}". Known Recipe IDs for this system are: ${Array.from(this._entriesById.keys()).join(", ")}`);
         }
-        return this._entries.get(id);
+        return this._entriesById.get(id);
     }
 
     get sourceData(): Record<string, RecipeJson> {
@@ -478,11 +482,21 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     insert(recipe: Recipe): void {
-        this._entries.set(recipe.id, recipe);
+        if (this._entriesByItemUuid.has(recipe.itemUuid)) {
+            return;
+        }
+        if (recipe.itemUuid !== NoFabricateItemData.UUID()) {
+            this._entriesByItemUuid.set(recipe.itemUuid, recipe);
+        }
+        this._entriesById.set(recipe.id, recipe);
     }
 
     deleteById(id: string): void {
-        this._entries.delete(id);
+        if (!this._entriesById.has(id)) {
+            return;
+        }
+        this._entriesById.delete(id);
+        this._entriesByItemUuid.delete(id);
     }
 
     async loadAll(): Promise<Recipe[]> {
@@ -493,12 +507,13 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         const itemUuids = Object.values(this._sourceData)
             .map(data => data.itemUuid);
         const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
-        this._entries.clear();
+        this._entriesById.clear();
+        this._entriesByItemUuid.clear();
         const recipes = await Promise.all(Object.keys(this._sourceData)
             .map(id => this.loadById(id, cachedItemDataByUUid)));
-        recipes.forEach(recipe => this._entries.set(recipe.id, recipe));
+        recipes.forEach(recipe => this.insert(recipe));
         this._loaded = true;
-        return Array.from(this._entries.values());
+        return Array.from(this._entriesById.values());
     }
 
     async loadById(id: string, itemDataCache?: Map<string, FabricateItemData>): Promise<Recipe> {
@@ -561,7 +576,7 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     toJson(): Record<string, RecipeJson> {
-        return Array.from(this._entries.entries())
+        return Array.from(this._entriesById.entries())
             .map(entry => { return  {key: entry[0], value: entry[1].toJson() } })
             .reduce((left, right) => {
                 left[right.key] = right.value;
@@ -570,13 +585,12 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     get isEmpty(): boolean {
-        return this._entries.size === 0;
+        return this._entriesById.size === 0;
     }
 
     dropComponentReferences(componentToDelete: CraftingComponent) {
-        Array.from(this._entries.keys())
-            .forEach(id => {
-                const recipe = this._entries.get(id);
+        Array.from(this._entriesById.values())
+            .forEach(recipe => {
                 recipe.ingredientOptions = recipe.ingredientOptions
                     .map(ingredientOption => {
                         if (ingredientOption.ingredients.has(componentToDelete)) {
@@ -598,11 +612,18 @@ class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     dropEssenceReferences(essenceToDelete: Essence) {
-        Array.from(this._entries.keys())
-            .forEach(id => {
-                const recipe = this._entries.get(id);
+        Array.from(this._entriesById.values())
+            .forEach(recipe => {
                 recipe.essences = recipe.essences.without(essenceToDelete);
             });
+    }
+
+    containsItemByUuid(itemUuid: string) {
+        return this._entriesByItemUuid.has(itemUuid);
+    }
+
+    getByItemUuid(itemUuid: string) {
+        return this._entriesByItemUuid.get(itemUuid);
     }
 }
 
@@ -672,8 +693,8 @@ class PartDictionary {
         return Array.from(componentsById.values());
     }
 
-    public async getRecipes(): Promise<Recipe[]> {
-        const recipesById = await this._recipeDictionary.getAll();
+    public getRecipes(): Recipe[] {
+        const recipesById = this._recipeDictionary.getAll();
         return Array.from(recipesById.values());
     }
 
@@ -766,8 +787,16 @@ class PartDictionary {
         return this._componentDictionary.containsItemByUuid(itemUuid);
     }
 
+    hasRecipeUuid(itemUuid: string) {
+        return this._recipeDictionary.containsItemByUuid(itemUuid);
+    }
+
     getComponentByItemUuid(uuid: string) {
         return this._componentDictionary.getByItemUuid(uuid);
+    }
+
+    getRecipeByItemUuid(uuid: string) {
+        return this._recipeDictionary.getByItemUuid(uuid);
     }
 }
 

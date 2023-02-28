@@ -15,13 +15,60 @@ import {DefaultInventoryFactory} from "./actor/InventoryFactory";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
 import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
 import {FabricateEventBus, ItemDeleted} from "../templates/FabricateEventBus";
-
+import HeaderButton = Application.HeaderButton;
 
 // `app` is an unknown type. Will need to consult foundry docs or crawl `foundry.js` to figure out what it is, but it seems JQuery related
 // `id` is useless to Fabricate
 Hooks.on("deleteItem", async (item: any, _app: unknown, _id: string) => {
     const itemDeletedEvent = new ItemDeleted(item);
     FabricateEventBus.dispatch(itemDeletedEvent);
+});
+
+Hooks.on("getItemSheetHeaderButtons", async (itemSheet: ItemSheet, headerButtons: HeaderButton[]) => {
+    if (!itemSheet.actor) {
+        console.log("Not owned, not intractable. ");
+        return;
+    }
+    if (!Properties.module.documents.supportedTypes.includes(itemSheet.document.documentName)) {
+        console.log("Not a supported document type. ");
+        return;
+    }
+    const sourceItemUuid = itemSheet.document.getFlag("core", "sourceId");
+    if (!sourceItemUuid) {
+        console.log("Not created from another item. ");
+        return;
+    }
+    // todo: optimise by partially loading recipes/components/essences without fetching related item data or populating references
+    const allCraftingSystems = await FabricateApplication.systemRegistry.getAllCraftingSystems();
+    const loadedSystems = await Promise.all(Array.from(allCraftingSystems.values())
+        .map(async craftingSystem => {
+            await craftingSystem.loadPartDictionary();
+            return craftingSystem;
+        }));
+    const headerButtonsToAdd = loadedSystems.filter(craftingSystem => craftingSystem.includesItemUuid(sourceItemUuid))
+        .flatMap(craftingSystem => {
+            const additionalHeaderButtons: HeaderButton[] = [];
+            if (craftingSystem.includesRecipeByItemUuid(sourceItemUuid)) {
+                const recipe = craftingSystem.getRecipeByItemUuid(sourceItemUuid);
+                additionalHeaderButtons.push({
+                    label: `Craft (${craftingSystem.name})`,
+                    class: "fab-item-sheet-header-button",
+                    icon: "fa-solid fa-screwdriver-wrench",
+                    onclick: () => { console.log(`Clicked craft Recipe ${recipe.name}`); }
+                });
+            }
+            if (craftingSystem.includesComponentByItemUuid(sourceItemUuid)) {
+                const craftingComponent = craftingSystem.getComponentByItemUuid(sourceItemUuid);
+                additionalHeaderButtons.push({
+                    label: `Salvage (${craftingSystem.name})`,
+                    class: "fab-item-sheet-header-button",
+                    icon: "fa-solid fa-recycle",
+                    onclick: () => { console.log(`Clicked salvage Crafting Component ${craftingComponent.name}`); }
+                });
+            }
+            return additionalHeaderButtons;
+        });
+    headerButtons.unshift(...headerButtonsToAdd);
 });
 
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
