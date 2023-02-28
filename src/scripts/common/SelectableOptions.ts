@@ -12,11 +12,25 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         options?: T[],
         selectedOptionId?: string
     }) {
-        this._options = new Map(options.map(value => [value.id, value]));
+        this._options = this.prepareOptions(options);
         this._selectedOptionId = selectedOptionId;
         if (this._selectedOptionId) {
             this.validateSelection(this._selectedOptionId, this._options);
         }
+    }
+
+    private prepareOptions(options: T[]): Map<string, T> {
+        if (!options || options.length === 0) {
+            return new Map();
+        }
+        const result = new Map();
+        for (const option of options) {
+            if (result.has(option.id)) {
+                throw new Error(`${option.id} is not a unique option name. `);
+            }
+            result.set(option.id, option);
+        }
+        return result;
     }
 
     public select(name: string) {
@@ -73,12 +87,9 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     }
 
     toJson(): Record<string, J> {
-        return Array.from(this._options.entries())
-            .map(element => {
-                return { key: element[0], value: element[1] }
-            })
+        return Array.from(this._options.values())
             .reduce((previousValue, currentValue) => {
-                previousValue[currentValue.key] = currentValue.value.toJson();
+                previousValue[currentValue.id] = currentValue.toJson();
                 return previousValue;
             }, <Record<string, J>>{});
     }
@@ -103,6 +114,10 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         if (this._selectedOptionId === id) {
             this.clearSelection()
         }
+    }
+
+    getById(id: string) {
+        this._options.get(id);
     }
 
     private clearSelection() {

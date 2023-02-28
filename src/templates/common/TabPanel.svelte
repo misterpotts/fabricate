@@ -6,10 +6,14 @@
 	const { registerPanel, selectedPanel } = getContext(TABS);
 
 	registerPanel(panel);
+
+	let clazz = '';
+	export {clazz as class};
+
 </script>
 
 {#if $selectedPanel === panel}
-	<div class="fab-tab-content fab-scrollable fab-columns">
+	<div class="fab-tab-content {clazz}">
 		<slot></slot>
 	</div>
 {/if}

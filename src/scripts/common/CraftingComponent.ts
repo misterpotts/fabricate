@@ -1,4 +1,4 @@
-import {StringIdentity, Combination} from "./Combination";
+import {StringIdentity, Combination, Unit} from "./Combination";
 import {Identifiable, Serializable} from "./Identity";
 import {Essence} from "./Essence";
 import {SelectableOptions} from "./SelectableOptions";
@@ -16,7 +16,7 @@ type SalvageOptionJson = Record<string, number>;
 class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
     private _salvage: Combination<CraftingComponent>;
-    private readonly _name: string;
+    private _name: string;
 
     constructor({
         name,
@@ -37,6 +37,10 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         this._salvage = value;
     }
 
+    set name(value: string) {
+        this._name = value;
+    }
+
     get isEmpty(): boolean {
         return this._salvage.isEmpty();
     }
@@ -47,6 +51,14 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
     get id(): string {
         return this._name;
+    }
+
+    public add(component: CraftingComponent, quantity = 1) {
+        this._salvage = this._salvage.add(new Unit(component, quantity));
+    }
+
+    public subtract(component: CraftingComponent, quantity = 1) {
+        this._salvage = this._salvage.minus(new Unit(component, quantity));
     }
 
     toJson(): SalvageOptionJson {
@@ -198,7 +210,7 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         this._salvageOptions.set(value);
     }
 
-    public deleteSalvageOptionById(id: string) {
+    public deleteSalvageOptionByName(id: string) {
         this._salvageOptions.deleteById(id);
     }
 

@@ -203,8 +203,8 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
-  .fab-tabs {
-    .fab-tab-content {
+  .fab-tabs.fab-main {
+    > .fab-tab-content {
       border-bottom: 2px solid var(--color-border-light-1);
       .fab-tab-header {
         color: var(--color-text-light-secondary);
@@ -219,6 +219,10 @@ BEGIN FABRICATE THEME STYLES
 
   .fab-component-grid {
     .fab-component {
+      .fab-component-info {
+        background: var(--color-border-light-1);
+        color: var(--color-text-light-heading);
+      }
       background: var(--color-background-dark-3);
       &.fab-error {
         .fab-component-name {
@@ -520,6 +524,7 @@ BEGIN COMMON STRUCTURAL STYLES
   }
   .fab-component {
     display: inline-flex;
+    position: relative;
     flex-wrap: wrap;
     &.fab-disabled {
       opacity: 0.4;
@@ -555,6 +560,18 @@ BEGIN COMMON STRUCTURAL STYLES
         }
       }
     }
+    .fab-component-info {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+      bottom: 62px;
+      right: -3px;
+      height: 20px;
+      width: 20px;
+      border-radius: 10px;
+    }
   }
 }
 
@@ -564,27 +581,41 @@ BEGIN COMMON STRUCTURAL STYLES
   width: 100%;
   max-height: 100vh;
   .fab-tab-list {
-    min-height: 66px;
     display: inline-flex;
     justify-content: space-around;
     align-content: center;
     align-items: center;
     button {
-      height: 46px;
-      width: auto;
       margin: 0;
-      padding: 0 16px;
     }
   }
   .fab-tab-content {
-    padding: 0 12px;
     flex-grow: 1;
     display: flex;
+    .fab-tab-header {
+      align-items: center;
+    }
+  }
+}
+
+
+.fab-tab-list.fab-main-nav  {
+  min-height: 66px;
+  button {
+    height: 46px;
+    width: auto;
+    margin: 0;
+    padding: 0 16px;
+  }
+}
+
+.fab-tabs.fab-main {
+  > .fab-tab-content {
+    padding: 0 12px;
     .fab-tab-header {
       min-height: 46px;
       margin: 8px 0;
       padding: 8px 12px;
-      align-items: center;
       img {
         margin-right: 10px;
       }
@@ -824,6 +855,12 @@ button.clear-search {
 }
 
 .fab-component-editor {
+  .fab-component-salvage-editor {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 1em;
+    margin-bottom: 12px;
+  }
   .fab-no-salvage-opts {
     display: flex;
     justify-content: center;
@@ -878,9 +915,15 @@ button.clear-search {
     }
   }
   .fab-salvage-source {
-    max-height: 240px;
+    max-height: 280px;
     min-height: 100px;
     padding-right: 6px;
+    .fab-component {
+      cursor: all-scroll;
+      img {
+        cursor: all-scroll;
+      }
+    }
     .fab-component-name {
       font-size: var(--font-size-12);
     }
@@ -894,46 +937,54 @@ button.clear-search {
       margin-right: 10px;
     }
   }
+  .fab-drop-zone.fab-not-salvageable {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fab-salvage-editor {
+    .fab-tabs{
+      min-height: 280px;
+    }
+    .fab-new-salvage-opt {
+      width: 100%;
+      margin: 20px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+    }
+  }
+  .fab-option-controls {
+    .fab-option-name {
+      display: flex;
+      flex: 3;
+      .fab-editable {
+        flex-grow: 1;
+        margin-left: 10px;
+        margin-right: 10px;
+      }
+    }
+    button.fab-delete-salvage-opt {
+      flex: 1;
+    }
+    margin: 10px 0;
+  }
+  .fab-salvage-option-actual {
+    pagging-right: 6px;
+    overflow-x: hidden;
+    .fab-component-preview {
+      padding: 5px;
+    }
+    min-height: 100px;
+    max-height: 240px;
+  }
 }
 
 /*
 =====================================================================
 END COMMON STRUCTURAL STYLES
-=====================================================================
-*/
-
-/*
-=====================================================================
-BEGIN COMMON VISUAL STYLES
-=====================================================================
-*/
-
-/*
-=====================================================================
-END COMMON VISUAL STYLES
-=====================================================================
-*/
-
-/*
-=====================================================================
-BEGIN APPLICATION WINDOW SPECIFIC STYLES
-=====================================================================
-*/
-
-/*
-=====================================================================
-BEGIN ITEM SHEET TAB STYLES
-=====================================================================
-*/
-
-/*
-=====================================================================
-END ITEM SHEET TAB STYLES
-=====================================================================
-*/
-
-/*
-=====================================================================
-END APPLICATION WINDOW SPECIFIC STYLES
 =====================================================================
 */

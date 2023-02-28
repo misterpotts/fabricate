@@ -17,9 +17,9 @@
 
 <CraftingSystemNavbar />
 
-<Tabs>
+<Tabs class="fab-main">
 
-    <TabList>
+    <TabList class="fab-main-nav">
         <Tab><i class="fa-solid fa-file-lines"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.label`)}</Tab>
         <Tab><i class="fa-solid fa-boxes-stacked"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.label`)}</Tab>
         <Tab><i class="fa-solid fa-scroll"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes.label`)}</Tab>
@@ -27,25 +27,25 @@
         <Tab><i class="fa-solid fa-flask-vial"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.alchemy.label`)}</Tab>
     </TabList>
 
-    <TabPanel>
+    <TabPanel class="fab-scrollable fab-columns">
         <CraftingSystemDetails />
     </TabPanel>
 
-    <TabPanel>
+    <TabPanel class="fab-scrollable fab-columns">
         <ComponentsTab />
     </TabPanel>
 
-    <TabPanel>
+    <TabPanel class="fab-scrollable fab-columns">
         <div class="fab-hero-banner">
             <img src="{Properties.ui.banners.recipeEditor}" >
         </div>
     </TabPanel>
 
-    <TabPanel>
+    <TabPanel class="fab-scrollable fab-columns">
         <EssenceEditor />
     </TabPanel>
 
-    <TabPanel>
+    <TabPanel class="fab-scrollable fab-columns">
         <div class="fab-column">
             <div class="fab-hero-banner fab-row">
                 <img src="{Properties.ui.banners.alchemyEditor}" >

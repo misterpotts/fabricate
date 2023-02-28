@@ -103,12 +103,12 @@
 
     async function addActiveEffectSource(event, essence) {
         const dropEventParser = new DropEventParser({
-            event,
             i18n: craftingSystemManager.i18n,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.activeEffectSource.singular`)
         })
-        essence.activeEffectSource = await dropEventParser.parse();
+        const dropData = await dropEventParser.parse(event);
+        essence.activeEffectSource = dropData.itemData;
         loading = true;
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         loading = false;

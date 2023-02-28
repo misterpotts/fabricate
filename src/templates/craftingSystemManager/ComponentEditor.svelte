@@ -4,8 +4,14 @@
     import Properties from "../../scripts/Properties.js";
     import {DropEventParser} from "./DropEventParser";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
-    import {Unit} from "../../scripts/common/Combination";
+    import {Combination, Unit} from "../../scripts/common/Combination";
     import truncate from "../common/Truncate";
+    import {SalvageOption} from "../../scripts/common/CraftingComponent";
+    import {Tab, Tabs} from "../common/FabricateTabs.js";
+    import TabList from "../common/TabList.svelte";
+    import TabPanel from "../common/TabPanel.svelte";
+    import {CraftingSystemDetails} from "../../scripts/system/CraftingSystemDetails";
+
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     let loading = false;
@@ -21,7 +27,9 @@
         selectedSystem = value.selectedSystem;
         searchName = "";
         if (selectedComponent) {
+            selectedComponent = selectedSystem.getComponentById(selectedComponent.id);
             formattedEssences = formatEssences(selectedComponent, selectedSystem);
+            availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
         }
     });
 
@@ -62,12 +70,12 @@
     async function replaceItem(event) {
         loading = true;
         const dropEventParser = new DropEventParser({
-            event,
             i18n: craftingSystemManager.i18n,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`)
         })
-        const itemData = await dropEventParser.parse();
+        const dropData = await dropEventParser.parse(event);
+        const itemData = dropData.itemData;
         if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
             const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
             const message = craftingSystemManager.i18n.format(
@@ -130,6 +138,101 @@
         availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
     }
 
+    async function addSalvageOption(event) {
+        loading = true;
+        const dropEventParser = new DropEventParser({
+            i18n: craftingSystemManager.i18n,
+            documentManager: new DefaultDocumentManager(),
+            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: availableComponents
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        const name = generateOptionName(selectedComponent);
+        const salvageOption = new SalvageOption({name, salvage: Combination.of(component, 1)});
+        selectedComponent.addSalvageOption(salvageOption);
+        selectedSystem.editComponent(selectedComponent);
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        loading = false;
+    }
+
+    function generateOptionName(component) {
+        if (!component.isSalvageable) {
+            return craftingSystemManager.i18n.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: 1 });
+        }
+        const existingNames = component.salvageOptions.map(salvageOption => salvageOption.name);
+        let nextOptionNumber = 2;
+        let nextOptionName;
+        do {
+            nextOptionName = craftingSystemManager.i18n.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: nextOptionNumber });
+            nextOptionNumber++;
+        } while (existingNames.includes(nextOptionName));
+        return nextOptionName;
+    }
+
+    let scheduledUpdate;
+    function updateSalvageOptionName() {
+        clearTimeout(scheduledUpdate);
+        scheduledUpdate = setTimeout(async () => {
+            loading = true;
+            selectedSystem.editComponent(selectedComponent);
+            await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+            loading = false;
+        }, 500);
+    }
+
+    function dragStart(event, component) {
+        event.dataTransfer.setData('application/json', DropEventParser.serialiseComponentData(component));
+    }
+
+    function sortByName(salvageOptions) {
+        return salvageOptions.sort((left, right) => left.name.localeCompare(right.name));
+    }
+
+    async function deleteSalvageOption(component, optionToDelete) {
+        component.deleteSalvageOptionByName(optionToDelete.name);
+        selectedSystem.editComponent(selectedComponent);
+        loading = true;
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        loading = false;
+    }
+
+    async function addComponentToSalvageOption(event, salvageOption) {
+        loading = true;
+        const dropEventParser = new DropEventParser({
+            i18n: craftingSystemManager.i18n,
+            documentManager: new DefaultDocumentManager(),
+            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: availableComponents
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        salvageOption.add(component);
+        selectedSystem.editComponent(selectedComponent);
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        loading = false;
+    }
+
+    async function decrementSalvageOptionComponent(salvageOption, component) {
+        salvageOption.subtract(component);
+        if (salvageOption.isEmpty) {
+            return deleteSalvageOption(selectedComponent, salvageOption);
+        }
+        selectedSystem.editComponent(selectedComponent);
+        loading = true;
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        loading = false;
+    }
+
+    async function incrementSalvageOptionComponent(salvageOption, component, event) {
+        if (event && event.shiftKey) {
+            return decrementSalvageOptionComponent(salvageOption, component);
+        }
+        salvageOption.add(component);
+        selectedSystem.editComponent(selectedComponent);
+        loading = true;
+        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+        loading = false;
+    }
+
 </script>
 
 {#if loading}
@@ -154,42 +257,95 @@
             {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.replaceItem`)}
         </div>
     </div>
-    <div class="fab-row fab-columns">
-        <div class="fab-column fab-salvage-opts">
-            <div class="fab-row">
-                <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.salvageHeading`)}</h3>
+    <div class="fab-component-salvage-editor">
+        <div class="fab-component-salvage fab-columns">
+            <div class="fab-column">
+                <div class="fab-row">
+                    <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.salvageHeading`)}</h3>
+                </div>
+                {#if selectedComponent.isSalvageable}
+                    <div class="fab-salvage-editor fab-row">
+                        <Tabs>
+                            <TabList>
+                                {#each sortByName(selectedComponent.salvageOptions) as salvageOption}
+                                    <Tab>{salvageOption.name}</Tab>
+                                {/each}
+                                <Tab><i class="fa-regular fa-square-plus"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.newSalvageOption`)}</Tab>
+                            </TabList>
+                            {#each sortByName(selectedComponent.salvageOptions) as salvageOption}
+                                <TabPanel class="fab-columns">
+                                    <div class="fab-column">
+                                        <div class="fab-option-controls fab-row">
+                                            <div class="fab-option-name">
+                                                <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.salvageName`)}</p>
+                                                <div class="fab-editable" contenteditable="true" bind:textContent={salvageOption.name} on:input={updateSalvageOptionName}>{salvageOption.name}</div>
+                                            </div>
+                                            <button class="fab-delete-salvage-opt" on:click={deleteSalvageOption(selectedComponent, salvageOption)}><i class="fa-solid fa-trash fa-fw"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.deleteSalvageOption`)}</button>
+                                        </div>
+                                        <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-option-actual" on:drop={(e) => addComponentToSalvageOption(e, salvageOption)}>
+                                            {#each salvageOption.salvage.units as salvageUnit}
+                                                <div class="fab-component" on:click={(e) => incrementSalvageOptionComponent(salvageOption, salvageUnit.part, e)} on:auxclick={decrementSalvageOptionComponent(salvageOption, salvageUnit.part)}>
+                                                    <div class="fab-component-name">
+                                                        <p>{truncate(salvageUnit.part.name, 9)}</p>
+                                                    </div>
+                                                    <div class="fab-component-preview">
+                                                        <div class="fab-component-image" data-tooltip={salvageUnit.part.name}>
+                                                            <img src={salvageUnit.part.imageUrl} alt={salvageUnit.part.name} />
+                                                        </div>
+                                                    </div>
+                                                    <span class="fab-component-info fab-component-quantity">{salvageUnit.quantity}</span>
+                                                </div>
+                                            {/each}
+                                        </div>
+                                    </div>
+                                </TabPanel>
+                            {/each}
+                            <TabPanel>
+                                <div class="fab-drop-zone fab-new-salvage-opt" on:drop|preventDefault={(e) => addSalvageOption(e)}>
+                                    <i class="fa-solid fa-plus"></i>
+                                </div>
+                            </TabPanel>
+                        </Tabs>
+                    </div>
+                {:else}
+                    <div class="fab-not-salvageable fab-drop-zone fab-row" on:drop|preventDefault={(e) => addSalvageOption(e)}>
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                {/if}
             </div>
         </div>
-        <div class="fab-column">
-            <div class="fab-row">
-                <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.availableComponentsHeading`)}</h3>
-            </div>
-            <div class="fab-row fab-search fab-salvage-search">
-                <p class="fab-label fab-inline">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.name`)}: </p>
-                <input type="text" bind:value={searchName} on:input={updateSearch} />
-                <button class="clear-search" data-tooltip={craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
-            </div>
-            <div class="fab-row">
-                {#if availableComponents.length > 0}
-                    <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-source">
-                        {#each availableComponents as component}
-                            <div class="fab-component" draggable="true">
-                                <div class="fab-component-name" draggable="false">
-                                    <p draggable="false">{truncate(component.name, 9)}</p>
-                                </div>
-                                <div class="fab-component-preview" draggable="false">
-                                    <div class="fab-component-image" data-tooltip={component.name} draggable="false">
-                                        <img src={component.imageUrl} alt={component.name} draggable="false" />
+        <div class="fab-salvage-options fab-columns">
+            <div class="fab-column">
+                <div class="fab-row">
+                    <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.availableComponentsHeading`)}</h3>
+                </div>
+                <div class="fab-row fab-search fab-salvage-search">
+                    <p class="fab-label fab-inline">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.name`)}: </p>
+                    <input type="text" bind:value={searchName} on:input={updateSearch} />
+                    <button class="clear-search" data-tooltip={craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
+                </div>
+                <div class="fab-row">
+                    {#if availableComponents.length > 0}
+                        <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-source">
+                            {#each availableComponents as component}
+                                <div class="fab-component" draggable="true" on:dragstart={event => dragStart(event, component)}>
+                                    <div class="fab-component-name" draggable="false">
+                                        <p draggable="false">{truncate(component.name, 9)}</p>
+                                    </div>
+                                    <div class="fab-component-preview" draggable="false">
+                                        <div class="fab-component-image" data-tooltip={component.name} draggable="false">
+                                            <img src={component.imageUrl} alt={component.name} draggable="false" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        {/each}
-                    </div>
-                {:else if searchName}
-                    <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noMatchingSalvage`)}</p></div>
-                {:else}
-                    <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noAvailableSalvage`, { systemName: selectedSystem.name, componentName: selectedComponent.name })}</p></div>
-                {/if}
+                            {/each}
+                        </div>
+                    {:else if searchName}
+                        <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noMatchingSalvage`)}</p></div>
+                    {:else}
+                        <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noAvailableSalvage`, { systemName: selectedSystem.name, componentName: selectedComponent.name })}</p></div>
+                    {/if}
+                </div>
             </div>
         </div>
     </div>

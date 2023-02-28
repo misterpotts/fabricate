@@ -11,6 +11,9 @@
 	const selectedTab = writable(null);
 	const selectedPanel = writable(null);
 
+	let clazz = '';
+	export {clazz as class};
+
 	setContext(TABS, {
 		registerTab: tab => {
 			tabs.push(tab);
@@ -45,6 +48,6 @@
 	});
 </script>
 
-<div class="fab-tabs">
+<div class="fab-tabs {clazz}">
 	<slot></slot>
 </div>

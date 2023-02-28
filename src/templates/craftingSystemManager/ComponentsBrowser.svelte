@@ -60,12 +60,12 @@
 
     async function importComponent(event) {
         const dropEventParser = new DropEventParser({
-            event,
             i18n: craftingSystemManager.i18n,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`)
         })
-        const itemData = await dropEventParser.parse();
+        const dropData = await dropEventParser.parse(event);
+        const itemData = dropData.itemData;
         if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
             const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
             const message = craftingSystemManager.i18n.format(

@@ -11,7 +11,10 @@
       },
       "component": {
         "singular": "Component",
-        "plural": "Components"
+        "plural": "Components",
+        "salvageOption": {
+          "name": "Option {number}"
+        }
       },
       "essence": {
         "singular": "Essence",
@@ -26,7 +29,8 @@
       "errors": {
         "noElementData": "{partType} import error: Could not read element data from drop event. ",
         "invalidDocumentType": "{partType} import error: \"{suppliedType}\" cannot be imported as a {partType}. Fabricate only allows the following document types: {allowedTypes}. ",
-        "invalidJson": "{partType} import error: Could not parse JSON data from drop event. "
+        "invalidJson": "{partType} import error: Could not parse JSON data from drop event. ",
+        "unrecognisedComponent": "The Crafting Component {componentName} is not a part of this crafting system. "
       }
     },
     "CraftingSystemManagerApp": {
@@ -73,17 +77,20 @@
               "disable": "Toggle disabled",
               "duplicate": "Duplicate",
               "openSheet": "Open Item Sheet",
-              "deselect": "Go Back"
+              "deselect": "Go Back",
+              "deleteSalvageOption": "Delete"
             },
             "errors": {
               "itemNotFound": "The item does not exist or has been deleted.",
               "itemNotSet": "No item configured. You can set one in the component editor."
             },
             "labels": {
+              "salvageName": "Option name",
               "salvageHeading": "Salvage",
               "availableComponentsHeading": "Available Components",
               "essencesHeading": "Essences",
-              "replaceItem": "Drop an item to replace"
+              "replaceItem": "Drop an item to replace",
+              "newSalvageOption": "New"
             },
             "info": {
               "noAvailableSalvage": "Add other components to {systemName} to be able to add them as Salvage to {componentName}. ",
