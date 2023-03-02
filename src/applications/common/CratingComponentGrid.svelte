@@ -1,0 +1,21 @@
+<!-- CraftingComponentGrid.svelte -->
+<script lang="ts">
+    import openItemSheet from "./OpenItemSheet";
+    export let componentCombination;
+    export let columns = 3;
+</script>
+
+<div class="fab-component-grid fab-grid-{columns}">
+    {#each componentCombination.units as unit}
+        <div class="fab-component">
+            <div class="fab-component-name">
+                <p>{unit.part.name}</p>
+            </div> 
+            <div class="fab-component-preview">
+                <div class="fab-component-image" data-tooltip={unit.part.name}>
+                    <img src={unit.part.imageUrl} alt={unit.part.name} use:openItemSheet={unit.part.itemUuid}>
+                </div>
+            </div> 
+        </div>
+    {/each}
+</div>

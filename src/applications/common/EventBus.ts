@@ -3,7 +3,10 @@ import {CraftingComponent} from "../../scripts/common/CraftingComponent";
 
 const registeredNodes: Map<string, any[]> = new Map();
 const eventBus = function(node: any, eventTypes: string[] | string) {
-
+    const nodeId = randomID();
+    node.__fabricateMetadata = {
+        id: nodeId
+    }
     if (typeof eventTypes === "string") {
         eventTypes = [eventTypes];
     }
@@ -11,12 +14,23 @@ const eventBus = function(node: any, eventTypes: string[] | string) {
         if (!registeredNodes.has(eventType)) {
             registeredNodes.set(eventType, []);
         }
-        registeredNodes.get(eventType).push(node);
+        const subscribers = registeredNodes.get(eventType);
+        if (subscribers.find(subscriber => subscriber === node)) {
+            return;
+        }
+        subscribers.push(node);
     });
 
     return {
-        destroy(n: any) {
-            console.log(n);
+        destroy() {
+            Array.from(registeredNodes.keys())
+                .forEach(eventType => {
+                    const cleanedSubscribers = registeredNodes.get(eventType).filter(node => node.__fabricateMetadata.id !== nodeId);
+                    registeredNodes.set(eventType, cleanedSubscribers);
+                });
+        },
+        update(_eventTypes: string[] | string) {
+            throw new Error("Fabricate UI event subscriptions cannot be changed. Destroy and re-create the component or node instead. ");
         }
     };
 

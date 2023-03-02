@@ -16,6 +16,7 @@ import {
     NoItemQuantityWriter
 } from "../../scripts/actor/ItemQuantity";
 import {Combination} from "../../scripts/common/Combination";
+import {DefaultLocalizationService} from "../common/LocalizationService";
 
 interface ComponentSalvageAppFactory {
 
@@ -42,7 +43,7 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
             id: appId,
             resizable: false,
             width: 540,
-            height: 480
+            height: 514
         }
 
         const itemQuantityIo = DefaultComponentSalvageAppFactory._itemQuantityIoByGameSystem.get(GAME.system.id);
@@ -57,7 +58,7 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
             craftingSystem,
             itemQuantityReader,
             itemQuantityWriter
-        })
+        });
 
         return new SvelteApplication({
             applicationOptions,
@@ -67,8 +68,13 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                         craftingComponent,
                         craftingSystem,
                         inventory,
-                        localization: GAME.i18n,
-                        ownedComponentsOfType: Combination.EMPTY()
+                        localization: new DefaultLocalizationService(gameProvider),
+                        ownedComponentsOfType: Combination.EMPTY(),
+                        closeHook: async () => {
+                            const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
+                                .find(w => w.id == appId);
+                            await svelteApplication.close();
+                        }
                     }
                 },
                 componentType: ComponentSalvageApp

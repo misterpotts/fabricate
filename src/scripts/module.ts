@@ -14,7 +14,7 @@ import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemMan
 import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
 import {DefaultComponentSalvageAppCatalog} from "../applications/componentSalvageApp/ComponentSalvageAppCatalog";
 import {DefaultComponentSalvageAppFactory} from "../applications/componentSalvageApp/ComponentSalvageAppFactory";
-import {itemUpdated, itemDeleted, itemCreated} from "../applications/componentSalvageApp/EventBus";
+import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
 import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 
 Hooks.on("deleteItem", async (item: any) => {

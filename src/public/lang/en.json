@@ -34,7 +34,18 @@
       }
     },
     "ComponentSalvageApp": {
-      "title": "Fabricate | Component Salvage | {actorName}"
+      "title": "Fabricate | Component Salvage | {actorName}",
+      "header": {
+        "buttons": {
+          "salvage": "Salvage"
+        }
+      },
+      "errors": {
+        "notSalvageable": "Something has gone wrong, and this component has zero salvage options."
+      },
+      "hints": {
+        "doSalvage": "Salvaging this component will add these items to your inventory"
+      }
     },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",

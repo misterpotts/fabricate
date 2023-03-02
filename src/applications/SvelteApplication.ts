@@ -45,6 +45,11 @@ class SvelteApplication extends Application {
         return this._component;
     }
 
+    async close(): Promise<void> {
+        await super.close();
+        this._component.$destroy();
+    }
+
 }
 
 export { SvelteApplication, SvelteComponentConfig, SvelteComponentConstructor }

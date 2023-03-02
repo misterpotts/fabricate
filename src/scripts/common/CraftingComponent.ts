@@ -139,8 +139,20 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
         return this._salvageOptions.selectedOption.salvage;
     }
 
+    get selectedSalvageOptionName(): string {
+        return this._salvageOptions.selectedOptionId;
+    }
+
     public selectSalvageOption(combinationId: string) {
-        return this._salvageOptions.select(combinationId);
+        this._salvageOptions.select(combinationId);
+    }
+
+    public selectNextSalvageOption(): void {
+        this._salvageOptions.selectNext();
+    }
+
+    public selectPreviousSalvageOption(): void {
+        this._salvageOptions.selectPrevious();
     }
 
     get isDisabled(): boolean {
@@ -200,6 +212,17 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
 
     get salvageOptions(): SalvageOption[] {
         return this._salvageOptions.options.filter(option => !option.isEmpty);
+    }
+
+    get firstOptionName(): string {
+        if (this._salvageOptions.isEmpty) {
+            return "";
+        }
+        return this.salvageOptions[0].name;
+    }
+
+    public selectFirstOption(): void {
+        this.selectSalvageOption(this.firstOptionName);
     }
 
     get salvageOptionsById(): Map<string, SalvageOption> {

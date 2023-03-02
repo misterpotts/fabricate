@@ -8,7 +8,7 @@
     import ComponentsTab from "./ComponentsTab.svelte";
     import EssenceEditor from "./EssenceEditor.svelte";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
-    import eventBus from "../componentSalvageApp/EventBus";
+    import eventBus from "../common/EventBus";
 
     function handleItemDeleted(event) {
         craftingSystemManager.craftingSystemsStore.handleItemDeleted(event.detail.uuid);
