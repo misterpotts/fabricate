@@ -3,7 +3,7 @@
     import Properties from "../../scripts/Properties";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {CraftingComponent} from "../../scripts/common/CraftingComponent";
-    import {DropEventParser} from "./DropEventParser";
+    import {DropEventParser} from "../common/DropEventParser";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
     let selectedSystem;

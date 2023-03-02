@@ -62,7 +62,7 @@ class CraftingSystemManagerApp {
 
     public static getInstance(): CraftingSystemManagerApp {
         if (!CraftingSystemManagerApp._INSTANCE) {
-            throw new Error("CraftingSystemManagerApp has not been initialised yet. CallCraftingSystemManagerApp::init before CraftingSystemManagerApp::getInstance")
+            throw new Error("CraftingSystemManagerApp has not been initialised yet. Call CraftingSystemManagerApp::init before CraftingSystemManagerApp::getInstance")
         }
         return CraftingSystemManagerApp._INSTANCE;
     }

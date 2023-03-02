@@ -6,14 +6,17 @@
     import CraftingSystemDetails from "./CraftingSystemDetails.svelte";
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./ComponentsTab.svelte";
-    import {FabricateEventBus, ItemDeleted} from "../FabricateEventBus";
     import EssenceEditor from "./EssenceEditor.svelte";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+    import eventBus from "../componentSalvageApp/EventBus";
 
-    FabricateEventBus.register(ItemDeleted.eventType, (event) => {
-        craftingSystemManager.craftingSystemsStore.handleItemDeleted(event.document.uuid);
-    });
+    function handleItemDeleted(event) {
+        craftingSystemManager.craftingSystemsStore.handleItemDeleted(event.detail.uuid);
+    }
+
 </script>
+
+<svelte:window on:itemDeleted={(e) => handleItemDeleted(e)} use:eventBus='{"itemDeleted"}'></svelte:window>
 
 <CraftingSystemNavbar />
 

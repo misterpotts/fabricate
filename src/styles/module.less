@@ -6,6 +6,7 @@ BEGIN CSS VARIABLES
 
 .fab-fabricate-theme {
   --color-text-light-heading: #e5c6a3;
+  --color-text-light-heading-active: #f5e3d1;
   --color-text-light-primary: #878485;
   --color-text-light-secondary: #969498;
   --color-text-light-tertiary: #c9c6cc;
@@ -305,6 +306,18 @@ BEGIN FABRICATE THEME STYLES
         .fab-essence-amount {
           background: var(--color-background-dark-3);
         }
+      }
+    }
+  }
+
+  .fab-item-salvage-header {
+    border-bottom: 1px solid var(--color-background-dark-2);
+    background: var(--color-background-dark-5);
+    button.fab-component-salvage-btn {
+      background: var(--color-border-light-1) !important;
+      color: var(--color-text-light-heading) !important;
+      &:hover {
+        color: var(--color-text-light-heading-active) !important;
       }
     }
   }
@@ -727,6 +740,23 @@ div.fab-editable {
   }
 }
 
+.fab-search {
+  position: relative;
+}
+
+button.clear-search {
+  position: absolute;
+  top: 7px;
+  right: 1px;
+  width: 14px;
+}
+
+/*
+=====================================================================
+END COMMON STRUCTURAL STYLES
+=====================================================================
+*/
+
 .fab-essence-editor {
   .fab-essence-icon-modal {
     position: absolute;
@@ -840,17 +870,6 @@ div.fab-editable {
     height: 2px;
     grid-column: 1 / 5;
   }
-}
-
-.fab-search {
-  position: relative;
-}
-
-button.clear-search {
-  position: absolute;
-  top: 7px;
-  right: 1px;
-  width: 14px;
 }
 
 .fab-component-editor {
@@ -988,8 +1007,23 @@ button.clear-search {
   }
 }
 
-/*
-=====================================================================
-END COMMON STRUCTURAL STYLES
-=====================================================================
-*/
+.fab-component-salvage-app {
+  width: 100%;
+}
+
+.fab-item-salvage-header {
+  padding: 1em;
+  h2 {
+    margin: 0;
+    flex: 1;
+  }
+  img {
+    width: 64px;
+    height: 64px;
+    margin-right: 1em;
+  }
+  button.fab-component-salvage-btn {
+    flex: 0;
+    justify-self: flex-end;
+  }
+}

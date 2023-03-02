@@ -2,7 +2,7 @@
     import {fade} from 'svelte/transition';
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
     import Properties from "../../scripts/Properties.js";
-    import {DropEventParser} from "./DropEventParser";
+    import {DropEventParser} from "../common/DropEventParser";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {Combination, Unit} from "../../scripts/common/Combination";
     import truncate from "../common/Truncate";
@@ -10,6 +10,7 @@
     import {Tab, Tabs} from "../common/FabricateTabs.js";
     import TabList from "../common/TabList.svelte";
     import TabPanel from "../common/TabPanel.svelte";
+    import {componentUpdated} from "../componentSalvageApp/EventBus";
 
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
@@ -152,6 +153,7 @@
         selectedSystem.editComponent(selectedComponent);
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         loading = false;
+        componentUpdated(selectedComponent);
     }
 
     function generateOptionName(component) {
@@ -176,6 +178,7 @@
             selectedSystem.editComponent(selectedComponent);
             await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
             loading = false;
+            componentUpdated(selectedComponent);
         }, 500);
     }
 
@@ -193,6 +196,7 @@
         loading = true;
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         loading = false;
+        componentUpdated(selectedComponent);
     }
 
     async function addComponentToSalvageOption(event, salvageOption) {
@@ -208,6 +212,7 @@
         selectedSystem.editComponent(selectedComponent);
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         loading = false;
+        componentUpdated(selectedComponent);
     }
 
     async function decrementSalvageOptionComponent(salvageOption, component) {
@@ -219,6 +224,7 @@
         loading = true;
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         loading = false;
+        componentUpdated(selectedComponent);
     }
 
     async function incrementSalvageOptionComponent(salvageOption, component, event) {
@@ -230,6 +236,7 @@
         loading = true;
         await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
         loading = false;
+        componentUpdated(selectedComponent);
     }
 
 </script>

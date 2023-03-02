@@ -4,7 +4,7 @@
     import Properties from "../../scripts/Properties.js";
     import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
     import {Essence} from "../../scripts/common/Essence";
-    import {DropEventParser} from "./DropEventParser";
+    import {DropEventParser} from "../common/DropEventParser";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {ICON_NAMES} from "../FontAwesomeIcons";
     import {clickOutside} from "../common/ClickOutside";

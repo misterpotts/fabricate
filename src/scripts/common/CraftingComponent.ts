@@ -199,7 +199,7 @@ class CraftingComponent implements Identifiable, Serializable<CraftingComponentJ
     }
 
     get salvageOptions(): SalvageOption[] {
-        return this._salvageOptions.options;
+        return this._salvageOptions.options.filter(option => !option.isEmpty);
     }
 
     get salvageOptionsById(): Map<string, SalvageOption> {

@@ -1,9 +1,9 @@
-import CraftingSystemManager from "../templates/craftingSystemManager/CraftingSystemManager.svelte"
+import CraftingSystemManager from "./craftingSystemManagerApp/CraftingSystemManager.svelte"
 import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
 import {GameProvider} from "../scripts/foundry/GameProvider";
 import {DefaultSystemRegistry} from "../scripts/registries/SystemRegistry";
-import {CraftingSystemManagerApp} from "../templates/craftingSystemManager/CraftingSystemManagerApp";
+import {CraftingSystemManagerApp} from "./craftingSystemManagerApp/CraftingSystemManagerApp";
 
 class CraftingSystemManagerAppFactory {
 
