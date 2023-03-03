@@ -25,6 +25,12 @@
         "plural": "Active Effect Sources"
       }
     },
+    "CraftingComponentCarousel": {
+      "buttons": {
+        "next": "Next option",
+        "previous": "Previous option"
+      }
+    },
     "DropEventParser": {
       "errors": {
         "noElementData": "{partType} import error: Could not read element data from drop event. ",
@@ -45,6 +51,12 @@
       },
       "hints": {
         "doSalvage": "Salvaging this component will add these items to your inventory"
+      },
+      "dialog": {
+        "doSalvage": {
+          "title": "Salvage component?",
+          "content": "Salvaging {componentName} will remove it from your inventory, and add the salvage results. "
+        }
       }
     },
     "CraftingSystemManagerApp": {

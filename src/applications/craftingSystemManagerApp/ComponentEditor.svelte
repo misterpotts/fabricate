@@ -297,9 +297,11 @@
                                                     <div class="fab-component-preview">
                                                         <div class="fab-component-image" data-tooltip={salvageUnit.part.name}>
                                                             <img src={salvageUnit.part.imageUrl} alt={salvageUnit.part.name} />
+                                                            {#if salvageUnit.quantity > 1}
+                                                                <span class="fab-component-info fab-component-quantity">{salvageUnit.quantity}</span>
+                                                            {/if}
                                                         </div>
                                                     </div>
-                                                    <span class="fab-component-info fab-component-quantity">{salvageUnit.quantity}</span>
                                                 </div>
                                             {/each}
                                         </div>

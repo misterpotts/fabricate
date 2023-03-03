@@ -14,8 +14,11 @@
             <div class="fab-component-preview">
                 <div class="fab-component-image" data-tooltip={unit.part.name}>
                     <img src={unit.part.imageUrl} alt={unit.part.name} use:openItemSheet={unit.part.itemUuid}>
+                    {#if unit.quantity > 1}
+                        <span class="fab-component-info fab-component-quantity">{unit.quantity}</span>
+                    {/if}
                 </div>
-            </div> 
+            </div>
         </div>
     {/each}
 </div>

@@ -9,15 +9,21 @@
     import { localizationKey } from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
     import CraftingComponentCarousel from "../common/CraftingComponentCarousel.svelte";
+    import {SuccessfulSalvageResult} from "../../scripts/crafting/result/SalvageResult";
+    import {Combination} from "../../scripts/common/Combination";
 
     const localizationPath = `${Properties.module.id}.ComponentSalvageApp`;
 
     export let craftingComponent;
-    export let craftingSystem;
     export let inventory;
     export let ownedComponentsOfType;
     export let localization;
     export let closeHook;
+
+    let selectedOptionName = craftingComponent.firstOptionName;
+    if (selectedOptionName) {
+        craftingComponent.selectSalvageOption(selectedOptionName);
+    }
 
     setContext(localizationKey, {
         localization,
@@ -27,23 +33,55 @@
         return reIndex();
     });
 
-    function doSalvage() {
-        console.log("Do salvage");
+    async function doSalvage(event) {
+        const skipDialog = event.detail.skipDialog;
+        if (skipDialog) {
+            return salvageComponent(craftingComponent);
+        }
+        let confirm = false;
+        await Dialog.confirm({
+            title: localization.localize(`${localizationPath}.dialog.doSalvage.title`),
+            content: `<p>${localization.format(`${localizationPath}.dialog.doSalvage.content`, { componentName: craftingComponent.name})}</p>`,
+            yes: async () => {
+                confirm = true;
+            }
+        });
+        if (confirm) {
+            return salvageComponent(craftingComponent);
+        }
     }
 
-    function updateComponent(event) {
+    async function salvageComponent(craftingComponent) {
+        console.log("Do salvage");
+        const salvageResult = new SuccessfulSalvageResult({
+            created: craftingComponent.selectedSalvage,
+            consumed: Combination.of(craftingComponent, 1)
+        });
+        await inventory.acceptSalvageResult(salvageResult);
+    }
+
+    function handleComponentUpdated(event) {
         const updatedComponent = event.detail;
         if (updatedComponent.id !== craftingComponent.id) {
             return;
         }
         craftingComponent = updatedComponent;
+        selectedOptionName = craftingComponent.firstOptionName;
+        craftingComponent.selectSalvageOption(selectedOptionName);
+        if (!craftingComponent.isSalvageable) {
+            closeHook();
+            return;
+        }
     }
 
     async function handleItemUpdated(event) {
         const { sourceId, actor } = event.detail;
-        if (!actor || sourceId !== craftingComponent.itemUuid) {
+        // If the modified item is not owned, not owned by the actor who owns this crafting component, or is not associated with this component
+        if (!actor || !actor.id === inventory.actor.id || sourceId !== craftingComponent.itemUuid) {
+            // do nothing
             return;
         }
+        // if it is, we need to re-index the inventory
         return reIndex();
     }
 
@@ -74,33 +112,28 @@
 </script>
 
 <div class="fab-component-salvage-app fab-columns">
-    <div class="fab-column"
+    <div class="fab-column" style="height: 100%"
          use:eventBus={["componentUpdated", "itemUpdated", "itemCreated", "itemDeleted"]}
-         on:componentUpdated={(e) => updateComponent(e)}
+         on:componentUpdated={(e) => handleComponentUpdated(e)}
          on:itemUpdated={(e) => handleItemUpdated(e)}
          on:itemCreated={(e) => handleItemCreated(e)}
          on:itemDeleted={(e) => handleItemDeleted(e)}>
-        <SalvageHeader component={craftingComponent} ownedComponentsOfType={ownedComponentsOfType} on:salvageComponent={doSalvage} />
+        <SalvageHeader component={craftingComponent} ownedComponentsOfType={ownedComponentsOfType} on:salvageComponent={(e) => doSalvage(e)} />
         <div class="fab-component-salvage-app-body fab-scrollable">
             {#if craftingComponent.salvageOptions.length === 1}
                 <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
-                <CraftingComponentGrid columns={4} componentCombination={craftingComponent.selectedSalvage} />
+                <div class="fab-component-grid-wrapper">
+                    <CraftingComponentGrid columns={4} componentCombination={craftingComponent.selectedSalvage} />
+                </div>
             {:else if craftingComponent.salvageOptions.length > 1}
-                <CraftingComponentCarousel columns={4} craftingComponent={craftingComponent} />
+                    <CraftingComponentCarousel columns={4} craftingComponent={craftingComponent} bind:selectedOptionName={selectedOptionName}>
+                        <p slot="description" class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
+                    </CraftingComponentCarousel>
             {:else}
-                <div class="fab-component-salvage-error">
+                <div class="fab-salvage-hint">
                     <p>{localization.localize(`${localizationPath}.errors.notSalvageable`)}</p>
                 </div>
             {/if}
         </div>
     </div>
 </div>
-
-<style>
-    .fab-component-salvage-app-body {
-        padding: 10px;
-    }
-    .fab-salvage-hint {
-        margin-bottom: 20px;
-    }
-</style>

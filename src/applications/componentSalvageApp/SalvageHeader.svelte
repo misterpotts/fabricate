@@ -12,9 +12,10 @@
     export let ownedComponentsOfType;
     const { localization } = getContext(localizationKey);
 
-    function salvageComponent() {
+    function salvageComponent(event) {
+        const skipDialog = event.shiftKey;
         dispatch('salvageComponent', {
-            component
+            skipDialog
         });
     }
 </script>
@@ -22,5 +23,5 @@
 <div class="fab-item-salvage-header fab-row">
     <img src={component.imageUrl}>
     <h2>{component.name} ({ownedComponentsOfType.size})</h2>
-    <button class="fab-component-salvage-btn" on:click={salvageComponent}><i class="fa-solid fa-recycle"></i> {localization.localize(`${localizationPath}.buttons.salvage`)}</button>
+    <button class="fab-component-salvage-btn" on:click={(e) => salvageComponent(e)}><i class="fa-solid fa-recycle"></i> {localization.localize(`${localizationPath}.buttons.salvage`)}</button>
 </div>

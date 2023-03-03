@@ -5,7 +5,7 @@ import {CraftingResult} from "../crafting/result/CraftingResult";
 import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {GameProvider} from "../foundry/GameProvider";
-import {DocumentManager} from "../foundry/DocumentManager";
+import {DocumentManager, FabricateItemData} from "../foundry/DocumentManager";
 import {CraftingSystem} from "../system/CraftingSystem";
 import EmbeddedCollection
     from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/embedded-collection.mjs";
@@ -17,12 +17,13 @@ import {
     ItemQuantityWriter,
     NoItemQuantityWriter
 } from "./ItemQuantity";
+import {SalvageResult} from "../crafting/result/SalvageResult";
 
-// @ts-ignore // todo: figure out v10 types
 interface Inventory {
     actor: any;
     ownedComponents: Combination<CraftingComponent>;
     acceptCraftingResult(craftingResult: CraftingResult): Promise<any[]>;
+    acceptSalvageResult(salvageResult: SalvageResult): Promise<any[]>;
     acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]>;
     index(): Promise<Combination<CraftingComponent>>;
     contains(partId: string): boolean;
@@ -41,7 +42,7 @@ class CraftingInventory implements Inventory {
     private readonly _actor: any;
     private _ownedComponents: Combination<CraftingComponent>;
     private readonly _craftingSystem: CraftingSystem;
-    private _managedItems: Map<CraftingComponent, [any, number][]>;
+    private _managedItems: Map<CraftingComponent, { item: any, quantity: number }[]>;
     private readonly _itemQuantityReader: ItemQuantityReader;
     private readonly _itemQuantityWriter: ItemQuantityWriter;
 
@@ -61,7 +62,7 @@ class CraftingInventory implements Inventory {
         objectUtils: ObjectUtility;
         craftingSystem: CraftingSystem;
         ownedComponents?: Combination<CraftingComponent>;
-        managedItems?: Map<CraftingComponent, [any, number][]>;
+        managedItems?: Map<CraftingComponent, { item: any, quantity: number }[]>;
         itemQuantityReader?: ItemQuantityReader;
         itemQuantityWriter?: ItemQuantityWriter;
     }) {
@@ -100,20 +101,20 @@ class CraftingInventory implements Inventory {
             if (unit.quantity > amountOwned) {
                 throw new InventoryContentsNotFoundError(unit, amountOwned, this._actor.id);
             }
-            const records: [any, number][] = this._managedItems.get(craftingComponent)
-                .sort((left: [any, number], right: [any, number]) => left[1] - right[1]);
+            const records = this._managedItems.get(craftingComponent)
+                .sort((left, right) => left.quantity - right.quantity);
             let outstandingRemovalAmount: number = unit.quantity;
             let currentRecordIndex: number = 0;
             while (outstandingRemovalAmount > 0) {
-                const currentRecord: [any, number] = records[currentRecordIndex];
-                const quantity: number = currentRecord[1];
-                const itemData: any = currentRecord[0].data;
+                const currentRecord = records[currentRecordIndex];
+                const quantity: number = currentRecord.quantity;
+                const itemData: any = currentRecord.item;
                 if (quantity <= outstandingRemovalAmount) {
                     deletes.push(itemData);
                     outstandingRemovalAmount -= quantity;
                 } else {
                     const copiedItemData =  this._objectUtils.duplicate(itemData);
-                    copiedItemData.quantity = quantity - outstandingRemovalAmount;
+                    await this._itemQuantityWriter.write(quantity - outstandingRemovalAmount, copiedItemData)
                     updates.push(copiedItemData);
                     outstandingRemovalAmount = 0;
                 }
@@ -138,17 +139,18 @@ class CraftingInventory implements Inventory {
         for (const unit of components.units) {
             const craftingComponent: CraftingComponent = unit.part;
             if (!this.ownedComponents.has(craftingComponent)) {
-                const sourceData: any = await this._documentManager.getDocumentByUuid(craftingComponent.id);
-                const itemData: any = this._objectUtils.duplicate(sourceData);
-                itemData.quantity = unit.quantity;
+                const sourceData: FabricateItemData = await this._documentManager.getDocumentByUuid(craftingComponent.itemUuid);
+                const itemData: any = this._objectUtils.duplicate(sourceData.sourceDocument);
+                itemData.flags.core = { sourceId: sourceData.uuid };
+                await this._itemQuantityWriter.write(unit.quantity, itemData);
                 creates.push(itemData);
                 break;
             }
-            const records: [any, number][] = this._managedItems.get(craftingComponent)
-                .sort((left: [any, number], right: [any, number]) => right[1] - left[1]);
-            const itemToUpdate: [any, number] = records[0];
-            const newItemData: any = this._objectUtils.duplicate(itemToUpdate[0]);
-            await this._itemQuantityWriter.write(unit.quantity + itemToUpdate[1], newItemData);
+            const records = this._managedItems.get(craftingComponent)
+                .sort((left, right) => right.quantity - left.quantity);
+            const itemToUpdate: { item: any, quantity: number } = records[0];
+            const newItemData: any = this._objectUtils.duplicate(itemToUpdate.item);
+            await this._itemQuantityWriter.write(unit.quantity + itemToUpdate.quantity, newItemData);
             updates.push(newItemData);
         }
         const results: any[] = [];
@@ -175,13 +177,21 @@ class CraftingInventory implements Inventory {
         return modifiedItemData[0].concat(modifiedItemData[1]);
     }
 
+    async acceptSalvageResult(salvageResult: SalvageResult): Promise<any[]> {
+        const inventoryActions: InventoryActions = this.rationalise(salvageResult.created, salvageResult.consumed);
+        const modifiedItemData: any[][] = await Promise.all([
+            this.addAll(inventoryActions.additions),
+            this.removeAll(inventoryActions.removals)
+        ]);
+        const results = modifiedItemData[0].concat(modifiedItemData[1]);
+        await this.index();
+        return results;
+    }
+
     async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]> {
-        const baseItem = await this._documentManager.getDocumentByUuid(alchemyResult.baseComponent.id)
+        const baseItem = await this._documentManager.getDocumentByUuid(alchemyResult.baseComponent.itemUuid)
         const baseItemData = this._objectUtils.duplicate(baseItem);
         // todo: implement once types and process are known
-        // const customItemData = this._documentManager.customizeItem(compendiumBaseItem, alchemyResult.effects.applyToItemData(compendiumBaseItem));
-        // const baseItemData: Entity.Data = duplicate(compendiumBaseItem.data);
-        // mergeObject(baseItemData.data, alchemyResult.customItemData);
         // @ts-ignore
         const createdItemData: Entity.Data = await this._actor.createEmbeddedEntity('OwnedItem', baseItemData);
         return null;
@@ -218,23 +228,23 @@ class CraftingInventory implements Inventory {
     async deleteOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         const ids: string[] = itemsData.map((itemData: any) => itemData._id);
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.deleteEmbeddedEntity('OwnedItem', ids);
+        return actor.deleteEmbeddedDocuments('Item', ids);
     }
 
     async createOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.createEmbeddedEntity('OwnedItem', itemsData);
+        return actor.createEmbeddedDocuments('Item', itemsData);
     }
 
     async updateOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.updateEmbeddedEntity('OwnedItem', itemsData);
+        return actor.updateEmbeddedDocuments('Item', itemsData);
     }
 
     async index(): Promise<Combination<CraftingComponent>> {
         const actor: any = this.actor;
         const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
-        const itemsByComponentType: Map<CraftingComponent, [any, number][]> = new Map();
+        const itemsByComponentType: Map<CraftingComponent, { item: any, quantity: number }[]> = new Map();
         const allComponents: Combination<CraftingComponent>[] = await Promise.all(Array.from(ownedItems.values())
             .filter((item: any) => this._craftingSystem.includesComponentByItemUuid(item.getFlag("core", "sourceId")))
             .map(async (item: BaseItem) => {
@@ -242,9 +252,9 @@ class CraftingInventory implements Inventory {
                 const component = this._craftingSystem.getComponentByItemUuid(sourceItemUuid);
                 const quantity = await this._itemQuantityReader.read(item);
                 if (itemsByComponentType.has(component)) {
-                    itemsByComponentType.get(component).push([item, quantity]);
+                    itemsByComponentType.get(component).push({ item, quantity });
                 } else {
-                    itemsByComponentType.set(component, [[item, quantity]]);
+                    itemsByComponentType.set(component, [{ item, quantity }]);
                 }
                 return Combination.of(component, quantity);
             }))

@@ -537,7 +537,6 @@ BEGIN COMMON STRUCTURAL STYLES
   }
   .fab-component {
     display: inline-flex;
-    position: relative;
     flex-wrap: wrap;
     &.fab-disabled {
       opacity: 0.4;
@@ -557,6 +556,7 @@ BEGIN COMMON STRUCTURAL STYLES
     }
     .fab-component-image {
       flex-grow: 2;
+      position: relative;
       cursor: pointer;
     }
     .fab-enable-component {
@@ -579,8 +579,8 @@ BEGIN COMMON STRUCTURAL STYLES
       justify-content: center;
       align-items: center;
       z-index: 1;
-      bottom: 62px;
-      right: -3px;
+      top: -9px;
+      right: -9px;
       height: 20px;
       width: 20px;
       border-radius: 10px;
@@ -749,6 +749,34 @@ button.clear-search {
   top: 7px;
   right: 1px;
   width: 14px;
+}
+
+.fab-component-grid-wrapper {
+  padding: 0 1em;
+}
+
+.fab-component-grid-carousel {
+  .fab-carousel-next {
+    i {
+      margin-left: 8px;
+    }
+  }
+  .fab-carousel-nav {
+    display: flex;
+    padding: 12px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border-dark-3);
+    .fab-carousel-button {
+      flex: 1;
+    }
+    .fab-carousel-option-name {
+      flex: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+    }
+  }
 }
 
 /*
@@ -1009,6 +1037,12 @@ END COMMON STRUCTURAL STYLES
 
 .fab-component-salvage-app {
   width: 100%;
+  .fab-component-salvage-app-body {
+    height: 100%;
+  }
+  .fab-salvage-hint {
+    margin: 1em;
+  }
 }
 
 .fab-item-salvage-header {

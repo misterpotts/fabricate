@@ -99,24 +99,6 @@ describe("Index and Retrieve", () => {
     );
     const stubDocumentManager = new StubDocumentManager(itemData);
 
-    test.skip("Should delete invalid components when loading fails", async () => {
-
-        const poisonDocumentManager = new StubDocumentManager(itemData);
-        poisonDocumentManager.poison(testComponentThree.id);
-
-        const underTest: PartDictionary = new PartDictionaryFactory({ documentManager: poisonDocumentManager })
-            .make({
-                essences: rawEssenceData(),
-                recipes: rawRecipeData(),
-                components: rawComponentData()
-            });
-
-        await underTest.loadAll();
-
-        expect(underTest.size).toBe(15);
-
-    });
-
     test("Should load a populated Part Dictionary from source data", async () => {
 
         const essences = rawEssenceData();

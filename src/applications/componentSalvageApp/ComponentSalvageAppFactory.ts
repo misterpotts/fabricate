@@ -66,7 +66,6 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                 options: {
                     props: {
                         craftingComponent,
-                        craftingSystem,
                         inventory,
                         localization: new DefaultLocalizationService(gameProvider),
                         ownedComponentsOfType: Combination.EMPTY(),
