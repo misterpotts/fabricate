@@ -178,6 +178,7 @@ class CraftingInventory implements Inventory {
     }
 
     async acceptSalvageResult(salvageResult: SalvageResult): Promise<any[]> {
+        await this.index();
         const inventoryActions: InventoryActions = this.rationalise(salvageResult.created, salvageResult.consumed);
         const modifiedItemData: any[][] = await Promise.all([
             this.addAll(inventoryActions.additions),

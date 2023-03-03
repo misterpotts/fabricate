@@ -10,6 +10,12 @@
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
     import eventBus from "../common/EventBus";
 
+    let allSystems;
+
+    craftingSystemManager.craftingSystemsStore.value.subscribe(value => {
+        allSystems = value.craftingSystems;
+    });
+
     function handleItemDeleted(event) {
         craftingSystemManager.craftingSystemsStore.handleItemDeleted(event.detail.uuid);
     }
@@ -20,41 +26,46 @@
 
 <CraftingSystemNavbar />
 
-<Tabs class="fab-main">
+{#if allSystems && allSystems.length > 0}
+    <Tabs class="fab-main">
 
-    <TabList class="fab-main-nav">
-        <Tab><i class="fa-solid fa-file-lines"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.label`)}</Tab>
-        <Tab><i class="fa-solid fa-boxes-stacked"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.label`)}</Tab>
-        <Tab><i class="fa-solid fa-scroll"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes.label`)}</Tab>
-        <Tab><i class="fa-solid fa-eye-dropper"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.label`)}</Tab>
-        <Tab><i class="fa-solid fa-flask-vial"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.alchemy.label`)}</Tab>
-    </TabList>
+        <TabList class="fab-main-nav">
+            <Tab><i class="fa-solid fa-file-lines"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.label`)}</Tab>
+            <Tab><i class="fa-solid fa-boxes-stacked"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.label`)}</Tab>
+            <Tab><i class="fa-solid fa-scroll"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes.label`)}</Tab>
+            <Tab><i class="fa-solid fa-eye-dropper"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.label`)}</Tab>
+            <Tab><i class="fa-solid fa-flask-vial"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.alchemy.label`)}</Tab>
+        </TabList>
 
-    <TabPanel class="fab-scrollable fab-columns">
-        <CraftingSystemDetails />
-    </TabPanel>
+        <TabPanel class="fab-scrollable fab-columns">
+            <CraftingSystemDetails />
+        </TabPanel>
 
-    <TabPanel class="fab-scrollable fab-columns">
-        <ComponentsTab />
-    </TabPanel>
+        <TabPanel class="fab-scrollable fab-columns">
+            <ComponentsTab />
+        </TabPanel>
 
-    <TabPanel class="fab-scrollable fab-columns">
-        <div class="fab-hero-banner">
-            <img src="{Properties.ui.banners.recipeEditor}" >
-        </div>
-    </TabPanel>
-
-    <TabPanel class="fab-scrollable fab-columns">
-        <EssenceEditor />
-    </TabPanel>
-
-    <TabPanel class="fab-scrollable fab-columns">
-        <div class="fab-column">
-            <div class="fab-hero-banner fab-row">
-                <img src="{Properties.ui.banners.alchemyEditor}" >
+        <TabPanel class="fab-scrollable fab-columns">
+            <div class="fab-hero-banner">
+                <img src="{Properties.ui.banners.recipeEditor}" >
             </div>
-            <div style="display: inline-flex; height: 100%; width: 100%; align-items: center; justify-content: center"><i class="fa-solid fa-heart-crack" style="margin-right: 10px;"></i> Not yet implemented</div>
-        </div>
-    </TabPanel>
+        </TabPanel>
 
-</Tabs>
+        <TabPanel class="fab-scrollable fab-columns">
+            <EssenceEditor />
+        </TabPanel>
+
+        <TabPanel class="fab-scrollable fab-columns">
+            <div class="fab-column">
+                <div class="fab-hero-banner fab-row">
+                    <img src="{Properties.ui.banners.alchemyEditor}" >
+                </div>
+                <div style="display: inline-flex; height: 100%; width: 100%; align-items: center; justify-content: center"><i class="fa-solid fa-heart-crack" style="margin-right: 10px;"></i> Not yet implemented</div>
+            </div>
+        </TabPanel>
+
+    </Tabs>
+    <div class="fab-no-systems">
+
+    </div>
+{/if}

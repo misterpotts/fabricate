@@ -52,7 +52,6 @@
     }
 
     async function salvageComponent(craftingComponent) {
-        console.log("Do salvage");
         const salvageResult = new SuccessfulSalvageResult({
             created: craftingComponent.selectedSalvage,
             consumed: Combination.of(craftingComponent, 1)
