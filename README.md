@@ -186,6 +186,9 @@ Join their Discord below.
 
 ![League Discord](https://discordapp.com/api/guilds/732325252788387980/widget.png?style=banner1)
 
+[theripper93](https://theripper93.com/) has my thanks for his help and sharing tidbits from his knowledge of FoundryVTT module development. 
+Check out his collection of [premium FoundryVTT modules](https://www.patreon.com/theripper93) if you haven't already.
+
 ### Patron Hall of Fame
 
 I'd also like to thank the following Patrons for their ongoing support, both on the platform and on Discord:
