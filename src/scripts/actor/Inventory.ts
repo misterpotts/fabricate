@@ -25,9 +25,10 @@ interface Inventory {
     acceptCraftingResult(craftingResult: CraftingResult): Promise<any[]>;
     acceptSalvageResult(salvageResult: SalvageResult): Promise<any[]>;
     acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<any[]>;
-    index(): Promise<Combination<CraftingComponent>>;
-    contains(partId: string): boolean;
+    index(): Promise<void>;
+    contains(craftingComponent: CraftingComponent, quantity: number): boolean;
     size: number
+    amountFor(craftingComponent: CraftingComponent): number;
 }
 
 interface InventoryActions {
@@ -40,7 +41,6 @@ class CraftingInventory implements Inventory {
     private readonly _documentManager: DocumentManager;
     private readonly _objectUtils: ObjectUtility;
     private readonly _actor: any;
-    private _ownedComponents: Combination<CraftingComponent>;
     private readonly _craftingSystem: CraftingSystem;
     private _managedItems: Map<CraftingComponent, { item: any, quantity: number }[]>;
     private readonly _itemQuantityReader: ItemQuantityReader;
@@ -51,7 +51,6 @@ class CraftingInventory implements Inventory {
         documentManager,
         objectUtils,
         craftingSystem,
-        ownedComponents = Combination.EMPTY(),
         managedItems = new Map(),
         itemQuantityReader = new AlwaysOneItemQuantityReader(),
         itemQuantityWriter = new NoItemQuantityWriter()
@@ -70,7 +69,6 @@ class CraftingInventory implements Inventory {
         this._craftingSystem = craftingSystem;
         this._documentManager = documentManager;
         this._objectUtils = objectUtils;
-        this._ownedComponents = ownedComponents;
         this._managedItems = managedItems;
         this._itemQuantityReader = itemQuantityReader;
         this._itemQuantityWriter = itemQuantityWriter;
@@ -81,12 +79,20 @@ class CraftingInventory implements Inventory {
         return this._actor;
     }
 
-    get ownedComponents(): Combination<CraftingComponent> {
-        return this._ownedComponents.clone();
+    contains(craftingComponent: CraftingComponent, quantity: number = 1): boolean {
+        if (!this._managedItems.has(craftingComponent)) {
+            return false;
+        }
+        return quantity <= this.amountFor(craftingComponent);
     }
 
-    contains(partId: string, quantity: number = 1): boolean {
-        return this._ownedComponents.hasPart(partId, quantity);
+    amountFor(craftingComponent: CraftingComponent) {
+        if (!this._managedItems.has(craftingComponent)) {
+            return 0;
+        }
+        return this._managedItems.get(craftingComponent).reduce((previousValue, currentValue) => {
+            return previousValue + currentValue.quantity;
+        }, 0);
     }
 
     async removeAll(components: Combination<CraftingComponent>): Promise<any[]> {
@@ -94,10 +100,10 @@ class CraftingInventory implements Inventory {
         const deletes: any[] = [];
         for (const unit of components.units) {
             const craftingComponent: CraftingComponent = unit.part;
-            if (!this.ownedComponents.has(craftingComponent)) {
+            if (!this.contains(craftingComponent)) {
                 throw new InventoryContentsNotFoundError(unit, 0, this._actor.id);
             }
-            const amountOwned = this.ownedComponents.amountFor(craftingComponent.id);
+            const amountOwned = this.amountFor(craftingComponent);
             if (unit.quantity > amountOwned) {
                 throw new InventoryContentsNotFoundError(unit, amountOwned, this._actor.id);
             }
@@ -138,7 +144,7 @@ class CraftingInventory implements Inventory {
         const creates: any[] = [];
         for (const unit of components.units) {
             const craftingComponent: CraftingComponent = unit.part;
-            if (!this.ownedComponents.has(craftingComponent)) {
+            if (!this.contains(craftingComponent)) {
                 const sourceData: FabricateItemData = await this._documentManager.getDocumentByUuid(craftingComponent.itemUuid);
                 const itemData: any = this._objectUtils.duplicate(sourceData.sourceDocument);
                 itemData.flags.core = { sourceId: sourceData.uuid };
@@ -242,11 +248,11 @@ class CraftingInventory implements Inventory {
         return actor.updateEmbeddedDocuments('Item', itemsData);
     }
 
-    async index(): Promise<Combination<CraftingComponent>> {
+    async index(): Promise<void> {
         const actor: any = this.actor;
         const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
         const itemsByComponentType: Map<CraftingComponent, { item: any, quantity: number }[]> = new Map();
-        const allComponents: Combination<CraftingComponent>[] = await Promise.all(Array.from(ownedItems.values())
+        await Promise.all(Array.from(ownedItems.values())
             .filter((item: any) => this._craftingSystem.includesComponentByItemUuid(item.getFlag("core", "sourceId")))
             .map(async (item: BaseItem) => {
                 const sourceItemUuid: string = <string>item.getFlag("core", "sourceId");
@@ -257,16 +263,20 @@ class CraftingInventory implements Inventory {
                 } else {
                     itemsByComponentType.set(component, [{ item, quantity }]);
                 }
-                return Combination.of(component, quantity);
             }))
-        const rationalisedComponents = allComponents.reduce((left: Combination<CraftingComponent>, right: Combination<CraftingComponent>) => left.combineWith(right), Combination.EMPTY());
         this._managedItems = itemsByComponentType;
-        this._ownedComponents = rationalisedComponents;
-        return this._ownedComponents;
     }
 
     get size(): number {
-        return this._ownedComponents.size;
+        return Array.from(this._managedItems.keys())
+            .map(component => this.amountFor(component))
+            .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
+    }
+
+    get ownedComponents(): Combination<CraftingComponent> {
+        return Array.from(this._managedItems.keys())
+            .flatMap(component => this._managedItems.get(component).map(itemRecord => Combination.of(component, itemRecord.quantity)))
+            .reduce((previousValue, currentValue) => previousValue.combineWith(currentValue), Combination.EMPTY());
     }
 
 }

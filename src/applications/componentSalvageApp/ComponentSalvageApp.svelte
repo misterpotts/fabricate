@@ -104,7 +104,8 @@
     }
 
     async function reIndex() {
-        const ownedComponents = await inventory.index();
+        await inventory.index();
+        const ownedComponents = inventory.ownedComponents;
         ownedComponentsOfType = ownedComponents.just(craftingComponent);
     }
 

@@ -38,8 +38,8 @@ class SvelteApplication extends Application {
         const target = html.get(0);
         const options: ComponentConstructorOptions = { ...this._svelteConfig.options, target}
         this._component = new this._svelteConfig.componentType(options);
+        console.log(`Fabricate | Rendered Svelte component ${this.options.id}`);
     }
-
 
     get component(): SvelteComponent {
         return this._component;
@@ -48,6 +48,7 @@ class SvelteApplication extends Application {
     async close(): Promise<void> {
         await super.close();
         this._component.$destroy();
+        console.log(`Fabricate | Destroyed Svelte component: ${this.options.id}`);
     }
 
 }
