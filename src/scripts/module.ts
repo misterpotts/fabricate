@@ -10,7 +10,7 @@ import {
 import {DefaultSystemRegistry} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
-import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManager";
+import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManagerAppFactory";
 import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
 import {DefaultComponentSalvageAppCatalog} from "../applications/componentSalvageApp/ComponentSalvageAppCatalog";
 import {DefaultComponentSalvageAppFactory} from "../applications/componentSalvageApp/ComponentSalvageAppFactory";

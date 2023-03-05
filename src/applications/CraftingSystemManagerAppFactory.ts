@@ -4,19 +4,19 @@ import {SvelteApplication} from "./SvelteApplication";
 import {GameProvider} from "../scripts/foundry/GameProvider";
 import {DefaultSystemRegistry} from "../scripts/registries/SystemRegistry";
 import {CraftingSystemManagerApp} from "./craftingSystemManagerApp/CraftingSystemManagerApp";
+import {DefaultLocalizationService} from "./common/LocalizationService";
 
 class CraftingSystemManagerAppFactory {
 
     public static make(systemRegistry: DefaultSystemRegistry): SvelteApplication {
 
         const gameProvider = new GameProvider();
-
         const GAME = gameProvider.globalGameObject();
 
         const applicationOptions = {
             title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
-            id: CraftingSystemManagerApp.ID,
-            resizable: true,
+            id: `${Properties.module.id}-crafting-system-manager`,
+            resizable: false,
             width: 980,
             height: 740
         }
@@ -27,7 +27,9 @@ class CraftingSystemManagerAppFactory {
             applicationOptions,
             svelteConfig: {
                 options: {
-                    props: {}
+                    props: {
+                        localization: new DefaultLocalizationService(gameProvider)
+                    }
                 },
                 componentType: CraftingSystemManager
             }

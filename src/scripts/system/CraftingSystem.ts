@@ -171,6 +171,14 @@ class CraftingSystem {
         return this._partDictionary.getRecipes();
     }
 
+    get recipes(): Recipe[] {
+        return this._partDictionary.getRecipes();
+    }
+
+    get craftingComponents(): CraftingComponent[] {
+        return this._partDictionary.getComponents();
+    }
+
     public hasRecipe(id: string) {
         return this._partDictionary.hasRecipe(id);
     }
