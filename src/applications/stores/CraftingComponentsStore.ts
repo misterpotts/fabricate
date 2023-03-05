@@ -13,7 +13,7 @@ class CraftingComponentsStore {
     }) {
         this._craftingComponents = derived(
             selectedCraftingSystem,
-            ($selectedCraftingSystem, set) => set($selectedCraftingSystem.craftingComponents)
+            ($selectedCraftingSystem, set) => set($selectedCraftingSystem?.craftingComponents ?? [])
         );
     }
 

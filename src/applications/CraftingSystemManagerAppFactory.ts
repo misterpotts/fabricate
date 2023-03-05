@@ -8,7 +8,7 @@ import {DefaultLocalizationService} from "./common/LocalizationService";
 
 class CraftingSystemManagerAppFactory {
 
-    public static make(systemRegistry: DefaultSystemRegistry): SvelteApplication {
+    public static async make(systemRegistry: DefaultSystemRegistry): Promise<SvelteApplication> {
 
         const gameProvider = new GameProvider();
         const GAME = gameProvider.globalGameObject();
@@ -28,7 +28,8 @@ class CraftingSystemManagerAppFactory {
             svelteConfig: {
                 options: {
                     props: {
-                        localization: new DefaultLocalizationService(gameProvider)
+                        localization: new DefaultLocalizationService(gameProvider),
+                        systemRegistry
                     }
                 },
                 componentType: CraftingSystemManager

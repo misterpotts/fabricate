@@ -177,6 +177,9 @@
           "title": "Delete Crafting System",
           "content": "Are you sure you want to delete {systemName}? This action cannot be undone. "
         },
+        "deleteCraftingSystem": {
+          "success": "The Crafting System {systemName} was successfully deleted."
+        },
         "exportCraftingSystem": {
           "success": "The Crafting System {systemName} was successfully exported to {fileName}."
         },

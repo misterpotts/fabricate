@@ -1,5 +1,6 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {get, Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
+import {CraftingSystemsStore} from "./CraftingSystemsStore";
 
 class SelectedCraftingSystemStore {
 
@@ -9,8 +10,8 @@ class SelectedCraftingSystemStore {
         craftingSystems,
         selectedSystem
     }: {
-        craftingSystems: Readable<CraftingSystem[]>;
-        selectedSystem: CraftingSystem;
+        craftingSystems: CraftingSystemsStore;
+        selectedSystem?: CraftingSystem;
     }) {
         this._selectedCraftingSystem = writable(selectedSystem);
         this.loadWhenSelected(this._selectedCraftingSystem);

@@ -89,4 +89,6 @@ class CraftingSystemManagerApp {
 
 }
 
-export { CraftingSystemManagerApp }
+const key = Symbol();
+
+export { CraftingSystemManagerApp, key }

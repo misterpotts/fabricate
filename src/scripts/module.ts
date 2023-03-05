@@ -185,7 +185,7 @@ Hooks.once('ready', async () => {
     registerSettings(gameObject, systemRegistry.getDefaultSettingValue());
     await validateAndMigrateSettings(gameProvider, craftingSystemSettingManager);
 
-    FabricateApplication.craftingSystemManagerApp = CraftingSystemManagerAppFactory.make(systemRegistry);
+    FabricateApplication.craftingSystemManagerApp = await CraftingSystemManagerAppFactory.make(systemRegistry);
 
     FabricateApplication.componentSalvageAppCatalog = new DefaultComponentSalvageAppCatalog({
         componentSalvageAppFactory: new DefaultComponentSalvageAppFactory(),

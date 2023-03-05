@@ -2,9 +2,7 @@ import {SystemRegistry} from "../../../scripts/registries/SystemRegistry";
 import {GameProvider} from "../../../scripts/foundry/GameProvider";
 import {writable, Writable} from "svelte/store";
 import {CraftingSystem, CraftingSystemJson} from "../../../scripts/system/CraftingSystem";
-import Properties from "../../../scripts/Properties";
 import {get} from "svelte/store";
-import FabricateApplication from "../../../scripts/interface/FabricateApplication";
 
 class CraftingSystemStoreState {
 
@@ -136,129 +134,6 @@ class CraftingSystemStore {
         const state = await get(this._value).insert(system);
         this._value.update(() => state);
         return system;
-    }
-
-    async deleteCraftingSystem(craftingSystemToDelete: CraftingSystem) {
-        const GAME = this._gameProvider.globalGameObject();
-        await Dialog.confirm({
-            title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.deleteSystemConfirm.title`),
-            content: `<p>${GAME.i18n.format(Properties.module.id + ".CraftingSystemManagerApp.dialog.deleteSystemConfirm.content", {systemName: craftingSystemToDelete.name})}</p>`,
-            yes: async () => {
-                await this._systemRegistry.deleteCraftingSystemById(craftingSystemToDelete.id);
-                const state = await get(this._value).remove(craftingSystemToDelete);
-                this._value.update(() => state);
-            }
-        });
-    }
-
-    async importCraftingSystem(targetSystem?: CraftingSystem) {
-        const GAME = this._gameProvider.globalGameObject();
-        const craftingSystemTypeName = GAME.i18n.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
-        const importActionHint = GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.hint`);
-        const content = await renderTemplate("templates/apps/import-data.html", {
-            hint1: GAME.i18n.format("DOCUMENT.ImportDataHint1", {document: craftingSystemTypeName}),
-            hint2: GAME.i18n.format("DOCUMENT.ImportDataHint2", {name: importActionHint})
-        });
-        new Dialog({
-            title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.title`),
-            content: content,
-            default: "import",
-            buttons: {
-                import: {
-                    icon: '<i class="fas fa-file-import"></i>',
-                    label: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.buttons.import`),
-                    callback: async (html) => {
-                        // @ts-ignore
-                        const form = html.find("form")[0];
-                        if (!form.data.files.length) {
-                            const message = GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.errors.noFileUploaded`);
-                            ui.notifications.error(message);
-                            throw new Error(message);
-                        }
-                        const fileData = await readTextFromFile(form.data.files[0]);
-                        let craftingSystemJson: CraftingSystemJson;
-                        try {
-                            craftingSystemJson = JSON.parse(fileData);
-                        } catch (e: any) {
-                            const message = GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.errors.couldNotParseFile`);
-                            ui.notifications.error(message);
-                            throw new Error(message);
-                        }
-                        if (targetSystem) {
-                            await this.overwriteCraftingSystem(GAME, craftingSystemJson, targetSystem);
-                        } else {
-                            await this.importNewCraftingSystem(GAME, craftingSystemJson);
-                        }
-                    }
-                },
-                no: {
-                    icon: '<i class="fas fa-times"></i>',
-                    label: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.buttons.cancel`)
-                }
-            }
-        }, {
-            width: 400
-        }).render(true);
-    }
-
-    private async importNewCraftingSystem(GAME: Game, craftingSystemJson: CraftingSystemJson) {
-        if (!craftingSystemJson.id) {
-            craftingSystemJson.id = randomID();
-        }
-        const craftingSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
-        const message = GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.success`, { systemName: craftingSystem.name});
-        const state = await get(this._value).insert(craftingSystem);
-        this._value.update(() => state);
-        ui.notifications.info(message);
-    }
-
-    private async overwriteCraftingSystem(GAME: Game, craftingSystemJson: CraftingSystemJson, targetSystem: CraftingSystem) {
-        const systemFound = await this._systemRegistry.hasCraftingSystem(targetSystem.id);
-        if (!systemFound) {
-            const message = GAME.i18n.format(
-                `${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.errors.targetSystemNotFound`,
-                { systemName: targetSystem.name });
-            ui.notifications.error(message);
-            throw new Error(message);
-        }
-        if (targetSystem.id !== craftingSystemJson.id) {
-            const message = GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.errors.importIdMismatch`, {
-                systemName: targetSystem.name,
-                expectedId: targetSystem.id,
-                actualId: craftingSystemJson.id,
-            })
-            ui.notifications.error(message);
-            throw new Error(message);
-        }
-        const updatedCraftingSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
-        const message = GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.importCraftingSystem.success`, { systemName: updatedCraftingSystem.name});
-        const state = await get(this._value).insert(updatedCraftingSystem);
-        this._value.update(() => state);
-        ui.notifications.info(message);
-    }
-
-    public exportCraftingSystem(craftingSystem: CraftingSystem) {
-        const exportData = JSON.stringify(craftingSystem.toJson(), null, 2);
-        const fileName = `fabricate-crafting-system-${craftingSystem.name.slugify()}.json`;
-        saveDataToFile(exportData, "application/json", fileName);
-        const GAME = this._gameProvider.globalGameObject();
-        ui.notifications.info(GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.exportCraftingSystem.success`, { systemName: craftingSystem.name, fileName }));
-    }
-
-    async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem) {
-        const clonedCraftingSystem = sourceCraftingSystem.clone({
-            id: randomID(),
-            name: `${sourceCraftingSystem.name} (copy)`,
-            locked: false
-        });
-        const duplicationResult = await FabricateApplication.systemRegistry.saveCraftingSystem(clonedCraftingSystem);
-        const GAME = this._gameProvider.globalGameObject();
-        ui.notifications.info(GAME.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.dialog.duplicateCraftingSystem.success`, {
-            sourceSystemName: sourceCraftingSystem.name,
-            duplicatedSystemName: duplicationResult.name
-        }));
-        const state = await get(this._value).insert(duplicationResult);
-        this._value.update(() => state);
     }
 
     async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {

@@ -13,7 +13,7 @@ class RecipesStore {
     }) {
         this._recipes = derived(
             selectedCraftingSystem,
-            ($selectedCraftingSystem, set) => set($selectedCraftingSystem.recipes)
+            ($selectedCraftingSystem, set) => set($selectedCraftingSystem?.recipes ?? [])
         );
     }
 

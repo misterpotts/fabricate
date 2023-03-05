@@ -1,19 +1,57 @@
 <!-- CraftingSystemManager.svelte -->
-<script lang="ts">
+<script>
     import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
     import Properties from "../../scripts/Properties";
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
     import CraftingSystemDetails from "./CraftingSystemDetails.svelte";
-    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
+    import {CraftingSystemManagerApp, key} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./ComponentsTab.svelte";
     import EssenceEditor from "./EssenceEditor.svelte";
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
     import eventBus from "../common/EventBus";
+    import {onMount, setContext} from "svelte";
 
-    let allSystems;
+    import {CraftingSystemsStore} from "../stores/CraftingSystemsStore";
+    import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore";
+    import {RecipesStore} from "../stores/RecipesStore";
+    import {CraftingComponentsStore} from "../stores/CraftingComponentsStore";
+    import {SelectedRecipeStore} from "../stores/SelectedRecipeStore";
+    import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore";
+    import {CraftingSystemEditor} from "./CraftingSystemEditor";
 
-    craftingSystemManager.craftingSystemsStore.value.subscribe(value => {
-        allSystems = value.craftingSystems;
+    export let systemRegistry;
+    export let localization;
+    const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
+
+    const craftingSystems = new CraftingSystemsStore({});
+    const selectedCraftingSystem = new SelectedCraftingSystemStore({craftingSystems});
+    const recipes = new RecipesStore({selectedCraftingSystem});
+    const craftingComponents = new CraftingComponentsStore({selectedCraftingSystem});
+    const selectedRecipe = new SelectedRecipeStore({recipes});
+    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents});
+
+    const craftingSystemEditor = new CraftingSystemEditor({
+        craftingSystems,
+        selectedCraftingSystem,
+        systemRegistry,
+        game,
+        localization
+    });
+
+    setContext(key, {
+        craftingSystems,
+        selectedCraftingSystem,
+        recipes,
+        craftingComponents,
+        selectedRecipe,
+        selectedComponent,
+        craftingSystemEditor,
+        localization
+    });
+
+    onMount(async () => {
+        const allSystemsById = await systemRegistry.getAllCraftingSystems();
+        $craftingSystems = Array.from(allSystemsById.values());
     });
 
     function handleItemDeleted(event) {
@@ -26,15 +64,15 @@
 
 <CraftingSystemNavbar />
 
-{#if allSystems && allSystems.length > 0}
+{#if $craftingSystems.length > 0}
     <Tabs class="fab-main">
 
         <TabList class="fab-main-nav">
-            <Tab><i class="fa-solid fa-file-lines"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.label`)}</Tab>
-            <Tab><i class="fa-solid fa-boxes-stacked"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.label`)}</Tab>
-            <Tab><i class="fa-solid fa-scroll"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes.label`)}</Tab>
-            <Tab><i class="fa-solid fa-eye-dropper"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.label`)}</Tab>
-            <Tab><i class="fa-solid fa-flask-vial"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.alchemy.label`)}</Tab>
+            <Tab><i class="fa-solid fa-file-lines"></i>{localization.localize(`${localizationPath}.tabs.details.label`)}</Tab>
+            <Tab><i class="fa-solid fa-boxes-stacked"></i>{localization.localize(`${localizationPath}.tabs.components.label`)}</Tab>
+            <Tab><i class="fa-solid fa-scroll"></i>{localization.localize(`${localizationPath}.tabs.recipes.label`)}</Tab>
+            <Tab><i class="fa-solid fa-eye-dropper"></i>{localization.localize(`${localizationPath}.tabs.essences.label`)}</Tab>
+            <Tab><i class="fa-solid fa-flask-vial"></i>{localization.localize(`${localizationPath}.tabs.alchemy.label`)}</Tab>
         </TabList>
 
         <TabPanel class="fab-scrollable fab-columns">

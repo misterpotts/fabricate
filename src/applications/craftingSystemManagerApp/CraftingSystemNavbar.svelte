@@ -1,28 +1,23 @@
 <script lang="ts">
-    import {onMount} from 'svelte';
     import Properties from "../../scripts/Properties";
     import CraftingSystemNavbarItem from "./CraftingSystemNavbarItem.svelte";
-    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
+    import {key} from "./CraftingSystemManagerApp";
+    import {getContext} from "svelte";
 
-    export let systems = [];
-    let craftingSystemManager = CraftingSystemManagerApp.getInstance();
+    const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.navbar`;
 
-    onMount(async () => {
-        await craftingSystemManager.craftingSystemsStore.init();
-        craftingSystemManager.craftingSystemsStore.value
-            .subscribe((value) => {
-                systems = value.craftingSystems;
-            });
-    });
+    const { craftingSystems, craftingSystemEditor, selectedCraftingSystem, localization } = getContext(key);
 
     async function createCraftingSystem() {
-        const craftingSystemManager = CraftingSystemManagerApp.getInstance();
-        await craftingSystemManager.craftingSystemsStore.create();
+        $selectedCraftingSystem = await craftingSystemEditor.createNewCraftingSystem();
     }
 
     async function importCraftingSystem() {
-        await craftingSystemManager.craftingSystemsStore.importCraftingSystem();
+        await craftingSystemEditor.importCraftingSystem((craftingSystem) => {
+            $selectedCraftingSystem = craftingSystem;
+        });
     }
+
 </script>
 
 <!-- CraftingSystemNavbar.svelte -->
@@ -30,10 +25,10 @@
     <div class="fab-header">
         <h1>Crafting Systems</h1>
     </div>
-    {#if systems && systems.length > 0}
+    {#if $craftingSystems.length > 0}
         <div class="fab-items fab-scrollable">
-            {#each systems as system}
-                <CraftingSystemNavbarItem system="{system}" />
+            {#each $craftingSystems as craftingSystem}
+                <CraftingSystemNavbarItem craftingSystem="{craftingSystem}" />
             {/each}
         </div>
     {:else }
@@ -42,7 +37,7 @@
         </div>
     {/if}
     <div class="fab-footer">
-        <button on:click={createCraftingSystem}><i class="fa-solid fa-file-pen"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.create`)}</button>
-        <button on:click={importCraftingSystem}><i class="fa-solid fa-file-import"></i>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.navbar.buttons.importNew`)}</button>
+        <button on:click={createCraftingSystem}><i class="fa-solid fa-file-pen"></i>{localization.localize(`${localizationPath}.buttons.create`)}</button>
+        <button on:click={importCraftingSystem}><i class="fa-solid fa-file-import"></i>{localization.localize(`${localizationPath}.buttons.importNew`)}</button>
     </div>
 </aside>
