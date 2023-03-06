@@ -1,6 +1,6 @@
 <script lang="ts">
     import {fade} from 'svelte/transition';
-    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
+    import {CraftingSystemManagerApp, key} from "./CraftingSystemManagerApp";
     import Properties from "../../scripts/Properties.js";
     import {DropEventParser} from "../common/DropEventParser";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
@@ -11,6 +11,9 @@
     import TabList from "../common/TabList.svelte";
     import TabPanel from "../common/TabPanel.svelte";
     import {componentUpdated} from "../common/EventBus";
+    import {getContext} from "svelte";
+
+    const { localization } = getContext(key);
 
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
@@ -70,7 +73,7 @@
     async function replaceItem(event) {
         loading = true;
         const dropEventParser = new DropEventParser({
-            i18n: craftingSystemManager.i18n,
+            localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`)
         })
@@ -141,7 +144,7 @@
     async function addSalvageOption(event) {
         loading = true;
         const dropEventParser = new DropEventParser({
-            i18n: craftingSystemManager.i18n,
+            localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`),
             allowedCraftingComponents: availableComponents
@@ -202,7 +205,7 @@
     async function addComponentToSalvageOption(event, salvageOption) {
         loading = true;
         const dropEventParser = new DropEventParser({
-            i18n: craftingSystemManager.i18n,
+            localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`),
             allowedCraftingComponents: availableComponents

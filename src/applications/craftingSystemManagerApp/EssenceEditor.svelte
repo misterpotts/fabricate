@@ -2,12 +2,15 @@
 <script lang="ts">
     import {fade} from 'svelte/transition';
     import Properties from "../../scripts/Properties.js";
-    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
+    import {CraftingSystemManagerApp, key} from "./CraftingSystemManagerApp";
     import {Essence} from "../../scripts/common/Essence";
     import {DropEventParser} from "../common/DropEventParser";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {ICON_NAMES} from "../FontAwesomeIcons";
     import {clickOutside} from "../common/ClickOutside";
+    import {getContext} from "svelte";
+
+    const { localization } = getContext(key);
 
     const craftingSystemManager = CraftingSystemManagerApp.getInstance();
 
@@ -103,7 +106,7 @@
 
     async function addActiveEffectSource(event, essence) {
         const dropEventParser = new DropEventParser({
-            i18n: craftingSystemManager.i18n,
+            localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.activeEffectSource.singular`)
         })

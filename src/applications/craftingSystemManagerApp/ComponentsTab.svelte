@@ -1,18 +1,14 @@
 <script lang="ts">
-    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp";
+    import { key } from "./CraftingSystemManagerApp";
     import ComponentsBrowser from "./ComponentsBrowser.svelte";
     import ComponentEditor from "./ComponentEditor.svelte";
-    const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+    import { getContext } from "svelte";
 
-    let selectedComponent;
-
-    craftingSystemManager.selectedComponentStore.selectedComponent.subscribe(component => {
-        selectedComponent = component;
-    });
+    const { selectedComponent } = getContext(key);
 
 </script>
 
-{#if !selectedComponent}
+{#if !$selectedComponent}
     <ComponentsBrowser />
 {:else}
     <ComponentEditor />

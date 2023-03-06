@@ -20,10 +20,12 @@
     import {CraftingSystemEditor} from "./CraftingSystemEditor";
     import {LoadingStore} from "../common/LoadingStore";
     import LoadingModal from "../common/LoadingModal.svelte";
+    import {CraftingComponentEditor} from "./CraftingComponentEditor";
 
     export let systemRegistry;
     export let gameProvider;
     export let localization;
+
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
     const loading = new LoadingStore({});
 
@@ -36,11 +38,12 @@
 
     const craftingSystemEditor = new CraftingSystemEditor({
         craftingSystems,
-        selectedCraftingSystem,
         systemRegistry,
         game: gameProvider.globalGameObject(),
         localization
     });
+
+    const craftingComponentEditor = new CraftingComponentEditor({ craftingSystemEditor, localization });
 
     setContext(key, {
         craftingSystems,
@@ -51,7 +54,8 @@
         selectedComponent,
         craftingSystemEditor,
         localization,
-        loading
+        loading,
+        craftingComponentEditor
     });
 
     onMount(async () => {
