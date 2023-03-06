@@ -29,7 +29,8 @@ class CraftingSystemManagerAppFactory {
                 options: {
                     props: {
                         localization: new DefaultLocalizationService(gameProvider),
-                        systemRegistry
+                        systemRegistry,
+                        gameProvider
                     }
                 },
                 componentType: CraftingSystemManager

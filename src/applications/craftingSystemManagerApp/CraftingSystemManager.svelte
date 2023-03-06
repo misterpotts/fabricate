@@ -22,6 +22,7 @@
     import LoadingModal from "../common/LoadingModal.svelte";
 
     export let systemRegistry;
+    export let gameProvider;
     export let localization;
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
     const loading = new LoadingStore({});
@@ -37,7 +38,7 @@
         craftingSystems,
         selectedCraftingSystem,
         systemRegistry,
-        game,
+        game: gameProvider.globalGameObject(),
         localization
     });
 
