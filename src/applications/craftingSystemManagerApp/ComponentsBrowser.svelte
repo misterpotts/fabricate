@@ -17,7 +17,7 @@
     let searchMustHaveEssences = false;
     let searchMustHaveSalvage = false;
     let searchName = "";
-    let filteredComponents = [];
+    let filteredComponents = searchComponents();
 
     function searchComponents() {
         return $craftingComponents.filter((component) => {
