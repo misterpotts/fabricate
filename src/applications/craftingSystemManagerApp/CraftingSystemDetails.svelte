@@ -1,51 +1,24 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
-    import {CraftingSystemManagerApp} from "./CraftingSystemManagerApp"
+    import {key} from "./CraftingSystemManagerApp"
     import Properties from "../../scripts/Properties";
-    import {CraftingSystemDetails} from "../../scripts/system/CraftingSystemDetails";
-    const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+    import {getContext} from "svelte";
 
+    const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.details`;
     let loading = false;
 
-    let selectedSystem;
+    const { selectedCraftingSystem, craftingSystemEditor, localization } = getContext(key);
 
-    let name = "No name";
-    let author = "No author";
-    let summary = "No summary";
-    let description = "No description";
-    let enabled = false;
-
-    craftingSystemManager.craftingSystemsStore.value.subscribe((value) => {
-        selectedSystem = value.selectedSystem;
-        if (selectedSystem) {
-            name = selectedSystem.name;
-            author = selectedSystem.author;
-            summary = selectedSystem.summary;
-            description = selectedSystem.description;
-            enabled = selectedSystem.enabled;
-        }
-    });
-
-    let scheduledUpdate;
-    function updateDetails() {
-        clearTimeout(scheduledUpdate);
-        scheduledUpdate = setTimeout(async () => {
+    let scheduledSave;
+    function scheduleSave() {
+        clearTimeout(scheduledSave);
+        scheduledSave = setTimeout(async () => {
             loading = true;
-            selectedSystem.details = new CraftingSystemDetails({
-                name,
-                author,
-                description,
-                summary
-            });
-            await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
+            await craftingSystemEditor.saveCraftingSystem($selectedCraftingSystem);
             loading = false;
-        }, 500);
+        }, 1000);
     }
 
-    async function toggleSystemEnabled() {
-        selectedSystem.enabled = enabled;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-    }
 </script>
 
 {#if loading}
@@ -60,57 +33,80 @@
         <img src="{Properties.ui.banners.detailsEditor}" >
     </div>
     <div class="fab-tab-header fab-row">
-        <h2>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.title`, { systemName: selectedSystem?.name })}</h2>
+        <h2>{localization.format(`${localizationPath}.title`, { systemName: $selectedCraftingSystem?.name })}</h2>
     </div>
     <div class="fab-row fab-columns">
         <div class="fab-column">
             <div class="fab-row fab-system-name">
-                <p class="fab-label fab-inline">Name: </p>
-                {#if !selectedSystem?.isLocked}
-                    <div class="fab-editable fab-inline" contenteditable="true" bind:textContent={name} on:input={updateDetails}>{name}</div>
+                <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.labels.name`)}: </p>
+                {#if !$selectedCraftingSystem?.isLocked}
+                    <div class="fab-editable fab-inline"
+                         contenteditable="true"
+                         bind:textContent={$selectedCraftingSystem.name}
+                         on:input={scheduleSave}>
+                        {$selectedCraftingSystem.name}
+                    </div>
                 {:else}
-                    <div class="fab-locked fab-inline">{name}</div>
+                    <div class="fab-locked fab-inline">{$selectedCraftingSystem.name}</div>
                 {/if}
             </div>
         </div>
         <div class="fab-column">
             <div class="fab-row fab-system-author">
-                <p class="fab-label fab-inline">Author: </p>
-                {#if !selectedSystem?.isLocked}
-                    <div class="fab-editable fab-inline" contenteditable="true" bind:textContent={author} on:input={updateDetails}>{author}</div>
+                <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.labels.author`)}: </p>
+                {#if !$selectedCraftingSystem?.isLocked}
+                    <div class="fab-editable fab-inline"
+                         contenteditable="true"
+                         bind:textContent={$selectedCraftingSystem.author}
+                         on:input={scheduleSave}>
+                        {$selectedCraftingSystem.author}
+                    </div>
                 {:else}
-                    <div class="fab-locked fab-inline">{author}</div>
+                    <div class="fab-locked fab-inline">{$selectedCraftingSystem.author}</div>
                 {/if}
             </div>
         </div>
     </div>
     <div class="fab-row fab-system-summary">
-        <p class="fab-label">Summary: </p>
+        <p class="fab-label">{localization.localize(`${localizationPath}.labels.summary`)}: </p>
     </div>
     <div class="fab-row fab-system-summary">
-        {#if !selectedSystem?.isLocked}
-            <div class="fab-editable fab-textbox" contenteditable="true" bind:textContent={summary} on:input={updateDetails}>{summary}</div>
+        {#if !$selectedCraftingSystem?.isLocked}
+            <div class="fab-editable fab-textbox"
+                 contenteditable="true"
+                 bind:textContent={$selectedCraftingSystem.summary}
+                 on:input={scheduleSave}>
+                {$selectedCraftingSystem.summary}
+            </div>
         {:else}
-            <div class="fab-locked fab-textbox">{summary}</div>
+            <div class="fab-locked fab-textbox">{$selectedCraftingSystem.summary}</div>
         {/if}
     </div>
     <div class="fab-row fab-system-description">
-        <p class="fab-label">Detailed description: </p>
+        <p class="fab-label">{localization.localize(`${localizationPath}.labels.description`)}: </p>
     </div>
     <div class="fab-row fab-system-description">
-        {#if !selectedSystem?.isLocked}
-            <div class="fab-editable fab-textbox" contenteditable="true" bind:textContent={description} on:input={updateDetails}>{description}</div>
+        {#if !$selectedCraftingSystem?.isLocked}
+            <div class="fab-editable fab-textbox"
+                 contenteditable="true"
+                 bind:textContent={$selectedCraftingSystem.description}
+                 on:input={scheduleSave}>
+                {$selectedCraftingSystem.description}
+            </div>
         {:else}
-            <div class="fab-locked fab-textbox">{description}</div>
+            <div class="fab-locked fab-textbox">{$selectedCraftingSystem.description}</div>
         {/if}
     </div>
     <div class="fab-tab-header fab-row">
-        <h2>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.settings.title`)}</h2>
+        <h2>{localization.localize(`${localizationPath}.settings.title`)}</h2>
     </div>
     <div class="fab-row">
-        <p class="fab-label">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.settings.enabled.label`)}: </p> <input type="checkbox" bind:checked={enabled} on:change={toggleSystemEnabled}>
+        <p class="fab-label">{localization.localize(`${localizationPath}.settings.enabled.label`)}: </p>
+        <input type="checkbox"
+               bind:checked={$selectedCraftingSystem.enabled}
+               on:change={scheduleSave}>
     </div>
     <div class="fab-row">
-        <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.details.settings.enabled.description`)}</p>
+        <p>{localization.localize(`${localizationPath}.settings.enabled.description`)}</p>
     </div>
 </div>
