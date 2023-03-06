@@ -4,7 +4,12 @@
     import {key} from "./CraftingSystemManagerApp";
 
     export let craftingSystem;
-    const { craftingSystemEditor, selectedCraftingSystem, localization } = getContext(key);
+    const {
+        craftingSystemEditor,
+        selectedCraftingSystem,
+        localization,
+        loading
+    } = getContext(key);
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.navbar`;
 
     async function selectSystem() {
@@ -12,21 +17,29 @@
     }
 
     async function deleteSystem() {
+        $loading = true;
         await craftingSystemEditor.deleteCraftingSystem(craftingSystem);
+        $loading = false;
     }
 
     async function importCraftingSystem() {
+        $loading = true;
         await craftingSystemEditor.importCraftingSystem((craftingSystem) => {
             $selectedCraftingSystem = craftingSystem;
         }, craftingSystem);
+        $loading = false;
     }
 
     function exportSystem() {
+        $loading = true;
         craftingSystemEditor.exportCraftingSystem(craftingSystem);
+        $loading = false;
     }
 
     async function duplicateSystem() {
+        $loading = true;
         $selectedCraftingSystem = await craftingSystemEditor.duplicateCraftingSystem(craftingSystem);
+        $loading = false;
     }
 
 </script>

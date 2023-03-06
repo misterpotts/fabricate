@@ -6,16 +6,26 @@
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.navbar`;
 
-    const { craftingSystems, craftingSystemEditor, selectedCraftingSystem, localization } = getContext(key);
+    const {
+        craftingSystems,
+        craftingSystemEditor,
+        selectedCraftingSystem,
+        localization,
+        loading
+    } = getContext(key);
 
     async function createCraftingSystem() {
+        $loading = true;
         $selectedCraftingSystem = await craftingSystemEditor.createNewCraftingSystem();
+        $loading = false;
     }
 
     async function importCraftingSystem() {
+        $loading = true;
         await craftingSystemEditor.importCraftingSystem((craftingSystem) => {
             $selectedCraftingSystem = craftingSystem;
         });
+        $loading = false;
     }
 
 </script>

@@ -18,10 +18,13 @@
     import {SelectedRecipeStore} from "../stores/SelectedRecipeStore";
     import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore";
     import {CraftingSystemEditor} from "./CraftingSystemEditor";
+    import {LoadingStore} from "../common/LoadingStore";
+    import LoadingModal from "../common/LoadingModal.svelte";
 
     export let systemRegistry;
     export let localization;
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
+    const loading = new LoadingStore({});
 
     const craftingSystems = new CraftingSystemsStore({});
     const selectedCraftingSystem = new SelectedCraftingSystemStore({craftingSystems});
@@ -46,7 +49,8 @@
         selectedRecipe,
         selectedComponent,
         craftingSystemEditor,
-        localization
+        localization,
+        loading
     });
 
     onMount(async () => {
@@ -61,6 +65,8 @@
 </script>
 
 <svelte:window on:itemDeleted={(e) => handleItemDeleted(e)} use:eventBus='{"itemDeleted"}'></svelte:window>
+
+<LoadingModal loading={$loading} />
 
 <CraftingSystemNavbar />
 

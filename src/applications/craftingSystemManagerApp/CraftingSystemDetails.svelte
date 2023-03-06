@@ -1,33 +1,29 @@
 <script lang="ts">
-    import { fade } from 'svelte/transition';
     import {key} from "./CraftingSystemManagerApp"
     import Properties from "../../scripts/Properties";
-    import {getContext} from "svelte";
+    import { getContext } from "svelte";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.details`;
-    let loading = false;
 
-    const { selectedCraftingSystem, craftingSystemEditor, localization } = getContext(key);
+    const {
+        selectedCraftingSystem,
+        craftingSystemEditor,
+        localization,
+        loading
+    } = getContext(key);
 
     let scheduledSave;
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            loading = true;
+            $loading = true;
             await craftingSystemEditor.saveCraftingSystem($selectedCraftingSystem);
-            loading = false;
+            $loading = false;
         }, 1000);
     }
 
 </script>
 
-{#if loading}
-    <div class="fab-loading" transition:fade="{{duration: 100}}">
-        <div class="fab-loading-inner">
-            <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-        </div>
-    </div>
-{/if}
 <div class="fab-system-details fab-column">
     <div class="fab-hero-banner">
         <img src="{Properties.ui.banners.detailsEditor}" >
