@@ -3,6 +3,7 @@
     import Properties from "../../scripts/Properties";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {getContext} from "svelte";
+    import {ComponentSearchStore} from "../stores/ComponentSearchStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     const {
@@ -11,10 +12,10 @@
         localization,
         craftingComponentEditor,
         selectedComponent,
-        loading,
-        componentSearchResults
+        loading
     } = getContext(key);
 
+    const componentSearchResults = new ComponentSearchStore({availableComponents: craftingComponents});
     const searchTerms = componentSearchResults.searchTerms;
 
     function clearSearch() {

@@ -1,4 +1,4 @@
-<!-- CraftingSystemManager.svelte -->
+<!-- CraftingSystemEditor.svelte -->
 <script>
     import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
     import Properties from "../../scripts/Properties";
@@ -20,7 +20,7 @@
     import {CraftingSystemEditor} from "./CraftingSystemEditor";
     import {LoadingStore} from "../common/LoadingStore";
     import LoadingModal from "../common/LoadingModal.svelte";
-    import {CraftingComponentEditor} from "./CraftingComponentEditor";
+    import {CraftingComponentManager} from "./CraftingComponentManager";
     import {ComponentSearchStore} from "../stores/ComponentSearchStore";
 
     export let systemRegistry;
@@ -36,7 +36,6 @@
     const craftingComponents = new CraftingComponentsStore({selectedCraftingSystem});
     const selectedRecipe = new SelectedRecipeStore({recipes});
     const selectedComponent = new SelectedCraftingComponentStore({craftingComponents});
-    const componentSearchResults = new ComponentSearchStore({availableComponents: craftingComponents});
 
     const craftingSystemEditor = new CraftingSystemEditor({
         craftingSystems,
@@ -45,7 +44,7 @@
         localization
     });
 
-    const craftingComponentEditor = new CraftingComponentEditor({ craftingSystemEditor, localization });
+    const craftingComponentEditor = new CraftingComponentManager({ craftingSystemEditor, localization });
 
     setContext(key, {
         craftingSystems,
@@ -57,8 +56,7 @@
         craftingSystemEditor,
         localization,
         loading,
-        craftingComponentEditor,
-        componentSearchResults
+        craftingComponentEditor
     });
 
     onMount(async () => {

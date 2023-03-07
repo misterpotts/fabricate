@@ -6,7 +6,7 @@ import {CraftingComponent} from "../../scripts/common/CraftingComponent";
 import {LocalizationService} from "../common/LocalizationService";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 
-class CraftingComponentEditor {
+class CraftingComponentManager {
 
     private readonly _craftingSystemEditor: CraftingSystemEditor;
     private readonly _localization: LocalizationService;
@@ -108,6 +108,43 @@ class CraftingComponentEditor {
         return clonedComponent;
     }
 
+    public async replaceItem(event: any, selectedSystem: CraftingSystem, selectedComponent: CraftingComponent) {
+        const dropEventParser = new DropEventParser({
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`)
+        })
+        const dropData = await dropEventParser.parse(event);
+        const itemData = dropData.itemData;
+        if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
+            const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
+            const message = this._localization.format(
+                `${this._localizationPath}.errors.import.itemAlreadyIncluded`,
+                {
+                    itemUuid: itemData.uuid,
+                    componentName: existingComponent.name,
+                    systemName: selectedSystem.name
+                }
+            );
+            ui.notifications.error(message);
+            return;
+        }
+        const previousItemName = selectedComponent.name;
+        selectedComponent.itemData = itemData;
+        selectedSystem.editComponent(selectedComponent);
+        await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
+        const message = this._localization.format(
+            `${this._localizationPath}.component.replaced`,
+            {
+                previousItemName,
+                itemName: selectedComponent.name,
+                systemName: selectedSystem.name
+            }
+        );
+        ui.notifications.info(message);
+        return;
+    }
+
 }
 
-export { CraftingComponentEditor }
+export { CraftingComponentManager }

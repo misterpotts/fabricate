@@ -1,232 +1,139 @@
 <script lang="ts">
     import {fade} from 'svelte/transition';
-    import {CraftingSystemManagerApp, key} from "./CraftingSystemManagerApp";
+    import {key} from "./CraftingSystemManagerApp";
     import Properties from "../../scripts/Properties.js";
     import {DropEventParser} from "../common/DropEventParser";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {Combination, Unit} from "../../scripts/common/Combination";
     import truncate from "../common/Truncate";
-    import {SalvageOption} from "../../scripts/common/CraftingComponent";
+    import {CraftingComponent, SalvageOption} from "../../scripts/common/CraftingComponent";
     import {Tab, Tabs} from "../common/FabricateTabs.js";
     import TabList from "../common/TabList.svelte";
     import TabPanel from "../common/TabPanel.svelte";
     import {componentUpdated} from "../common/EventBus";
     import {getContext} from "svelte";
+    import {SalvageSearchStore} from "../stores/SalvageSearchStore";
+    import {ComponentEssenceStore} from "../stores/ComponentEssenceStore";
 
-    const { localization } = getContext(key);
+    const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
 
-    const craftingSystemManager = CraftingSystemManagerApp.getInstance();
+    const { 
+        localization, 
+        loading, 
+        selectedComponent, 
+        craftingComponents, 
+        selectedCraftingSystem,
+        craftingComponentEditor
+    } = getContext(key);
 
-    let loading = false;
-
-    let availableComponents = [];
-    let formattedEssences = [];
-
-    let selectedSystem;
-    let selectedComponent;
-    let searchName = "";
-
-    craftingSystemManager.craftingSystemsStore.value.subscribe(async (value) => {
-        selectedSystem = value.selectedSystem;
-        searchName = "";
-        if (selectedComponent) {
-            selectedComponent = selectedSystem.getComponentById(selectedComponent.id);
-            formattedEssences = formatEssences(selectedComponent, selectedSystem);
-            availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
-        }
-    });
-
-    craftingSystemManager.selectedComponentStore.selectedComponent.subscribe(component => {
-        // this is weird and counterintuitive, but nulling it breaks this component
-        // because this is evaluated *before* ComponentsTab switches to the browser
-        // todo: refactor application state into a series of individual stores (some derived) that make single system loading possible
-        if (component) {
-            selectedComponent = component;
-            searchName = "";
-        }
-        availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
-        formattedEssences = formatEssences(selectedComponent, selectedSystem);
-    });
-
-    function formatEssences(component, system) {
-        if (!component || !system || !system.hasEssences) {
-            return [];
-        }
-        return system.getEssences().map(essence => {
-            return new Unit(essence, component.essences.amountFor(essence.id));
-        });
-    }
-
-    function filterAvailableComponents(components, searchName) {
-        if (!components || components.length === 0) {
-            return [];
-        }
-        return components
-            .filter(component => component !== selectedComponent)
-            .filter(component => component.name.search(new RegExp(searchName, "i")) >= 0);
-    }
+    const salvageSearchResults = new SalvageSearchStore({ selectedComponent, availableComponents: craftingComponents });
+    const searchTerms = salvageSearchResults.searchTerms;
+    const componentEssences = new ComponentEssenceStore({selectedCraftingSystem, selectedComponent});
 
     function deselectComponent() {
-        craftingSystemManager.selectedComponentStore.deselect();
+        $selectedComponent = null;
     }
 
     async function replaceItem(event) {
-        loading = true;
-        const dropEventParser = new DropEventParser({
-            localizationService: localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`)
-        })
-        const dropData = await dropEventParser.parse(event);
-        const itemData = dropData.itemData;
-        if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
-            const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
-            const message = craftingSystemManager.i18n.format(
-                `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.errors.import.itemAlreadyIncluded`,
-                {
-                    itemUuid: itemData.uuid,
-                    componentName: existingComponent.name,
-                    systemName: selectedSystem.name
-                }
-            );
-            ui.notifications.error(message);
-            loading = false;
-            return;
-        }
-        const previousItemName = selectedComponent.name;
-        selectedComponent.itemData = itemData;
-        selectedSystem.editComponent(selectedComponent);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        await craftingSystemManager.craftingSystemsStore.reloadComponents();
-        const message = craftingSystemManager.i18n.format(
-            `${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.replaced`,
-            {
-                previousItemName,
-                itemName: selectedComponent.name,
-                systemName: selectedSystem.name
-            }
-        );
-        ui.notifications.info(message);
-        loading = false;
-        return;
+        $loading = true;
+        await craftingComponentEditor.replaceItem(event, $selectedCraftingSystem, $selectedComponent);
+        $loading = false;
     }
     
     async function incrementEssence(essence) {
-        loading = true;
-        selectedComponent.essences = selectedComponent.essences.add(new Unit(essence, 1));
-        selectedSystem.editComponent(selectedComponent);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        $loading = true;
+        $selectedComponent.essences = $selectedComponent.essences.add(new Unit(essence, 1));
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
     }
 
     async function decrementEssence(essence) {
-        loading = true;
-        selectedComponent.essences = selectedComponent.essences.minus(new Unit(essence, 1));
-        selectedSystem.editComponent(selectedComponent);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
-    }
-
-    let scheduledSearch;
-    function updateSearch() {
-        clearTimeout(scheduledSearch);
-        scheduledSearch = setTimeout(() => {
-            availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
-        }, 500);
+        $loading = true;
+        $selectedComponent.essences = $selectedComponent.essences.minus(new Unit(essence, 1));
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
     }
 
     function clearSearch() {
-        clearTimeout(scheduledSearch);
-        searchName = "";
-        availableComponents = filterAvailableComponents(selectedSystem.getComponents(), searchName);
+        salvageSearchResults.clear();
     }
 
     async function addSalvageOption(event) {
-        loading = true;
+        $loading = true;
         const dropEventParser = new DropEventParser({
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
-            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: availableComponents
+            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: $craftingComponents
         });
         const component = (await dropEventParser.parse(event)).component;
-        const name = generateOptionName(selectedComponent);
+        const name = generateOptionName($selectedComponent);
         const salvageOption = new SalvageOption({name, salvage: Combination.of(component, 1)});
-        selectedComponent.addSalvageOption(salvageOption);
-        selectedSystem.editComponent(selectedComponent);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        $selectedComponent.addSalvageOption(salvageOption);
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
         componentUpdated(selectedComponent);
     }
 
     function generateOptionName(component) {
         if (!component.isSalvageable) {
-            return craftingSystemManager.i18n.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: 1 });
+            return localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: 1 });
         }
         const existingNames = component.salvageOptions.map(salvageOption => salvageOption.name);
         let nextOptionNumber = 2;
         let nextOptionName;
         do {
-            nextOptionName = craftingSystemManager.i18n.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: nextOptionNumber });
+            nextOptionName = localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: nextOptionNumber });
             nextOptionNumber++;
         } while (existingNames.includes(nextOptionName));
         return nextOptionName;
     }
-
-    let scheduledUpdate;
-    function updateSalvageOptionName() {
-        clearTimeout(scheduledUpdate);
-        scheduledUpdate = setTimeout(async () => {
-            loading = true;
-            selectedSystem.editComponent(selectedComponent);
-            await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-            loading = false;
-            componentUpdated(selectedComponent);
-        }, 500);
-    }
-
+    
     function dragStart(event, component) {
         event.dataTransfer.setData('application/json', DropEventParser.serialiseComponentData(component));
     }
 
-    function sortByName(salvageOptions) {
-        return salvageOptions.sort((left, right) => left.name.localeCompare(right.name));
+    let scheduledSave;
+    function scheduleSave() {
+        clearTimeout(scheduledSave);
+        scheduledSave = setTimeout(async () => {
+            $loading = true;
+            await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+            $loading = false;
+        }, 1000);
     }
-
-    async function deleteSalvageOption(component, optionToDelete) {
-        component.deleteSalvageOptionByName(optionToDelete.name);
-        selectedSystem.editComponent(selectedComponent);
-        loading = true;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+    
+    async function deleteSalvageOption(optionToDelete) {
+        $loading = true;
+        $selectedComponent.deleteSalvageOptionByName(optionToDelete.name);
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
         componentUpdated(selectedComponent);
     }
 
     async function addComponentToSalvageOption(event, salvageOption) {
-        loading = true;
+        $loading = true;
         const dropEventParser = new DropEventParser({
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
-            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: availableComponents
+            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: $craftingComponents
         });
         const component = (await dropEventParser.parse(event)).component;
         salvageOption.add(component);
-        selectedSystem.editComponent(selectedComponent);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
         componentUpdated(selectedComponent);
     }
 
     async function decrementSalvageOptionComponent(salvageOption, component) {
+        $loading = true;
         salvageOption.subtract(component);
         if (salvageOption.isEmpty) {
-            return deleteSalvageOption(selectedComponent, salvageOption);
+            return deleteSalvageOption(salvageOption);
         }
-        selectedSystem.editComponent(selectedComponent);
-        loading = true;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
         componentUpdated(selectedComponent);
     }
 
@@ -234,62 +141,58 @@
         if (event && event.shiftKey) {
             return decrementSalvageOptionComponent(salvageOption, component);
         }
+        $loading = true;
         salvageOption.add(component);
-        selectedSystem.editComponent(selectedComponent);
-        loading = true;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        $loading = false;
         componentUpdated(selectedComponent);
     }
 
+    function sortByName(salvageOption) {
+        return salvageOption.sort((left, right) => left.name.localeCompare(right.name));
+    }
+    
 </script>
 
-{#if loading}
-    <div class="fab-loading" transition:fade="{{duration: 100}}">
-        <div class="fab-loading-inner">
-            <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-        </div>
-    </div>
-{/if}
 <div class="fab-component-editor fab-column">
     <div class="fab-hero-banner fab-row">
         <img src="{Properties.ui.banners.componentEditor}" alt="Component editor banner">
         <div class="fab-buttons">
-            <button class="fab-deselect-component" on:click={deselectComponent}><i class="fa-solid fa-circle-chevron-left"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.deselect`)}</button>
+            <button class="fab-deselect-component" on:click={deselectComponent}><i class="fa-solid fa-circle-chevron-left"></i> {localization.localize(`${localizationPath}.component.buttons.deselect`)}</button>
         </div>
     </div>
-    <div class="fab-tab-header fab-row" class:fab-error={selectedComponent.hasErrors}>
-        <img src="{selectedComponent.imageUrl}" width="48px" height="48px"  alt="{selectedComponent.name} icon"/>
-        <h2 class="fab-component-name">{selectedComponent.name}</h2>
+    <div class="fab-tab-header fab-row" class:fab-error={$selectedComponent.hasErrors}>
+        <img src="{$selectedComponent.imageUrl}" width="48px" height="48px"  alt="{$selectedComponent.name} icon"/>
+        <h2 class="fab-component-name">{$selectedComponent.name}</h2>
         <div class="fab-drop-zone fab-swap-item" on:drop|preventDefault={(e) => replaceItem(e)}>
             <i class="fa-solid fa-arrow-right-arrow-left"></i>
-            {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.replaceItem`)}
+            {localization.localize(`${localizationPath}.component.labels.replaceItem`)}
         </div>
     </div>
     <div class="fab-component-salvage-editor">
         <div class="fab-component-salvage fab-columns">
             <div class="fab-column">
                 <div class="fab-row">
-                    <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.salvageHeading`)}</h3>
+                    <h3>{localization.localize(`${localizationPath}.component.labels.salvageHeading`)}</h3>
                 </div>
-                {#if selectedComponent.isSalvageable}
+                {#if $selectedComponent.isSalvageable}
                     <div class="fab-salvage-editor fab-row">
                         <Tabs>
                             <TabList>
-                                {#each sortByName(selectedComponent.salvageOptions) as salvageOption}
+                                {#each sortByName($selectedComponent.salvageOptions) as salvageOption}
                                     <Tab>{salvageOption.name}</Tab>
                                 {/each}
-                                <Tab><i class="fa-regular fa-square-plus"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.newSalvageOption`)}</Tab>
+                                <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.component.labels.newSalvageOption`)}</Tab>
                             </TabList>
-                            {#each sortByName(selectedComponent.salvageOptions) as salvageOption}
+                            {#each sortByName($selectedComponent.salvageOptions) as salvageOption}
                                 <TabPanel class="fab-columns">
                                     <div class="fab-column">
                                         <div class="fab-option-controls fab-row">
                                             <div class="fab-option-name">
-                                                <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.salvageName`)}</p>
-                                                <div class="fab-editable" contenteditable="true" bind:textContent={salvageOption.name} on:input={updateSalvageOptionName}>{salvageOption.name}</div>
+                                                <p>{localization.localize(`${localizationPath}.component.labels.salvageName`)}</p>
+                                                <div class="fab-editable" contenteditable="true" bind:textContent={salvageOption.name} on:input={scheduleSave}>{salvageOption.name}</div>
                                             </div>
-                                            <button class="fab-delete-salvage-opt" on:click={deleteSalvageOption(selectedComponent, salvageOption)}><i class="fa-solid fa-trash fa-fw"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.buttons.deleteSalvageOption`)}</button>
+                                            <button class="fab-delete-salvage-opt" on:click={deleteSalvageOption(salvageOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.component.buttons.deleteSalvageOption`)}</button>
                                         </div>
                                         <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-option-actual" on:drop={(e) => addComponentToSalvageOption(e, salvageOption)}>
                                             {#each salvageOption.salvage.units as salvageUnit}
@@ -328,17 +231,17 @@
         <div class="fab-salvage-options fab-columns">
             <div class="fab-column">
                 <div class="fab-row">
-                    <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.availableComponentsHeading`)}</h3>
+                    <h3>{localization.localize(`${localizationPath}.component.labels.availableComponentsHeading`)}</h3>
                 </div>
                 <div class="fab-row fab-search fab-salvage-search">
-                    <p class="fab-label fab-inline">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.name`)}: </p>
-                    <input type="text" bind:value={searchName} on:input={updateSearch} />
-                    <button class="clear-search" data-tooltip={craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
+                    <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.search.name`)}: </p>
+                    <input type="text" bind:value={$searchTerms.name} />
+                    <button class="clear-search" data-tooltip={localization.localize(`${localizationPath}.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
                 </div>
                 <div class="fab-row">
-                    {#if availableComponents.length > 0}
+                    {#if $salvageSearchResults.length > 0}
                         <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-source">
-                            {#each availableComponents as component}
+                            {#each $salvageSearchResults as component}
                                 <div class="fab-component" draggable="true" on:dragstart={event => dragStart(event, component)}>
                                     <div class="fab-component-name" draggable="false">
                                         <p draggable="false">{truncate(component.name, 9)}</p>
@@ -351,22 +254,22 @@
                                 </div>
                             {/each}
                         </div>
-                    {:else if searchName}
-                        <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noMatchingSalvage`)}</p></div>
+                    {:else if $searchTerms.name}
+                        <div class="fab-no-salvage-opts"><p>{localization.localize(`${localizationPath}.component.info.noMatchingSalvage`)}</p></div>
                     {:else}
-                        <div class="fab-no-salvage-opts"><p>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noAvailableSalvage`, { systemName: selectedSystem.name, componentName: selectedComponent.name })}</p></div>
+                        <div class="fab-no-salvage-opts"><p>{localization.format(`${localizationPath}.component.info.noAvailableSalvage`, { systemName: $selectedCraftingSystem.name, componentName: selectedComponent.name })}</p></div>
                     {/if}
                 </div>
             </div>
         </div>
     </div>
     <div class="fab-row">
-        <h3>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.labels.essencesHeading`)}</h3>
+        <h3>{localization.localize(`${localizationPath}.component.labels.essencesHeading`)}</h3>
     </div>
     <div class="fab-row">
         <div class="fab-component-essences">
-            {#if selectedSystem.hasEssences}
-                {#each formattedEssences as essenceUnit}
+            {#if $selectedCraftingSystem.hasEssences}
+                {#each $componentEssences as essenceUnit}
                     <div class="fab-component-essence-adjustment">
                         <button class="fab-increment-essence" on:click={incrementEssence(essenceUnit.part)}><i class="fa-solid fa-plus"></i></button>
                         <div class="fab-essence-amount">
@@ -384,7 +287,7 @@
                     </div>
                 {/each}
             {:else}
-                <div class="fab-no-essence-opts"><p>{craftingSystemManager.i18n.format(`${Properties.module.id}.CraftingSystemManagerApp.tabs.components.component.info.noAvailableEssences`, { systemName: selectedSystem.name, componentName: selectedComponent.name })}</p></div>
+                <div class="fab-no-essence-opts"><p>{localization.format(`${localizationPath}.component.info.noAvailableEssences`, { systemName: $selectedCraftingSystem.name, componentName: selectedComponent.name })}</p></div>
             {/if}
         </div>
     </div>

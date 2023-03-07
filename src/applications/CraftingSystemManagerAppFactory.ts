@@ -1,4 +1,4 @@
-import CraftingSystemManager from "./craftingSystemManagerApp/CraftingSystemManager.svelte"
+import CraftingSystemManager from "./craftingSystemManagerApp/CraftingSystemEditor.svelte"
 import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
 import {GameProvider} from "../scripts/foundry/GameProvider";
