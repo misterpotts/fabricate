@@ -1,6 +1,5 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {get, Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
-import {CraftingSystemsStore} from "./CraftingSystemsStore";
 
 class SelectedCraftingSystemStore {
 
@@ -10,15 +9,24 @@ class SelectedCraftingSystemStore {
         craftingSystems,
         selectedSystem
     }: {
-        craftingSystems: CraftingSystemsStore;
+        craftingSystems: Readable<CraftingSystem[]>;
         selectedSystem?: CraftingSystem;
     }) {
         this._selectedCraftingSystem = writable(selectedSystem);
         this.loadWhenSelected(this._selectedCraftingSystem);
-        this.reselectWhenDeleted(craftingSystems);
+        this.shadowCraftingSystemUpdates(craftingSystems);
     }
 
-    private reselectWhenDeleted(craftingSystems: Readable<CraftingSystem[]>) {
+    private async reload(target?: CraftingSystem) {
+        const selectedSystem = target ?? get(this._selectedCraftingSystem);
+        if (!selectedSystem) {
+            return;
+        }
+        await selectedSystem.reload();
+        return selectedSystem;
+    }
+
+    private shadowCraftingSystemUpdates(craftingSystems: Readable<CraftingSystem[]>) {
         craftingSystems.subscribe(value => {
             if (!value) {
                 throw new Error("Crafting systems may not be null");
@@ -28,10 +36,13 @@ class SelectedCraftingSystemStore {
             }
             const selectedSystem = get(this._selectedCraftingSystem);
             const found = value.find(system => system === selectedSystem);
-            if (found) {
+            if (!found) {
+                this._selectedCraftingSystem.set(value[0]);
                 return;
             }
-            this._selectedCraftingSystem.set(value[0]);
+            Promise.resolve(this.reload(found))
+                .then(loaded => this._selectedCraftingSystem.set(loaded))
+                .catch(e => console.error(`Unable to reload crafting system. ${e instanceof Error ? e.stack : e}`));
         });
     }
 

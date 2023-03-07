@@ -179,6 +179,10 @@ class CraftingSystem {
         return this._partDictionary.getComponents();
     }
 
+    get essences(): Essence[] {
+        return this._partDictionary.getEssences();
+    }
+
     public hasRecipe(id: string) {
         return this._partDictionary.hasRecipe(id);
     }
@@ -199,12 +203,24 @@ class CraftingSystem {
         return this._details.summary;
     }
 
+    set summary(value: string) {
+        this.details.summary = value;
+    }
+
     get description(): string {
         return this._details.description;
     }
 
+    set description(value: string) {
+        this.details.description = value;
+    }
+
     get author(): string {
         return this._details.author;
+    }
+
+    set author(value: string) {
+        this.details.author = value;
     }
 
     get hasRecipeCraftingCheck(): boolean {
@@ -225,6 +241,10 @@ class CraftingSystem {
 
     get name(): string {
         return this._details.name;
+    }
+
+    set name(value: string) {
+        this.details.name = value;
     }
 
     set details(value: CraftingSystemDetails) {

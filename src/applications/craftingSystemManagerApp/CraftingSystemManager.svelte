@@ -21,6 +21,7 @@
     import {LoadingStore} from "../common/LoadingStore";
     import LoadingModal from "../common/LoadingModal.svelte";
     import {CraftingComponentEditor} from "./CraftingComponentEditor";
+    import {ComponentSearchStore} from "../stores/ComponentSearchStore";
 
     export let systemRegistry;
     export let gameProvider;
@@ -35,6 +36,7 @@
     const craftingComponents = new CraftingComponentsStore({selectedCraftingSystem});
     const selectedRecipe = new SelectedRecipeStore({recipes});
     const selectedComponent = new SelectedCraftingComponentStore({craftingComponents});
+    const componentSearchResults = new ComponentSearchStore({availableComponents: craftingComponents});
 
     const craftingSystemEditor = new CraftingSystemEditor({
         craftingSystems,
@@ -55,7 +57,8 @@
         craftingSystemEditor,
         localization,
         loading,
-        craftingComponentEditor
+        craftingComponentEditor,
+        componentSearchResults
     });
 
     onMount(async () => {

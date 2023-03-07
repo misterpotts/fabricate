@@ -3,7 +3,6 @@
     import Properties from "../../scripts/Properties";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {getContext} from "svelte";
-    import {ComponentSearchStore} from "../stores/ComponentSearchStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     const {
@@ -12,10 +11,10 @@
         localization,
         craftingComponentEditor,
         selectedComponent,
-        loading
+        loading,
+        componentSearchResults
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({selectedCraftingSystem});
     const searchTerms = componentSearchResults.searchTerms;
 
     function clearSearch() {
@@ -24,7 +23,7 @@
 
     async function importComponent(event) {
         $loading = true;
-        await craftingComponentEditor.importComponent(event, selectedCraftingSystem);
+        await craftingComponentEditor.importComponent(event, $selectedCraftingSystem);
         $loading = false;
     }
 
@@ -34,14 +33,14 @@
 
     async function deleteComponent(event, component) {
         $loading = true;
-        await craftingComponentEditor.deleteComponent(event, component, selectedCraftingSystem);
+        await craftingComponentEditor.deleteComponent(event, component, $selectedCraftingSystem);
         $loading = false;
     }
 
     async function disableComponent(component) {
         component.isDisabled = true;
         $loading = true;
-        await craftingComponentEditor.saveComponent(component, selectedCraftingSystem);
+        await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
         const message = this._localizationService.format(
             `${this._localizationPath}.component.disabled`,
             {
@@ -55,7 +54,7 @@
     async function enableComponent(component) {
         component.isDisabled = false;
         $loading = true;
-        await craftingComponentEditor.saveComponent(component, selectedCraftingSystem);
+        await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.component.enabled`,
             {
@@ -72,7 +71,7 @@
 
     async function duplicateComponent(component) {
         $loading = true;
-        await craftingComponentEditor.duplicateComponent(component, selectedCraftingSystem);
+        await craftingComponentEditor.duplicateComponent(component, $selectedCraftingSystem);
         $loading = false;
     }
 

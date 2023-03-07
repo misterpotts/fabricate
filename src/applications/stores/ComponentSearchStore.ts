@@ -1,8 +1,6 @@
 import {writable, Writable, Readable, derived, Subscriber} from "svelte/store";
 import {CraftingComponent} from "../../scripts/common/CraftingComponent";
 
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-
 interface ComponentSearchTerms {
     name?: string;
     hasEssences?: boolean;
@@ -11,30 +9,30 @@ interface ComponentSearchTerms {
 
 class ComponentSearchStore {
 
-    private readonly _selectedCraftingSystem: Readable<CraftingSystem>;
+    private readonly _availableComponents: Readable<CraftingComponent[]>;
     private readonly _searchResults: Readable<CraftingComponent[]>;
     private readonly _searchTerms: Writable<ComponentSearchTerms>;
 
     constructor({
-        selectedCraftingSystem,
+        availableComponents,
         searchTerms = {}
     }: {
-        selectedCraftingSystem?: Readable<CraftingSystem>;
+        availableComponents: Readable<CraftingComponent[]>;
         searchTerms?: ComponentSearchTerms;
     }) {
-        this._selectedCraftingSystem = selectedCraftingSystem;
+        this._availableComponents = availableComponents;
         this._searchTerms = writable(searchTerms);
         this._searchResults = derived(
-            [this._selectedCraftingSystem, this._searchTerms],
-            ([$selectedCraftingSystem, $searchTerms], set) => {
-                set(this.searchComponents($selectedCraftingSystem.craftingComponents, $searchTerms));
+            [this._availableComponents, this._searchTerms],
+            ([$availableComponents, $searchTerms], set) => {
+                set(this.searchComponents($availableComponents, $searchTerms));
             }
         );
-        this.clearOnSystemSelection(this._selectedCraftingSystem);
+        this.clearOnSystemSelection(this._availableComponents);
     }
 
-    private clearOnSystemSelection(selectedCraftingSystem: Readable<CraftingSystem>) {
-        selectedCraftingSystem.subscribe(() => this.clear());
+    private clearOnSystemSelection(availableComponents: Readable<CraftingComponent[]>) {
+        availableComponents.subscribe(() => this.clear());
     }
 
     private searchComponents(craftingComponents: CraftingComponent[], searchTerms: ComponentSearchTerms) {

@@ -197,11 +197,9 @@ class CraftingSystemEditor {
 
     async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
         const updatedCraftingSystem = await this._systemRegistry.saveCraftingSystem(craftingSystem);
-        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.saveCraftingSystem.success`, { systemName: updatedCraftingSystem.name});
         this._craftingSystems.update((craftingSystems) => {
             const filtered = craftingSystems.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
             filtered.push(updatedCraftingSystem);
-            ui.notifications.info(message);
             return filtered;
         });
         return updatedCraftingSystem;

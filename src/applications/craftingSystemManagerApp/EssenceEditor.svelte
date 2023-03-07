@@ -1,37 +1,31 @@
 <!-- EssenceEditor.svelte -->
 <script lang="ts">
-    import {fade} from 'svelte/transition';
     import Properties from "../../scripts/Properties.js";
-    import {CraftingSystemManagerApp, key} from "./CraftingSystemManagerApp";
-    import {Essence} from "../../scripts/common/Essence";
-    import {DropEventParser} from "../common/DropEventParser";
+    import {key} from "./CraftingSystemManagerApp";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {ICON_NAMES} from "../FontAwesomeIcons";
     import {clickOutside} from "../common/ClickOutside";
     import {getContext} from "svelte";
+    import {EssenceManager} from "./EssenceManager";
+    
+    const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences`;
 
-    const { localization } = getContext(key);
+    const { 
+        localization, 
+        loading, 
+        selectedCraftingSystem,
+        craftingSystemEditor
+    } = getContext(key);
 
-    const craftingSystemManager = CraftingSystemManagerApp.getInstance();
-
-    let loading = false;
-
-    let selectedSystem;
-    let essences = [];
+    const essenceEditor = new EssenceManager({
+        localization,
+        localizationPath,
+        craftingSystemEditor
+    });
 
     let iconCodeSearch = "";
     let selectedEssenceIconModal = null;
-    let icons = [];
-
-    craftingSystemManager.craftingSystemsStore.value.subscribe(async (value) => {
-        selectedSystem = value.selectedSystem;
-        if (selectedSystem) {
-            essences = selectedSystem.getEssences();
-            iconCodeSearch = "";
-            selectedEssenceIconModal = null;
-            searchIcons(iconCodeSearch);
-        }
-    });
+    let icons = searchIcons("");
 
     function searchIcons(target) {
         const predicate = iconName => iconName.search(new RegExp(target, "i")) >= 0;
@@ -41,97 +35,42 @@
         const regularCssClasses = ICON_NAMES
             .filter(predicate)
             .map(iconCode => `fa-regular fa-${iconCode}`);
-        icons = solidCssClasses
-            .concat(regularCssClasses);
+       return solidCssClasses
+           .concat(regularCssClasses);
     }
 
     async function createEssence() {
-        const createdEssence = new Essence({
-            id: randomID(),
-            name: "Essence name",
-            tooltip: "My new Essence",
-            iconCode: "fa-solid fa-mortar-pestle",
-            description: `A new Essence added to ${selectedSystem.name}`
-        });
-        loading = true;
-        selectedSystem.editEssence(createdEssence);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        const message = craftingSystemManager.i18n.format(
-            `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.created`,
-            {
-                systemName: selectedSystem.name
-            }
-        );
-        ui.notifications.info(message);
-        loading = false;
+        $loading = true;
+        await essenceEditor.create($selectedCraftingSystem);
+        $loading = false;
     }
 
     async function deleteEssence(event, essence) {
-        let doDelete;
-        if (event.shiftKey) {
-            doDelete = true;
-        } else {
-            doDelete = await Dialog.confirm({
-                title: craftingSystemManager.i18n.format(
-                    `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.prompts.delete.title`,
-                    {
-                        essenceName: essence.name
-                    }
-                ),
-                content: craftingSystemManager.i18n.format(
-                    `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.prompts.delete.content`,
-                    {
-                        essenceName: essence.name,
-                        systemName: selectedSystem.name
-                    }
-                )
-            });
-        }
-        if (!doDelete) {
-            return;
-        }
-        loading = true;
-        selectedSystem.deleteEssenceById(essence.id);
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        const message = craftingSystemManager.i18n.format(
-            `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.deleted`,
-            {
-                essenceName: essence.name,
-                systemName: selectedSystem.name
-            }
-        );
-        ui.notifications.info(message);
-        loading = false;
+        $loading = true;
+        await essenceEditor.deleteEssence(event, essence, $selectedCraftingSystem);
+        $loading = false;
     }
 
     async function addActiveEffectSource(event, essence) {
-        const dropEventParser = new DropEventParser({
-            localizationService: localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: craftingSystemManager.i18n.localize(`${Properties.module.id}.typeNames.activeEffectSource.singular`)
-        })
-        const dropData = await dropEventParser.parse(event);
-        essence.activeEffectSource = dropData.itemData;
-        loading = true;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        $loading = true;
+        await essenceEditor.setActiveEffectSource(event, essence, $selectedCraftingSystem);
+        $loading = false;
     }
 
-    let scheduledUpdate;
-    async function updateEssence() {
-        clearTimeout(scheduledUpdate);
-        scheduledUpdate = setTimeout(async () => {
-            loading = true;
-            await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-            loading = false;
-        }, 500);
+    let scheduledSave;
+    function scheduleSave() {
+        clearTimeout(scheduledSave);
+        scheduledSave = setTimeout(async () => {
+            $loading = true;
+            await craftingSystemEditor.saveCraftingSystem($selectedCraftingSystem);
+            $loading = false;
+        }, 1000);
     }
 
     async function removeActiveEffectSource(event, essence) {
-        essence.activeEffectSource = null;
-        loading = true;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        loading = false;
+        $loading = true;
+        await essenceEditor.removeActiveEffectSource(essence, $selectedCraftingSystem);
+        $loading = false;
     }
 
     async function openActiveEffectSourceItemSheet(essence) {
@@ -139,12 +78,10 @@
         await document.sourceDocument.sheet.render(true);
     }
 
-    async function setIconCode(essence, code) {
-        essence.iconCode = code;
-        loading = true;
-        await craftingSystemManager.craftingSystemsStore.saveCraftingSystem(selectedSystem);
-        selectedEssenceIconModal = null;
-        loading = false;
+    async function setIconCode(essence, iconCode) {
+        $loading = true;
+        await essenceEditor.setIconCode(essence, iconCode, $selectedCraftingSystem);
+        $loading = false;
     }
 
     function showEssenceIconModal(essence) {
@@ -157,31 +94,24 @@
 
 </script>
 
-{#if loading}
-    <div class="fab-loading" transition:fade="{{duration: 100}}">
-        <div class="fab-loading-inner">
-            <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-        </div>
-    </div>
-{/if}
 <div class="fab-essence-editor fab-column">
     <div class="fab-hero-banner fab-row">
         <img src="{Properties.ui.banners.essenceEditor}" >
     </div>
-    {#if !selectedSystem.isLocked}
+    {#if !$selectedCraftingSystem.isLocked}
         <div class="fab-row">
-            <button class="fab-new-essence" on:click={createEssence}><i class="fa-solid fa-mortar-pestle"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.buttons.create`)}</button>
+            <button class="fab-new-essence" on:click={createEssence}><i class="fa-solid fa-mortar-pestle"></i> {localization.localize(`${localizationPath}.buttons.create`)}</button>
         </div>
     {/if}
-    {#if selectedSystem.hasEssences}
-        <div class="fab-essences" class:fab-locked={selectedSystem.isLocked} class:fab-unlocked={!selectedSystem.isLocked}>
-            {#each essences as essence}
+    {#if $selectedCraftingSystem.hasEssences}
+        <div class="fab-essences" class:fab-locked={$selectedCraftingSystem.isLocked} class:fab-unlocked={!$selectedCraftingSystem.isLocked}>
+            {#each $selectedCraftingSystem.essences as essence}
                 <div class="fab-essence-ae-source fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.activeEffectSource`)}:</p>
-                        {#if !selectedSystem?.isLocked}
+                        <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.activeEffectSource`)}:</p>
+                        {#if !$selectedCraftingSystem?.isLocked}
                             {#if essence.hasActiveEffectSource}
-                                <button on:auxclick={(e) => removeActiveEffectSource(e, essence)} on:click={openActiveEffectSourceItemSheet(essence)} on:drop|preventDefault={(e) => addActiveEffectSource(e, essence)}>
+                                <button on:auxclick={() => removeActiveEffectSource(essence)} on:click={openActiveEffectSourceItemSheet(essence)} on:drop|preventDefault={(e) => addActiveEffectSource(e, essence)}>
                                     <img class="fab-essence-ae-source-img" src="{essence.activeEffectSource.imageUrl}" data-tooltip="{essence.activeEffectSource.name}" />
                                 </button>
                             {:else}
@@ -191,21 +121,21 @@
                             {#if essence.hasActiveEffectSource}
                                 <img src="{essence.activeEffectSource.imageUrl}" data-tooltip="{essence.activeEffectSource.name}" />
                             {:else}
-                                <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.info.noAeSource`)}</p>
+                                <p>{localization.localize(`${localizationPath}.essence.info.noAeSource`)}</p>
                             {/if}
                         {/if}
                     </div>
                 </div>
                 <div class="fab-essence-icon fab-column">
                     <div class="fab-row" style="position:relative;">
-                        <p class="fab-label">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.icon`)}: </p>
-                        {#if !selectedSystem?.isLocked}
+                        <p class="fab-label">{localization.localize(`${localizationPath}.essence.labels.icon`)}: </p>
+                        {#if !$selectedCraftingSystem?.isLocked}
                             <button class="fab-essence-icon-btn" on:click={showEssenceIconModal(essence)}>
                                 <i class="{essence.iconCode}"></i>
                             </button>
                             {#if essence === selectedEssenceIconModal}
                                 <div class="fab-essence-icon-modal" use:clickOutside on:clickOutside={hideEssenceIconModal}>
-                                    <input type="text" bind:value={iconCodeSearch} on:input={searchIcons(iconCodeSearch)} placeholder="Search for an icon" />
+                                    <input type="text" bind:value={iconCodeSearch} on:input={() => icons = searchIcons(iconCodeSearch)} placeholder="Search for an icon" />
                                     <div class="fab-scrollable fab-essence-icon-opts">
                                         {#each icons as css}
                                             <button on:click={setIconCode(essence, css)}>
@@ -222,9 +152,9 @@
                 </div>
                 <div class="fab-essence-name fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.name`)}: </p>
-                        {#if !selectedSystem?.isLocked}
-                            <div class="fab-editable" contenteditable="true" bind:textContent={essence.name} on:input={updateEssence(essence)}>{essence.name}</div>
+                        <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.name`)}: </p>
+                        {#if !$selectedCraftingSystem?.isLocked}
+                            <div class="fab-editable" contenteditable="true" bind:textContent={essence.name} on:input={scheduleSave}>{essence.name}</div>
                         {:else}
                             <div class="fab-locked ">{essence.name}</div>
                         {/if}
@@ -232,9 +162,9 @@
                 </div>
                 <div class="fab-essence-tooltip fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.tooltip`)}: </p>
-                        {#if !selectedSystem?.isLocked}
-                            <div class="fab-editable" contenteditable="true" bind:textContent={essence.tooltip} on:input={updateEssence(essence)}>{essence.tooltip}</div>
+                        <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.tooltip`)}: </p>
+                        {#if !$selectedCraftingSystem?.isLocked}
+                            <div class="fab-editable" contenteditable="true" bind:textContent={essence.tooltip} on:input={scheduleSave}>{essence.tooltip}</div>
                         {:else}
                             <div class="fab-locked ">{essence.tooltip}</div>
                         {/if}
@@ -242,18 +172,18 @@
                 </div>
                 <div class="fab-essence-description fab-column">
                     <div class="fab-row">
-                        <p class="fab-label ">{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.labels.description`)}: </p>
-                        {#if !selectedSystem?.isLocked}
-                            <div class="fab-editable" contenteditable="true" bind:textContent={essence.description} on:input={updateEssence(essence)}>{essence.description}</div>
+                        <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.description`)}: </p>
+                        {#if !$selectedCraftingSystem?.isLocked}
+                            <div class="fab-editable" contenteditable="true" bind:textContent={essence.description} on:input={scheduleSave}>{essence.description}</div>
                         {:else}
                             <div class="fab-locked ">{essence.description}</div>
                         {/if}
                     </div>
                 </div>
-                {#if !selectedSystem.isLocked}
+                {#if !$selectedCraftingSystem.isLocked}
                 <div class="fab-delete-essence fab-column">
                     <div class="fab-row">
-                        <button class="fab-delete-essence" on:click={(e) => deleteEssence(e, essence)}><i class="fa-solid fa-trash"></i> {craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.buttons.delete`)}</button>
+                        <button class="fab-delete-essence" on:click={(e) => deleteEssence(e, essence)}><i class="fa-solid fa-trash"></i> {localization.localize(`${localizationPath}.essence.buttons.delete`)}</button>
                     </div>
                 </div>
                     <div class="fab-grid-spacer"></div>
@@ -264,8 +194,8 @@
         </div>
     {:else}
         <div class="fab-no-essences">
-            <p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.info.noEssences`)}</p>
-            {#if !selectedSystem.isLocked}<p>{craftingSystemManager.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.tabs.essences.essence.info.createFirst`)}</p>{/if}
+            <p>{localization.localize(`${localizationPath}.essence.info.noEssences`)}</p>
+            {#if !$selectedCraftingSystem.isLocked}<p>{localization.localize(`${localizationPath}.essence.info.createFirst`)}</p>{/if}
         </div>
     {/if}
 </div>

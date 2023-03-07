@@ -9,31 +9,31 @@ import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 class CraftingComponentEditor {
 
     private readonly _craftingSystemEditor: CraftingSystemEditor;
-    private readonly _localizationService: LocalizationService;
+    private readonly _localization: LocalizationService;
     private readonly  _localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
 
     constructor({
         craftingSystemEditor,
-        localizationService
+        localization
     }: {
         craftingSystemEditor: CraftingSystemEditor;
-        localizationService: LocalizationService;
+        localization: LocalizationService;
     }) {
         this._craftingSystemEditor = craftingSystemEditor;
-        this._localizationService = localizationService;
+        this._localization = localization;
     }
 
     public async importComponent(event: any, selectedSystem: CraftingSystem) {
         const dropEventParser = new DropEventParser({
-            localizationService: this._localizationService,
+            localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),
-            partType: this._localizationService.localize(`${Properties.module.id}.typeNames.component.singular`)
+            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`)
         })
         const dropData = await dropEventParser.parse(event);
         const itemData = dropData.itemData;
         if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
             const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
-            const message = this._localizationService.format(
+            const message = this._localization.format(
                 `${this._localizationPath}.errors.import.itemAlreadyIncluded`,
                 {
                     itemUuid: itemData.uuid,
@@ -50,7 +50,7 @@ class CraftingComponentEditor {
         });
         selectedSystem.editComponent(craftingComponent);
         await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
-        const message = this._localizationService.format(
+        const message = this._localization.format(
             `${this._localizationPath}.component.imported`,
             {
                 componentName: craftingComponent.name,
@@ -66,13 +66,13 @@ class CraftingComponentEditor {
             doDelete = true;
         } else {
             doDelete = await Dialog.confirm({
-                title: this._localizationService.format(
+                title: this._localization.format(
                     `${this._localizationPath}.prompts.delete.title`,
                     {
                         componentName: component.name
                     }
                 ),
-                content: this._localizationService.format(
+                content: this._localization.format(
                     `${this._localizationPath}.prompts.delete.content`,
                     {
                         componentName: component.name,
@@ -86,7 +86,7 @@ class CraftingComponentEditor {
         }
         selectedSystem.deleteComponentById(component.id);
         await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
-        const message = this._localizationService.format(
+        const message = this._localization.format(
             `${this._localizationPath}.component.deleted`,
             {
                 componentName: component.name,

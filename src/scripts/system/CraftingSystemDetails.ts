@@ -7,10 +7,10 @@ interface CraftingSystemDetailsJson {
 
 class CraftingSystemDetails {
 
-    private readonly _name: string;
-    private readonly _summary: string;
-    private readonly _description: string;
-    private readonly _author: string;
+    private _name: string;
+    private _summary: string;
+    private _description: string;
+    private _author: string;
 
     constructor({
         name,
@@ -43,6 +43,22 @@ class CraftingSystemDetails {
 
     get author(): string {
         return this._author;
+    }
+
+    set name(value: string) {
+        this._name = value;
+    }
+
+    set summary(value: string) {
+        this._summary = value;
+    }
+
+    set description(value: string) {
+        this._description = value;
+    }
+
+    set author(value: string) {
+        this._author = value;
     }
 
     public toJson(): CraftingSystemDetailsJson {
