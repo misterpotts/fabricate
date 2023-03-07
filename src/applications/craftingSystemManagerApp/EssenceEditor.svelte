@@ -67,7 +67,7 @@
         }, 1000);
     }
 
-    async function removeActiveEffectSource(event, essence) {
+    async function removeActiveEffectSource(essence) {
         $loading = true;
         await essenceEditor.removeActiveEffectSource(essence, $selectedCraftingSystem);
         $loading = false;
