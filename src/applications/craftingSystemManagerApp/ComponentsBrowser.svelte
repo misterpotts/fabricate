@@ -3,6 +3,7 @@
     import Properties from "../../scripts/Properties";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {getContext} from "svelte";
+    import {ComponentSearchStore} from "../stores/ComponentSearchStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     const {
@@ -14,38 +15,11 @@
         loading
     } = getContext(key);
 
-    let searchMustHaveEssences = false;
-    let searchMustHaveSalvage = false;
-    let searchName = "";
-    let filteredComponents = searchComponents();
-
-    function searchComponents() {
-        return $craftingComponents.filter((component) => {
-            if (searchMustHaveEssences && !component.hasEssences) {
-                return false;
-            }
-            if (searchMustHaveSalvage && !component.isSalvageable) {
-                return false;
-            }
-            if (!searchName) {
-                return true;
-            }
-            return component.name.search(new RegExp(searchName, "i")) >= 0;
-        });
-    }
-
-    let scheduledSearch;
-    function updateSearch() {
-        clearTimeout(scheduledSearch);
-        scheduledSearch = setTimeout(() => {
-            filteredComponents = searchComponents();
-        }, 500);
-    }
+    const componentSearchResults = new ComponentSearchStore({selectedCraftingSystem});
+    const searchTerms = componentSearchResults.searchTerms;
 
     function clearSearch() {
-        clearTimeout(scheduledSearch);
-        searchName = "";
-        filteredComponents = searchComponents();
+        componentSearchResults.clear();
     }
 
     async function importComponent(event) {
@@ -127,22 +101,22 @@
     <div class="fab-row fab-columns fab-component-search">
         <div class="fab-column fab-row fab-search fab-component-name">
             <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.search.name`)}</p>
-            <input type="text" bind:value={searchName} on:input={updateSearch} />
+            <input type="text" bind:value={$searchTerms.name} />
             <button class="clear-search" data-tooltip={localization.localize(`${localizationPath}.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
         </div>
         <div class="fab-column fab-row fab-has-essences">
             <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.search.hasEssences`)}</p>
-            <input type="checkbox" bind:checked={searchMustHaveEssences} on:change={updateSearch} />
+            <input type="checkbox" bind:checked={$searchTerms.hasEssences} />
         </div>
         <div class="fab-column fab-row fab-has-salvage">
             <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.search.hasSalvage`)}</p>
-            <input type="checkbox" bind:checked={searchMustHaveSalvage} on:change={updateSearch} />
+            <input type="checkbox" bind:checked={$searchTerms.hasSalvage} />
         </div>
     </div>
     {#if $craftingComponents?.length > 0}
         <div class="fab-row">
             <div class="fab-component-grid fab-grid-4">
-                {#each filteredComponents as component}
+                {#each $componentSearchResults as component}
                     <div class="fab-component" class:fab-disabled={component.isDisabled} class:fab-error={component.hasErrors}>
                         <div class="fab-component-name">
                             <p>{component.name}</p>
@@ -171,7 +145,7 @@
                 {/each}
             </div>
         </div>
-        {#if filteredComponents.length === 0}
+        {#if $componentSearchResults.length === 0}
             <div class="fab-no-search-results"><p>No matching components</p></div>
         {/if}
     {:else}
