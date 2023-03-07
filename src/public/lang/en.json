@@ -144,6 +144,9 @@
         "essences": {
           "label": "Essences",
           "title": "{systemName} Essences",
+          "modal": {
+            "searchPlaceholder": "Search for an icon"
+          },
           "prompts": {
             "delete": {
               "title": "Delete essence \"{essenceName}\"?",

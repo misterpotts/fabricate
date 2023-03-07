@@ -30,7 +30,9 @@ const Properties = {
             }
         },
         apps: {
-            craftingSystemManager: {}
+            craftingSystemManager: {
+                id: "fabricate-crafting-system-manager"
+            }
         }
     },
     flags: {

@@ -274,11 +274,11 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
+  .fab-essence-icon-modal {
+    background: var(--color-background-dark-5);
+    border: 1px solid var(--color-border-dark-2);
+  }
   .fab-essence-editor {
-    .fab-essence-icon-modal {
-      background: var(--color-background-dark-5);
-      border: 1px solid var(--color-border-dark-2);
-    }
     button.fab-new-essence {
       background: var(--color-background-dark-2);
     }
@@ -785,29 +785,27 @@ END COMMON STRUCTURAL STYLES
 =====================================================================
 */
 
-.fab-essence-editor {
-  .fab-essence-icon-modal {
-    position: absolute;
-    top: 0;
-    left: 70px;
-    z-index: 1;
-    border-radius: 5px;
-    padding: 8px;
-    .fab-essence-icon-opts {
-      max-height: 200px;
-      width: 180px;
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      row-gap: 0.5em;
-      column-gap: 0.5em;
-      padding: 0 6px 0 0;
-      margin-top: 6px;
-      button {
-        padding: 0;
-        max-width: 14px;
-      }
+.fab-essence-icon-modal {
+  position: absolute;
+  z-index: 100;
+  border-radius: 5px;
+  padding: 8px;
+  .fab-essence-icon-opts {
+    max-height: 200px;
+    width: 180px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 0.5em;
+    column-gap: 0.5em;
+    padding: 0 6px;
+    margin-top: 6px;
+    button {
+      padding: 0;
+      max-width: 14px;
     }
   }
+}
+.fab-essence-editor {
   .fab-essence-ae-source-add {
     width: 80%;
     margin-right: 10px;

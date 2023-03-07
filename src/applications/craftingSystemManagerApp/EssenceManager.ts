@@ -89,16 +89,19 @@ class EssenceManager {
         })
         const dropData = await dropEventParser.parse(event);
         essence.activeEffectSource = dropData.itemData;
+        selectedCraftingSystem.editEssence(essence);
         await this._craftingSystemEditor.saveCraftingSystem(selectedCraftingSystem);
     }
 
     public async removeActiveEffectSource(essence: Essence, selectedCraftingSystem: CraftingSystem) {
         essence.activeEffectSource = null;
+        selectedCraftingSystem.editEssence(essence);
         await this._craftingSystemEditor.saveCraftingSystem(selectedCraftingSystem);
     }
 
     public async setIconCode(essence: Essence, iconCode: string, selectedCraftingSystem: CraftingSystem) {
         essence.iconCode = iconCode;
+        selectedCraftingSystem.editEssence(essence);
         await this._craftingSystemEditor.saveCraftingSystem(selectedCraftingSystem);
     }
 

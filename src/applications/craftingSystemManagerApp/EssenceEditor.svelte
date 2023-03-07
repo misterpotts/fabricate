@@ -1,12 +1,14 @@
 <!-- EssenceEditor.svelte -->
 <script lang="ts">
-    import Properties from "../../scripts/Properties.js";
+    import Properties from "../../scripts/Properties";
     import {key} from "./CraftingSystemManagerApp";
     import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
     import {ICON_NAMES} from "../FontAwesomeIcons";
     import {clickOutside} from "../common/ClickOutside";
     import {getContext} from "svelte";
     import {EssenceManager} from "./EssenceManager";
+    import EssenceIconSelectorModal from "./EssenceIconSelectorModal.svelte";
+    import {SvelteApplication} from "../SvelteApplication";
     
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences`;
 
@@ -17,43 +19,27 @@
         craftingSystemEditor
     } = getContext(key);
 
-    const essenceEditor = new EssenceManager({
+    const essenceManager = new EssenceManager({
         localization,
         localizationPath,
         craftingSystemEditor
     });
 
-    let iconCodeSearch = "";
-    let selectedEssenceIconModal = null;
-    let icons = searchIcons("");
-
-    function searchIcons(target) {
-        const predicate = iconName => iconName.search(new RegExp(target, "i")) >= 0;
-        const solidCssClasses = ICON_NAMES
-            .filter(predicate)
-            .map(iconCode => `fa-solid fa-${iconCode}`);
-        const regularCssClasses = ICON_NAMES
-            .filter(predicate)
-            .map(iconCode => `fa-regular fa-${iconCode}`);
-       return solidCssClasses
-           .concat(regularCssClasses);
-    }
-
     async function createEssence() {
         $loading = true;
-        await essenceEditor.create($selectedCraftingSystem);
+        await essenceManager.create($selectedCraftingSystem);
         $loading = false;
     }
 
     async function deleteEssence(event, essence) {
         $loading = true;
-        await essenceEditor.deleteEssence(event, essence, $selectedCraftingSystem);
+        await essenceManager.deleteEssence(event, essence, $selectedCraftingSystem);
         $loading = false;
     }
 
     async function addActiveEffectSource(event, essence) {
         $loading = true;
-        await essenceEditor.setActiveEffectSource(event, essence, $selectedCraftingSystem);
+        await essenceManager.setActiveEffectSource(event, essence, $selectedCraftingSystem);
         $loading = false;
     }
 
@@ -69,7 +55,7 @@
 
     async function removeActiveEffectSource(essence) {
         $loading = true;
-        await essenceEditor.removeActiveEffectSource(essence, $selectedCraftingSystem);
+        await essenceManager.removeActiveEffectSource(essence, $selectedCraftingSystem);
         $loading = false;
     }
 
@@ -78,22 +64,21 @@
         await document.sourceDocument.sheet.render(true);
     }
 
-    async function setIconCode(essence, iconCode) {
+    async function setIconCode(event) {
+        const { essence, iconCode } = event.detail;
         $loading = true;
-        await essenceEditor.setIconCode(essence, iconCode, $selectedCraftingSystem);
+        await essenceManager.setIconCode(essence, iconCode, $selectedCraftingSystem);
         $loading = false;
     }
 
-    function showEssenceIconModal(essence) {
-        selectedEssenceIconModal = essence;
-    }
-
-    function hideEssenceIconModal() {
-        selectedEssenceIconModal = null;
+    let showIconModal;
+    function showEssenceIconModal(event, essence) {
+        showIconModal(event, essence);
     }
 
 </script>
 
+<EssenceIconSelectorModal bind:show={showIconModal} on:iconSelected={(e) => setIconCode(e)} />
 <div class="fab-essence-editor fab-column">
     <div class="fab-hero-banner fab-row">
         <img src="{Properties.ui.banners.essenceEditor}" >
@@ -130,21 +115,9 @@
                     <div class="fab-row" style="position:relative;">
                         <p class="fab-label">{localization.localize(`${localizationPath}.essence.labels.icon`)}: </p>
                         {#if !$selectedCraftingSystem?.isLocked}
-                            <button class="fab-essence-icon-btn" on:click={showEssenceIconModal(essence)}>
+                            <button class="fab-essence-icon-btn" on:click={(e) => showEssenceIconModal(e, essence)}>
                                 <i class="{essence.iconCode}"></i>
                             </button>
-                            {#if essence === selectedEssenceIconModal}
-                                <div class="fab-essence-icon-modal" use:clickOutside on:clickOutside={hideEssenceIconModal}>
-                                    <input type="text" bind:value={iconCodeSearch} on:input={() => icons = searchIcons(iconCodeSearch)} placeholder="Search for an icon" />
-                                    <div class="fab-scrollable fab-essence-icon-opts">
-                                        {#each icons as css}
-                                            <button on:click={setIconCode(essence, css)}>
-                                                <i class="{css}"></i>
-                                            </button>
-                                        {/each}
-                                    </div>
-                                </div>
-                            {/if}
                         {:else}
                             <i class="{essence.iconCode}"></i>
                         {/if}
