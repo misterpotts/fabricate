@@ -4,13 +4,9 @@
     import Properties from "../../scripts/Properties";
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
     import CraftingSystemDetails from "./CraftingSystemDetails.svelte";
-    import {CraftingSystemManagerApp, key} from "./CraftingSystemManagerApp";
+    import {key} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./ComponentsTab.svelte";
     import EssenceEditor from "./EssenceEditor.svelte";
-    const craftingSystemManager = CraftingSystemManagerApp.getInstance();
-    import eventBus from "../common/EventBus";
-    import {onMount, setContext} from "svelte";
-
     import {CraftingSystemsStore} from "../stores/CraftingSystemsStore";
     import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore";
     import {RecipesStore} from "../stores/RecipesStore";
@@ -21,7 +17,9 @@
     import {LoadingStore} from "../common/LoadingStore";
     import LoadingModal from "../common/LoadingModal.svelte";
     import {CraftingComponentManager} from "./CraftingComponentManager";
-    import {ComponentSearchStore} from "../stores/ComponentSearchStore";
+
+    import eventBus from "../common/EventBus";
+    import {onMount, setContext} from "svelte";
 
     export let systemRegistry;
     export let gameProvider;

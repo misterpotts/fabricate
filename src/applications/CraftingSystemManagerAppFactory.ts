@@ -3,7 +3,6 @@ import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
 import {GameProvider} from "../scripts/foundry/GameProvider";
 import {DefaultSystemRegistry} from "../scripts/registries/SystemRegistry";
-import {CraftingSystemManagerApp} from "./craftingSystemManagerApp/CraftingSystemManagerApp";
 import {DefaultLocalizationService} from "./common/LocalizationService";
 
 class CraftingSystemManagerAppFactory {
@@ -20,8 +19,6 @@ class CraftingSystemManagerAppFactory {
             width: 980,
             height: 740
         }
-
-        CraftingSystemManagerApp.init({gameProvider, systemRegistry});
 
         return new SvelteApplication({
             applicationOptions,
