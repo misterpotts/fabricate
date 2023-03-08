@@ -139,7 +139,29 @@
         },
         "recipes": {
           "label": "Recipes",
-          "title": "{systemName} Recipes"
+          "title": "{systemName} Recipes",
+          "search": {
+            "title": "Search {systemName} Recipes",
+            "name": "Name",
+            "requiresEssences": "Requires essences?",
+            "requiresNamedIngredients": "Has named components?",
+            "clear": "Clear search"
+          },
+          "recipe": {
+            "buttons": {
+              "edit": "Edit",
+              "delete": "Delete",
+              "disable": "Toggle disabled",
+              "duplicate": "Duplicate",
+              "openSheet": "Open Item Sheet",
+              "deselect": "Go Back",
+              "deleteOption": "Delete"
+            },
+            "errors": {
+              "itemNotFound": "The item does not exist or has been deleted.",
+              "itemNotSet": "No item configured. You can set one in the recipe editor."
+            }
+          }
         },
         "essences": {
           "label": "Essences",

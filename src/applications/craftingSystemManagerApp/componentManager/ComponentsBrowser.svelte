@@ -77,12 +77,12 @@
     }
 
     async function openItemSheet(component) {
-        const document = await new DefaultDocumentManager().getDocumentByUuid(component.id);
+        const document = await new DefaultDocumentManager().getDocumentByUuid(component.itemUuid);
         await document.sourceDocument.sheet.render(true);
     }
 
 </script>
-
+{#if $selectedCraftingSystem}
 <div class="fab-system-components fab-column">
     <div class="fab-hero-banner fab-row">
         <img src="{Properties.ui.banners.componentEditor}" >
@@ -113,7 +113,7 @@
             <input type="checkbox" bind:checked={$searchTerms.hasSalvage} />
         </div>
     </div>
-    {#if $craftingComponents?.length > 0}
+    {#if $craftingComponents.length > 0}
         <div class="fab-row">
             <div class="fab-component-grid fab-grid-4">
                 {#each $componentSearchResults as component}
@@ -155,3 +155,4 @@
         </div>
     {/if}
 </div>
+{/if}

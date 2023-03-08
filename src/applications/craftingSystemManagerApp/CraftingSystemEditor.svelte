@@ -20,6 +20,7 @@
 
     import eventBus from "../common/EventBus.ts";
     import {onMount, setContext} from "svelte";
+    import RecipesTab from "./recipeManager/RecipesTab.svelte";
 
     export let systemRegistry;
     export let gameProvider;
@@ -96,9 +97,7 @@
         </TabPanel>
 
         <TabPanel class="fab-scrollable fab-columns">
-            <div class="fab-hero-banner">
-                <img src="{Properties.ui.banners.recipeEditor}" >
-            </div>
+            <RecipesTab />
         </TabPanel>
 
         <TabPanel class="fab-scrollable fab-columns">

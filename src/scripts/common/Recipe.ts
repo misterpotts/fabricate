@@ -252,7 +252,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return !this._resultOptions.isEmpty;
     }
 
-    public requiresEssences() {
+    public get requiresEssences(): boolean {
         return !this._essences || !this._essences.isEmpty();
     }
     
