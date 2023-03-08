@@ -13,10 +13,10 @@ class SelectedCraftingComponentStore {
         selectedComponent?: CraftingComponent;
     }) {
         this._selectedCraftingComponent = writable(selectedComponent);
-        this.deselectWhenComponentNotInAvailableComponents(craftingComponents);
+        this.deselectOrUpdateWhenAvailableComponentsChange(craftingComponents);
     }
 
-    private deselectWhenComponentNotInAvailableComponents(craftingComponents: Readable<CraftingComponent[]>) {
+    private deselectOrUpdateWhenAvailableComponentsChange(craftingComponents: Readable<CraftingComponent[]>) {
         craftingComponents.subscribe(value => {
             if (!value) {
                 throw new Error("Components may not be null");
@@ -25,10 +25,12 @@ class SelectedCraftingComponentStore {
                 this._selectedCraftingComponent.set(null);
             }
             const selectedComponent = get(this._selectedCraftingComponent);
-            const found = value.find(component => component === selectedComponent);
-            if (!found) {
-                this._selectedCraftingComponent.set(null);
+            if (!selectedComponent) {
+                return;
             }
+            const found = value.find(component => component.id === selectedComponent.id);
+            this._selectedCraftingComponent.set(found);
+
         });
     }
 
