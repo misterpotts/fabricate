@@ -14,11 +14,11 @@
 	let clazz = '';
 	export {clazz as class};
 
-	setContext(TABS, {
+	const tabOperations = {
 		registerTab: tab => {
 			tabs.push(tab);
 			selectedTab.update(current => current || tab);
-			
+
 			onDestroy(() => {
 				const i = tabs.indexOf(tab);
 				tabs.splice(i, 1);
@@ -29,7 +29,7 @@
 		registerPanel: panel => {
 			panels.push(panel);
 			selectedPanel.update(current => current || panel);
-			
+
 			onDestroy(() => {
 				const i = panels.indexOf(panel);
 				panels.splice(i, 1);
@@ -43,9 +43,23 @@
 			selectedPanel.set(panels[i]);
 		},
 
+		selectPreviousTab: () => {
+			const i = tabs.indexOf(selectedTab);
+			if (i === 0) {
+				return;
+			}
+			const previous = i - 1;
+			selectedTab.set(tabs[previous]);
+			selectedPanel.set(panels[previous]);
+		},
+
 		selectedTab,
 		selectedPanel
-	});
+	};
+
+	export const selectPreviousTab = tabOperations.selectPreviousTab;
+	setContext(TABS, tabOperations);
+
 </script>
 
 <div class="fab-tabs {clazz}">

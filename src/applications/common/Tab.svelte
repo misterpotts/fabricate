@@ -11,6 +11,6 @@
 	export {clazz as class};
 </script>
 
-<button class:fab-selected="{$selectedTab === tab}"class={clazz} on:click="{() => selectTab(tab)}">
+<button class:fab-selected="{$selectedTab === tab}" class={clazz} on:click="{() => selectTab(tab)}">
 	<slot></slot>
 </button>

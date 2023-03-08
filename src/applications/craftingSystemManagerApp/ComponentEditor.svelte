@@ -15,6 +15,7 @@
     import {ComponentEssenceStore} from "../stores/ComponentEssenceStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
+    let selectPreviousTab;
 
     const { 
         localization, 
@@ -70,6 +71,7 @@
         const salvageOption = new SalvageOption({name, salvage: Combination.of(component, 1)});
         $selectedComponent.addSalvageOption(salvageOption);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        selectPreviousTab();
         $loading = false;
         componentUpdated(selectedComponent);
     }
@@ -177,7 +179,7 @@
                     </div>
                     {#if $selectedComponent.isSalvageable}
                         <div class="fab-salvage-editor fab-row">
-                            <Tabs>
+                            <Tabs bind:selectPreviousTab={selectPreviousTab}>
                                 <TabList>
                                     {#each sortByName($selectedComponent.salvageOptions) as salvageOption}
                                         <Tab>{salvageOption.name}</Tab>
