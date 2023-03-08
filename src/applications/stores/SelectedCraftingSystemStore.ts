@@ -17,12 +17,13 @@ class SelectedCraftingSystemStore {
         this.shadowCraftingSystemUpdates(craftingSystems);
     }
 
-    private async reload(target?: CraftingSystem) {
-        const selectedSystem = target ?? get(this._selectedCraftingSystem);
+    public async reload() {
+        const selectedSystem = get(this._selectedCraftingSystem);
         if (!selectedSystem) {
             return;
         }
         await selectedSystem.reload();
+        this._selectedCraftingSystem.set(selectedSystem);
         return selectedSystem;
     }
 
@@ -40,8 +41,7 @@ class SelectedCraftingSystemStore {
                 this._selectedCraftingSystem.set(value[0]);
                 return;
             }
-            Promise.resolve(this.reload(found))
-                .then(loaded => this._selectedCraftingSystem.set(loaded))
+            Promise.resolve(this.reload())
                 .catch(e => console.error(`Unable to reload crafting system. ${e instanceof Error ? e.stack : e}`));
         });
     }

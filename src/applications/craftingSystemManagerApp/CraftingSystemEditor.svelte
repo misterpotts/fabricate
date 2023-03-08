@@ -64,8 +64,10 @@
         $craftingSystems = Array.from(allSystemsById.values());
     });
 
-    function handleItemDeleted(event) {
-        craftingSystemManager.craftingSystemsStore.handleItemDeleted(event.detail.uuid);
+    async function handleItemDeleted(event) {
+        if ($selectedCraftingSystem && $selectedCraftingSystem.includesComponentByItemUuid(event.detail.item.uuid)) {
+            await selectedCraftingSystem.reload();
+        }
     }
 
 </script>

@@ -10,18 +10,18 @@
     import TabList from "../common/TabList.svelte";
     import TabPanel from "../common/TabPanel.svelte";
     import {componentUpdated} from "../common/EventBus";
-    import {getContext} from "svelte";
+    import {getContext, onDestroy} from "svelte";
     import {SalvageSearchStore} from "../stores/SalvageSearchStore";
     import {ComponentEssenceStore} from "../stores/ComponentEssenceStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectPreviousTab;
 
-    const { 
-        localization, 
-        loading, 
-        selectedComponent, 
-        craftingComponents, 
+    const {
+        localization,
+        loading,
+        selectedComponent,
+        craftingComponents,
         selectedCraftingSystem,
         craftingComponentEditor
     } = getContext(key);
@@ -71,7 +71,9 @@
         const salvageOption = new SalvageOption({name, salvage: Combination.of(component, 1)});
         $selectedComponent.addSalvageOption(salvageOption);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        selectPreviousTab();
+        if ($selectedComponent.salvageOptions.length >= 2) {
+            selectPreviousTab();
+        }
         $loading = false;
         componentUpdated($selectedComponent);
     }
@@ -152,6 +154,10 @@
     function sortByName(salvageOption) {
         return salvageOption.sort((left, right) => left.name.localeCompare(right.name));
     }
+
+    onDestroy(() => {
+        clearTimeout(scheduledSave);
+    });
     
 </script>
 
