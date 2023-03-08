@@ -73,7 +73,7 @@
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         selectPreviousTab();
         $loading = false;
-        componentUpdated(selectedComponent);
+        componentUpdated($selectedComponent);
     }
 
     function generateOptionName(component) {
@@ -109,7 +109,7 @@
         $selectedComponent.deleteSalvageOptionByName(optionToDelete.name);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         $loading = false;
-        componentUpdated(selectedComponent);
+        componentUpdated($selectedComponent);
     }
 
     async function addComponentToSalvageOption(event, salvageOption) {
@@ -124,7 +124,7 @@
         salvageOption.add(component);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         $loading = false;
-        componentUpdated(selectedComponent);
+        componentUpdated($selectedComponent);
     }
 
     async function decrementSalvageOptionComponent(salvageOption, component) {
@@ -135,7 +135,7 @@
         }
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         $loading = false;
-        componentUpdated(selectedComponent);
+        componentUpdated($selectedComponent);
     }
 
     async function incrementSalvageOptionComponent(salvageOption, component, event) {
@@ -146,7 +146,7 @@
         salvageOption.add(component);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         $loading = false;
-        componentUpdated(selectedComponent);
+        componentUpdated($selectedComponent);
     }
 
     function sortByName(salvageOption) {
