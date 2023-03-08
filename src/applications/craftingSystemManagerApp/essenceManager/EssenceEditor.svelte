@@ -1,14 +1,14 @@
 <!-- EssenceEditor.svelte -->
 <script lang="ts">
-    import Properties from "../../scripts/Properties";
-    import {key} from "./CraftingSystemManagerApp";
-    import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
-    import {ICON_NAMES} from "../FontAwesomeIcons";
-    import {clickOutside} from "../common/ClickOutside";
+    import Properties from "../../../scripts/Properties";
+    import {key} from "../CraftingSystemManagerApp";
+    import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
+    import {ICON_NAMES} from "../../FontAwesomeIcons";
+    import {clickOutside} from "../../common/ClickOutside";
     import {getContext} from "svelte";
     import {EssenceManager} from "./EssenceManager";
     import EssenceIconSelectorModal from "./EssenceIconSelectorModal.svelte";
-    import {SvelteApplication} from "../SvelteApplication";
+    import {SvelteApplication} from "../../SvelteApplication";
     
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences`;
 

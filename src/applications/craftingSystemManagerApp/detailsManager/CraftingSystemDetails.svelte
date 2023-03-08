@@ -1,6 +1,6 @@
 <script lang="ts">
-    import {key} from "./CraftingSystemManagerApp"
-    import Properties from "../../scripts/Properties";
+    import {key} from "../CraftingSystemManagerApp"
+    import Properties from "../../../scripts/Properties";
     import { getContext } from "svelte";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.details`;

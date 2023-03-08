@@ -1,18 +1,18 @@
 <script lang="ts">
-    import {key} from "./CraftingSystemManagerApp";
-    import Properties from "../../scripts/Properties.js";
-    import {DropEventParser} from "../common/DropEventParser";
-    import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
-    import {Combination, Unit} from "../../scripts/common/Combination";
-    import truncate from "../common/Truncate";
-    import {SalvageOption} from "../../scripts/common/CraftingComponent";
-    import {Tab, Tabs} from "../common/FabricateTabs.js";
-    import TabList from "../common/TabList.svelte";
-    import TabPanel from "../common/TabPanel.svelte";
-    import {componentUpdated} from "../common/EventBus";
+    import {key} from "../CraftingSystemManagerApp";
+    import Properties from "../../../scripts/Properties.js";
+    import {DropEventParser} from "../../common/DropEventParser";
+    import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
+    import {Combination, Unit} from "../../../scripts/common/Combination";
+    import truncate from "../../common/Truncate";
+    import {SalvageOption} from "../../../scripts/common/CraftingComponent";
+    import {Tab, Tabs} from "../../common/FabricateTabs.js";
+    import TabList from "../../common/TabList.svelte";
+    import TabPanel from "../../common/TabPanel.svelte";
+    import {componentUpdated} from "../../common/EventBus";
     import {getContext, onDestroy} from "svelte";
-    import {SalvageSearchStore} from "../stores/SalvageSearchStore";
-    import {ComponentEssenceStore} from "../stores/ComponentEssenceStore";
+    import {SalvageSearchStore} from "../../stores/SalvageSearchStore";
+    import {ComponentEssenceStore} from "../../stores/ComponentEssenceStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectPreviousTab;

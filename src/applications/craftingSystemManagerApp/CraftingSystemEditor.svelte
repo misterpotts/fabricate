@@ -1,24 +1,24 @@
 <!-- CraftingSystemEditor.svelte -->
 <script>
     import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
-    import Properties from "../../scripts/Properties";
+    import Properties from "../../scripts/Properties.ts";
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
-    import CraftingSystemDetails from "./CraftingSystemDetails.svelte";
-    import {key} from "./CraftingSystemManagerApp";
-    import ComponentsTab from "./ComponentsTab.svelte";
-    import EssenceEditor from "./EssenceEditor.svelte";
-    import {CraftingSystemsStore} from "../stores/CraftingSystemsStore";
-    import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore";
-    import {RecipesStore} from "../stores/RecipesStore";
-    import {CraftingComponentsStore} from "../stores/CraftingComponentsStore";
-    import {SelectedRecipeStore} from "../stores/SelectedRecipeStore";
-    import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore";
-    import {CraftingSystemEditor} from "./CraftingSystemEditor";
-    import {LoadingStore} from "../common/LoadingStore";
+    import CraftingSystemDetails from "./detailsManager/CraftingSystemDetails.svelte";
+    import {key} from "./CraftingSystemManagerApp.ts";
+    import ComponentsTab from "./componentManager/ComponentsTab.svelte";
+    import EssenceEditor from "./essenceManager/EssenceEditor.svelte";
+    import {CraftingSystemsStore} from "../stores/CraftingSystemsStore.ts";
+    import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore.ts";
+    import {RecipesStore} from "../stores/RecipesStore.ts";
+    import {CraftingComponentsStore} from "../stores/CraftingComponentsStore.ts";
+    import {SelectedRecipeStore} from "../stores/SelectedRecipeStore.ts";
+    import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore.ts";
+    import {CraftingSystemEditor} from "./CraftingSystemEditor.ts";
+    import {LoadingStore} from "../common/LoadingStore.ts";
     import LoadingModal from "../common/LoadingModal.svelte";
-    import {CraftingComponentManager} from "./CraftingComponentManager";
+    import {CraftingComponentManager} from "./componentManager/CraftingComponentManager.ts";
 
-    import eventBus from "../common/EventBus";
+    import eventBus from "../common/EventBus.ts";
     import {onMount, setContext} from "svelte";
 
     export let systemRegistry;

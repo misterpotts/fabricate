@@ -1,10 +1,10 @@
-import {CraftingSystemEditor} from "./CraftingSystemEditor";
-import {LocalizationService} from "../common/LocalizationService";
-import {Essence} from "../../scripts/common/Essence";
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {DropEventParser} from "../common/DropEventParser";
-import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
-import Properties from "../../scripts/Properties";
+import {CraftingSystemEditor} from "../CraftingSystemEditor";
+import {LocalizationService} from "../../common/LocalizationService";
+import {Essence} from "../../../scripts/common/Essence";
+import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {DropEventParser} from "../../common/DropEventParser";
+import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
+import Properties from "../../../scripts/Properties";
 
 class EssenceManager {
 

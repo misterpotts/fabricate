@@ -1,10 +1,10 @@
-import {CraftingSystemEditor} from "./CraftingSystemEditor";
-import {DropEventParser} from "../common/DropEventParser";
-import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
-import Properties from "../../scripts/Properties";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
-import {LocalizationService} from "../common/LocalizationService";
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystemEditor} from "../CraftingSystemEditor";
+import {DropEventParser} from "../../common/DropEventParser";
+import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
+import Properties from "../../../scripts/Properties";
+import {CraftingComponent} from "../../../scripts/common/CraftingComponent";
+import {LocalizationService} from "../../common/LocalizationService";
+import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
 
 class CraftingComponentManager {
 

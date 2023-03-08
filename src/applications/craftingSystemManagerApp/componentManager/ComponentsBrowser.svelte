@@ -1,9 +1,9 @@
 <script lang="ts">
-    import {key} from "./CraftingSystemManagerApp";
-    import Properties from "../../scripts/Properties";
-    import {DefaultDocumentManager} from "../../scripts/foundry/DocumentManager";
+    import {key} from "../CraftingSystemManagerApp";
+    import Properties from "../../../scripts/Properties";
+    import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import {getContext} from "svelte";
-    import {ComponentSearchStore} from "../stores/ComponentSearchStore";
+    import {ComponentSearchStore} from "../../stores/ComponentSearchStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     const {

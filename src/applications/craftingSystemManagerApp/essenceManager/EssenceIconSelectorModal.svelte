@@ -1,9 +1,9 @@
 <script lang="ts">
-    import Properties from "../../scripts/Properties";
-    import {ICON_NAMES} from "../FontAwesomeIcons";
-    import {clickOutside} from "../common/ClickOutside";
+    import Properties from "../../../scripts/Properties";
+    import {ICON_NAMES} from "../../FontAwesomeIcons";
+    import {clickOutside} from "../../common/ClickOutside";
     import {createEventDispatcher, getContext} from "svelte";
-    import {key} from "./CraftingSystemManagerApp";
+    import {key} from "../CraftingSystemManagerApp";
 
     const dispatch = createEventDispatcher();
 
