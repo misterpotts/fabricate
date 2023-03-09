@@ -86,8 +86,11 @@
             "name": "Name",
             "hasEssences": "Has essences?",
             "hasSalvage": "Has salvage?",
-            "clear": "Clear search"
+            "clear": "Clear search",
+            "noMatches": "No matching components"
           },
+          "noneFound": "This Crafting System has no components",
+          "create": "Drag and drop an item onto the area above to add your first one!",
           "addNew": "Add a Component to {systemName}",
           "errors": {
             "import": {
@@ -143,10 +146,14 @@
           "search": {
             "title": "Search {systemName} Recipes",
             "name": "Name",
-            "requiresEssences": "Requires essences?",
-            "requiresNamedIngredients": "Has named components?",
-            "clear": "Clear search"
+            "requiresEssences": "Has essences?",
+            "requiresNamedIngredients": "Has ingredients?",
+            "clear": "Clear search",
+            "noMatches": "No matching recipes"
           },
+          "addNew": "Add a Recipe to {systemName}",
+          "noneFound": "This Crafting System has no recipes",
+          "create": "Drag and drop an item onto the area above to add your first one!",
           "recipe": {
             "buttons": {
               "edit": "Edit",

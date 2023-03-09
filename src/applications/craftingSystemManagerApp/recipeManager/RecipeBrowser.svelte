@@ -75,7 +75,7 @@
     </div>
     {#if $recipes.length > 0}
         <div class="fab-row">
-            <div class="fab-component-grid fab-grid-4">
+            <div class="fab-recipe-grid fab-grid-4">
                 {#each $recipeSearchResults as recipe}
                     <div class="fab-recipe" class:fab-disabled={recipe.isDisabled} class:fab-error={recipe.hasErrors}>
                         <div class="fab-recipe-name">
@@ -104,6 +104,14 @@
                     </div>
                 {/each}
             </div>
+        </div>
+        {#if $recipeSearchResults.length === 0}
+            <div class="fab-no-search-results"><p>{localization.localize(`${localizationPath}.search.noMatches`)}</p></div>
+        {/if}
+    {:else}
+        <div class="fab-no-recipes">
+            <p>{localization.localize(`${localizationPath}.noneFound`)}</p>
+            {#if !$selectedCraftingSystem.isLocked}<p>{localization.localize(`${localizationPath}.create`)}</p>{/if}
         </div>
     {/if}
 </div>

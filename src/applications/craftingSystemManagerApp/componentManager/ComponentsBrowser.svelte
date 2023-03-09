@@ -146,12 +146,12 @@
             </div>
         </div>
         {#if $componentSearchResults.length === 0}
-            <div class="fab-no-search-results"><p>No matching components</p></div>
+            <div class="fab-no-search-results"><p>{localization.localize(`${localizationPath}.search.noMatches`)}</p></div>
         {/if}
     {:else}
         <div class="fab-no-components">
-            <p>This Crafting System has no components.</p>
-            {#if !$selectedCraftingSystem.isLocked}<p>Drag and drop an item onto the area above to add your first one!</p>{/if}
+            <p>{localization.localize(`${localizationPath}.noneFound`)}</p>
+            {#if !$selectedCraftingSystem.isLocked}<p>{localization.localize(`${localizationPath}.create`)}</p>{/if}
         </div>
     {/if}
 </div>

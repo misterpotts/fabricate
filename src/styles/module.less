@@ -218,9 +218,9 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
-  .fab-component-grid {
-    .fab-component {
-      .fab-component-info {
+  .fab-component-grid, .fab-recipe-grid {
+    .fab-component, .fab-recipe {
+      .fab-component-info, .fab-recipe-info {
         background: var(--color-border-light-1);
         color: var(--color-text-light-heading);
       }
@@ -230,7 +230,7 @@ BEGIN FABRICATE THEME STYLES
           color: var(--error);
         }
       }
-      .fab-component-name {
+      .fab-component-name, .fab-recipe-name {
         position: relative;
         z-index: 1;
         background: var(--color-background-dark-5);
@@ -258,8 +258,8 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
-  .fab-system-components {
-    .fab-component-search {
+  .fab-system-components, .fab-system-recipes {
+    .fab-component-search, .fab-recipe-search {
       background: var(--color-background-dark-3);
     }
     .fab-no-search-results {
@@ -519,7 +519,7 @@ BEGIN COMMON STRUCTURAL STYLES
   }
 }
 
-.fab-component-grid {
+.fab-component-grid, .fab-recipe-grid {
   display: grid;
   column-gap: 1em;
   row-gap: 1em;
@@ -535,36 +535,36 @@ BEGIN COMMON STRUCTURAL STYLES
   &.fab-grid-5 {
     grid-template-columns: repeat(5, 1fr);
   }
-  .fab-component {
+  .fab-component, .fab-recipe {
     display: inline-flex;
     flex-wrap: wrap;
     &.fab-disabled {
       opacity: 0.4;
-      .fab-component-name {
+      .fab-component-name, .fab-recipe-name {
         text-decoration: line-through;
       }
     }
-    .fab-component-name {
+    .fab-component-name, .fab-recipe-name {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
     }
-    .fab-component-preview {
+    .fab-component-preview, .fab-recipe-preview {
       padding: 10px;
     }
-    .fab-component-image {
+    .fab-component-image, .fab-recipe-image {
       flex-grow: 2;
       position: relative;
       cursor: pointer;
     }
-    .fab-enable-component {
+    .fab-enable-component, .fab-enable-recipe {
       margin: 4px 10px 4px 10px;
     }
-    .fab-component-editor-buttons {
+    .fab-component-editor-buttons, .fab-recipe-editor-buttons {
       flex-grow: 1;
-      .fab-edit-component {
+      .fab-edit-component, .fab-edit-recipe {
         margin-bottom: 10px;
         i {
           margin: 0;
@@ -573,7 +573,7 @@ BEGIN COMMON STRUCTURAL STYLES
         }
       }
     }
-    .fab-component-info {
+    .fab-component-info, .fab-recipe-info {
       position: absolute;
       display: flex;
       justify-content: center;
@@ -659,15 +659,15 @@ BEGIN COMMON STRUCTURAL STYLES
   }
 }
 
-.fab-system-components {
-  .fab-drop-zone.fab-add-component {
+.fab-system-components, .fab-system-recipes {
+  .fab-drop-zone.fab-add-component, .fab-drop-zone.fab-add-recipe {
     min-height: 100px;
     display: flex;
     font-size: var(--font-size-20);
     justify-content: center;
     align-items: center;
   }
-  .fab-component-grid {
+  .fab-component-grid, .fab-recipe-grid {
     padding-bottom: 1em;
   }
 }
@@ -712,22 +712,22 @@ div.fab-editable {
   }
 }
 
-.fab-system-components {
-  .fab-component-search {
+.fab-system-components, .fab-system-recipes {
+  .fab-component-search, .fab-recipe-search {
     margin-bottom: 10px;
     padding: 4px 8px;
-    .fab-component-name {
+    .fab-component-name, .fab-recipe-name {
       flex-grow: 2;
       .fab-label {
         margin-right: 10px;
       }
     }
-    .fab-has-essences, .fab-has-salvage {
+    .fab-has-essences, .fab-has-salvage, .fab-req-essences, .fab-req-ingredients {
       justify-content: flex-end;
       align-items: center;
     }
   }
-  .fab-no-search-results, .fab-no-components {
+  .fab-no-search-results, .fab-no-components, .fab-no-recipes {
     display: flex;
     width: 100%;
     height: 100%;
@@ -751,11 +751,11 @@ button.clear-search {
   width: 14px;
 }
 
-.fab-component-grid-wrapper {
+.fab-component-grid-wrapper, .fab-recipe-grid-wrapper  {
   padding: 0 1em;
 }
 
-.fab-component-grid-carousel {
+.fab-component-grid-carousel, .fab-recipe-grid-carousel {
   .fab-carousel-next {
     i {
       margin-left: 8px;
