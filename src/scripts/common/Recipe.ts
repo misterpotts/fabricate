@@ -126,7 +126,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     *  =========================== */
 
     private readonly _id: string;
-    private readonly _itemData: FabricateItemData;
+    private _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
     private _ingredientOptions: SelectableOptions<IngredientOptionJson, IngredientOption>;
     private _resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
@@ -177,6 +177,14 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     get imageUrl(): string {
         return this._itemData.imageUrl;
+    }
+
+    get itemData(): FabricateItemData {
+        return this._itemData;
+    }
+
+    set itemData(value: FabricateItemData) {
+        this._itemData = value;
     }
 
     get ingredientOptionsById(): Map<string, IngredientOption> {
@@ -332,6 +340,16 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions.deselect();
     }
 
+    clone(cloneId: string) {
+        return new Recipe({
+            id: cloneId,
+            itemData: NoFabricateItemData.INSTANCE(),
+            disabled: this._disabled,
+            essences: this._essences.clone(),
+            resultOptions: this._resultOptions.clone(),
+            ingredientOptions: this._ingredientOptions.clone()
+        });
+    }
 }
 
 export { Recipe, RecipeJson, ResultOptionJson, ResultOption, IngredientOptionJson, IngredientOption }

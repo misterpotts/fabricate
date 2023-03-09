@@ -6,13 +6,22 @@
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes`;
-    const { localization, recipes, selectedCraftingSystem } = getContext(key);
+    const {
+        localization,
+        recipes,
+        selectedRecipe,
+        selectedCraftingSystem,
+        loading,
+        recipeEditor
+    } = getContext(key);
 
     const recipeSearchResults = new RecipeSearchStore({availableRecipes: recipes});
     const searchTerms = recipeSearchResults.searchTerms;
 
-    function importRecipe(event) {
-        throw new Error("Not implemented!");
+    async function importRecipe(event) {
+        $loading = true;
+        await recipeEditor.importRecipe(event, $selectedCraftingSystem);
+        $loading = false;
     }
 
     function clearSearch() {
@@ -20,19 +29,51 @@
     }
 
     function selectRecipe(recipe) {
-        throw new Error("Not implemented!");
+        $selectedRecipe = recipe;
     }
 
-    function deleteRecipe(event, recipe) {
-        throw new Error("Not implemented!");
+    async function deleteRecipe(event, recipe) {
+        $loading = true;
+        await recipeEditor.deleteRecipe(event, recipe, $selectedCraftingSystem);
+        $loading = false;
+    }
+
+    async function disableRecipe(recipe) {
+        recipe.isDisabled = true;
+        $loading = true;
+        await recipeEditor.saveRecipe(recipe, $selectedCraftingSystem);
+        const message = this._localizationService.format(
+            `${this._localizationPath}.recipe.disabled`,
+            {
+                recipeName: recipe.name
+            }
+        );
+        ui.notifications.info(message);
+        $loading = false;
+    }
+
+    async function enableRecipe(recipe) {
+        recipe.isDisabled = false;
+        $loading = true;
+        await recipeEditor.saveRecipe(recipe, $selectedCraftingSystem);
+        const message = localization.format(
+            `${localizationPath}.recipe.enabled`,
+            {
+                recipeName: recipe.name
+            }
+        );
+        ui.notifications.info(message);
+        $loading = false;
     }
 
     function toggleRecipeDisabled(recipe) {
-        throw new Error("Not implemented!");
+        return recipe.isDisabled ? enableRecipe(recipe) : disableRecipe(recipe);
     }
 
-    function duplicateRecipe(recipe) {
-        throw new Error("Not implemented!");
+    async function duplicateRecipe(recipe) {
+        $loading = true;
+        await recipeEditor.duplicateRecipe(recipe, $selectedCraftingSystem);
+        $loading = false;
     }
 
     async function openItemSheet(recipe) {

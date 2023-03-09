@@ -1,5 +1,5 @@
 <!-- CraftingSystemEditor.svelte -->
-<script>
+<script lang="ts">
     import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
     import Properties from "../../scripts/Properties.ts";
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
@@ -21,6 +21,7 @@
     import eventBus from "../common/EventBus.ts";
     import {onMount, setContext} from "svelte";
     import RecipesTab from "./recipeManager/RecipesTab.svelte";
+    import {RecipeManager} from "./recipeManager/RecipeManager";
 
     export let systemRegistry;
     export let gameProvider;
@@ -44,6 +45,7 @@
     });
 
     const craftingComponentEditor = new CraftingComponentManager({ craftingSystemEditor, localization });
+    const recipeEditor = new RecipeManager({ craftingSystemEditor, localization });
 
     setContext(key, {
         craftingSystems,
@@ -55,7 +57,8 @@
         craftingSystemEditor,
         localization,
         loading,
-        craftingComponentEditor
+        craftingComponentEditor,
+        recipeEditor
     });
 
     onMount(async () => {

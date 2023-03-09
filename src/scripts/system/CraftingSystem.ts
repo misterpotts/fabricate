@@ -195,7 +195,7 @@ class CraftingSystem {
         return this._partDictionary.deleteRecipeById(id);
     }
 
-    public async editRecipe(recipe: Recipe): Promise<void> {
+    public editRecipe(recipe: Recipe): void {
         return this._partDictionary.insertRecipe(recipe);
     }
 
