@@ -42,8 +42,8 @@
         recipe.isDisabled = true;
         $loading = true;
         await recipeEditor.saveRecipe(recipe, $selectedCraftingSystem);
-        const message = this._localizationService.format(
-            `${this._localizationPath}.recipe.disabled`,
+        const message = localization.format(
+            `${localizationPath}.recipe.disabled`,
             {
                 recipeName: recipe.name
             }

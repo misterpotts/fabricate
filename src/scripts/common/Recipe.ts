@@ -203,7 +203,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._essences = value;
     }
 
-    set disabled(value: boolean) {
+    set isDisabled(value: boolean) {
         this._disabled = value;
     }
 
