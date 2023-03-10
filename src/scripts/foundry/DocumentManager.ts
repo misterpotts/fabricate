@@ -284,7 +284,7 @@ interface DocumentManager {
 class DefaultDocumentManager implements DocumentManager {
 
     public async getDocumentByUuid(id: string): Promise<FabricateItemData> {
-        if (!id) {
+        if (!id || id === NoFabricateItemData.UUID()) {
             return new NoFabricateItemData();
         }
         const document = await fromUuid(id);
