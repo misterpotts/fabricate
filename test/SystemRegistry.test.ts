@@ -287,19 +287,19 @@ describe("integration test", () => {
         expect(craftingSystemOne).not.toBeUndefined();
         await craftingSystemOne.loadPartDictionary();
 
-        const essences = await craftingSystemOne.getEssences();
+        const essences = craftingSystemOne.getEssences();
         expect(essences.length).toEqual(3);
         expect(craftingSystemOne.hasEssence(essenceOneId)).toEqual(true);
         expect(craftingSystemOne.hasEssence(essenceTwoId)).toEqual(true);
         expect(craftingSystemOne.hasEssence(essenceThreeId)).toEqual(true);
 
-        const components = await craftingSystemOne.getComponents();
+        const components = craftingSystemOne.getComponents();
         expect(components.length).toEqual(3);
         expect(craftingSystemOne.hasPart(componentOneId)).toEqual(true);
         expect(craftingSystemOne.hasPart(componentTwoId)).toEqual(true);
         expect(craftingSystemOne.hasPart(componentThreeId)).toEqual(true);
 
-        const componentOneResult = await craftingSystemOne.getComponentById(componentOneId);
+        const componentOneResult = craftingSystemOne.getComponentById(componentOneId);
         expect(componentOneResult.id).toEqual(componentOneId);
         expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
         expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).imageUrl);
@@ -309,7 +309,7 @@ describe("integration test", () => {
         expect(componentOneResult.essences.amountFor(essenceOneId)).toEqual(2);
         expect(componentOneResult.essences.amountFor(essenceTwoId)).toEqual(1);
 
-        const recipes = await craftingSystemOne.getRecipes();
+        const recipes = craftingSystemOne.getRecipes();
         expect(recipes.length).toEqual(3);
         expect(craftingSystemOne.hasPart(recipeOneId)).toEqual(true);
         expect(craftingSystemOne.hasPart(recipeTwoId)).toEqual(true);
@@ -322,7 +322,7 @@ describe("integration test", () => {
         expect(recipeOneResult.essences.amountFor(essenceOneId)).toEqual(1);
         expect(recipeOneResult.essences.amountFor(essenceTwoId)).toEqual(2);
         expect(recipeOneResult.ingredientOptions.length).toEqual(0);
-        expect(recipeOneResult.hasIngredients()).toEqual(false);
+        expect(recipeOneResult.hasIngredients).toEqual(false);
         expect(recipeOneResult.resultOptions.length).toEqual(1);
         expect(recipeOneResult.hasResults()).toEqual(true);
 

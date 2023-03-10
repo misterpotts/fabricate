@@ -21,6 +21,9 @@ class DefaultLocalizationService implements LocalizationService {
     }
 
     localizeAll(basePath: string, childPaths: string[], lineBreak = true) {
+        if (!childPaths) {
+            return "";
+        }
         const localization = this._gameProvider.globalGameObject().i18n;
         return childPaths
             .map(childPath => localization.localize(`${basePath}.${childPath}`))

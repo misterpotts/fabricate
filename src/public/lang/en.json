@@ -167,6 +167,26 @@
             "errors": {
               "itemNotFound": "The item does not exist or has been deleted.",
               "itemNotSet": "No item configured. You can set one in the recipe editor."
+            },
+            "imported": "Imported recipe {recipeName} into {systemName}",
+            "deleted": "Removed recipe {recipeName} from {systemName}",
+            "disabled": "Disabled recipe {recipeName}",
+            "enabled": "Enabled recipe {recipeName}",
+            "replaced": "Replaced {previousItemName} with {itemName} in {systemName}",
+            "labels": {
+              "ingredientsHeading": "Ingredients",
+              "availableComponentsHeading": "Available Components",
+              "essencesHeading": "Essences",
+              "replaceItem": "Drop an item to replace"
+            },
+            "info": {
+              "noAvailableEssences": "Add essences to {systemName} to be able to add them to {recipeName}. "
+            }
+          },
+          "prompts": {
+            "delete": {
+              "title": "Delete component \"{recipeName}\"?",
+              "content": "<p>This will remove \"{recipeName}\" from \"{systemName}\". This action cannot be undone.</p>"
             }
           }
         },

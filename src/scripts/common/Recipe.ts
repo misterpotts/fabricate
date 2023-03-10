@@ -328,6 +328,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._itemData.hasErrors;
     }
 
+    get errorCodes(): string[] {
+        return this._itemData.errors.map(error => error.code);
+    }
+
     get errors(): ItemLoadingError[] {
         return this._itemData.errors;
     }

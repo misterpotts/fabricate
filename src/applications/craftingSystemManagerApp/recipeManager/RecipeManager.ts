@@ -32,12 +32,12 @@ class RecipeManager {
         const dropData = await dropEventParser.parse(event);
         const itemData = dropData.itemData;
         if (selectedSystem.includesRecipeByItemUuid(itemData.uuid)) {
-            const existingComponent = selectedSystem.getRecipeByItemUuid(itemData.uuid);
+            const existingRecipe = selectedSystem.getRecipeByItemUuid(itemData.uuid);
             const message = this._localization.format(
                 `${this._localizationPath}.errors.import.itemAlreadyIncluded`,
                 {
                     itemUuid: itemData.uuid,
-                    componentName: existingComponent.name,
+                    recipeName: existingRecipe.name,
                     systemName: selectedSystem.name
                 }
             );
@@ -69,13 +69,13 @@ class RecipeManager {
                 title: this._localization.format(
                     `${this._localizationPath}.prompts.delete.title`,
                     {
-                        componentName: recipe.name
+                        recipeName: recipe.name
                     }
                 ),
                 content: this._localization.format(
                     `${this._localizationPath}.prompts.delete.content`,
                     {
-                        componentName: recipe.name,
+                        recipeName: recipe.name,
                         systemName: selectedSystem.name
                     }
                 )
@@ -89,7 +89,7 @@ class RecipeManager {
         const message = this._localization.format(
             `${this._localizationPath}.recipe.deleted`,
             {
-                componentName: recipe.name,
+                recipeName: recipe.name,
                 systemName: selectedSystem.name
             }
         );
@@ -122,7 +122,7 @@ class RecipeManager {
                 `${this._localizationPath}.errors.import.itemAlreadyIncluded`,
                 {
                     itemUuid: itemData.uuid,
-                    componentName: existingRecipe.name,
+                    recipeName: existingRecipe.name,
                     systemName: selectedSystem.name
                 }
             );
