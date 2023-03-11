@@ -1,6 +1,6 @@
 <script lang="ts">
     import Properties from "../../../scripts/Properties";
-    import {getContext} from "svelte";
+    import {getContext, onDestroy} from "svelte";
     import {key} from "../CraftingSystemManagerApp";
     import Tabs from "../../common/Tabs.svelte";
     import TabList from "../../common/TabList.svelte";
@@ -9,9 +9,10 @@
     import truncate from "../../common/Truncate";
     import {ComponentSearchStore} from "../../stores/ComponentSearchStore";
     import {DropEventParser} from "../../common/DropEventParser";
-    import {recipeUpdated} from "../../common/EventBus";
+    import {componentUpdated, recipeUpdated} from "../../common/EventBus";
     import {RecipeEssenceStore} from "../../stores/RecipeEssenceStore";
     import {Unit} from "../../../scripts/common/Combination";
+    import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes`;
     const {
@@ -69,6 +70,69 @@
         $loading = false;
     }
 
+    function sortByName(salvageOption) {
+        return salvageOption.sort((left, right) => left.name.localeCompare(right.name));
+    }
+
+    async function deleteIngredientOption(optionToDelete) {
+        $loading = true;
+        $selectedRecipe.deleteIngredientOptionByName(optionToDelete.name);
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function addComponentToIngredientOption(event, ingredientOption) {
+        $loading = true;
+        const dropEventParser = new DropEventParser({
+            localizationService: localization,
+            documentManager: new DefaultDocumentManager(),
+            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: $craftingComponents
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        ingredientOption.addIngredient(component);
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function decrementIngredientOptionComponent(ingredientOption, component) {
+        $loading = true;
+        ingredientOption.subtractIngredient(component);
+        if (ingredientOption.isEmpty) {
+            return deleteIngredientOption(ingredientOption);
+        }
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function incrementIngredientOptionComponent(ingredientOption, component, event) {
+        if (event && event.shiftKey) {
+            return decrementIngredientOptionComponent(ingredientOption, component);
+        }
+        $loading = true;
+        ingredientOption.addIngredient(component);
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        componentUpdated($selectedRecipe);
+    }
+
+    let scheduledSave;
+    function scheduleSave() {
+        clearTimeout(scheduledSave);
+        scheduledSave = setTimeout(async () => {
+            $loading = true;
+            await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+            $loading = false;
+        }, 1000);
+    }
+
+    onDestroy(() => {
+        clearTimeout(scheduledSave);
+    });
+
 </script>
 
 {#if $selectedRecipe}
@@ -103,6 +167,49 @@
                             </div>
                             {#if $selectedRecipe.hasIngredients}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
+                                    <TabList>
+                                        {#each sortByName($selectedRecipe.ingredientOptions) as ingredientOption}
+                                            <Tab>{ingredientOption.name}</Tab>
+                                        {/each}
+                                        <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.recipe.labels.newIngredientOption`)}</Tab>
+                                    </TabList>
+
+                                    {#each sortByName($selectedRecipe.ingredientOptions) as ingredientOption}
+                                        <TabPanel class="fab-columns">
+                                            <div class="fab-column">
+                                                <div class="fab-option-controls fab-row">
+                                                    <div class="fab-option-name">
+                                                        <p>{localization.localize(`${localizationPath}.recipe.labels.ingredientOptionName`)}</p>
+                                                        <div class="fab-editable" contenteditable="true" bind:textContent={ingredientOption.name} on:input={scheduleSave}>{ingredientOption.name}</div>
+                                                    </div>
+                                                    <button class="fab-delete-salvage-opt" on:click={deleteIngredientOption(ingredientOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteIngredientOption`)}</button>
+                                                </div>
+                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToIngredientOption(e, ingredientOption)}>
+                                                    {#each ingredientOption.ingredients.units as ingredientUnit}
+                                                        <div class="fab-component" on:click={(e) => incrementIngredientOptionComponent(ingredientOption, ingredientUnit.part, e)} on:auxclick={decrementIngredientOptionComponent(ingredientOption, ingredientUnit.part)}>
+                                                            <div class="fab-component-name">
+                                                                <p>{truncate(ingredientUnit.part.name, 9)}</p>
+                                                            </div>
+                                                            <div class="fab-component-preview">
+                                                                <div class="fab-component-image" data-tooltip={ingredientUnit.part.name}>
+                                                                    <img src={ingredientUnit.part.imageUrl} alt={ingredientUnit.part.name} />
+                                                                    {#if ingredientUnit.quantity > 1}
+                                                                        <span class="fab-component-info fab-component-quantity">{ingredientUnit.quantity}</span>
+                                                                    {/if}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {/each}
+                                                </div>
+                                            </div>
+                                        </TabPanel>
+                                    {/each}
+
+                                    <TabPanel>
+                                        <div class="fab-drop-zone fab-new-ingredient-opt" on:drop|preventDefault={(e) => addIngredientOption(e)}>
+                                            <i class="fa-solid fa-plus"></i>
+                                        </div>
+                                    </TabPanel>
 
                                 </Tabs>
                             {:else}

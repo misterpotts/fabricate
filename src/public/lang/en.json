@@ -7,7 +7,10 @@
       },
       "recipe": {
         "singular": "Recipe",
-        "plural": "Recipes"
+        "plural": "Recipes",
+        "ingredientOption": {
+          "name": "Option {number}"
+        }
       },
       "component": {
         "singular": "Component",
@@ -162,7 +165,7 @@
               "duplicate": "Duplicate",
               "openSheet": "Open Item Sheet",
               "deselect": "Go Back",
-              "deleteOption": "Delete"
+              "deleteIngredientOption": "Delete"
             },
             "errors": {
               "itemNotFound": "The item does not exist or has been deleted.",
@@ -175,11 +178,14 @@
             "replaced": "Replaced {previousItemName} with {itemName} in {systemName}",
             "labels": {
               "ingredientsHeading": "Ingredients",
+              "ingredientOptionName": "Option",
               "catalystsHeading": "Catalysts",
               "resultsHeading": "Results",
               "availableComponentsHeading": "Available Components",
               "essencesHeading": "Required essences",
-              "replaceItem": "Drop an item to replace"
+              "replaceItem": "Drop an item to replace",
+              "newIngredientOption": "New",
+              "deleteIngredientOption": "Delete"
             },
             "info": {
               "noAvailableEssences": "Add essences to {systemName} to be able to add them to {recipeName}. "

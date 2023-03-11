@@ -1,4 +1,4 @@
-import {Combination} from "./Combination";
+import {Combination, Unit} from "./Combination";
 import {Identifiable, Serializable} from "./Identity";
 import {CraftingComponent} from "./CraftingComponent";
 import {Essence} from "./Essence";
@@ -70,6 +70,26 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
 
     get id(): string {
         return this._name;
+    }
+
+    public addCatalyst(component: CraftingComponent, amount = 1) {
+        this._catalysts = this._catalysts.add(new Unit<CraftingComponent>(component, amount));
+    }
+
+    public subtractCatalyst(component: CraftingComponent, amount = 1) {
+        this._catalysts = this._catalysts.minus(new Unit<CraftingComponent>(component, amount));
+    }
+
+    public addIngredient(component: CraftingComponent, amount = 1) {
+        this._ingredients = this._ingredients.add(new Unit<CraftingComponent>(component, amount));
+    }
+
+    public subtractIngredient(component: CraftingComponent, amount = 1) {
+        this._ingredients = this._ingredients.minus(new Unit<CraftingComponent>(component, amount));
+    }
+
+    public get isEmpty(): boolean {
+        return this._ingredients.isEmpty() && this._catalysts.isEmpty();
     }
 
     toJson(): IngredientOptionJson {
@@ -312,7 +332,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._ingredientOptions.set(value);
     }
 
-    deleteIngredientOptionById(id: string) {
+    deleteIngredientOptionByName(id: string) {
         this._ingredientOptions.deleteById(id);
     }
 
