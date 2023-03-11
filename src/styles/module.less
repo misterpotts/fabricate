@@ -899,6 +899,9 @@ END COMMON STRUCTURAL STYLES
 }
 
 .fab-recipe-editor {
+  .fab-section-title {
+    margin: 10px 0;
+  }
   .fab-recipe-ingredients-editor {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -990,6 +993,7 @@ END COMMON STRUCTURAL STYLES
   }
   .fab-drop-zone.fab-no-ingredients {
     height: 100%;
+    min-height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1023,13 +1027,13 @@ END COMMON STRUCTURAL STYLES
     }
     margin: 10px 0;
   }
-  .fab-ingredient-option-actual {
-    pagging-right: 6px;
+  .fab-ingredient-option-actual, .fab-catalyst-option-actual {
+    padding-right: 6px;
     overflow-x: hidden;
     .fab-component-preview {
       padding: 5px;
     }
-    min-height: 100px;
+    min-height: 120px;
     max-height: 240px;
   }
 }
@@ -1159,7 +1163,7 @@ END COMMON STRUCTURAL STYLES
     margin: 10px 0;
   }
   .fab-salvage-option-actual {
-    pagging-right: 6px;
+    padding-right: 6px;
     overflow-x: hidden;
     .fab-component-preview {
       padding: 5px;

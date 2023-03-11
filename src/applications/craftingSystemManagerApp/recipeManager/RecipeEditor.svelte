@@ -175,7 +175,7 @@
                     <div class="fab-recipe-ingredients fab-columns">
                         <div class="fab-column">
                             <div class="fab-row">
-                                <h3>{localization.localize(`${localizationPath}.recipe.labels.requirementsHeading`)}</h3>
+                                <h3>{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h3>
                             </div>
                             {#if $selectedRecipe.hasIngredients}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
@@ -196,7 +196,7 @@
                                                     </div>
                                                     <button class="fab-delete-salvage-opt" on:click={deleteIngredientOption(ingredientOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteIngredientOption`)}</button>
                                                 </div>
-                                                <h4>{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
+                                                <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
                                                 {#if ingredientOption.requiresIngredients}
                                                 <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToIngredientOption(e, ingredientOption, false)}>
                                                     {#each ingredientOption.ingredients.units as ingredientUnit}
@@ -221,9 +221,9 @@
                                                     </div>
                                                 {/if}
 
-                                                <h4>{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h4>
+                                                <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h4>
                                                 {#if ingredientOption.requiresCatalysts}
-                                                    <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToIngredientOption(e, ingredientOption, true)}>
+                                                    <div class="fab-component-grid fab-grid-4 fab-scrollable fab-catalyst-option-actual" on:drop={(e) => addComponentToIngredientOption(e, ingredientOption, true)}>
                                                         {#each ingredientOption.catalysts.units as catalystUnit}
                                                             <div class="fab-component" on:click={(e) => incrementIngredientOptionComponent(ingredientOption, catalystUnit.part, e, true)} on:auxclick={decrementIngredientOptionComponent(ingredientOption, catalystUnit.part, true)}>
                                                                 <div class="fab-component-name">

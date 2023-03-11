@@ -16,8 +16,8 @@ class CraftingSystemManagerAppFactory {
             title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
             id: Properties.ui.apps.craftingSystemManager.id,
             resizable: false,
-            width: 980,
-            height: 740
+            width: 1020,
+            height: 840
         }
 
         return new SvelteApplication({
