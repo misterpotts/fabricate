@@ -71,7 +71,7 @@
         const salvageOption = new SalvageOption({name, salvage: Combination.of(component, 1)});
         $selectedComponent.addSalvageOption(salvageOption);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        if ($selectedComponent.salvageOptions.length >= 2) {
+        if ($selectedComponent.salvageOptions.length > 1) {
             selectPreviousTab();
         }
         $loading = false;

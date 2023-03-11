@@ -4,7 +4,8 @@ import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
-import {Recipe} from "../../../scripts/common/Recipe";
+import {IngredientOption, Recipe} from "../../../scripts/common/Recipe";
+import {Combination} from "../../../scripts/common/Combination";
 
 class RecipeManager {
 
@@ -143,6 +144,40 @@ class RecipeManager {
         );
         ui.notifications.info(message);
         return;
+    }
+
+    public async addIngredientOption(event: any, addAsCatalyst: boolean, selectedRecipe: Recipe, selectedCraftingSystem: CraftingSystem) {
+        const dropEventParser = new DropEventParser({
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: selectedCraftingSystem.craftingComponents
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        const name = this.generateIngredientOptionName(selectedRecipe);
+        let ingredientOption;
+        if (addAsCatalyst) {
+            ingredientOption = new IngredientOption({name, catalysts: Combination.of(component, 1)});
+        } else {
+            ingredientOption = new IngredientOption({name, ingredients: Combination.of(component, 1)});
+        }
+        selectedRecipe.addIngredientOption(ingredientOption);
+        selectedCraftingSystem.editRecipe(selectedRecipe);
+        await this._craftingSystemEditor.saveCraftingSystem(selectedCraftingSystem);
+    }
+
+    public generateIngredientOptionName(recipe: Recipe) {
+        if (!recipe.hasIngredients) {
+            return this._localization.format(`${Properties.module.id}.typeNames.recipe.ingredientOption.name`, { number: 1 });
+        }
+        const existingNames = recipe.ingredientOptions.map(ingredientOption => ingredientOption.name);
+        let nextOptionNumber = 2;
+        let nextOptionName;
+        do {
+            nextOptionName = this._localization.format(`${Properties.module.id}.typeNames.recipe.ingredientOption.name`, { number: nextOptionNumber });
+            nextOptionNumber++;
+        } while (existingNames.includes(nextOptionName));
+        return nextOptionName;
     }
 
 }

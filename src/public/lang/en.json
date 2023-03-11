@@ -175,12 +175,18 @@
             "replaced": "Replaced {previousItemName} with {itemName} in {systemName}",
             "labels": {
               "ingredientsHeading": "Ingredients",
+              "catalystsHeading": "Catalysts",
+              "resultsHeading": "Results",
               "availableComponentsHeading": "Available Components",
-              "essencesHeading": "Essences",
+              "essencesHeading": "Required essences",
               "replaceItem": "Drop an item to replace"
             },
             "info": {
               "noAvailableEssences": "Add essences to {systemName} to be able to add them to {recipeName}. "
+            },
+            "tabs": {
+              "requirements": "Requirements",
+              "results": "Results"
             }
           },
           "prompts": {

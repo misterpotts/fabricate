@@ -30,7 +30,6 @@ class SelectedCraftingComponentStore {
             }
             const found = value.find(component => component.id === selectedComponent.id);
             this._selectedCraftingComponent.set(found);
-
         });
     }
 

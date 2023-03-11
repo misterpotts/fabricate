@@ -13,10 +13,10 @@ class SelectedRecipeStore {
         selectedRecipe?: Recipe;
     }) {
         this._selectedRecipe = writable(selectedRecipe);
-        this.deselectWhenRecipeNotInAvailableRecipes(recipes);
+        this.deselectOrUpdateWhenAvailableComponentsChange(recipes);
     }
 
-    private deselectWhenRecipeNotInAvailableRecipes(recipes: Readable<Recipe[]>) {
+    private deselectOrUpdateWhenAvailableComponentsChange(recipes: Readable<Recipe[]>) {
         recipes.subscribe(value => {
             if (!value) {
                 throw new Error("Recipes may not be null");
@@ -25,10 +25,11 @@ class SelectedRecipeStore {
                 this._selectedRecipe.set(null);
             }
             const selectedRecipe = get(this._selectedRecipe);
-            const found = value.find(recipe => recipe === selectedRecipe);
-            if (!found) {
-                this._selectedRecipe.set(null);
+            if (!selectedRecipe) {
+                return;
             }
+            const found = value.find(recipe => recipe.id === selectedRecipe.id);
+            this._selectedRecipe.set(found);
         });
     }
 
