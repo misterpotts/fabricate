@@ -178,6 +178,7 @@
             "replaced": "Replaced {previousItemName} with {itemName} in {systemName}",
             "labels": {
               "ingredientsHeading": "Ingredients",
+              "requirementsHeading": "Requirements",
               "ingredientOptionName": "Option",
               "catalystsHeading": "Catalysts",
               "resultsHeading": "Results",
