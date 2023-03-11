@@ -175,7 +175,7 @@
                     <div class="fab-recipe-ingredients fab-columns">
                         <div class="fab-column">
                             <div class="fab-row">
-                                <h3>{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h3>
+                                <h3>{localization.localize(`${localizationPath}.recipe.labels.requirementsHeading`)}</h3>
                             </div>
                             {#if $selectedRecipe.hasIngredients}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
@@ -220,7 +220,6 @@
                                                         <i class="fa-solid fa-plus"></i>
                                                     </div>
                                                 {/if}
-
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h4>
                                                 {#if ingredientOption.requiresCatalysts}
                                                     <div class="fab-component-grid fab-grid-4 fab-scrollable fab-catalyst-option-actual" on:drop={(e) => addComponentToIngredientOption(e, ingredientOption, true)}>
@@ -249,15 +248,20 @@
                                         </TabPanel>
                                     {/each}
 
-                                    <TabPanel>
-                                        <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addIngredientOption(e, false)}>
-                                            <i class="fa-solid fa-plus"></i>
-                                        </div>
-                                        <div class="fab-row">
-                                            <h3>{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h3>
-                                        </div>
-                                        <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addIngredientOption(e, true)}>
-                                            <i class="fa-solid fa-plus"></i>
+                                    <TabPanel class="fab-columns">
+                                        <div class="fab-column">
+                                            <div class="fab-row">
+                                                <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
+                                            </div>
+                                            <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addIngredientOption(e, false)}>
+                                                <i class="fa-solid fa-plus"></i>
+                                            </div>
+                                            <div class="fab-row">
+                                                <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h4>
+                                            </div>
+                                            <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addIngredientOption(e, true)}>
+                                                <i class="fa-solid fa-plus"></i>
+                                            </div>
                                         </div>
                                     </TabPanel>
 
