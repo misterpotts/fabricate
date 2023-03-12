@@ -17,7 +17,7 @@ class CraftingSystemManagerAppFactory {
             id: Properties.ui.apps.craftingSystemManager.id,
             resizable: false,
             width: 1020,
-            height: 840
+            height: 780
         }
 
         return new SvelteApplication({

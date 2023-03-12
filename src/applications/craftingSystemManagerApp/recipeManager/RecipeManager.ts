@@ -148,12 +148,16 @@ class RecipeManager {
 
     public async addIngredientOption(event: any, addAsCatalyst: boolean, selectedRecipe: Recipe, selectedCraftingSystem: CraftingSystem) {
         const dropEventParser = new DropEventParser({
+            strict: true,
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),
             partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
             allowedCraftingComponents: selectedCraftingSystem.craftingComponents
         });
         const component = (await dropEventParser.parse(event)).component;
+        if (!component) {
+            return;
+        }
         const name = this.generateIngredientOptionName(selectedRecipe);
         let ingredientOption;
         if (addAsCatalyst) {

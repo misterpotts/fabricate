@@ -40,24 +40,30 @@ class DropEventParser {
 
     private readonly _localizationService: LocalizationService;
     private readonly _partType: string;
+    private readonly _strict: boolean;
     private readonly _documentManager: DocumentManager;
-    private _allowedCraftingComponentsById: Map<string, CraftingComponent>;
+    private readonly _allowedCraftingComponentsById: Map<string, CraftingComponent>;
+    private readonly _allowedCraftingComponentsByItemUuid: Map<string, CraftingComponent>;
 
     constructor({
         localizationService,
         partType,
         allowedCraftingComponents = [],
-        documentManager
+        documentManager,
+        strict = false
     }: {
         localizationService: LocalizationService;
         partType: string;
         allowedCraftingComponents?: CraftingComponent[];
         documentManager: DocumentManager;
+        strict?: boolean;
     }) {
         this._localizationService = localizationService;
         this._partType = partType;
-        this._allowedCraftingComponentsById = new Map(allowedCraftingComponents.map(component => [component.id,component]));
+        this._allowedCraftingComponentsById = new Map(allowedCraftingComponents.map(component => [component.id, component]));
+        this._allowedCraftingComponentsByItemUuid = new Map(allowedCraftingComponents.map(component => [component.itemUuid, component]));
         this._documentManager = documentManager
+        this._strict = strict;
     }
     
     public async parseFoundryItemData(elementData: any): Promise<DropData> {
@@ -81,7 +87,18 @@ class DropEventParser {
                 return new DropData({});
             }
             const itemData = await this._documentManager.getDocumentByUuid(dropData.uuid);
-            return new DropData({ itemData });
+            if (this._strict && ! this._allowedCraftingComponentsByItemUuid.has(itemData.uuid)) {
+                const message = this._localizationService.format(
+                    `${Properties.module.id}.DropEventParser.errors.unrecognisedComponent`,
+                    {
+                        componentName: itemData.name
+                    }
+                );
+                ui.notifications.warn(message);
+                return new DropData({});
+            }
+            const component = this._allowedCraftingComponentsByItemUuid.get(dropData.uuid);
+            return new DropData({ itemData, component });
         } catch (e) {
             const message = this._localizationService.format(`${Properties.module.id}.DropEventParser.errors.invalidJson`, { partType: this._partType });
             ui.notifications.error(message);

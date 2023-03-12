@@ -85,6 +85,7 @@
     async function addComponentToIngredientOption(event, ingredientOption, asCatalyst) {
         $loading = true;
         const dropEventParser = new DropEventParser({
+            strict: true,
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
