@@ -47,6 +47,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
     // more importantly though I could load individual items only as needed
     const allCraftingSystems = await FabricateApplication.systemRegistry.getAllCraftingSystems();
     const loadedSystems = await Promise.all(Array.from(allCraftingSystems.values())
+        .filter(craftingSystem => craftingSystem.enabled)
         .map(async craftingSystem => {
             await craftingSystem.loadPartDictionary();
             return craftingSystem;
