@@ -9,7 +9,7 @@
     import truncate from "../../common/Truncate";
     import {ComponentSearchStore} from "../../stores/ComponentSearchStore";
     import {DropEventParser} from "../../common/DropEventParser";
-    import {componentUpdated, recipeUpdated} from "../../common/EventBus";
+    import {recipeUpdated} from "../../common/EventBus";
     import {RecipeEssenceStore} from "../../stores/RecipeEssenceStore";
     import {Unit} from "../../../scripts/common/Combination";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
@@ -70,8 +70,8 @@
         $loading = false;
     }
 
-    function sortByName(salvageOption) {
-        return salvageOption.sort((left, right) => left.name.localeCompare(right.name));
+    function sortByName(option) {
+        return option.sort((left, right) => left.name.localeCompare(right.name));
     }
 
     async function deleteIngredientOption(optionToDelete) {
@@ -129,7 +129,7 @@
         }
         await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
         $loading = false;
-        componentUpdated($selectedRecipe);
+        recipeUpdated($selectedRecipe);
     }
 
     let scheduledSave;
@@ -145,6 +145,62 @@
     onDestroy(() => {
         clearTimeout(scheduledSave);
     });
+
+    async function deleteResultOption(optionToDelete) {
+        $loading = true;
+        $selectedRecipe.deleteResultOptionByName(optionToDelete.name);
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function addComponentToResultOption(event, resultOption) {
+        $loading = true;
+        const dropEventParser = new DropEventParser({
+            strict: true,
+            localizationService: localization,
+            documentManager: new DefaultDocumentManager(),
+            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: $craftingComponents
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        resultOption.add(component);
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function incrementResultOptionComponent(resultOption, component, event) {
+        if (event && event.shiftKey) {
+            return decrementResultOptionComponent(resultOption, component);
+        }
+        $loading = true;
+        resultOption.add(component);
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function decrementResultOptionComponent(resultOption, component) {
+        $loading = true;
+        resultOption.subtract(component);
+        if (resultOption.isEmpty) {
+            return deleteResultOption(resultOption);
+        }
+        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function addResultOption(event) {
+        $loading = true;
+        await recipeEditor.addResultOption(event, $selectedRecipe, $selectedCraftingSystem);
+        if ($selectedRecipe.resultOptions.length > 1) {
+            selectPreviousTab();
+        }
+        $loading = false;
+        recipeUpdated($selectedRecipe);
+    }
 
 </script>
 
@@ -195,7 +251,7 @@
                                                         <p>{localization.localize(`${localizationPath}.recipe.labels.ingredientOptionName`)}</p>
                                                         <div class="fab-editable" contenteditable="true" bind:textContent={ingredientOption.name} on:input={scheduleSave}>{ingredientOption.name}</div>
                                                     </div>
-                                                    <button class="fab-delete-salvage-opt" on:click={deleteIngredientOption(ingredientOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteIngredientOption`)}</button>
+                                                    <button class="fab-delete-ingredient-opt" on:click={deleteIngredientOption(ingredientOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteIngredientOption`)}</button>
                                                 </div>
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
                                                 {#if ingredientOption.requiresIngredients}
@@ -355,6 +411,89 @@
                         <div class="fab-column">
                             <div class="fab-row">
                                 <h3>{localization.localize(`${localizationPath}.recipe.labels.resultsHeading`)}</h3>
+                            </div>
+                            {#if $selectedRecipe.hasResults}
+                                <Tabs bind:selectPreviousTab={selectPreviousTab}>
+                                    <TabList>
+                                        {#each sortByName($selectedRecipe.resultOptions) as resultOption}
+                                            <Tab>{resultOption.name}</Tab>
+                                        {/each}
+                                        <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.recipe.labels.newResultOption`)}</Tab>
+                                    </TabList>
+                                    {#each sortByName($selectedRecipe.resultOptions) as resultOption}
+                                        <TabPanel class="fab-columns">
+                                            <div class="fab-column">
+                                                <div class="fab-option-controls fab-row">
+                                                    <div class="fab-option-name">
+                                                        <p>{localization.localize(`${localizationPath}.recipe.labels.resultOptionName`)}</p>
+                                                        <div class="fab-editable" contenteditable="true" bind:textContent={resultOption.name} on:input={scheduleSave}>{resultOption.name}</div>
+                                                    </div>
+                                                    <button class="fab-delete-result-opt" on:click={deleteResultOption(resultOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteResultOption`)}</button>
+                                                </div>
+                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-result-option-actual" on:drop={(e) => addComponentToResultOption(e, resultOption)}>
+                                                    {#each resultOption.results.units as resultUnit}
+                                                        <div class="fab-component" on:click={(e) => incrementResultOptionComponent(resultOption, resultUnit.part, e)} on:auxclick={decrementResultOptionComponent(resultOption, resultUnit.part)}>
+                                                            <div class="fab-component-name">
+                                                                <p>{truncate(resultUnit.part.name, 9)}</p>
+                                                            </div>
+                                                            <div class="fab-component-preview">
+                                                                <div class="fab-component-image" data-tooltip={resultUnit.part.name}>
+                                                                    <img src={resultUnit.part.imageUrl} alt={resultUnit.part.name} />
+                                                                    {#if resultUnit.quantity > 1}
+                                                                        <span class="fab-component-info fab-component-quantity">{resultUnit.quantity}</span>
+                                                                    {/if}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {/each}
+                                                </div>
+                                            </div>
+                                        </TabPanel>
+                                    {/each}
+                                    <TabPanel>
+                                        <div class="fab-drop-zone fab-new-result-opt fab-row" on:drop|preventDefault={(e) => addResultOption(e)}>
+                                            <i class="fa-solid fa-plus"></i>
+                                        </div>
+                                    </TabPanel>
+                                </Tabs>
+                            {:else}
+                                <div class="fab-no-result-opts fab-drop-zone fab-row" on:drop|preventDefault={(e) => addResultOption(e)}>
+                                    <i class="fa-solid fa-plus"></i>
+                                </div>
+                            {/if}
+                        </div>
+                    </div>
+                    <div class="fab-recipe-options fab-columns">
+                        <div class="fab-column">
+                            <div class="fab-row">
+                                <h3>{localization.localize(`${localizationPath}.recipe.labels.availableComponentsHeading`)}</h3>
+                            </div>
+                            <div class="fab-row fab-search fab-component-search">
+                                <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.search.name`)}: </p>
+                                <input type="text" bind:value={$searchTerms.name} />
+                                <button class="clear-search" data-tooltip={localization.localize(`${localizationPath}.search.clear`)} on:click={clearSearch}><i class="fa-regular fa-circle-xmark"></i></button>
+                            </div>
+                            <div class="fab-row">
+                                {#if $componentSearchResults.length > 0}
+                                    <div class="fab-component-grid fab-grid-4 fab-scrollable fab-component-source">
+                                        {#each $componentSearchResults as component}
+                                            <div class="fab-component" draggable="true" on:dragstart={event => dragStart(event, component)}>
+                                                <div class="fab-component-name" draggable="false">
+                                                    <p draggable="false">{truncate(component.name, 9)}</p>
+                                                </div>
+                                                <div class="fab-component-preview" draggable="false">
+                                                    <div class="fab-component-image" data-tooltip={component.name} draggable="false">
+                                                        <img src={component.imageUrl} alt={component.name} draggable="false" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {/each}
+                                    </div>
+                                {:else if $searchTerms.name}
+                                    <div class="fab-no-component-opts"><p>{localization.localize(`${localizationPath}.recipe.info.noMatchingComponents`)}</p></div>
+                                {:else}
+                                    <div class="fab-no-component-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableComponents`, { systemName: $selectedCraftingSystem.name, recipeName: $selectedRecipe.name })}</p></div>
+                                {/if}
                             </div>
                         </div>
                     </div>

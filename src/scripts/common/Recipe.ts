@@ -104,7 +104,7 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
 class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
 
     private _results: Combination<CraftingComponent>;
-    private readonly _name: string;
+    private _name: string;
 
     constructor({
         name,
@@ -125,12 +125,24 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
         this._results = value;
     }
 
+    set name(value: string) {
+        this._name = value;
+    }
+
     get name(): string {
         return this._name;
     }
 
     get id(): string {
         return this._name;
+    }
+
+    public add(component: CraftingComponent, amount = 1) {
+        this._results = this._results.add(new Unit<CraftingComponent>(component, amount));
+    }
+
+    public subtract(component: CraftingComponent, amount = 1) {
+        this._results = this._results.minus(new Unit<CraftingComponent>(component, amount));
     }
 
     toJson(): ResultOptionJson {
@@ -276,7 +288,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return !this._ingredientOptions.isEmpty;
     }
 
-    public hasResults() {
+    public get hasResults(): boolean {
         return !this._resultOptions.isEmpty;
     }
 
@@ -334,6 +346,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     deleteIngredientOptionByName(id: string) {
         this._ingredientOptions.deleteById(id);
+    }
+
+    deleteResultOptionByName(id: string) {
+        this._resultOptions.deleteById(id);
     }
 
     setResultOption(value: ResultOption) {

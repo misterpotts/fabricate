@@ -902,14 +902,14 @@ END COMMON STRUCTURAL STYLES
   .fab-section-title {
     margin: 10px 0;
   }
-  .fab-recipe-ingredients-editor {
+  .fab-recipe-ingredients-editor, .fab-recipe-results-editor {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     column-gap: 1em;
     row-gap: 1em;
     margin-bottom: 12px;
   }
-  .fab-no-component-opts {
+  .fab-no-component-opts, .fab-no-result-opts {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -963,13 +963,13 @@ END COMMON STRUCTURAL STYLES
       }
     }
   }
-  .fab-recipe-ingredients, .fab-recipe-options {
+  .fab-recipe-ingredients, .fab-recipe-results, .fab-recipe-options {
     h3 {
       margin: 10px 0 15px 0;
     }
   }
   .fab-component-source {
-    max-height: 280px;
+    max-height: 360px;
     min-height: 100px;
     padding-right: 6px;
     .fab-component {
@@ -991,26 +991,26 @@ END COMMON STRUCTURAL STYLES
       margin-right: 10px;
     }
   }
-  .fab-drop-zone.fab-no-ingredients {
+  .fab-drop-zone.fab-no-ingredients,.fab-drop-zone.fab-no-results {
     height: 100%;
     min-height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .fab-ingredient-editor {
+  .fab-recipe-results-editor, .fab-recipe-ingredients-editor {
     .fab-tabs{
       min-height: 280px;
     }
-    .fab-new-ingredient-opt {
-      width: 100%;
-      margin: 20px;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100%;
-    }
+  }
+  .fab-new-ingredient-opt, .fab-new-result-opt {
+    width: 100%;
+    margin: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
   }
   .fab-option-controls {
     .fab-option-name {
@@ -1022,7 +1022,7 @@ END COMMON STRUCTURAL STYLES
         margin-right: 10px;
       }
     }
-    button.fab-delete-salvage-opt {
+    button.fab-delete-ingredient-opt, button.fab-delete-result-opt {
       flex: 1;
     }
     margin: 10px 0;
@@ -1105,7 +1105,7 @@ END COMMON STRUCTURAL STYLES
     }
   }
   .fab-salvage-source {
-    max-height: 280px;
+    max-height: 360px;
     min-height: 100px;
     padding-right: 6px;
     .fab-component {

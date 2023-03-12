@@ -324,7 +324,7 @@ describe("integration test", () => {
         expect(recipeOneResult.ingredientOptions.length).toEqual(0);
         expect(recipeOneResult.hasIngredients).toEqual(false);
         expect(recipeOneResult.resultOptions.length).toEqual(1);
-        expect(recipeOneResult.hasResults()).toEqual(true);
+        expect(recipeOneResult.hasResults).toEqual(true);
 
         const serialized = craftingSystemOne.toJson();
         expect(serialized).toEqual(storedSettingsValue.value[craftingSystemOne.id])

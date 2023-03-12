@@ -4,7 +4,7 @@ import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
-import {IngredientOption, Recipe} from "../../../scripts/common/Recipe";
+import {IngredientOption, Recipe, ResultOption} from "../../../scripts/common/Recipe";
 import {Combination} from "../../../scripts/common/Combination";
 
 class RecipeManager {
@@ -170,6 +170,25 @@ class RecipeManager {
         await this._craftingSystemEditor.saveCraftingSystem(selectedCraftingSystem);
     }
 
+    public async addResultOption(event: any, selectedRecipe: Recipe, selectedCraftingSystem: CraftingSystem) {
+        const dropEventParser = new DropEventParser({
+            strict: true,
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: selectedCraftingSystem.craftingComponents
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        if (!component) {
+            return;
+        }
+        const name = this.generateResultOptionName(selectedRecipe);
+        let resultOption = new ResultOption({name, results: Combination.of(component, 1)});
+        selectedRecipe.addResultOption(resultOption);
+        selectedCraftingSystem.editRecipe(selectedRecipe);
+        await this._craftingSystemEditor.saveCraftingSystem(selectedCraftingSystem);
+    }
+
     public generateIngredientOptionName(recipe: Recipe) {
         if (!recipe.hasIngredients) {
             return this._localization.format(`${Properties.module.id}.typeNames.recipe.ingredientOption.name`, { number: 1 });
@@ -179,6 +198,20 @@ class RecipeManager {
         let nextOptionName;
         do {
             nextOptionName = this._localization.format(`${Properties.module.id}.typeNames.recipe.ingredientOption.name`, { number: nextOptionNumber });
+            nextOptionNumber++;
+        } while (existingNames.includes(nextOptionName));
+        return nextOptionName;
+    }
+
+    public generateResultOptionName(recipe: Recipe) {
+        if (!recipe.hasResults) {
+            return this._localization.format(`${Properties.module.id}.typeNames.recipe.resultOption.name`, { number: 1 });
+        }
+        const existingNames = recipe.resultOptions.map(ingredientOption => ingredientOption.name);
+        let nextOptionNumber = 2;
+        let nextOptionName;
+        do {
+            nextOptionName = this._localization.format(`${Properties.module.id}.typeNames.recipe.resultOption.name`, { number: nextOptionNumber });
             nextOptionNumber++;
         } while (existingNames.includes(nextOptionName));
         return nextOptionName;
