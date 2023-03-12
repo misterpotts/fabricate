@@ -1,38 +1,44 @@
 import {ComponentSelectionStrategy} from "./ComponentSelectionStrategy";
-import {Recipe} from "../../common/Recipe";
+import {IngredientOption} from "../../common/Recipe";
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
-import {ComponentSelection} from "../../component/ComponentSelection";
-import {IncompleteComponentSelection} from "../../component/IncompleteComponentSelection";
+import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
 import {EssenceSelection} from "../../actor/EssenceSelection";
-import {CompleteComponentSelection} from "../../component/CompleteComponentSelection";
+import {TrackedCombination} from "../../common/TrackedCombination";
+import {Essence} from "../../common/Essence";
 
 class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
-    perform(recipe: Recipe, availableComponents: Combination<CraftingComponent>): ComponentSelection {
+    perform(ingredientOption: IngredientOption, requiredEssences: Combination<Essence>, availableComponents: Combination<CraftingComponent>): ComponentSelection {
 
-        const selectedIngredients = recipe.getSelectedIngredients();
-        const namedComponents = selectedIngredients.catalysts.combineWith(selectedIngredients.ingredients);
-        const namedComponentsSatisfied = namedComponents.isIn(availableComponents);
+        const catalysts = new TrackedCombination({
+            target: ingredientOption.catalysts,
+            actual: availableComponents
+        });
 
-        if (!namedComponentsSatisfied) {
-            return new IncompleteComponentSelection();
-        }
+        const componentsForIngredients = availableComponents.subtract(ingredientOption.catalysts);
 
-        const remainingComponents: Combination<CraftingComponent> = availableComponents.subtract(namedComponents);
-        const availableEssences = remainingComponents.explode(component => component.essences);
-        const essencesSatisfied = recipe.essences.isIn(availableEssences);
-        if (!essencesSatisfied) {
-            return new IncompleteComponentSelection();
-        }
+        const ingredients = new TrackedCombination({
+            target: ingredientOption.ingredients,
+            actual: componentsForIngredients
+        });
 
-        const essenceSelection = new EssenceSelection(recipe.essences);
-        const essenceContribution: Combination<CraftingComponent> = essenceSelection.perform(remainingComponents);
+        const componentsForEssences = componentsForIngredients.subtract(ingredientOption.ingredients);
+        const availableEssences = componentsForEssences.explode(component => component.essences);
 
-        const selectedComponents = selectedIngredients.ingredients.combineWith(essenceContribution);
+        const essences = new TrackedCombination({
+            target: requiredEssences,
+            actual: availableEssences
+        });
 
-        return new CompleteComponentSelection({
-            components: selectedComponents
+        const essenceSelection = new EssenceSelection(requiredEssences);
+        const essenceSources: Combination<CraftingComponent> = essenceSelection.perform(componentsForEssences);
+
+        return new DefaultComponentSelection({
+            catalysts,
+            ingredients,
+            essences,
+            essenceSources
         });
 
     }

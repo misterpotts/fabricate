@@ -36,8 +36,7 @@ class CraftingSystemFactory {
                 recipe: new NoCraftingCheck() // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI
             },
             craftingAttemptFactory: new CraftingAttemptFactory({
-                selectionStrategy: new DefaultComponentSelectionStrategy(),
-                wastageType: WastageType["PUNITIVE"] // todo: move this to the checks, not the attempts
+                selectionStrategy: new DefaultComponentSelectionStrategy()
             }),
             alchemyAttemptFactory: new DisabledAlchemyAttemptFactory() // todo: implement user-defined, system-agnostic, flexible macro-based alchemy in the UI
         });

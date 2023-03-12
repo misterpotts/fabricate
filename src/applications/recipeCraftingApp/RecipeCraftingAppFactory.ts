@@ -1,28 +1,27 @@
 import {SvelteApplication} from "../SvelteApplication";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
 import {GameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
-import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
-import {Combination} from "../../scripts/common/Combination";
 import {DefaultLocalizationService} from "../common/LocalizationService";
+import RecipeCraftingApp from "./RecipeCraftingApp.svelte";
+import {Recipe} from "../../scripts/common/Recipe";
 import {DefaultInventoryFactory} from "../../scripts/actor/InventoryFactory";
 
-interface ComponentSalvageAppFactory {
+interface RecipeCraftingAppFactory {
 
-    make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor, appId: string): SvelteApplication;
+    make(recipe: Recipe, craftingSystem: CraftingSystem, actor: Actor, appId: string): SvelteApplication;
 
 }
 
-class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
+class DefaultComponentSalvageAppFactory implements RecipeCraftingAppFactory {
 
-    make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
+    make(recipe: Recipe, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
 
         const gameProvider = new GameProvider();
         const GAME = gameProvider.globalGameObject();
 
         const applicationOptions = {
-            title: GAME.i18n.format(`${Properties.module.id}.ComponentSalvageApp.title`, { actorName: actor.name }),
+            title: GAME.i18n.format(`${Properties.module.id}.RecipeCraftingApp.title`, { actorName: actor.name }),
             id: appId,
             resizable: false,
             width: 540,
@@ -36,10 +35,10 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
             svelteConfig: {
                 options: {
                     props: {
-                        craftingComponent,
+                        recipe,
+                        craftingSystem,
                         inventory,
                         localization: new DefaultLocalizationService(gameProvider),
-                        ownedComponentsOfType: Combination.EMPTY(),
                         closeHook: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
                                 .find(w => w.id == appId);
@@ -47,11 +46,11 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                         }
                     }
                 },
-                componentType: ComponentSalvageApp
+                componentType: RecipeCraftingApp
             }
         });
     }
 
 }
 
-export { ComponentSalvageAppFactory, DefaultComponentSalvageAppFactory }
+export { RecipeCraftingAppFactory, DefaultComponentSalvageAppFactory }

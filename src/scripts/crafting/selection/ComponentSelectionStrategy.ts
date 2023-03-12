@@ -1,11 +1,12 @@
-import {Recipe} from "../../common/Recipe";
+import {IngredientOption} from "../../common/Recipe";
 import {Combination} from "../../common/Combination";
 import {ComponentSelection} from "../../component/ComponentSelection";
 import {CraftingComponent} from "../../common/CraftingComponent";
+import {Essence} from "../../common/Essence";
 
 interface ComponentSelectionStrategy {
 
-    perform(recipe: Recipe, availableComponents: Combination<CraftingComponent>): ComponentSelection;
+    perform(ingredientOption: IngredientOption, requiredEssences: Combination<Essence>, availableComponents: Combination<CraftingComponent>): ComponentSelection;
 
 }
 

@@ -3,51 +3,33 @@ import {CraftingComponent} from "../../common/CraftingComponent";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
 import {Recipe} from "../../common/Recipe";
 import {
-    AbandonedCraftingAttempt,
-    CraftingAttempt,
-    GenerousCraftingAttempt,
-    WastefulCraftingAttempt
+    CraftingAttempt
 } from "./CraftingAttempt";
-import {ComponentSelection} from "../../component/ComponentSelection";
-import {WastageType} from "../../common/ComponentConsumptionCalculator";
-
-interface CraftingAttemptFactoryConfig {
-    selectionStrategy: ComponentSelectionStrategy;
-    wastageType: WastageType;
-}
 
 class CraftingAttemptFactory {
 
     private readonly _selectionStrategy: ComponentSelectionStrategy;
-    private readonly _wastageType: WastageType;
 
-    constructor(config: CraftingAttemptFactoryConfig) {
-        this._selectionStrategy = config.selectionStrategy;
-        this._wastageType = config.wastageType;
+    constructor({
+        selectionStrategy
+    }: {
+        selectionStrategy: ComponentSelectionStrategy;
+    }) {
+        this._selectionStrategy = selectionStrategy;
     }
 
     make(availableComponents: Combination<CraftingComponent>, recipe: Recipe): CraftingAttempt {
-        const componentSelection: ComponentSelection = this._selectionStrategy.perform(recipe, availableComponents);
-        if (!componentSelection.isSufficient()) {
-            return new AbandonedCraftingAttempt({
-                recipe: recipe
+        const options = recipe.ingredientOptions
+            .map(ingredientOption => {
+                return {
+                    selectedComponents: this._selectionStrategy.perform(ingredientOption, recipe.essences, availableComponents),
+                    ingredientOption
+                }
             });
-        }
-        switch (this._wastageType) {
-            case WastageType.PUNITIVE:
-                return new WastefulCraftingAttempt({
-                    recipe: recipe,
-                    components: componentSelection.components
-                });
-            case WastageType.NON_PUNITIVE:
-                return new GenerousCraftingAttempt({
-                    recipe: recipe,
-                    components: componentSelection.components
-                });
-        }
-
+        // todo: build a crafting attempt
+        return undefined;
     }
 
 }
 
-export {CraftingAttemptFactory, CraftingAttemptFactoryConfig}
+export { CraftingAttemptFactory }

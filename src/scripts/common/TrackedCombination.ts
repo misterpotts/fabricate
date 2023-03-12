@@ -99,7 +99,6 @@ class TrackedCombination<T extends Identifiable> {
         return this._actual.amountFor(id);
     }
 
-
 }
 
 export { TrackedCombination, TrackedUnit }
