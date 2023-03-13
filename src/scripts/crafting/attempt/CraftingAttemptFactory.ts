@@ -22,7 +22,11 @@ class CraftingAttemptFactory {
 
     make(availableComponents: Combination<CraftingComponent>, essences: Combination<Essence>, ingredientOption: IngredientOption): CraftingAttempt {
         const componentSelection = this._selectionStrategy.perform(ingredientOption, essences, availableComponents);
-        return new DefaultCraftingAttempt({componentSelection, ingredientOptionName: ingredientOption.name, possible: componentSelection.isSufficient});
+        return new DefaultCraftingAttempt({
+            componentSelection,
+            ingredientOptionName: ingredientOption.name,
+            possible: componentSelection.isSufficient
+        });
     }
 
 }

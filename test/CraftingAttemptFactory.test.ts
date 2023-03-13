@@ -5,8 +5,13 @@ import {Combination, Unit} from "../src/scripts/common/Combination";
 import {testRecipeFive, testRecipeFour} from "./test_data/TestRecipes";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {TrackedUnit} from "../src/scripts/common/TrackedCombination";
-import {elementalFire, elementalWater} from "./test_data/TestEssences";
-import {testComponentFour, testComponentOne, testComponentSix} from "./test_data/TestCraftingComponents";
+import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
+import {
+    testComponentFour,
+    testComponentOne,
+    testComponentSix, testComponentThree,
+    testComponentTwo
+} from "./test_data/TestCraftingComponents";
 
 describe("Create a Crafting Attempt", () => {
 
@@ -79,18 +84,62 @@ describe("Create a Crafting Attempt", () => {
 
             expect(result.requiresEssences).toEqual(true);
             expect(result.essenceAmounts.isSufficient).toEqual(true);
+            expect(result.essenceAmounts.isEmpty).toEqual(false);
+            expect(result.essenceAmounts.deficit).toEqual(0);
+            expect(result.essenceAmounts.units)
+                .toEqual(expect.arrayContaining(
+                        [
+                            new TrackedUnit({
+                                target: new Unit(elementalEarth, 1),
+                                actual: new Unit(elementalEarth, 2)
+                            }),
+                            new TrackedUnit({
+                                target: new Unit(elementalWater, 2),
+                                actual: new Unit(elementalWater, 2)
+                            })
+                        ]
+                    )
+                );
+            expect(result.essenceSources.units)
+                .toEqual(expect.arrayContaining(
+                        [
+                            new Unit(testComponentOne, 1),
+                            new Unit(testComponentSix, 2),
+                        ]
+                    )
+                );
+
+            expect(result.requiresIngredients).toEqual(true);
+            expect(result.ingredientAmounts.isSufficient).toEqual(true);
+            expect(result.ingredientAmounts.isEmpty).toEqual(false);
+            expect(result.ingredientAmounts.deficit).toEqual(0);
+            expect(result.ingredientAmounts.units)
+                .toEqual(expect.arrayContaining(
+                        [
+                            new TrackedUnit({
+                                target: new Unit(testComponentTwo, 3),
+                                actual: new Unit(testComponentTwo, 3)
+                            })
+                        ]
+                    )
+                );
+
+            expect(result.requiresCatalysts).toEqual(true);
+            expect(result.catalystAmounts.isSufficient).toEqual(true);
+            expect(result.catalystAmounts.isEmpty).toEqual(false);
+            expect(result.catalystAmounts.deficit).toEqual(0);
+            expect(result.catalystAmounts.units)
+                .toEqual(expect.arrayContaining(
+                        [
+                            new TrackedUnit({
+                                target: new Unit(testComponentThree, 1),
+                                actual: new Unit(testComponentThree, 1)
+                            })
+                        ]
+                    )
+                );
 
         });
-
-    });
-
-    describe("for a Recipe with many ingredient options", () => {
-
-        test("with one option that can be crafted", () => {});
-
-        test("with no options that can be crafted", () => {});
-
-        test("with all options able to be crafted", () => {});
 
     });
 

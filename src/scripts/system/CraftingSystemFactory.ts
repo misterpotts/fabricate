@@ -1,6 +1,5 @@
 import {CraftingSystem, CraftingSystemJson} from "./CraftingSystem";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
-import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
 import {PartDictionaryFactory} from "./PartDictionary";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";

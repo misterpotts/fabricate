@@ -63,7 +63,7 @@ class TrackedCombination<T extends Identifiable> {
     }
 
     get deficit(): number {
-        return this._target.size - this._actual.size;
+        return Math.max(0, this._target.size - this._actual.size);
     }
 
     get target(): Combination<T> {
@@ -88,7 +88,7 @@ class TrackedCombination<T extends Identifiable> {
         }
         return this.units
             .map(unit => unit.isSufficient)
-            .reduce((left, right) => left && right, false);
+            .reduce((left, right) => left && right, true);
     }
 
     amountRequiredFor(id: string) {
