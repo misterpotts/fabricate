@@ -7,7 +7,6 @@ import {
     DefaultCraftingAttempt
 } from "./CraftingAttempt";
 import {Essence} from "../../common/Essence";
-
 class CraftingAttemptFactory {
 
     private readonly _selectionStrategy: ComponentSelectionStrategy;

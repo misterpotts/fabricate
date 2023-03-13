@@ -13,7 +13,7 @@ interface RecipeCraftingAppFactory {
 
 }
 
-class DefaultComponentSalvageAppFactory implements RecipeCraftingAppFactory {
+class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
 
     make(recipe: Recipe, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
 
@@ -53,4 +53,4 @@ class DefaultComponentSalvageAppFactory implements RecipeCraftingAppFactory {
 
 }
 
-export { RecipeCraftingAppFactory, DefaultComponentSalvageAppFactory }
+export { RecipeCraftingAppFactory, DefaultRecipeCraftingAppFactory }

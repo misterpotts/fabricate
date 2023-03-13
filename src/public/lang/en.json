@@ -65,6 +65,25 @@
         }
       }
     },
+    "RecipeCraftingApp": {
+      "title": "Fabricate | Recipe Crafting | {actorName}",
+      "header": {
+        "buttons": {
+          "craft": "Craft"
+        }
+      },
+      "errors": {
+      },
+      "hints": {
+        "doCrafting": "Crafting this recipe will remove any consumed ingredients from your inventory and add the recipe results. "
+      },
+      "dialog": {
+        "doCrafting": {
+          "title": "Craft Recipe?",
+          "content": "Crafting {recipeName} remove any consumed ingredients from your inventory and add the recipe results. "
+        }
+      }
+    },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",
       "tabs": {

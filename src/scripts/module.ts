@@ -16,6 +16,8 @@ import {DefaultComponentSalvageAppCatalog} from "../applications/componentSalvag
 import {DefaultComponentSalvageAppFactory} from "../applications/componentSalvageApp/ComponentSalvageAppFactory";
 import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
 import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
+import {DefaultRecipeCraftingAppCatalog} from "../applications/recipeCraftingApp/RecipeCraftingAppCatalog";
+import {DefaultRecipeCraftingAppFactory} from "../applications/recipeCraftingApp/RecipeCraftingAppFactory";
 
 Hooks.on("deleteItem", async (item: any) => {
 
@@ -63,7 +65,10 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
                         label: "Craft",
                         tooltip: craftingSystem.name,
                         icon: "fa-solid fa-screwdriver-wrench",
-                        onclick: () => { console.log(`Clicked craft Recipe ${recipe.name}`); }
+                        onclick: async () => {
+                            const app = await FabricateApplication.recipeCraftingAppCatalog.load(recipe, craftingSystem, document.actor);
+                            app.render(true);
+                        }
                     });
                 }
             }
@@ -190,6 +195,11 @@ Hooks.once('ready', async () => {
 
     FabricateApplication.componentSalvageAppCatalog = new DefaultComponentSalvageAppCatalog({
         componentSalvageAppFactory: new DefaultComponentSalvageAppFactory(),
+        systemRegistry
+    });
+
+    FabricateApplication.recipeCraftingAppCatalog = new DefaultRecipeCraftingAppCatalog({
+        recipeCraftingAppFactory: new DefaultRecipeCraftingAppFactory(),
         systemRegistry
     });
 
