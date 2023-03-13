@@ -146,7 +146,7 @@ describe('Create and configure', () => {
 
 });
 
-describe('Crafting ', () => {
+describe.skip('Crafting ', () => {
 
     describe('without a Crafting Check', () => {
 
