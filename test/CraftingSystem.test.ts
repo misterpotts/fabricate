@@ -16,7 +16,6 @@ import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
 import {GameSystemRollModifierProvider} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {testPartDictionary} from "./test_data/TestPartDictionary";
 import {CraftingAttemptFactory} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
-import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/DefaultComponentSelectionStrategy";
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {
     NoCraftingResult,
@@ -27,6 +26,7 @@ import {ComponentConsumptionCalculatorFactory, WastageType} from "../src/scripts
 import {DefaultAlchemyAttemptFactory} from "../src/scripts/crafting/alchemy/AlchemyAttemptFactory";
 import {AlchemicalCombiner5e} from "../src/scripts/5e/AlchemicalEffect5E";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
+import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -44,8 +44,7 @@ const stubRollTermProvider: GameSystemRollModifierProvider<Actor> = <GameSystemR
 const stubActor: Actor = <Actor><unknown>{};
 
 const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
-    selectionStrategy: new DefaultComponentSelectionStrategy(),
-    wastageType: WastageType.PUNITIVE
+    selectionStrategy: new DefaultComponentSelectionStrategy()
 });
 
 const stubInventory: Inventory = <Inventory><unknown>{

@@ -1,12 +1,12 @@
 import {CraftingSystem, CraftingSystemJson} from "./CraftingSystem";
 import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
-import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
 import {WastageType} from "../common/ComponentConsumptionCalculator";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
 import {PartDictionaryFactory} from "./PartDictionary";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
+import {DefaultComponentSelectionStrategy} from "../crafting/selection/ComponentSelectionStrategy";
 
 class CraftingSystemFactory {
 

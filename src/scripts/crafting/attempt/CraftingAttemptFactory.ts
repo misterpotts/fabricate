@@ -1,10 +1,12 @@
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
-import {Recipe} from "../../common/Recipe";
+import {IngredientOption} from "../../common/Recipe";
 import {
-    CraftingAttempt
+    CraftingAttempt,
+    DefaultCraftingAttempt
 } from "./CraftingAttempt";
+import {Essence} from "../../common/Essence";
 
 class CraftingAttemptFactory {
 
@@ -18,16 +20,9 @@ class CraftingAttemptFactory {
         this._selectionStrategy = selectionStrategy;
     }
 
-    make(availableComponents: Combination<CraftingComponent>, recipe: Recipe): CraftingAttempt {
-        const options = recipe.ingredientOptions
-            .map(ingredientOption => {
-                return {
-                    selectedComponents: this._selectionStrategy.perform(ingredientOption, recipe.essences, availableComponents),
-                    ingredientOption
-                }
-            });
-        // todo: build a crafting attempt
-        return undefined;
+    make(availableComponents: Combination<CraftingComponent>, essences: Combination<Essence>, ingredientOption: IngredientOption): CraftingAttempt {
+        const componentSelection = this._selectionStrategy.perform(ingredientOption, essences, availableComponents);
+        return new DefaultCraftingAttempt({componentSelection, ingredientOptionName: ingredientOption.name, possible: componentSelection.isSufficient});
     }
 
 }

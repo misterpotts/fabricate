@@ -83,7 +83,7 @@ class TrackedCombination<T extends Identifiable> {
     }
 
     public get isSufficient(): boolean {
-        if (this._target === Combination.EMPTY()) {
+        if (this._target.isEmpty()) {
             return true;
         }
         return this.units

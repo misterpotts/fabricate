@@ -5,7 +5,7 @@ import {Combination} from "../common/Combination";
 
 interface ComponentSelection {
 
-    isSufficient(): boolean;
+    isSufficient: boolean;
     catalysts: TrackedCombination<CraftingComponent>;
     ingredients: TrackedCombination<CraftingComponent>;
     essences: TrackedCombination<Essence>;
@@ -37,7 +37,7 @@ class DefaultComponentSelection implements ComponentSelection {
         this._essenceSources = essenceSources;
     }
 
-    isSufficient(): boolean {
+    get isSufficient(): boolean {
         return this._catalysts.isSufficient && this._essences.isSufficient && this._ingredients.isSufficient;
     }
 
