@@ -219,6 +219,24 @@ BEGIN FABRICATE THEME STYLES
     }
   }
 
+  .fab-essence-grid {
+    .fab-essence-amount {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--color-background-dark-3);
+      padding: 4px 8px;
+      border-radius: 5px;
+      i {
+        margin: 0 10px;
+      }
+      &.fab-insufficient {
+        color: var(--color-error-text);
+        background: var(--color-error-bg);
+      }
+    }
+  }
+
   .fab-component-grid, .fab-recipe-grid {
     .fab-component, .fab-recipe {
       .fab-component-info, .fab-recipe-info {
@@ -534,7 +552,7 @@ BEGIN COMMON STRUCTURAL STYLES
   }
 }
 
-.fab-component-grid, .fab-recipe-grid {
+.fab-component-grid, .fab-recipe-grid, .fab-essence-grid {
   display: grid;
   column-gap: 1em;
   row-gap: 1em;
@@ -1240,6 +1258,9 @@ END COMMON STRUCTURAL STYLES
   }
   .fab-recipe-crafting-hint {
     margin: 1em;
+  }
+  .fab-component-grid-carousel-item {
+    padding-bottom: 10px;
   }
 }
 

@@ -131,19 +131,22 @@
                 <p class="fab-recipe-crafting-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}</p>
                 <div class="fab-recipe-crafting-ingredients">
                     {#if recipe.hasIngredientOptions}
-                        <CraftingAttemptCarousel columns={3} craftingAttempts={craftingAttempts} bind:selectedOptionName={selectedIngredientOptionName} />
+                        <CraftingAttemptCarousel columns={3} craftingAttempts={craftingAttempts} recipe={recipe} bind:selectedOptionName={selectedIngredientOptionName} />
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <CraftingAttemptGrid
                                     columns={3}
                                     ingredients={craftingAttempts[0].ingredientAmounts}
-                                    catalysts={craftingAttempts[0].catalystAmounts} />
+                                    catalysts={craftingAttempts[0].catalystAmounts}
+                                    essences={craftingAttempts[0].essenceAmounts} />
                         </div>
                     {/if}
                 </div>
                 <div class="fab-recipe-crafting-results">
                     {#if recipe.hasResultOptions}
-                        <CraftingResultCarousel columns={3} recipe={recipe} bind:selectedOptionName={selectedResultOptionName} />
+                        <CraftingResultCarousel columns={3} recipe={recipe} bind:selectedOptionName={selectedResultOptionName}>
+                            <h3 slot="description">{localization.localize(`${Properties.module.id}.typeNames.result.plural`)}</h3>
+                        </CraftingResultCarousel>
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <h3>Results</h3>

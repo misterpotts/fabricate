@@ -18,7 +18,7 @@
 </script>
 
 {#if !ingredients.isEmpty}
-    <h3>Ingredients</h3>
+    <h3>{localization.localize(`${Properties.module.id}.typeNames.ingredient.plural`)}</h3>
     <div class="fab-component-grid fab-grid-{columns}">
         {#each ingredients.units as unit}
             <div class="fab-component">
@@ -38,7 +38,7 @@
     </div>
 {/if}
 {#if !catalysts.isEmpty}
-    <h3>Catalysts</h3>
+    <h3>{localization.localize(`${Properties.module.id}.typeNames.catalyst.plural`)}</h3>
     <div class="fab-component-grid fab-grid-{columns}">
         {#each catalysts.units as unit}
             <div class="fab-component">
@@ -52,6 +52,26 @@
                 </div>
                 <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
                     <p>{`${unit.actual.quantity} / ${unit.target.quantity}`}</p>
+                </div>
+            </div>
+        {/each}
+    </div>
+{/if}
+{#if !essences.isEmpty}
+    <h3>{localization.localize(`${Properties.module.id}.typeNames.essence.plural`)}</h3>
+    <div class="fab-essence-grid fab-grid-{2}">
+        {#each essences.units as unit}
+            <div class="fab-essence">
+                <div class="fab-essence-amount" class:fab-insufficient={!unit.isSufficient}>
+                    <span class="fab-essence-quantity">
+                        {unit.actual.quantity} / {unit.target.quantity}
+                    </span>
+                    <span class="fab-essence-icon">
+                        <i class="{unit.target.part.iconCode}"></i>
+                    </span>
+                    <span class="fab-essence-name">
+                        {unit.target.part.name}
+                    </span>
                 </div>
             </div>
         {/each}

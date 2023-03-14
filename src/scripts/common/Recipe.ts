@@ -304,6 +304,44 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._resultOptions.select(combinationId);
     }
 
+    get selectedIngredientOptionName(): string {
+        return this._ingredientOptions.selectedOptionId;
+    }
+
+    public selectNextIngredientOption(): void {
+        this._ingredientOptions.selectNext();
+    }
+
+    public selectPreviousIngredientOption(): void {
+        this._ingredientOptions.selectPrevious();
+    }
+
+    get selectedResultOptionName(): string {
+        return this._resultOptions.selectedOptionId;
+    }
+
+    public selectNextResultOption(): void {
+        this._resultOptions.selectNext();
+    }
+
+    public selectPreviousResultOption(): void {
+        this._resultOptions.selectPrevious();
+    }
+
+    get firstIngredientOptionName(): string {
+        if (this._ingredientOptions.isEmpty) {
+            return "";
+        }
+        return this.ingredientOptions[0].name;
+    }
+
+    get firstResultOptionName(): string {
+        if (this._resultOptions.isEmpty) {
+            return "";
+        }
+        return this.resultOptions[0].name;
+    }
+
     set ingredientOptions(options: IngredientOption[]) {
         this._ingredientOptions = new SelectableOptions<IngredientOptionJson, IngredientOption>({
             options

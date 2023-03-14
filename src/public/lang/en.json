@@ -22,6 +22,18 @@
           "name": "Option {number}"
         }
       },
+      "catalyst": {
+        "singular": "Catalyst",
+        "plural": "Catalysts"
+      },
+      "ingredient": {
+        "singular": "Ingredient",
+        "plural": "Ingredients"
+      },
+      "result": {
+        "singular": "Result",
+        "plural": "Results"
+      },
       "essence": {
         "singular": "Essence",
         "plural": "Essences"
@@ -39,8 +51,14 @@
     },
     "CraftingResultCarousel": {
       "buttons": {
-        "next": "Next option",
-        "previous": "Previous option"
+        "next": "Next",
+        "previous": "Previous"
+      }
+    },
+    "CraftingAttemptCarousel": {
+      "buttons": {
+        "next": "Next",
+        "previous": "Previous"
       }
     },
     "DropEventParser": {
