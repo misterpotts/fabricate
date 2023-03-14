@@ -25,7 +25,7 @@ describe("Create a Crafting Attempt", () => {
 
             const availableComponents = Combination.EMPTY<CraftingComponent>();
 
-            const result = underTest.make(availableComponents, testRecipeFive.essences, testRecipeFive.getSelectedIngredients());
+            const result = underTest.make(testRecipeFive.getSelectedIngredients(), testRecipeFive.essences, availableComponents);
 
             expect(result.isPossible).toEqual(false);
 
@@ -78,7 +78,7 @@ describe("Create a Crafting Attempt", () => {
                     new Unit(testComponentSix, 2)
                 ]));
 
-            const result = underTest.make(availableComponents, testRecipeFour.essences, testRecipeFour.getSelectedIngredients());
+            const result = underTest.make(testRecipeFour.getSelectedIngredients(), testRecipeFour.essences, availableComponents);
 
             expect(result.isPossible).toEqual(true);
 

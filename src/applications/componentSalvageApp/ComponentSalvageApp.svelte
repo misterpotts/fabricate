@@ -4,7 +4,7 @@
     import { setContext } from 'svelte';
     import { onMount } from "svelte";
     import SalvageHeader from "./SalvageHeader.svelte";
-    import CraftingComponentGrid from "../common/CratingComponentGrid.svelte";
+    import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
     import eventBus from "../common/EventBus";
     import { localizationKey } from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";

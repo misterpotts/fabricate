@@ -26,7 +26,8 @@ BEGIN CSS VARIABLES
   --color-btn-darkbg-active: #decfee;
   --color-btn-ctx-menu-inactive: #86725b;
   --color-btn-ctx-menu-active: #b29a7e;
-  --error: #8c353a;
+  --color-error-bg: #8c353a;
+  --color-error-text: #ea858a;
 }
 
 /*
@@ -142,7 +143,7 @@ BEGIN FABRICATE THEME STYLES
       .fab-button {
         cursor: pointer;
         i.fa-circle-exclamation {
-          color: var(--error);
+          color: var(--color-error-bg);
           &::after {
             border-radius: 50%;
             content: "";
@@ -227,15 +228,17 @@ BEGIN FABRICATE THEME STYLES
       background: var(--color-background-dark-3);
       &.fab-error {
         .fab-component-name {
-          color: var(--error);
+          color: var(--color-error-bg);
         }
       }
-      .fab-component-name, .fab-recipe-name {
-        position: relative;
-        z-index: 1;
+      .fab-component-requirements.fab-insufficient {
+        color: var(--color-error-text);
+        background: var(--color-error-bg);
+      }
+      .fab-component-name, .fab-recipe-name, .fab-component-requirements {
         background: var(--color-background-dark-5);
         i.fa-circle-exclamation {
-          color: var(--error);
+          color: var(--color-error-bg);
           position: absolute;
           top: 1px;
           font-size: var(--font-size-20);
@@ -292,7 +295,7 @@ BEGIN FABRICATE THEME STYLES
 
   .fab-error {
     h2 {
-      color: var(--error);
+      color: var(--color-error-bg);
     }
   }
 
@@ -314,6 +317,18 @@ BEGIN FABRICATE THEME STYLES
     border-bottom: 1px solid var(--color-background-dark-2);
     background: var(--color-background-dark-5);
     button.fab-component-salvage-btn {
+      background: var(--color-border-light-1) !important;
+      color: var(--color-text-light-heading) !important;
+      &:hover {
+        color: var(--color-text-light-heading-active) !important;
+      }
+    }
+  }
+
+  .fab-recipe-crafting-header {
+    border-bottom: 1px solid var(--color-background-dark-2);
+    background: var(--color-background-dark-5);
+    button.fab-recipe-crafting-btn{
       background: var(--color-border-light-1) !important;
       color: var(--color-text-light-heading) !important;
       &:hover {
@@ -544,7 +559,7 @@ BEGIN COMMON STRUCTURAL STYLES
         text-decoration: line-through;
       }
     }
-    .fab-component-name, .fab-recipe-name {
+    .fab-component-name, .fab-recipe-name, .fab-component-requirements {
       width: 100%;
       display: flex;
       align-items: center;
@@ -1195,6 +1210,51 @@ END COMMON STRUCTURAL STYLES
     margin-right: 1em;
   }
   button.fab-component-salvage-btn {
+    flex: 0;
+    justify-self: flex-end;
+  }
+}
+
+.fab-recipe-crafting-app {
+  width: 100%;
+  .fab-recipe-crafting-app-body {
+    .fab-recipe-crafting-hint {
+      grid-column: 1/3;
+      grid-row: 1/2;
+    }
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    column-gap: 1em;
+    row-gap: 1em;
+    .fab-recipe-crafting-ingredients, .fab-recipe-crafting-results {
+      grid-row: 2/7;
+    }
+    .fab-component-grid {
+      margin-bottom: 18px;
+    }
+    h3 {
+      margin-bottom: 12px;
+    }
+  }
+  .fab-recipe-crafting-hint {
+    margin: 1em;
+  }
+}
+
+.fab-recipe-crafting-header {
+  padding: 1em;
+  h2 {
+    margin: 0;
+    flex: 1;
+  }
+  img {
+    width: 64px;
+    height: 64px;
+    margin-right: 1em;
+  }
+  button.fab-recipe-crafting-btn {
     flex: 0;
     justify-self: flex-end;
   }

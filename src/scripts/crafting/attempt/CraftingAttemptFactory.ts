@@ -19,7 +19,7 @@ class CraftingAttemptFactory {
         this._selectionStrategy = selectionStrategy;
     }
 
-    make(availableComponents: Combination<CraftingComponent>, essences: Combination<Essence>, ingredientOption: IngredientOption): CraftingAttempt {
+    make(ingredientOption: IngredientOption, essences: Combination<Essence>, availableComponents: Combination<CraftingComponent>): CraftingAttempt {
         const componentSelection = this._selectionStrategy.perform(ingredientOption, essences, availableComponents);
         return new DefaultCraftingAttempt({
             componentSelection,

@@ -1,15 +1,16 @@
 <!-- RecipeCraftingApp.svelte-->
 <script lang="ts">
-    import { setContext } from 'svelte';
-    import { onMount } from "svelte";
+    import {onMount, setContext} from 'svelte';
     import eventBus from "../common/EventBus";
-    import { localizationKey } from "../common/LocalizationService";
+    import {localizationKey} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
     import CraftingHeader from "./CraftingHeader.svelte";
     import CraftingAttemptCarousel from "./CraftingAttemptCarousel.svelte";
     import CraftingAttemptGrid from "./CraftingAttemptGrid.svelte";
     import CraftingResultCarousel from "./CraftingResultCarousel.svelte";
     import {CraftingAttemptFactory} from "../../scripts/crafting/attempt/CraftingAttemptFactory";
+    import {DefaultComponentSelectionStrategy} from "../../scripts/crafting/selection/ComponentSelectionStrategy";
+    import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
 
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
@@ -19,7 +20,8 @@
     export let localization;
     export let closeHook;
 
-    let craftingAttempt;
+    const craftingAttemptFactory = new CraftingAttemptFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
+    let craftingAttempts = [];
 
     let selectedIngredientOptionName;
     let selectedResultOptionName;
@@ -107,9 +109,11 @@
         await reIndex();
     }
 
+    let loaded = false;
     async function reIndex() {
         await inventory.index();
-        craftingAttempt = new CraftingAttemptFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
+        craftingAttempts = recipe.ingredientOptions.map(option => craftingAttemptFactory.make(option, recipe.essences, inventory.ownedComponents));
+        loaded = true;
     }
 
 </script>
@@ -121,32 +125,33 @@
      on:itemCreated={(e) => handleItemCreated(e)}
      on:itemDeleted={(e) => handleItemDeleted(e)}>
     <div class="fab-column" style="height: 100%">
-        <CraftingHeader recipe={recipe} on:salvageComponent={(e) => doCraftRecipe(e)} />
-        <div class="fab-recipe-crafting-app-body fab-scrollable">
-            <div class="fab-recipe-crafting-ingredients">
-                {#if recipe.hasIngredientOptions}
-                    <CraftingAttemptCarousel columns={3} caftingAttempt={craftingAttempt} bind:selectedOptionName={selectedIngredientOptionName}>
-                        <p slot="description" class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}:</p>
-                    </CraftingAttemptCarousel>
-                {:else}
-                    <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}:</p>
-                    <div class="fab-component-grid-wrapper">
-                        <CraftingAttemptGrid columns={3} caftingAttempt={craftingAttempt} />
-                    </div>
-                {/if}
+        <CraftingHeader recipe={recipe} on:craftRecipe={(e) => doCraftRecipe(e)} />
+        {#if loaded}
+            <div class="fab-recipe-crafting-app-body fab-scrollable">
+                <p class="fab-recipe-crafting-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}</p>
+                <div class="fab-recipe-crafting-ingredients">
+                    {#if recipe.hasIngredientOptions}
+                        <CraftingAttemptCarousel columns={3} craftingAttempts={craftingAttempts} bind:selectedOptionName={selectedIngredientOptionName} />
+                    {:else}
+                        <div class="fab-component-grid-wrapper">
+                            <CraftingAttemptGrid
+                                    columns={3}
+                                    ingredients={craftingAttempts[0].ingredientAmounts}
+                                    catalysts={craftingAttempts[0].catalystAmounts} />
+                        </div>
+                    {/if}
+                </div>
+                <div class="fab-recipe-crafting-results">
+                    {#if recipe.hasResultOptions}
+                        <CraftingResultCarousel columns={3} recipe={recipe} bind:selectedOptionName={selectedResultOptionName} />
+                    {:else}
+                        <div class="fab-component-grid-wrapper">
+                            <h3>Results</h3>
+                            <CraftingComponentGrid columns={3} componentCombination={recipe.getSelectedResults()} />
+                        </div>
+                    {/if}
+                </div>
             </div>
-            <div class="fab-recipe-crafting-results">
-                {#if recipe.hasResultOptions}
-                    <CraftingResultCarousel columns={3} recipe={recipe} bind:selectedOptionName={selectedResultOptionName}>
-                        <p slot="description" class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}:</p>
-                    </CraftingResultCarousel>
-                {:else}
-                    <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}:</p>
-                    <div class="fab-component-grid-wrapper">
-                        <CraftingAttemptGrid columns={3} caftingAttempt={craftingAttempt} />
-                    </div>
-                {/if}
-            </div>
-        </div>
+        {/if}
     </div>
 </div>

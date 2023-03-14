@@ -24,8 +24,8 @@ class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
             title: GAME.i18n.format(`${Properties.module.id}.RecipeCraftingApp.title`, { actorName: actor.name }),
             id: appId,
             resizable: false,
-            width: 540,
-            height: 514
+            width: 680,
+            height: 620
         }
 
         const inventory = new DefaultInventoryFactory(gameProvider).make(actor, craftingSystem);

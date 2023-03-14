@@ -1,6 +1,6 @@
 <!-- CraftingComponentCarousel.svelte -->
 <script lang="ts">
-    import CraftingComponentGrid from "./CratingComponentGrid.svelte"
+    import CraftingComponentGrid from "./CraftingComponentGrid.svelte"
     import {getContext} from "svelte";
     import {localizationKey} from "./LocalizationService";
     import Properties from "../../scripts/Properties";
