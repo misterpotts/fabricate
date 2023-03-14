@@ -230,7 +230,7 @@ describe("When selecting results", () => {
             })
         });
 
-        const selectedResults = underTest.getSelectedResults();
+        const selectedResults = underTest.getResultSelection().results;
         expect(selectedResults.size).toEqual(4);
         expect(selectedResults.amountFor(testComponentFive.id)).toEqual(3);
         expect(selectedResults.amountFor(testComponentOne.id)).toEqual(1);
@@ -270,7 +270,7 @@ describe("When selecting results", () => {
 
         expect(underTest.ready()).toEqual(false);
 
-        expect(underTest.getSelectedResults).toThrow(Error);
+        expect(underTest.getResultSelection).toThrow(Error);
 
     });
 
@@ -308,12 +308,12 @@ describe("When selecting results", () => {
 
         underTest.selectResultCombination(optionOneId);
         expect(underTest.ready()).toEqual(true);
-        let selectedResults = underTest.getSelectedResults();
+        let selectedResults = underTest.getResultSelection().results;
         expect(selectedResults).toEqual(resultCombinationOne);
 
         underTest.selectResultCombination(optionTwoId);
         expect(underTest.ready()).toEqual(true);
-        selectedResults = underTest.getSelectedResults();
+        selectedResults = underTest.getResultSelection().results;
         expect(selectedResults).toEqual(resultCombinationTwo);
 
         underTest.deselectResults();

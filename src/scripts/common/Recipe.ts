@@ -277,7 +277,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         throw new Error("You must select an ingredient group. ");
     }
 
-    public getSelectedResults(): ResultOption {
+    public getResultSelection(): ResultOption {
         if (this._resultOptions.isReady) {
             return this._resultOptions.selectedOption;
         }

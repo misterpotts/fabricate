@@ -16,7 +16,6 @@
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
     export let recipe;
-    export let craftingSystem;
     export let inventory;
     export let localization;
     export let closeHook;
@@ -78,7 +77,7 @@
         }
         const craftingResult = new DefaultCraftingResult({
             recipe,
-            created: recipe.getSelectedResults().results,
+            created: recipe.getResultSelection().results,
             consumed: craftingAttempt.consumedComponents
         });
         await inventory.acceptCraftingResult(craftingResult);
@@ -167,7 +166,7 @@
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <h3>Results</h3>
-                            <CraftingComponentGrid columns={3} componentCombination={recipe.getSelectedResults().results} />
+                            <CraftingComponentGrid columns={3} componentCombination={recipe.getResultSelection().results} />
                         </div>
                     {/if}
                 </div>
