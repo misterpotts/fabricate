@@ -12,6 +12,7 @@
     import {DefaultComponentSelectionStrategy} from "../../scripts/crafting/selection/ComponentSelectionStrategy";
     import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
     import {DefaultCraftingResult} from "../../scripts/crafting/result/CraftingResult";
+    import {IngredientOption} from "../../scripts/common/Recipe";
 
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
@@ -26,13 +27,13 @@
     let selectedIngredientOptionName;
     let selectedResultOptionName;
     function resetSelections() {
-        selectedIngredientOptionName = recipe.firstIngredientOptionName;
-        selectedResultOptionName = recipe.firstResultOptionName;
-        if (selectedIngredientOptionName) {
+        if (recipe.hasIngredients) {
+            selectedIngredientOptionName = recipe.firstIngredientOptionName;
             recipe.selectIngredientCombination(selectedIngredientOptionName);
         }
-        if (selectedResultOptionName) {
-            recipe.selectResultCombination(selectedIngredientOptionName);
+        if (recipe.hasResults) {
+            selectedResultOptionName = recipe.firstResultOptionName;
+            recipe.selectResultCombination(selectedResultOptionName);
         }
     }
     resetSelections();
@@ -64,7 +65,10 @@
     }
 
     async function craftRecipe(recipe) {
-        const craftingAttempt = craftingAttempts.find(craftingAttempt => craftingAttempt.ingredientOptionName === selectedIngredientOptionName);
+        let craftingAttempt = craftingAttempts.find(craftingAttempt => craftingAttempt.ingredientOptionName === selectedIngredientOptionName);
+        if (!craftingAttempt && craftingAttempts.length === 1) {
+            craftingAttempt = craftingAttempts[0];
+        }
         if (!craftingAttempt) {
             const message = localization.localize(`${localizationPath}.errors.noCraftingAttempt`);
             ui.notifications.error(message);
@@ -128,7 +132,11 @@
     let loaded = false;
     async function reIndex() {
         await inventory.index();
-        craftingAttempts = recipe.ingredientOptions.map(option => craftingAttemptFactory.make(option, recipe.essences, inventory.ownedComponents));
+        if (recipe.hasIngredients) {
+            craftingAttempts = recipe.ingredientOptions.map(option => craftingAttemptFactory.make(option, recipe.essences, inventory.ownedComponents));
+        } else {
+            craftingAttempts = [craftingAttemptFactory.make(new IngredientOption({name: "Not an option"}), recipe.essences, inventory.ownedComponents)];
+        }
         loaded = true;
     }
 
