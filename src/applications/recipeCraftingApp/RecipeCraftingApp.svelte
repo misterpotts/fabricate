@@ -69,6 +69,7 @@
         if (!craftingAttempt && craftingAttempts.length === 1) {
             craftingAttempt = craftingAttempts[0];
         }
+        // todo: fix the tacit expectation that there must be an ingredient option and move this to another class
         if (!craftingAttempt) {
             const message = localization.localize(`${localizationPath}.errors.noCraftingAttempt`);
             ui.notifications.error(message);
