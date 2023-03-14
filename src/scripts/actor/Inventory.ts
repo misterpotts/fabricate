@@ -172,20 +172,16 @@ class CraftingInventory implements Inventory {
     }
 
     async acceptCraftingResult(craftingResult: CraftingResult): Promise<any[]> {
-        const inventoryActions: InventoryActions = this.rationalise(craftingResult.created, craftingResult.consumed);
-        // todo: Can *potentially* optimise further by combining all update operations across both add and remove,
-        //  reducing total actions on the actor from 4 (ADD[CREATE, UPDATE], REMOVE[UPDATE, DELETE]) to 3
-        //  ([CREATE, UPDATE, DELETE])
-        const modifiedItemData: any[][] = await Promise.all([
-            this.addAll(inventoryActions.additions),
-            this.removeAll(inventoryActions.removals)
-        ]);
-        return modifiedItemData[0].concat(modifiedItemData[1]);
+        return this.acceptResult(craftingResult.created, craftingResult.consumed);
     }
 
     async acceptSalvageResult(salvageResult: SalvageResult): Promise<any[]> {
+        return this.acceptResult(salvageResult.created, salvageResult.consumed);
+    }
+
+    async acceptResult(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): Promise<any[]> {
         await this.index();
-        const inventoryActions: InventoryActions = this.rationalise(salvageResult.created, salvageResult.consumed);
+        const inventoryActions: InventoryActions = this.rationalise(created, consumed);
         const modifiedItemData: any[][] = await Promise.all([
             this.addAll(inventoryActions.additions),
             this.removeAll(inventoryActions.removals)

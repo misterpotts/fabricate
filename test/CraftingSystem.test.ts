@@ -19,7 +19,7 @@ import {CraftingAttemptFactory} from "../src/scripts/crafting/attempt/CraftingAt
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {
     NoCraftingResult,
-    SuccessfulCraftingResult,
+    DefaultCraftingResult,
     UnsuccessfulCraftingResult
 } from "../src/scripts/crafting/result/CraftingResult";
 import {ComponentConsumptionCalculatorFactory, WastageType} from "../src/scripts/common/ComponentConsumptionCalculator";
@@ -172,7 +172,7 @@ describe.skip('Crafting ', () => {
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeTwo);
 
             expect(craftingResult).not.toBeNull();
-            expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
+            expect(craftingResult instanceof DefaultCraftingResult).toEqual(true);
             expect(craftingResult.created.size).toEqual(2);
             expect(craftingResult.created.amountFor(testComponentTwo.id)).toEqual(2);
             expect(craftingResult.consumed.size).toEqual(1);
@@ -246,7 +246,7 @@ describe.skip('Crafting ', () => {
             const craftingResult = await underTest.craft(stubActor, stubInventory, testRecipeTwo);
 
             expect(craftingResult).not.toBeNull();
-            expect(craftingResult instanceof SuccessfulCraftingResult).toEqual(true);
+            expect(craftingResult instanceof DefaultCraftingResult).toEqual(true);
 
         });
 

@@ -97,6 +97,8 @@
         }
       },
       "errors": {
+        "noCraftingAttempt": "Unable to perform crafting. No crafting attempt was prepared for the recipe. This is likely to be a bug with Fabricate. ",
+        "notPossible": "You don't meet the requirements to craft {recipeName}"
       },
       "hints": {
         "doCrafting": "Crafting this recipe will remove any consumed ingredients from your inventory and add the recipe results. "

@@ -75,6 +75,11 @@ class DefaultCraftingAttempt implements CraftingAttempt {
         return !this._componentSelection.catalysts.isEmpty;
     }
 
+    get consumedComponents(): Combination<CraftingComponent> {
+        return this._componentSelection.essenceSources
+            .combineWith(this._componentSelection.ingredients.actual);
+    }
+
 }
 
 export {DefaultCraftingAttempt};

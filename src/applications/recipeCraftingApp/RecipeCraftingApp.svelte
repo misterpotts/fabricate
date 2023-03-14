@@ -11,6 +11,7 @@
     import {CraftingAttemptFactory} from "../../scripts/crafting/attempt/CraftingAttemptFactory";
     import {DefaultComponentSelectionStrategy} from "../../scripts/crafting/selection/ComponentSelectionStrategy";
     import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
+    import {DefaultCraftingResult} from "../../scripts/crafting/result/CraftingResult";
 
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
@@ -64,7 +65,23 @@
     }
 
     async function craftRecipe(recipe) {
-        throw new Error("Not implemented!");
+        const craftingAttempt = craftingAttempts.find(craftingAttempt => craftingAttempt.ingredientOptionName === selectedIngredientOptionName);
+        if (!craftingAttempt) {
+            const message = localization.localize(`${localizationPath}.errors.noCraftingAttempt`);
+            ui.notifications.error(message);
+            return;
+        }
+        if (!craftingAttempt.isPossible) {
+            const message = localization.format(`${localizationPath}.errors.notPossible`, { recipeName: recipe.name });
+            ui.notifications.warn(message);
+            return;
+        }
+        const craftingResult = new DefaultCraftingResult({
+            recipe,
+            created: recipe.getSelectedResults().results,
+            consumed: craftingAttempt.consumedComponents
+        });
+        await inventory.acceptCraftingResult(craftingResult);
     }
 
     async function handleRecipeUpdated(event) {
@@ -150,7 +167,7 @@
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <h3>Results</h3>
-                            <CraftingComponentGrid columns={3} componentCombination={recipe.getSelectedResults()} />
+                            <CraftingComponentGrid columns={3} componentCombination={recipe.getSelectedResults().results} />
                         </div>
                     {/if}
                 </div>

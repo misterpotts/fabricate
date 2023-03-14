@@ -5,6 +5,7 @@ interface SalvageResult {
 
     consumed: Combination<CraftingComponent>;
     created: Combination<CraftingComponent>;
+    isSuccessful: boolean;
 
 }
 
@@ -20,6 +21,10 @@ class NoSalvageResult implements SalvageResult {
 
     get consumed(): Combination<CraftingComponent> {
         return Combination.EMPTY();
+    }
+
+    get isSuccessful(): boolean {
+        return false;
     }
 
 }
@@ -50,6 +55,10 @@ class SuccessfulSalvageResult implements SalvageResult {
         return this._created;
     }
 
+    get isSuccessful(): boolean {
+        return true;
+    }
+
 }
 
 export { SuccessfulSalvageResult };
@@ -72,6 +81,10 @@ class UnsuccessfulSalvageResult implements SalvageResult {
 
     get consumed(): Combination<CraftingComponent> {
         return this._consumed;
+    }
+
+    get isSuccessful(): boolean {
+        return false;
     }
 
 }
