@@ -415,12 +415,12 @@
                             {#if $selectedRecipe.hasResults}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
                                     <TabList>
-                                        {#each sortByName($selectedRecipe.resultOptions) as resultOption}
+                                        {#each $selectedRecipe.resultOptions as resultOption}
                                             <Tab>{resultOption.name}</Tab>
                                         {/each}
                                         <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.recipe.labels.newResultOption`)}</Tab>
                                     </TabList>
-                                    {#each sortByName($selectedRecipe.resultOptions) as resultOption}
+                                    {#each $selectedRecipe.resultOptions as resultOption}
                                         <TabPanel class="fab-columns">
                                             <div class="fab-column">
                                                 <div class="fab-option-controls fab-row">

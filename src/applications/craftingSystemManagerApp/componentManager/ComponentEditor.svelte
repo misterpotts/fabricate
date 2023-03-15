@@ -187,12 +187,12 @@
                         <div class="fab-salvage-editor fab-row">
                             <Tabs bind:selectPreviousTab={selectPreviousTab}>
                                 <TabList>
-                                    {#each sortByName($selectedComponent.salvageOptions) as salvageOption}
+                                    {#each $selectedComponent.salvageOptions as salvageOption}
                                         <Tab>{salvageOption.name}</Tab>
                                     {/each}
                                     <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.component.labels.newSalvageOption`)}</Tab>
                                 </TabList>
-                                {#each sortByName($selectedComponent.salvageOptions) as salvageOption}
+                                {#each $selectedComponent.salvageOptions as salvageOption}
                                     <TabPanel class="fab-columns">
                                         <div class="fab-column">
                                             <div class="fab-option-controls fab-row">
