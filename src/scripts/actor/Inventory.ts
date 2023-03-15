@@ -139,7 +139,7 @@ class CraftingInventory implements Inventory {
         return results;
     }
 
-    async addAll(components: Combination<CraftingComponent>): Promise<any[]> {
+    async addAll(components: Combination<CraftingComponent>, activeEffects: ActiveEffect[]): Promise<any[]> {
         const updates: any[] = [];
         const creates: any[] = [];
         for (const unit of components.units) {
@@ -147,6 +147,7 @@ class CraftingInventory implements Inventory {
             if (!this.contains(craftingComponent)) {
                 const sourceData: FabricateItemData = await this._documentManager.getDocumentByUuid(craftingComponent.itemUuid);
                 const itemData: any = this._objectUtils.duplicate(sourceData.sourceDocument);
+                itemData.effects = [...itemData.effects, ...activeEffects];
                 itemData.flags.core = { sourceId: sourceData.uuid };
                 await this._itemQuantityWriter.write(unit.quantity, itemData);
                 creates.push(itemData);
@@ -181,9 +182,17 @@ class CraftingInventory implements Inventory {
 
     async acceptResult(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): Promise<any[]> {
         await this.index();
+
+        const activeEffects = consumed
+            .explode(craftingComponent => craftingComponent.essences)
+            .members
+            .filter(essence => essence.hasActiveEffectSource)
+            .flatMap(essence => essence.activeEffectSource.sourceDocument.effects.contents)
+            .map(activeEffect => this._objectUtils.duplicate(activeEffect));
+
         const inventoryActions: InventoryActions = this.rationalise(created, consumed);
         const modifiedItemData: any[][] = await Promise.all([
-            this.addAll(inventoryActions.additions),
+            this.addAll(inventoryActions.additions, activeEffects),
             this.removeAll(inventoryActions.removals)
         ]);
         const results = modifiedItemData[0].concat(modifiedItemData[1]);
