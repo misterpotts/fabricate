@@ -25,14 +25,16 @@ describe("Create a Crafting Attempt", () => {
 
             const availableComponents = Combination.EMPTY<CraftingComponent>();
 
-            const result = underTest.make(testRecipeFive.getSelectedIngredients(), testRecipeFive.essences, availableComponents);
+            const result = underTest.make(testRecipeFive, availableComponents);
 
-            expect(result.isPossible).toEqual(false);
+            expect(result.isSingleton).toEqual(true);
 
-            expect(result.requiresEssences).toEqual(true);
-            expect(result.essenceAmounts.isSufficient).toEqual(false);
-            expect(result.essenceAmounts.deficit).toEqual(2);
-            expect(result.essenceAmounts.units)
+            const craftingAttemptResult = result.getSingletonCraftingAttempt();
+
+            expect(craftingAttemptResult.requiresEssences).toEqual(true);
+            expect(craftingAttemptResult.essenceAmounts.isSufficient).toEqual(false);
+            expect(craftingAttemptResult.essenceAmounts.deficit).toEqual(2);
+            expect(craftingAttemptResult.essenceAmounts.units)
                 .toEqual(expect.arrayContaining(
                     [
                             new TrackedUnit({
@@ -46,15 +48,15 @@ describe("Create a Crafting Attempt", () => {
                         ]
                     )
                 );
-            expect(result.essenceSources.isEmpty()).toEqual(true);
+            expect(craftingAttemptResult.essenceSources.isEmpty()).toEqual(true);
 
-            expect(result.requiresIngredients).toEqual(false);
-            expect(result.ingredientAmounts.isSufficient).toEqual(true);
-            expect(result.ingredientAmounts.isEmpty).toEqual(true);
+            expect(craftingAttemptResult.requiresIngredients).toEqual(false);
+            expect(craftingAttemptResult.ingredientAmounts.isSufficient).toEqual(true);
+            expect(craftingAttemptResult.ingredientAmounts.isEmpty).toEqual(true);
 
-            expect(result.requiresCatalysts).toEqual(true);
-            expect(result.catalystAmounts.isSufficient).toEqual(false);
-            expect(result.catalystAmounts.units)
+            expect(craftingAttemptResult.requiresCatalysts).toEqual(true);
+            expect(craftingAttemptResult.catalystAmounts.isSufficient).toEqual(false);
+            expect(craftingAttemptResult.catalystAmounts.units)
                 .toEqual(expect.arrayContaining(
                         [
                             new TrackedUnit({
@@ -78,15 +80,17 @@ describe("Create a Crafting Attempt", () => {
                     new Unit(testComponentSix, 2)
                 ]));
 
-            const result = underTest.make(testRecipeFour.getSelectedIngredients(), testRecipeFour.essences, availableComponents);
+            const result = underTest.make(testRecipeFour, availableComponents);
 
-            expect(result.isPossible).toEqual(true);
+            expect(result.isSingleton).toEqual(true);
 
-            expect(result.requiresEssences).toEqual(true);
-            expect(result.essenceAmounts.isSufficient).toEqual(true);
-            expect(result.essenceAmounts.isEmpty).toEqual(false);
-            expect(result.essenceAmounts.deficit).toEqual(0);
-            expect(result.essenceAmounts.units)
+            const craftingAttemptResult = result.getSingletonCraftingAttempt();
+
+            expect(craftingAttemptResult.requiresEssences).toEqual(true);
+            expect(craftingAttemptResult.essenceAmounts.isSufficient).toEqual(true);
+            expect(craftingAttemptResult.essenceAmounts.isEmpty).toEqual(false);
+            expect(craftingAttemptResult.essenceAmounts.deficit).toEqual(0);
+            expect(craftingAttemptResult.essenceAmounts.units)
                 .toEqual(expect.arrayContaining(
                         [
                             new TrackedUnit({
@@ -100,7 +104,7 @@ describe("Create a Crafting Attempt", () => {
                         ]
                     )
                 );
-            expect(result.essenceSources.units)
+            expect(craftingAttemptResult.essenceSources.units)
                 .toEqual(expect.arrayContaining(
                         [
                             new Unit(testComponentOne, 1),
@@ -109,11 +113,11 @@ describe("Create a Crafting Attempt", () => {
                     )
                 );
 
-            expect(result.requiresIngredients).toEqual(true);
-            expect(result.ingredientAmounts.isSufficient).toEqual(true);
-            expect(result.ingredientAmounts.isEmpty).toEqual(false);
-            expect(result.ingredientAmounts.deficit).toEqual(0);
-            expect(result.ingredientAmounts.units)
+            expect(craftingAttemptResult.requiresIngredients).toEqual(true);
+            expect(craftingAttemptResult.ingredientAmounts.isSufficient).toEqual(true);
+            expect(craftingAttemptResult.ingredientAmounts.isEmpty).toEqual(false);
+            expect(craftingAttemptResult.ingredientAmounts.deficit).toEqual(0);
+            expect(craftingAttemptResult.ingredientAmounts.units)
                 .toEqual(expect.arrayContaining(
                         [
                             new TrackedUnit({
@@ -124,11 +128,11 @@ describe("Create a Crafting Attempt", () => {
                     )
                 );
 
-            expect(result.requiresCatalysts).toEqual(true);
-            expect(result.catalystAmounts.isSufficient).toEqual(true);
-            expect(result.catalystAmounts.isEmpty).toEqual(false);
-            expect(result.catalystAmounts.deficit).toEqual(0);
-            expect(result.catalystAmounts.units)
+            expect(craftingAttemptResult.requiresCatalysts).toEqual(true);
+            expect(craftingAttemptResult.catalystAmounts.isSufficient).toEqual(true);
+            expect(craftingAttemptResult.catalystAmounts.isEmpty).toEqual(false);
+            expect(craftingAttemptResult.catalystAmounts.deficit).toEqual(0);
+            expect(craftingAttemptResult.catalystAmounts.units)
                 .toEqual(expect.arrayContaining(
                         [
                             new TrackedUnit({

@@ -22,7 +22,8 @@
         selectedCraftingSystem,
         craftingComponents,
         loading,
-        recipeEditor
+        recipeEditor,
+        craftingComponentEditor
     } = getContext(key);
 
     const componentSearchResults = new ComponentSearchStore({ availableComponents: craftingComponents });
@@ -85,21 +86,58 @@
     async function addComponentToIngredientOption(event, ingredientOption, asCatalyst) {
         $loading = true;
         const dropEventParser = new DropEventParser({
-            strict: true,
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
             allowedCraftingComponents: $craftingComponents
         });
-        const component = (await dropEventParser.parse(event)).component;
+        const dropData = await dropEventParser.parse(event);
+        if (dropData.hasCraftingComponent) {
+            await addExistingComponentToIngredientOption(ingredientOption, dropData.component, asCatalyst);
+            $loading = false;
+            recipeUpdated($selectedRecipe);
+            return;
+        }
+        if (dropData.hasItemData) {
+            await importNewComponent(dropData.itemData, ingredientOption, asCatalyst);
+            $loading = false;
+            recipeUpdated($selectedRecipe);
+            return;
+        }
+        $loading = false;
+        throw new Error("Something went wrong adding a component to an Ingredient option. ");
+    }
+
+    async function importNewComponent(itemData, ingredientOption, asCatalyst) {
+        const doImport = await Dialog.confirm({
+            title: localization.format(
+                `${localizationPath}.prompts.importItemAsComponent.title`,
+                {
+                    componentName: itemData.name
+                }
+            ),
+            content: localization.format(
+                `${localizationPath}.prompts.importItemAsComponent.content`,
+                {
+                    componentName: itemData.name,
+                    systemName: $selectedCraftingSystem.name
+                }
+            )
+        });
+        if (doImport) {
+            const component = await craftingComponentEditor.createComponent(itemData, $selectedCraftingSystem);
+            await addExistingComponentToIngredientOption(ingredientOption, component, asCatalyst);
+        }
+    }
+
+    async function addExistingComponentToIngredientOption(ingredientOption, component, asCatalyst) {
         if (asCatalyst) {
             ingredientOption.addCatalyst(component);
         } else {
             ingredientOption.addIngredient(component);
         }
+        $selectedRecipe.editIngredientOption(ingredientOption);
         await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
-        $loading = false;
-        recipeUpdated($selectedRecipe);
     }
 
     async function decrementIngredientOptionComponent(ingredientOption, component, asCatalyst) {

@@ -355,6 +355,13 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         }
     }
 
+    public editIngredientOption(ingredientOption: IngredientOption) {
+        if (!this._ingredientOptions.has(ingredientOption.id)) {
+            throw new Error(`Cannot edit Ingredient Option "${ingredientOption.id}". It does not exist in this Recipe.`);
+        }
+        this._ingredientOptions.set(ingredientOption);
+    }
+
     set ingredientOptions(options: IngredientOption[]) {
         this._ingredientOptions = new SelectableOptions<IngredientOptionJson, IngredientOption>({
             options

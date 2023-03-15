@@ -29,7 +29,6 @@ class DefaultCraftingAttempt implements CraftingAttempt {
         possible
     }: {
         componentSelection: ComponentSelection;
-        ingredientOptionName: string;
         possible: boolean;
     }) {
         this._componentSelection = componentSelection;

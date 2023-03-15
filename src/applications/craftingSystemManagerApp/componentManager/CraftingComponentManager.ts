@@ -1,6 +1,6 @@
 import {CraftingSystemEditor} from "../CraftingSystemEditor";
 import {DropEventParser} from "../../common/DropEventParser";
-import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
+import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {CraftingComponent} from "../../../scripts/common/CraftingComponent";
 import {LocalizationService} from "../../common/LocalizationService";
@@ -33,7 +33,10 @@ class CraftingComponentManager {
         if (!dropData.hasItemData) {
             return;
         }
-        const itemData = dropData.itemData;
+        await this.createComponent(dropData.itemData, selectedSystem);
+    }
+
+    public async createComponent(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<CraftingComponent> {
         if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
             const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
             const message = this._localization.format(
@@ -61,6 +64,7 @@ class CraftingComponentManager {
             }
         );
         ui.notifications.info(message);
+        return craftingComponent;
     }
 
     public async deleteComponent(event: any, component: CraftingComponent, selectedSystem: CraftingSystem) {

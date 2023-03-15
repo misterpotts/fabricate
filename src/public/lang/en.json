@@ -249,6 +249,10 @@
             }
           },
           "prompts": {
+            "importItemAsComponent": {
+              "title": "Import new component \"{componentName}\"?",
+              "content": "<p>\"{componentName}\" will be imported into \"{systemName}\" and added to this Recipe.</p>"
+            },
             "delete": {
               "title": "Delete component \"{recipeName}\"?",
               "content": "<p>This will remove \"{recipeName}\" from \"{systemName}\". This action cannot be undone.</p>"
