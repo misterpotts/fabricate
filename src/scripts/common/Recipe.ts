@@ -277,7 +277,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         throw new Error("You must select an ingredient group. ");
     }
 
-    public getResultSelection(): ResultOption {
+    public getSelectedResults(): ResultOption {
         if (this._resultOptions.isReady) {
             return this._resultOptions.selectedOption;
         }
@@ -296,36 +296,40 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return !this._essences || !this._essences.isEmpty();
     }
     
-    public selectIngredientCombination(combinationId: string) {
-        return this._ingredientOptions.select(combinationId);
+    public selectIngredientOption(optionName: string) {
+        return this._ingredientOptions.select(optionName);
     }
 
-    public selectResultCombination(combinationId: string) {
-        return this._resultOptions.select(combinationId);
+    public selectResultOption(optionName: string) {
+        return this._resultOptions.select(optionName);
     }
 
     get selectedIngredientOptionName(): string {
         return this._ingredientOptions.selectedOptionId;
     }
 
-    public selectNextIngredientOption(): void {
+    public selectNextIngredientOption(): string {
         this._ingredientOptions.selectNext();
+        return this.selectedIngredientOptionName;
     }
 
-    public selectPreviousIngredientOption(): void {
+    public selectPreviousIngredientOption(): string {
         this._ingredientOptions.selectPrevious();
+        return this.selectedIngredientOptionName;
     }
 
     get selectedResultOptionName(): string {
         return this._resultOptions.selectedOptionId;
     }
 
-    public selectNextResultOption(): void {
+    public selectNextResultOption(): string {
         this._resultOptions.selectNext();
+        return this.selectedResultOptionName;
     }
 
-    public selectPreviousResultOption(): void {
+    public selectPreviousResultOption(): string {
         this._resultOptions.selectPrevious();
+        return this.selectedResultOptionName;
     }
 
     get firstIngredientOptionName(): string {
@@ -340,6 +344,15 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             return "";
         }
         return this.resultOptions[0].name;
+    }
+
+    public makeDefaultSelections() {
+        if (!this._ingredientOptions.isEmpty) {
+            this.selectIngredientOption(this.ingredientOptions[0].name);
+        }
+        if (!this._resultOptions.isEmpty) {
+            this.selectResultOption(this.resultOptions[0].name);
+        }
     }
 
     set ingredientOptions(options: IngredientOption[]) {

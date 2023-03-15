@@ -4,7 +4,7 @@ import {Essence, EssenceJson} from "../common/Essence";
 import {Inventory} from "../actor/Inventory";
 import {Combination} from "../common/Combination";
 import {CraftingCheck, NoCraftingCheck} from "../crafting/check/CraftingCheck";
-import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
+import {RecipeCraftingPrepFactory} from "../crafting/attempt/RecipeCraftingPrepFactory";
 import {CraftingAttempt} from "../crafting/attempt/CraftingAttempt";
 import {CraftingResult} from "../crafting/result/CraftingResult";
 import {AlchemyAttempt} from "../crafting/alchemy/AlchemyAttempt";
@@ -37,7 +37,7 @@ class CraftingSystem {
     private readonly _alchemyCraftingCheck: CraftingCheck<Actor>;
 
     private readonly _alchemyAttemptFactory: AlchemyAttemptFactory;
-    private readonly _craftingAttemptFactory: CraftingAttemptFactory;
+    private readonly _craftingAttemptFactory: RecipeCraftingPrepFactory;
 
     constructor({
         id,
@@ -61,7 +61,7 @@ class CraftingSystem {
             alchemy?: CraftingCheck<Actor>;
         };
         alchemyAttemptFactory?: AlchemyAttemptFactory;
-        craftingAttemptFactory: CraftingAttemptFactory;
+        craftingAttemptFactory: RecipeCraftingPrepFactory;
         partDictionary: PartDictionary;
     }) {
         this._id = id;

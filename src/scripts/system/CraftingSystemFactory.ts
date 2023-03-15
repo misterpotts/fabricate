@@ -1,5 +1,5 @@
 import {CraftingSystem, CraftingSystemJson} from "./CraftingSystem";
-import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
+import {RecipeCraftingPrepFactory} from "../crafting/attempt/RecipeCraftingPrepFactory";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
 import {PartDictionaryFactory} from "./PartDictionary";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
@@ -34,7 +34,7 @@ class CraftingSystemFactory {
                 alchemy: new NoCraftingCheck(), // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI
                 recipe: new NoCraftingCheck() // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI
             },
-            craftingAttemptFactory: new CraftingAttemptFactory({
+            craftingAttemptFactory: new RecipeCraftingPrepFactory({
                 selectionStrategy: new DefaultComponentSelectionStrategy()
             }),
             alchemyAttemptFactory: new DisabledAlchemyAttemptFactory() // todo: implement user-defined, system-agnostic, flexible macro-based alchemy in the UI

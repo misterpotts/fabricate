@@ -36,7 +36,6 @@ class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
                 options: {
                     props: {
                         recipe,
-                        craftingSystem,
                         inventory,
                         localization: new DefaultLocalizationService(gameProvider),
                         closeHook: async () => {

@@ -15,7 +15,7 @@ import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting
 import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
 import {GameSystemRollModifierProvider} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {testPartDictionary} from "./test_data/TestPartDictionary";
-import {CraftingAttemptFactory} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
+import {RecipeCraftingPrepFactory} from "../src/scripts/crafting/attempt/RecipeCraftingPrepFactory";
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {
     NoCraftingResult,
@@ -42,7 +42,7 @@ const stubRollTermProvider: GameSystemRollModifierProvider<Actor> = <GameSystemR
 
 const stubActor: Actor = <Actor><unknown>{};
 
-const craftingAttemptFactory: CraftingAttemptFactory = new CraftingAttemptFactory({
+const craftingAttemptFactory: RecipeCraftingPrepFactory = new RecipeCraftingPrepFactory({
     selectionStrategy: new DefaultComponentSelectionStrategy()
 });
 

@@ -8,11 +8,10 @@
     import CraftingAttemptCarousel from "./CraftingAttemptCarousel.svelte";
     import CraftingAttemptGrid from "./CraftingAttemptGrid.svelte";
     import CraftingResultCarousel from "./CraftingResultCarousel.svelte";
-    import {CraftingAttemptFactory} from "../../scripts/crafting/attempt/CraftingAttemptFactory";
+    import {RecipeCraftingPrepFactory} from "../../scripts/crafting/attempt/RecipeCraftingPrepFactory";
     import {DefaultComponentSelectionStrategy} from "../../scripts/crafting/selection/ComponentSelectionStrategy";
     import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
     import {DefaultCraftingResult} from "../../scripts/crafting/result/CraftingResult";
-    import {IngredientOption} from "../../scripts/common/Recipe";
 
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
@@ -21,20 +20,14 @@
     export let localization;
     export let closeHook;
 
-    const craftingAttemptFactory = new CraftingAttemptFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
-    let craftingAttempts = [];
-
+    // todo: create a store for this
+    const craftingPrepFactory = new RecipeCraftingPrepFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
+    let craftingPrep;
+    let craftingAttempt;
     let selectedIngredientOptionName;
-    let selectedResultOptionName;
+
     function resetSelections() {
-        if (recipe.hasIngredients) {
-            selectedIngredientOptionName = recipe.firstIngredientOptionName;
-            recipe.selectIngredientCombination(selectedIngredientOptionName);
-        }
-        if (recipe.hasResults) {
-            selectedResultOptionName = recipe.firstResultOptionName;
-            recipe.selectResultCombination(selectedResultOptionName);
-        }
+        recipe.makeDefaultSelections();
     }
     resetSelections();
 
@@ -65,11 +58,6 @@
     }
 
     async function craftRecipe(recipe) {
-        let craftingAttempt = craftingAttempts.find(craftingAttempt => craftingAttempt.ingredientOptionName === selectedIngredientOptionName);
-        if (!craftingAttempt && craftingAttempts.length === 1) {
-            craftingAttempt = craftingAttempts[0];
-        }
-        // todo: fix the tacit expectation that there must be an ingredient option and move this to another class
         if (!craftingAttempt) {
             const message = localization.localize(`${localizationPath}.errors.noCraftingAttempt`);
             ui.notifications.error(message);
@@ -82,7 +70,7 @@
         }
         const craftingResult = new DefaultCraftingResult({
             recipe,
-            created: recipe.getResultSelection().results,
+            created: recipe.getSelectedResults().results,
             consumed: craftingAttempt.consumedComponents
         });
         await inventory.acceptCraftingResult(craftingResult);
@@ -133,12 +121,20 @@
     let loaded = false;
     async function reIndex() {
         await inventory.index();
-        if (recipe.hasIngredients) {
-            craftingAttempts = recipe.ingredientOptions.map(option => craftingAttemptFactory.make(option, recipe.essences, inventory.ownedComponents));
-        } else {
-            craftingAttempts = [craftingAttemptFactory.make(new IngredientOption({name: "Not an option"}), recipe.essences, inventory.ownedComponents)];
-        }
+        craftingPrep = craftingPrepFactory.make(recipe, inventory.ownedComponents);
+        craftingAttempt = craftingPrep.isSingleton ? craftingPrep.getSingletonCraftingAttempt() : craftingPrep.getCraftingAttemptByIngredientOptionName(recipe.selectedIngredientOptionName);
+        selectedIngredientOptionName = recipe.selectedIngredientOptionName;
         loaded = true;
+    }
+
+    function selectNextIngredientOption() {
+        selectedIngredientOptionName = recipe.selectNextIngredientOption();
+        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedIngredientOptionName);
+    }
+
+    function selectPreviousIngredientOption() {
+        selectedIngredientOptionName = recipe.selectPreviousIngredientOption();
+        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedIngredientOptionName);
     }
 
 </script>
@@ -155,27 +151,31 @@
             <div class="fab-recipe-crafting-app-body fab-scrollable">
                 <p class="fab-recipe-crafting-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}</p>
                 <div class="fab-recipe-crafting-ingredients">
-                    {#if recipe.hasIngredientOptions}
-                        <CraftingAttemptCarousel columns={3} craftingAttempts={craftingAttempts} recipe={recipe} bind:selectedOptionName={selectedIngredientOptionName} />
+                    {#if !craftingPrep.isSingleton}
+                        <CraftingAttemptCarousel columns={3}
+                                                 craftingAttempt={craftingAttempt}
+                                                 selectedIngredientOptionName={selectedIngredientOptionName}
+                                                 on:nextIngredientOptionSelected={selectNextIngredientOption}
+                                                 on:previousIngredientOptionSelected={selectPreviousIngredientOption} />
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <CraftingAttemptGrid
                                     columns={3}
-                                    ingredients={craftingAttempts[0].ingredientAmounts}
-                                    catalysts={craftingAttempts[0].catalystAmounts}
-                                    essences={craftingAttempts[0].essenceAmounts} />
+                                    ingredients={craftingAttempt.ingredientAmounts}
+                                    catalysts={craftingAttempt.catalystAmounts}
+                                    essences={craftingAttempt.essenceAmounts} />
                         </div>
                     {/if}
                 </div>
                 <div class="fab-recipe-crafting-results">
                     {#if recipe.hasResultOptions}
-                        <CraftingResultCarousel columns={3} recipe={recipe} bind:selectedOptionName={selectedResultOptionName}>
+                        <CraftingResultCarousel columns={3} recipe={recipe} selectedOptionName={recipe.selectedResultOptionName}>
                             <h3 slot="description">{localization.localize(`${Properties.module.id}.typeNames.result.plural`)}</h3>
                         </CraftingResultCarousel>
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <h3>Results</h3>
-                            <CraftingComponentGrid columns={3} componentCombination={recipe.getResultSelection().results} />
+                            <CraftingComponentGrid columns={3} componentCombination={recipe.getSelectedResults().results} />
                         </div>
                     {/if}
                 </div>

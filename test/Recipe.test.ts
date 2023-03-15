@@ -174,14 +174,14 @@ describe("When selecting ingredients", () => {
         expect(underTest.ingredientOptions.length).toEqual(2);
         expect(underTest.ready()).toEqual(false);
 
-        underTest.selectIngredientCombination(optionOneId);
+        underTest.selectIngredientOption(optionOneId);
         expect(underTest.ready()).toEqual(true);
 
         let selectedIngredients = underTest.getSelectedIngredients();
 
         expect(selectedIngredients.ingredients.equals(combinationOne)).toEqual(true);
 
-        underTest.selectIngredientCombination(optionTwoId);
+        underTest.selectIngredientOption(optionTwoId);
         expect(underTest.ready()).toEqual(true);
 
         selectedIngredients = underTest.getSelectedIngredients();
@@ -230,7 +230,7 @@ describe("When selecting results", () => {
             })
         });
 
-        const selectedResults = underTest.getResultSelection().results;
+        const selectedResults = underTest.getSelectedResults().results;
         expect(selectedResults.size).toEqual(4);
         expect(selectedResults.amountFor(testComponentFive.id)).toEqual(3);
         expect(selectedResults.amountFor(testComponentOne.id)).toEqual(1);
@@ -270,7 +270,7 @@ describe("When selecting results", () => {
 
         expect(underTest.ready()).toEqual(false);
 
-        expect(underTest.getResultSelection).toThrow(Error);
+        expect(underTest.getSelectedResults).toThrow(Error);
 
     });
 
@@ -306,14 +306,14 @@ describe("When selecting results", () => {
 
         expect(underTest.ready()).toEqual(false);
 
-        underTest.selectResultCombination(optionOneId);
+        underTest.selectResultOption(optionOneId);
         expect(underTest.ready()).toEqual(true);
-        let selectedResults = underTest.getResultSelection().results;
+        let selectedResults = underTest.getSelectedResults().results;
         expect(selectedResults).toEqual(resultCombinationOne);
 
-        underTest.selectResultCombination(optionTwoId);
+        underTest.selectResultOption(optionTwoId);
         expect(underTest.ready()).toEqual(true);
-        selectedResults = underTest.getResultSelection().results;
+        selectedResults = underTest.getSelectedResults().results;
         expect(selectedResults).toEqual(resultCombinationTwo);
 
         underTest.deselectResults();

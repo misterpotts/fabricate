@@ -1,5 +1,5 @@
 import {describe, expect, test} from "@jest/globals";
-import {CraftingAttemptFactory} from "../src/scripts/crafting/attempt/CraftingAttemptFactory";
+import {RecipeCraftingPrepFactory} from "../src/scripts/crafting/attempt/RecipeCraftingPrepFactory";
 import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {testRecipeFive, testRecipeFour} from "./test_data/TestRecipes";
@@ -21,7 +21,7 @@ describe("Create a Crafting Attempt", () => {
 
         test("that cannot be crafted", () => {
 
-            const underTest = new CraftingAttemptFactory({ selectionStrategy });
+            const underTest = new RecipeCraftingPrepFactory({ selectionStrategy });
 
             const availableComponents = Combination.EMPTY<CraftingComponent>();
 
@@ -69,7 +69,7 @@ describe("Create a Crafting Attempt", () => {
 
         test("that can be crafted", () => {
 
-            const underTest = new CraftingAttemptFactory({ selectionStrategy });
+            const underTest = new RecipeCraftingPrepFactory({ selectionStrategy });
 
             const availableComponents = testRecipeFour.getSelectedIngredients().ingredients
                 .combineWith(testRecipeFour.getSelectedIngredients().catalysts)

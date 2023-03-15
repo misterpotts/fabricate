@@ -9,7 +9,12 @@ import {Identifiable} from "../../common/Identity";
 
 interface ComponentSelectionStrategy {
 
-    perform(ingredientOption: IngredientOption, requiredEssences: Combination<Essence>, availableComponents: Combination<CraftingComponent>): ComponentSelection;
+    perform(
+        requiredCatalysts: Combination<CraftingComponent>,
+        requiredIngredients: Combination<CraftingComponent>,
+        requiredEssences: Combination<Essence>,
+        availableComponents: Combination<CraftingComponent>
+    ): ComponentSelection;
 
 }
 
@@ -17,13 +22,16 @@ export {ComponentSelectionStrategy}
 
 class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
-    perform(ingredientOption: IngredientOption, requiredEssences: Combination<Essence>, availableComponents: Combination<CraftingComponent>): ComponentSelection {
+    perform(requiredCatalysts: Combination<CraftingComponent>,
+            requiredIngredients: Combination<CraftingComponent>,
+            requiredEssences: Combination<Essence>,
+            availableComponents: Combination<CraftingComponent>): ComponentSelection {
 
-        const catalysts = this.selectCombination(ingredientOption.catalysts, availableComponents)
+        const catalysts = this.selectCombination(requiredCatalysts, availableComponents)
 
         const componentsForIngredients = availableComponents.subtract(catalysts.actual);
 
-        const ingredients = this.selectCombination(ingredientOption.ingredients, componentsForIngredients);
+        const ingredients = this.selectCombination(requiredIngredients, componentsForIngredients);
 
         const componentsForEssences = componentsForIngredients.subtract(ingredients.actual);
 
