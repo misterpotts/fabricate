@@ -30,6 +30,9 @@ class CraftingComponentManager {
             partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`)
         })
         const dropData = await dropEventParser.parse(event);
+        if (!dropData.hasItemData) {
+            return;
+        }
         const itemData = dropData.itemData;
         if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
             const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);

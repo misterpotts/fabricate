@@ -31,6 +31,9 @@ class RecipeManager {
             partType: this._localization.localize(`${Properties.module.id}.typeNames.recipe.singular`)
         })
         const dropData = await dropEventParser.parse(event);
+        if (!dropData.hasItemData) {
+            return;
+        }
         const itemData = dropData.itemData;
         if (selectedSystem.includesRecipeByItemUuid(itemData.uuid)) {
             const existingRecipe = selectedSystem.getRecipeByItemUuid(itemData.uuid);
