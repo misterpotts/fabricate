@@ -15,6 +15,11 @@
     export let catalysts;
     export let essences;
 
+    function formatQuantity(actual, target) {
+        const formattedActual = actual > 99 ? "99+" : actual.toString();
+        return `${formattedActual} / ${target}`;
+    }
+
 </script>
 
 {#if !ingredients.isEmpty}
@@ -31,7 +36,7 @@
                     </div>
                 </div>
                 <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
-                    <p>{`${unit.actual.quantity} / ${unit.target.quantity}`}</p>
+                    <p>{formatQuantity(unit.actual.quantity, unit.target.quantity)}</p>
                 </div>
             </div>
         {/each}
@@ -51,7 +56,7 @@
                     </div>
                 </div>
                 <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
-                    <p>{`${unit.actual.quantity} / ${unit.target.quantity}`}</p>
+                    <p>{formatQuantity(unit.actual.quantity, unit.target.quantity)}</p>
                 </div>
             </div>
         {/each}
@@ -64,7 +69,7 @@
             <div class="fab-essence">
                 <div class="fab-essence-amount" class:fab-insufficient={!unit.isSufficient}>
                     <span class="fab-essence-quantity">
-                        {unit.actual.quantity} / {unit.target.quantity}
+                        {formatQuantity(unit.actual.quantity, unit.target.quantity)}
                     </span>
                     <span class="fab-essence-icon">
                         <i class="{unit.target.part.iconCode}"></i>

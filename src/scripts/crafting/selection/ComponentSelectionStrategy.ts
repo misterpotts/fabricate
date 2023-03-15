@@ -1,4 +1,3 @@
-import {IngredientOption} from "../../common/Recipe";
 import {Combination, Unit} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
 import {CraftingComponent} from "../../common/CraftingComponent";
@@ -29,11 +28,13 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
         const catalysts = this.selectCombination(requiredCatalysts, availableComponents)
 
-        const componentsForIngredients = availableComponents.subtract(catalysts.actual);
+        const catalystAmountToSubtract = catalysts.isSufficient ? catalysts.target : catalysts.actual;
+        const componentsForIngredients = availableComponents.subtract(catalystAmountToSubtract);
 
         const ingredients = this.selectCombination(requiredIngredients, componentsForIngredients);
 
-        const componentsForEssences = componentsForIngredients.subtract(ingredients.actual);
+        const ingredientAmountToSubtract = ingredients.isSufficient ? ingredients.target : ingredients.actual;
+        const componentsForEssences = componentsForIngredients.subtract(ingredientAmountToSubtract);
 
         const essenceSelectionAlgorithm = new EssenceSelection(requiredEssences);
         const essenceSources: Combination<CraftingComponent> = essenceSelectionAlgorithm.perform(componentsForEssences);
@@ -50,14 +51,8 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
     }
 
     private selectCombination<T extends Identifiable>(target: Combination<T>, pool: Combination<T>): TrackedCombination<T> {
-        if (target.isIn(pool)) {
-            return new TrackedCombination({
-                target,
-                actual: target
-            });
-        }
         const actualUnits = target.units
-            .map(unit => new Unit(unit.part, pool.amountFor(unit.part) < unit.quantity ? pool.amountFor(unit.part) : unit.quantity));
+            .map(unit => new Unit(unit.part, pool.amountFor(unit.part)));
         const actual = Combination.ofUnits(actualUnits);
         return new TrackedCombination({
             target: target,
