@@ -8,7 +8,8 @@
     "build": "vite build",
     "test": "jest",
     "serve": "vite",
-    "coverageTest": "jest --collect-coverage --collect-coverage-from='./src/**/*.ts'"
+    "coverageTest": "jest --collect-coverage --collect-coverage-from='./src/**/*.ts'",
+    "jekyll": "cd docs && bundle exec jekyll serve"
   },
   "author": "Matthew Potts",
   "license": "MIT",
