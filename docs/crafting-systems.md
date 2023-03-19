@@ -5,11 +5,7 @@ permalink: /crafting-systems/
 ---
 
 # Crafting systems
-
-A crafting system is a set of Components and Recipes subject to a consistent set of rules.
-For example, all recipes in a given crafting system may require a successful D20 check to perform. 
-The calculations for and methodology for that check are consistent across all recipes in the system.
-If you add a component or recipe to a system, it too becomes subject to these same rules.
+{: .no_toc }
 
 <details open markdown="block">
   <summary>
@@ -19,6 +15,13 @@ If you add a component or recipe to a system, it too becomes subject to these sa
 - TOC
 {:toc}
 </details>
+
+## What is a crafting system?
+
+A crafting system is a set of Components and Recipes subject to a consistent set of rules.
+For example, all recipes in a given crafting system may require a successful D20 check to perform. 
+The calculations for and methodology for that check are consistent across all recipes in the system.
+If you add a component or recipe to a system, it too becomes subject to these same rules.
 
 ## Opening the crafting system manager
 

@@ -5,6 +5,9 @@ layout: home
 
 ![](img/fabricate-repo-preview.png)
 
+# Fabricate
+{: .no_toc }
+
 <details open markdown="block">
   <summary>
     Table of contents
@@ -14,9 +17,10 @@ layout: home
 {:toc}
 </details>
 
-# About Fabricate
+## About
 
 Fabricate is a system-agnostic, flexible crafting module for FoundryVTT.
+Fabricate is currently maintained by [MisterPotts].
 
 Use the left navigation, as well as the search at the top of this page, to learn how to build your own crafting systems using Fabricate.
 Read on below to find out more about this module and how to support its development. 
@@ -73,13 +77,16 @@ I'm always happy to talk about how people can contribute.
 
 ## Sponsor this project
 
-Fabricate is currently maintained by [MisterPotts]. 
-You can support him on [Patreon] for access to:
+[MisterPotts] builds Fabricate alone, in his spare time, for free.
+It's sort of like how DMs do all of that prep, buy the books, paint the miniatures, but that players just _turn up_.
+
+If you like Fabricate and want to do more than just turn up, you can support him on [Patreon] for access to:
 
 - A library of over 500 RPG crafting icons
 - Early access to Fabricate releases
 - A small amount of 5E content
-- Good feels
+- The ✨ good feels ✨ that come from supporting a module author 
+- Access to Patron Discord channels and the ability to vote on new features 
 
 ----
 
