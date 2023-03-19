@@ -78,9 +78,8 @@ I'm always happy to talk about how people can contribute.
 ## Sponsor this project
 
 [MisterPotts] builds Fabricate alone, in his spare time, for free.
-It's sort of like how DMs do all of that prep, buy the books, paint the miniatures, but that players just _turn up_.
 
-If you like Fabricate and want to do more than just turn up, you can support him on [Patreon] for access to:
+If you like Fabricate and want to show some support, you can do so on [Patreon] for access to:
 
 - A library of over 500 RPG crafting icons
 - Early access to Fabricate releases
