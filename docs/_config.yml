@@ -11,3 +11,20 @@ github_username:  misterpotts
 theme: just-the-docs
 
 permalink: pretty
+
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red

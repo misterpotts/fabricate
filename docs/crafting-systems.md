@@ -65,6 +65,21 @@ Fabricate will switch you to view the new system and you can start customising i
 
 ## Deleting a crafting system
 
+Deleting a crafting system removes all the information about its recipes and components that you have configured in Fabricate.
+Only the data managed by Fabricate is removed.
+None of the Foundry Items used by Fabricate will be impacted when a crafting system is deleted.
+
+To delete a crafting system, select the crafting system you want to delete in the crafting system manager.
+This will display a menu containing the "Delete" option.
+Click that, and Fabricate will open a dialogue that prompts you to confirm your decision.
+Click "Yes"and Fabricate will delete the crafting system.
+
+{: .highlight }
+> This action is permanent and cannot be reversed.
+> If you want to retain your data, [export your crafting system](#exporting-a-crafting-system) before deleting it.
+
+![](/fabricate/img/delete-a-crafting-system.gif)
+
 ## Overwriting a crafting system
 
 Updating, or overwriting, an existing crafting system from an external file is straightforward. 
@@ -73,8 +88,7 @@ This includes any components and recipes.
 If you do, be sure not to modify the crafting system ID.
 This has to match the ID of the crafting system you want to overwrite.
 
-To overwrite a crafting system,
-Select the crafting system you want to export in the crafting system manager.
+To overwrite a crafting system, select the crafting system you want to export in the crafting system manager.
 This will display a menu containing the "Import" option.
 Click that, and Fabricate will open a dialogue that prompts you to select a file to upload.
 Once you have done so, click the "Import" button on the dialogue to complete the process.
