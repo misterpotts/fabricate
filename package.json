@@ -10,6 +10,7 @@
     "test": "jest",
     "serve": "vite",
     "coverageTest": "jest --collect-coverage --collect-coverage-from='./src/**/*.ts'",
+    "jekyll": "cd docs && bundle exec jekyll serve",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "author": "Matthew Potts",

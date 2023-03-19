@@ -1,0 +1,46 @@
+title: Fabricate 0.8.2
+email: matt@misterpotts.uk
+description: >- 
+  End user documentation for the Foundry Virtual Tabletop (VTT) Module, "Fabricate".
+  Fabricate is a system-agnostic, flexible crafting module for Foundry VTT.
+baseurl: "/fabricate"
+url: https://misterpotts.github.io
+github_username:  misterpotts
+
+# Build settings
+theme: just-the-docs
+
+color_scheme: light
+gh_edit_link: true
+gh_edit_link_text: Edit these docs
+gh_edit_repository: https://github.com/misterpotts/fabricate
+gh_edit_source: /docs
+
+heading_anchors: true
+
+logo: "/img/fabricate-repo-preview.png"
+
+aux_links:
+  "Download Fabricate":
+    - "//github.com/misterpotts/fabricate/releases/latest"
+  "Contribute":
+    - "//github.com/misterpotts/fabricate"
+
+permalink: pretty
+
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
