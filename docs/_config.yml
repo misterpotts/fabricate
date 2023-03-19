@@ -4,7 +4,7 @@ description: >-
   End user documentation for the Foundry Virtual Tabletop (VTT) Module, "Fabricate".
   Fabricate is a system-agnostic, flexible crafting module for Foundry VTT.
 baseurl: ""
-url: https://misterpotts.github.io/fabricate
+url: https://misterpotts.github.io
 github_username:  misterpotts
 
 # Build settings
