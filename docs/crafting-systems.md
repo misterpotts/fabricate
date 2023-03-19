@@ -25,15 +25,15 @@ If you add a component or recipe to a system, it too becomes subject to these sa
 To open the crafting system manager, first, open the Item tab in the right menu.
 Then click the Crafting Systems button to open Fabricate's Crafting system manager.
 
-![](/img/crafting-system-button.webp)
+![](/fabricate/img/crafting-system-button.webp)
 
 If you're opening Fabricate in a Game World for D&D 5th Edition, you'll see an embedded system already listed.
 
-![](/img/crafting-system-manager.webp)
+![](/fabricate/img/crafting-system-manager.webp)
 
 If not, you'll see an empty crafting system manager, like so.
 
-![](/img/crafting-system-manager-empty.webp)
+![](/fabricate/img/crafting-system-manager-empty.webp)
 
 ## Creating a crafting system
 
@@ -43,7 +43,7 @@ Fabricate will create a new crafting system with some placeholder details popula
 You'll see the new system appear in the left navigation.
 Fabricate will switch you to view the new system and you can start customising its details.
 
-![](/img/create-a-crafting-system.gif)
+![](/fabricate/img/create-a-crafting-system.gif)
 
 ## Exporting a crafting system
 
@@ -52,7 +52,7 @@ Select the crafting system you want to export in the crafting system manager.
 This will display a menu containing the "Export" option.
 Select that and Fabricate will export the crafting system to a JSON file and prompt you to save it on your computer.
 
-![](/img/export-a-crafting-system.gif)
+![](/fabricate/img/export-a-crafting-system.gif)
 
 ## Importing a new crafting system
 
@@ -61,7 +61,7 @@ Fabricate will open a dialogue that prompts you to select a file to upload.
 Once you have done so, click the "Import" button on the dialogue to complete the process.
 Fabricate will switch you to view the new system and you can start customising its details.
 
-![](/img/import-a-crafting-system.gif)
+![](/fabricate/img/import-a-crafting-system.gif)
 
 ## Deleting a crafting system
 
@@ -79,4 +79,4 @@ This will display a menu containing the "Import" option.
 Click that, and Fabricate will open a dialogue that prompts you to select a file to upload.
 Once you have done so, click the "Import" button on the dialogue to complete the process.
 
-![](/img/overwrite-a-crafting-system.gif)
+![](/fabricate/img/overwrite-a-crafting-system.gif)
