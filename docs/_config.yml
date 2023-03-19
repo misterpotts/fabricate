@@ -1,4 +1,4 @@
-title: Fabricate
+title: Fabricate 0.8.2
 email: matt@misterpotts.uk
 description: >- 
   End user documentation for the Foundry Virtual Tabletop (VTT) Module, "Fabricate".
@@ -9,6 +9,22 @@ github_username:  misterpotts
 
 # Build settings
 theme: just-the-docs
+
+color_scheme: light
+gh_edit_link: true
+gh_edit_link_text: Edit these docs
+gh_edit_repository: https://github.com/misterpotts/fabricate
+gh_edit_source: /docs
+
+heading_anchors: true
+
+logo: "/img/fabricate-repo-preview.png"
+
+aux_links:
+  "Download Fabricate":
+    - "//github.com/misterpotts/fabricate/releases/latest"
+  "Contribute":
+    - "//github.com/misterpotts/fabricate"
 
 permalink: pretty
 
