@@ -15,9 +15,7 @@
 # About Fabricate
 
 Fabricate is a system-agnostic, flexible crafting module for FoundryVTT. 
-The current version is in the late stages of development. 
-It is working towards back-filling functionality of "Alchemist's Supplies V1.6" by [/u/calculuschild](https://www.reddit.com/user/calculuschild/) for Foundry VVT Version 10+. 
-Once complete, Fabricate will ship with at least one crafting system for D&D 5E.
+You can read more about Fabricate, as well as learn how to use it, in the [documentation](https://misterpotts.github.io/fabricate/).
 
 # Installation
 
@@ -31,51 +29,6 @@ If you want to install by manifest URL, use the first method.
 Pre-releases can be installed using these same methods. 
 However, the bundle and manifest URL are shared on [Patreon](https://www.patreon.com/posts/pre-release-76128822).
 
-# Fabricate Features
-
-Here's a quick preview of the early features.
-
-## Creating Crafting Systems
-
-At the moment a crafting system is little more than a group of related components, essences and recipes.
-As Fabricate receives new features, it will define a set of behaviours, checks and rules to provide a complete, custom framework for crafting.
-
-![](/screens/fabricate-system-creation.gif)
-
-## Creating Essences 
-
-Essences are a quality of a component. 
-They define something that the component has, not something that it is. 
-Components might have multiple Essences in different quantities, all of which you can define for your system.
-
-![](/screens/fabricate-essence-creation.gif)
-
-## Creating Crafting Components
-
-You can turn any items into crafting components.
-These are the items that your crafting system consumes and produces. 
-They can be consumables, like potions.
-They might be equipment, like armour and weapons. 
-Equally, they can be trinkets used as ingredients, such as "Iron Ore" or an "Adult Blue Dragon Tooth".
-You can imbue them with Essences, as well as define the components that can be salvaged by breaking them down.
-
-![](/screens/fabricate-component-editing.gif)
-
-# FAQ
-
-> Why don't I see Fabricate in the official [list of modules](https://foundryvtt.com/packages/modules)?
-
-Because it's not finished, and therefore not released yet.
-
-> When will Fabricate be released?
-
-When it's done.
-I want to finish core crafting and alchemy before then, as well as having some time to test it with a smaller audience.
-
-> Will Fabricate be free?
-
-Yes, but don't let that stop you supporting me on [Patreon](https://patreon.com/misterpotts) if you appreciate what I'm doing.
-
 # Changelog
 
 Changes to Fabricate are documented on the [releases](https://github.com/misterpotts/fabricate/releases) themselves.
@@ -84,7 +37,7 @@ Changes to Fabricate are documented on the [releases](https://github.com/misterp
 
 If you'd like to be involved I'd love to have some help! 
 Take a look at the [contributing guide](CONTRIBUTING.md) and feel free to get in touch va [Discord](discordapp.com/users/MisterPotts#0255) or [email](mailto:matt@mrpotts.uk).
-I'm always happy to talk to you about how people can contribute.
+I'm always happy to talk about how people can contribute.
 
 ## Building Fabricate
 
