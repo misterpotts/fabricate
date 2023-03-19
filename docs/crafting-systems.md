@@ -5,11 +5,7 @@ permalink: /crafting-systems/
 ---
 
 # Crafting systems
-
-A crafting system is a set of Components and Recipes subject to a consistent set of rules.
-For example, all recipes in a given crafting system may require a successful D20 check to perform. 
-The calculations for and methodology for that check are consistent across all recipes in the system.
-If you add a component or recipe to a system, it too becomes subject to these same rules.
+{: .no_toc }
 
 <details open markdown="block">
   <summary>
@@ -19,6 +15,13 @@ If you add a component or recipe to a system, it too becomes subject to these sa
 - TOC
 {:toc}
 </details>
+
+## What is a crafting system?
+
+A crafting system is a set of Components and Recipes subject to a consistent set of rules.
+For example, all recipes in a given crafting system may require a successful D20 check to perform. 
+The calculations for and methodology for that check are consistent across all recipes in the system.
+If you add a component or recipe to a system, it too becomes subject to these same rules.
 
 ## Opening the crafting system manager
 
@@ -69,14 +72,14 @@ Deleting a crafting system removes all the information about its recipes and com
 Only the data managed by Fabricate is removed.
 None of the Foundry Items used by Fabricate will be impacted when a crafting system is deleted.
 
+{: .highlight }
+> This action is permanent and cannot be reversed.
+> If you want to retain your data, [export your crafting system](#exporting-a-crafting-system) before deleting it.
+
 To delete a crafting system, select the crafting system you want to delete in the crafting system manager.
 This will display a menu containing the "Delete" option.
 Click that, and Fabricate will open a dialogue that prompts you to confirm your decision.
 Click "Yes"and Fabricate will delete the crafting system.
-
-{: .highlight }
-> This action is permanent and cannot be reversed.
-> If you want to retain your data, [export your crafting system](#exporting-a-crafting-system) before deleting it.
 
 ![](/fabricate/img/delete-a-crafting-system.gif)
 
@@ -94,3 +97,27 @@ Click that, and Fabricate will open a dialogue that prompts you to select a file
 Once you have done so, click the "Import" button on the dialogue to complete the process.
 
 ![](/fabricate/img/overwrite-a-crafting-system.gif)
+
+## Duplicating a crafting system
+
+When you duplicate a crafting system, Fabricate creates a copy of the source system.
+The copy contains all the components and recipes configured in the source system.
+However, editing, removing, and adding recipes and components in the copy will not affect the source system.
+Duplicating a crafting system can be a useful tool for testing out changes to your systems without altering a system currently being used.
+
+To duplicate a crafting system, select the crafting system you want to export in the crafting system manager.
+This will display a menu containing the "Duplicate" option.
+Click that, and Fabricate will create a copy of the system with "(copy)" appended to the name.
+You'll see the new system appear in the left navigation.
+Fabricate will switch you to view the new system and you can start customising its details.
+
+![](/fabricate/img/duplicate-a-crafting-system.gif)
+
+## Disabling a crafting system
+
+Disabling a crafting system functionally "turns it off".
+Its components cannot be salvaged.
+Its recipes cannot be crafted.
+None of the Foundry items included in the system will prompt users to craft with them using Fabricate (unless they included in another crafting systems).
+
+![](/fabricate/img/disable-crafting-system-button.webp)
