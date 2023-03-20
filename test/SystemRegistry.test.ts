@@ -20,7 +20,7 @@ const stubGameObject = <Game><unknown>{
 }
 const stubGetSettingsMethod = Sandbox.stub(stubGameObject.settings, "get");
 const stubGameProvider: GameProvider = <GameProvider><unknown>{
-    globalGameObject: () => stubGameObject
+    get: () => stubGameObject
 }
 
 beforeEach(() => {

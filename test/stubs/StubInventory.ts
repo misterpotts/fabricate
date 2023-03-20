@@ -3,6 +3,7 @@ import {Combination} from "../../src/scripts/common/Combination";
 import {CraftingComponent} from "../../src/scripts/common/CraftingComponent";
 import {AlchemyResult} from "../../src/scripts/crafting/alchemy/AlchemyResult";
 import {CraftingResult} from "../../src/scripts/crafting/result/CraftingResult";
+import {SalvageResult} from "../../src/scripts/crafting/result/SalvageResult";
 
 class StubInventory implements Inventory {
 
@@ -28,12 +29,22 @@ class StubInventory implements Inventory {
         return [];
     }
 
-    contains(partId: string): boolean {
-        return this.ownedComponents.hasPart(partId);
+    contains(craftingComponent: CraftingComponent, quantity: number = 1): boolean {
+        return this.ownedComponents.amountFor(craftingComponent.id) >= quantity;
     }
 
-    index(): Combination<CraftingComponent> {
+    index(): Promise<void> {
         return undefined;
+    }
+
+    size: number;
+
+    acceptSalvageResult(_salvageResult: SalvageResult): Promise<any[]> {
+        return Promise.resolve([]);
+    }
+
+    amountFor(craftingComponent: CraftingComponent): number {
+        return this.ownedComponents.amountFor(craftingComponent);
     }
 
 }

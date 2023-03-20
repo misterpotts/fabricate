@@ -1,7 +1,7 @@
 import CraftingSystemManager from "./craftingSystemManagerApp/CraftingSystemEditor.svelte"
 import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
-import {GameProvider} from "../scripts/foundry/GameProvider";
+import {DefaultGameProvider} from "../scripts/foundry/GameProvider";
 import {DefaultSystemRegistry} from "../scripts/registries/SystemRegistry";
 import {DefaultLocalizationService} from "./common/LocalizationService";
 
@@ -9,8 +9,8 @@ class CraftingSystemManagerAppFactory {
 
     public static async make(systemRegistry: DefaultSystemRegistry): Promise<SvelteApplication> {
 
-        const gameProvider = new GameProvider();
-        const GAME = gameProvider.globalGameObject();
+        const gameProvider = new DefaultGameProvider();
+        const GAME = gameProvider.get();
 
         const applicationOptions = {
             title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),

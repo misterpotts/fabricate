@@ -72,6 +72,10 @@ class PartDictionary {
         return Array.from(componentsById.values());
     }
 
+    get componentsByUuid(): Map<string, CraftingComponent> {
+        return this._componentDictionary.allByItemUuid;
+    }
+
     public getRecipes(): Recipe[] {
         const recipesById = this._recipeDictionary.getAll();
         return Array.from(recipesById.values());

@@ -1,5 +1,5 @@
 import Properties from "./Properties";
-import {GameProvider} from "./foundry/GameProvider";
+import {DefaultGameProvider, GameProvider} from "./foundry/GameProvider";
 import FabricateApplication from "./interface/FabricateApplication";
 import {
     DefaultSettingManager,
@@ -103,7 +103,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
 });
 
 Hooks.on("renderSidebarTab", async (app: any, html: any) => {
-    const GAME = new GameProvider().globalGameObject();
+    const GAME = new DefaultGameProvider().get();
     if (!(app instanceof ItemDirectory) || !GAME.user.isGM) {
         return;
     }
@@ -136,7 +136,7 @@ function registerSettings(gameObject: Game, defaultSettingValue: FabricateSettin
 async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSystemSettingManager: DefaultSettingManager<Record<string, CraftingSystemJson>>): Promise<SettingManager<Record<string, CraftingSystemJson>>> {
 
     const checkResult = craftingSystemSettingManager.check()
-    const gameObject = gameProvider.globalGameObject();
+    const gameObject = gameProvider.get();
 
     if (checkResult.state === SettingState.INVALID) {
         const errorDetails = checkResult.validationCheck.errors
@@ -166,8 +166,8 @@ async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSy
 
 Hooks.once('ready', async () => {
 
-    const gameProvider = new GameProvider();
-    const gameObject = gameProvider.globalGameObject();
+    const gameProvider = new DefaultGameProvider();
+    const gameObject = gameProvider.get();
 
     const v2settingMigrator = new V2CraftingSystemSettingMigrator();
     const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({

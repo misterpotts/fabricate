@@ -17,11 +17,11 @@ class StubDocumentManager implements DocumentManager {
         sourceDocument: {}
     });
 
-    private readonly _itemData: Map<string, FabricateItemData>;
+    private readonly _itemDataByUuid: Map<string, FabricateItemData>;
     private readonly _poisonIds: string[] = [];
 
-    constructor(itemData: Map<string, FabricateItemData>, permissive = true) {
-        this._itemData = itemData;
+    constructor(itemDataByUuid: Map<string, FabricateItemData>, permissive = true) {
+        this._itemDataByUuid = itemDataByUuid;
         this._permissive = permissive;
     }
 
@@ -89,7 +89,7 @@ class StubDocumentManager implements DocumentManager {
         if (this._poisonIds.includes(id)) {
             throw new ItemNotFoundError(id);
         }
-        const result = this._itemData.get(id);
+        const result = this._itemDataByUuid.get(id);
         if (!result && this._permissive) {
             return StubDocumentManager._defaultItemData;
         } else if (!result) {
@@ -105,13 +105,13 @@ class StubDocumentManager implements DocumentManager {
             if (this._poisonIds.includes(id)) {
                 throw new ItemNotFoundError(id);
             }
-            const result = this._itemData.get(id);
+            const result = this._itemDataByUuid.get(id);
             if (!result && this._permissive) {
                 results.set(id, StubDocumentManager._defaultItemData);
             } else if (!result) {
                 throw new ItemNotFoundError(id);
             } else {
-                results.set(id, this._itemData.get(id));
+                results.set(id, this._itemDataByUuid.get(id));
             }
         }
         return results;

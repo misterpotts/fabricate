@@ -22,7 +22,6 @@
       "node",
       "sinon",
       "jest",
-      "handlebars",
       "svelte",
       "@league-of-foundry-developers/foundry-vtt-types"
     ],

@@ -1,7 +1,7 @@
 import {SvelteApplication} from "../SvelteApplication";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {CraftingComponent} from "../../scripts/common/CraftingComponent";
-import {GameProvider} from "../../scripts/foundry/GameProvider";
+import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
 import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
 import {Combination} from "../../scripts/common/Combination";
@@ -18,8 +18,8 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
 
     make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
 
-        const gameProvider = new GameProvider();
-        const GAME = gameProvider.globalGameObject();
+        const gameProvider = new DefaultGameProvider();
+        const GAME = gameProvider.get();
 
         const applicationOptions = {
             title: GAME.i18n.format(`${Properties.module.id}.ComponentSalvageApp.title`, { actorName: actor.name }),

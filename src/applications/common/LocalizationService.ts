@@ -24,19 +24,19 @@ class DefaultLocalizationService implements LocalizationService {
         if (!childPaths) {
             return "";
         }
-        const localization = this._gameProvider.globalGameObject().i18n;
+        const localization = this._gameProvider.get().i18n;
         return childPaths
             .map(childPath => localization.localize(`${basePath}.${childPath}`))
             .join(lineBreak ? "\n" : ", ");
     }
 
     localize(path: string) {
-        const localization = this._gameProvider.globalGameObject().i18n;
+        const localization = this._gameProvider.get().i18n;
         return localization.localize(path);
     }
 
     format(path: string, params: {} = {}) {
-        const localization = this._gameProvider.globalGameObject().i18n;
+        const localization = this._gameProvider.get().i18n;
         return localization.format(path, params);
     }
 

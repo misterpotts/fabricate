@@ -6,7 +6,6 @@ import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFound
 import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
 import {GameProvider} from "../foundry/GameProvider";
 import {DocumentManager, FabricateItemData} from "../foundry/DocumentManager";
-import {CraftingSystem} from "../system/CraftingSystem";
 import EmbeddedCollection
     from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/embedded-collection.mjs";
 import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
@@ -41,7 +40,7 @@ class CraftingInventory implements Inventory {
     private readonly _documentManager: DocumentManager;
     private readonly _objectUtils: ObjectUtility;
     private readonly _actor: any;
-    private readonly _craftingSystem: CraftingSystem;
+    private readonly _knownComponentsByItemUuid: Map<string, CraftingComponent>;
     private _managedItems: Map<CraftingComponent, { item: any, quantity: number }[]>;
     private readonly _itemQuantityReader: ItemQuantityReader;
     private readonly _itemQuantityWriter: ItemQuantityWriter;
@@ -50,8 +49,8 @@ class CraftingInventory implements Inventory {
         actor,
         documentManager,
         objectUtils,
-        craftingSystem,
         managedItems = new Map(),
+        knownComponentsByItemUuid = new Map(),
         itemQuantityReader = new AlwaysOneItemQuantityReader(),
         itemQuantityWriter = new NoItemQuantityWriter()
     }: {
@@ -59,14 +58,14 @@ class CraftingInventory implements Inventory {
         gameProvider: GameProvider;
         documentManager: DocumentManager;
         objectUtils: ObjectUtility;
-        craftingSystem: CraftingSystem;
+        knownComponentsByItemUuid?: Map<string, CraftingComponent>;
         ownedComponents?: Combination<CraftingComponent>;
         managedItems?: Map<CraftingComponent, { item: any, quantity: number }[]>;
         itemQuantityReader?: ItemQuantityReader;
         itemQuantityWriter?: ItemQuantityWriter;
     }) {
         this._actor = actor;
-        this._craftingSystem = craftingSystem;
+        this._knownComponentsByItemUuid = knownComponentsByItemUuid;
         this._documentManager = documentManager;
         this._objectUtils = objectUtils;
         this._managedItems = managedItems;
@@ -180,7 +179,7 @@ class CraftingInventory implements Inventory {
         return this.acceptResult(salvageResult.created, salvageResult.consumed);
     }
 
-    async acceptResult(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): Promise<any[]> {
+    private async acceptResult(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): Promise<any[]> {
         await this.index();
 
         const activeEffects = consumed
@@ -258,10 +257,10 @@ class CraftingInventory implements Inventory {
         const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
         const itemsByComponentType: Map<CraftingComponent, { item: any, quantity: number }[]> = new Map();
         await Promise.all(Array.from(ownedItems.values())
-            .filter((item: any) => this._craftingSystem.includesComponentByItemUuid(item.getFlag("core", "sourceId")))
+            .filter((item: any) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
             .map(async (item: BaseItem) => {
                 const sourceItemUuid: string = <string>item.getFlag("core", "sourceId");
-                const component = this._craftingSystem.getComponentByItemUuid(sourceItemUuid);
+                const component = this._knownComponentsByItemUuid.get(sourceItemUuid);
                 const quantity = await this._itemQuantityReader.read(item);
                 if (itemsByComponentType.has(component)) {
                     itemsByComponentType.get(component).push({ item, quantity });

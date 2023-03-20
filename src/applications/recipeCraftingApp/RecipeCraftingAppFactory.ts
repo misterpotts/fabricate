@@ -1,6 +1,6 @@
 import {SvelteApplication} from "../SvelteApplication";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {GameProvider} from "../../scripts/foundry/GameProvider";
+import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
 import {DefaultLocalizationService} from "../common/LocalizationService";
 import RecipeCraftingApp from "./RecipeCraftingApp.svelte";
@@ -17,8 +17,8 @@ class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
 
     make(recipe: Recipe, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
 
-        const gameProvider = new GameProvider();
-        const GAME = gameProvider.globalGameObject();
+        const gameProvider = new DefaultGameProvider();
+        const GAME = gameProvider.get();
 
         const applicationOptions = {
             title: GAME.i18n.format(`${Properties.module.id}.RecipeCraftingApp.title`, { actorName: actor.name }),

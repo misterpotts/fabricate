@@ -77,6 +77,10 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         return this._entriesById.get(id);
     }
 
+    get allByItemUuid(): Map<string, CraftingComponent> {
+        return new Map(this._entriesByItemUuid)
+    }
+
     get sourceData(): Record<string, CraftingComponentJson> {
         return this._sourceData;
     }

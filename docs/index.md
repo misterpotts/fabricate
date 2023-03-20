@@ -84,7 +84,7 @@ If you like Fabricate and want to show some support, you can do so on [Patreon] 
 - A library of over 500 RPG crafting icons
 - Early access to Fabricate releases
 - A small amount of 5E content
-- The ✨ good feels ✨ that come from supporting a module author 
+- The ✨ good feels ✨ that come from supporting an open source module author 
 - Access to Patron Discord channels and the ability to vote on new features 
 
 ----

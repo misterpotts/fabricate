@@ -40,7 +40,7 @@
     const craftingSystemEditor = new CraftingSystemEditor({
         craftingSystems,
         systemRegistry,
-        game: gameProvider.globalGameObject(),
+        game: gameProvider.get(),
         localization
     });
 

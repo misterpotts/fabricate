@@ -1,5 +1,5 @@
 import Properties from "../Properties";
-import {GameProvider} from "../foundry/GameProvider";
+import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 
 interface FabricateSetting<T> {
     version: string;
@@ -69,7 +69,7 @@ class DefaultSettingManager<T> implements SettingManager<T> {
         moduleId = Properties.module.id,
         settingKey,
         targetVersion,
-        gameProvider = new GameProvider(),
+        gameProvider = new DefaultGameProvider(),
         settingsMigrators = [],
     }: {
         moduleId?: string;
@@ -202,15 +202,15 @@ class DefaultSettingManager<T> implements SettingManager<T> {
     }
 
     save(value: FabricateSetting<T>): Promise<FabricateSetting<T>> {
-        return this._gameProvider.globalGameObject().settings.set(this._moduleId, this._settingKey, value);
+        return this._gameProvider.get().settings.set(this._moduleId, this._settingKey, value);
     }
 
     load(): FabricateSetting<T> {
-        return this._gameProvider.globalGameObject().settings.get(this._moduleId, this._settingKey) as FabricateSetting<T>;
+        return this._gameProvider.get().settings.get(this._moduleId, this._settingKey) as FabricateSetting<T>;
     }
 
     async delete(): Promise<T> {
-        const setting = this._gameProvider.globalGameObject().settings.storage.get("world").getSetting(`${this._moduleId}.${this._settingKey}`);
+        const setting = this._gameProvider.get().settings.storage.get("world").getSetting(`${this._moduleId}.${this._settingKey}`);
         await setting.delete();
         return setting;
     }

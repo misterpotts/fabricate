@@ -7,7 +7,7 @@ import {
     ItemQuantityWriter, NoItemQuantityWriter
 } from "./ItemQuantity";
 import {DefaultDocumentManager} from "../foundry/DocumentManager";
-import {ObjectUtility} from "../foundry/ObjectUtility";
+import {DefaultObjectUtility} from "../foundry/ObjectUtility";
 import {GameProvider} from "../foundry/GameProvider";
 import {CraftingSystem} from "../system/CraftingSystem";
 
@@ -46,7 +46,7 @@ class DefaultInventoryFactory implements InventoryFactory {
     }
 
     make(actor: any, craftingSystem: CraftingSystem): Inventory {
-        const GAME = this._gameProvider.globalGameObject();
+        const GAME = this._gameProvider.get();
 
         const itemQuantityIo = DefaultInventoryFactory._itemQuantityIoByGameSystem.get(GAME.system.id);
         const itemQuantityReader = itemQuantityIo ? itemQuantityIo.reader : new AlwaysOneItemQuantityReader();
@@ -55,9 +55,9 @@ class DefaultInventoryFactory implements InventoryFactory {
        return new CraftingInventory({
             actor,
             documentManager: new DefaultDocumentManager(),
-            objectUtils: new ObjectUtility(),
+            objectUtils: new DefaultObjectUtility(),
             gameProvider: this._gameProvider,
-            craftingSystem,
+            knownComponentsByItemUuid: craftingSystem.craftingComponentsByItemUuid,
             itemQuantityReader,
             itemQuantityWriter
         });

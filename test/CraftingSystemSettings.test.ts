@@ -21,14 +21,14 @@ const stubGetSettingsMethod = Sandbox.stub(stubGameObject.settings, "get");
 const stubSetSettingsMethod = Sandbox.stub(stubGameObject.settings, "set");
 
 const stubGameProvider: GameProvider = <GameProvider><unknown>{
-    globalGameObject: () => {}
+    get: () => {}
 };
-const stubGlobalGameObjectMethod = Sandbox.stub(stubGameProvider, "globalGameObject");
+const stubGetGameMethod = Sandbox.stub(stubGameProvider, "get");
 
 beforeEach(() => {
     Sandbox.reset();
 
-    stubGlobalGameObjectMethod.returns(stubGameObject);
+    stubGetGameMethod.returns(stubGameObject);
     stubSetSettingsMethod.resolves();
 });
 

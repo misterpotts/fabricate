@@ -1,13 +1,19 @@
-class GameProvider {
+interface GameProvider {
 
-    public globalGameObject(): Game {
+    get(): Game;
+
+}
+
+class DefaultGameProvider implements GameProvider {
+
+    get(): Game {
         if (!game) {
-            throw new Error("Game object not yet initialised. " +
-                "Wait for the 'init' hook event before calling this method");
+            throw new Error(`Game object not yet initialised. 
+                Wait for the Foundry 'init' hook before calling this method`);
         }
-        return <Game> game;
+        return <Game>game;
     }
 
 }
 
-export { GameProvider }
+export { GameProvider, DefaultGameProvider }
