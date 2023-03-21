@@ -5,31 +5,117 @@ import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system/
 
 interface SystemRegistry {
 
+    /**
+     * Gets a crafting system by ID.
+     *
+     * @param id The ID of the Crafting system to get
+     * @return A Promise that resolves to the crafting system with the provided ID, or undefined
+    * */
     getCraftingSystemById(id: string): Promise<CraftingSystem>;
 
+    /**
+     * Gets all crafting systems, including both embedded and user-defined systems.
+     *
+     * @return A Promise that resolves to a Map of crafting systems, keyed on the crafting system ID
+     * */
     getAllCraftingSystems(): Promise<Map<string, CraftingSystem>>;
 
+    /**
+     * Gets all crafting systems that were defined by users. Does not include embedded systems.
+     *
+     * @return A Promise that resolves to a Map of crafting systems, keyed on the crafting system ID
+     * */
     getUserDefinedSystems(): Promise<Map<string, CraftingSystem>>;
 
+    /**
+     * Gets all crafting systems that were embedded with Fabricate for the current game system only. Does not include
+     * user-defined systems.
+     *
+     * @return A Promise that resolves to a Map of crafting systems, keyed on the crafting system ID
+     * */
     getEmbeddedSystems(): Promise<Map<string, CraftingSystem>>;
 
+    /**
+     * Delete a crafting system by ID. This will remove the crafting system, its recipes, components and essences. This
+     * operation is permanent and cannot be undone
+     *
+     * @param id The ID of the Crafting system to delete
+     * @return A Promise that resolves when the crafting system has been deleted, or if the crafting system ID is not
+     *  found
+     * */
     deleteCraftingSystemById(id: string): Promise<void>;
 
+    /**
+     * Saves a crafting system, updating the existing data for that system and modifying all essences, recipes and
+     * components within the crafting system. Any deleted essences, components and recipes are removed from the saved
+     * data.
+     *
+     * @param craftingSystem The crafting system to save
+     * @return A Promise that resolves when the crafting system has been saved
+     * */
     saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem>;
 
+    /**
+     * Saves multiple crafting systems, updating the existing data for each system and modifying all essences, recipes
+     * and components within each crafting system. Any deleted essences, components and recipes are removed from the
+     * saved crafting system data.
+     *
+     * @param craftingSystems A map of crafting systems to save, keyed on the crafting system ID
+     * @return A Promise that resolves when the crafting systems have been saved
+     * */
     saveCraftingSystems(craftingSystems: Map<string, CraftingSystem>): Promise<Map<string, CraftingSystem>>;
 
+    /**
+     * Creates a copy of a crafting system, including all essences, recipes and components within the source crafting
+     * system. The cloned system is created with a modified name and a new, unique ID.
+     *
+     * @param id The ID of the crafting system to duplicate
+     * @return A Promise that resolves when the crafting system has been duplicated and saved
+     * */
     cloneCraftingSystemById(id: string): Promise<CraftingSystem>;
 
+    /**
+     * Gets the serialised representation of all crafting systems embedded with Fabricate for the current game system
+     * only.
+     *
+     * @return an array of serialised crafting system data for the embedded crafting systems that support the current
+     *  game system
+     * */
     getEmbeddedCraftingSystemsJson(): CraftingSystemJson[];
 
+    /**
+     * Performs a complete reset of all Fabricate data, restoring the state of the module data at the time of
+     * installation. All user-defined crafting systems will be deleted during this reset.
+     *
+     * @return A Promise that resolves when all Fabricate data has been reset
+     * */
     reset(): Promise<void>;
 
+    /**
+     * Gets the default value for Fabricate's crafting system settings. This will include embedded crafting systems for
+     * the current game system, but no user-defined crafting systems present.
+     *
+     * @return the default setting value for Fabricate
+     * */
     getDefaultSettingValue(): FabricateSetting<Record<string, CraftingSystemJson>>;
 
+    /**
+     * Creates a crafting system from a serialised `CraftingSystemJson` definition.
+     *
+     * @param systemDefinition the serialised crafting system definition
+     * @return a promise that resolves to the newly created crafting system
+     * */
     createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem>;
 
+    /**
+     * Checks if a crafting system with a given ID exists.
+     *
+     * @param id The ID of the Crafting system to check
+     * @return A Promise that resolves to a boolean value that is true if a crafting system with the given ID exists,
+     *  false if not
+     * */
     hasCraftingSystem(id: string): Promise<boolean>;
+
 }
 
 enum ErrorDecisionType {
@@ -64,15 +150,6 @@ class DefaultSystemRegistry implements SystemRegistry {
         await this._settingsManager.write(allCraftingSystemSettings);
     }
 
-    /**
-     * Removes bundled systems from stored settings.
-     *
-     * todo: deprecate and delete in later versions
-     * */
-    public async purgeBundledSystemsFromStoredSettings(): Promise<void> {
-        return this.deleteCraftingSystemById(ALCHEMISTS_SUPPLIES.definition.id);
-    }
-
     public async getAllCraftingSystems(): Promise<Map<string, CraftingSystem>> {
         const allCraftingSystems = await Promise.all([
             this.getUserDefinedSystems(),
@@ -104,8 +181,11 @@ class DefaultSystemRegistry implements SystemRegistry {
 
     async getCraftingSystemById(id: string): Promise<CraftingSystem> {
         const allCraftingSystemSettings: Record<string, CraftingSystemJson> = await this._settingsManager.read();
-        const craftingSystemJson = allCraftingSystemSettings[id];
-        return this._craftingSystemFactory.make(craftingSystemJson);
+        if (id in allCraftingSystemSettings) {
+            const craftingSystemJson = allCraftingSystemSettings[id];
+            return this._craftingSystemFactory.make(craftingSystemJson);
+        }
+        return undefined;
     }
 
     async hasCraftingSystem(id: string): Promise<boolean> {
@@ -156,6 +236,20 @@ class DefaultSystemRegistry implements SystemRegistry {
     }
 
     public async createCraftingSystem(systemDefinition: CraftingSystemJson): Promise<CraftingSystem> {
+        if (!systemDefinition.id) {
+            systemDefinition.id = randomID();
+        }
+        if (!systemDefinition.parts) {
+            systemDefinition.parts = {
+                components: {},
+                recipes: {},
+                essences: {}
+            }
+        }
+        if (!systemDefinition.parts.components) { systemDefinition.parts.components = {}; }
+        if (!systemDefinition.parts.recipes) { systemDefinition.parts.recipes = {}; }
+        if (!systemDefinition.parts.essences) { systemDefinition.parts.essences = {}; }
+
         const craftingSystem = await this._craftingSystemFactory.make(systemDefinition);
         return this.saveCraftingSystem(craftingSystem);
     }

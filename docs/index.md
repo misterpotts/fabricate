@@ -1,6 +1,7 @@
 ---
-title: About Fabricate
+title: About
 layout: home
+nav_order: 1
 ---
 
 ![](img/fabricate-repo-preview.png)

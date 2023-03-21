@@ -1,10 +1,11 @@
 import {Dictionary} from "./Dictionary";
 import {CraftingComponent, CraftingComponentJson, SalvageOption, SalvageOptionJson} from "../common/CraftingComponent";
-import {DocumentManager, NoFabricateItemData} from "../foundry/DocumentManager";
+import {DocumentManager, FabricateItemData, NoFabricateItemData} from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {combinationFromRecord} from "./DictionaryUtils";
 import {SelectableOptions} from "../common/SelectableOptions";
 import {Essence} from "../common/Essence";
+import Properties from "../Properties";
 
 export class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingComponent> {
 
@@ -167,6 +168,10 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         await this.loadDependencies();
         const itemUuid = sourceRecord.itemUuid;
         const itemData = await this._documentManager.getDocumentByUuid(itemUuid);
+        return this.buildComponent(id, sourceRecord, itemData);
+    }
+
+    private buildComponent(id: string, sourceRecord: CraftingComponentJson, itemData: FabricateItemData): CraftingComponent {
         return new CraftingComponent({
             id,
             itemData,
@@ -225,5 +230,19 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
 
     getByItemUuid(uuid: string) {
         return this._entriesByItemUuid.get(uuid);
+    }
+
+    async create(craftingComponentJson: CraftingComponentJson): Promise<CraftingComponent> {
+        const itemData = await this._documentManager.getDocumentByUuid(craftingComponentJson.itemUuid);
+        if (itemData.hasErrors) {
+            throw new Error(`Could not load document with UUID "${craftingComponentJson.itemUuid}". Errors ${itemData.errors.join(", ")} `);
+        }
+        if (!Properties.module.documents.supportedTypes.includes(itemData.sourceDocument.documentName)) {
+            throw new Error(`Document with UUID is a ${itemData.sourceDocument.documentName}. Fabricate only allows the following document types: ${Properties.module.documents.supportedTypes.join(", ")}`);
+        }
+        const componentId = randomID();
+        const component = await this.buildComponent(componentId, craftingComponentJson, itemData);
+        this.insert(component);
+        return component;
     }
 }

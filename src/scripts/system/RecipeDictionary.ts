@@ -14,6 +14,7 @@ import {combinationFromRecord} from "./DictionaryUtils";
 import {CraftingComponent} from "../common/CraftingComponent";
 import {SelectableOptions} from "../common/SelectableOptions";
 import {Essence} from "../common/Essence";
+import Properties from "../Properties";
 
 export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     private _sourceData: Record<string, RecipeJson>;
@@ -133,15 +134,19 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         return Array.from(this._entriesById.values());
     }
 
-    async loadById(id: string, itemDataCache?: Map<string, FabricateItemData>): Promise<Recipe> {
+    async loadById(id: string, itemDataCache: Map<string, FabricateItemData> = new Map()): Promise<Recipe> {
         const sourceRecord = this._sourceData[id];
         if (!sourceRecord) {
             throw new Error(`Unable to load Recipe with ID ${id}. No definition for the recipe was found in source data. 
                 This can occur if a recipe is loaded before it is saved or an invalid ID is passed.`);
         }
-        await this.loadDependencies();
         const itemUuid = sourceRecord.itemUuid;
         const itemData = itemDataCache.has(itemUuid) ? itemDataCache.get(itemUuid) : await this._documentManager.getDocumentByUuid(itemUuid);
+        await this.loadDependencies();
+        return this.buildRecipe(id, sourceRecord, itemData);
+    }
+
+    private buildRecipe(id: string, sourceRecord: RecipeJson, itemData: FabricateItemData): Recipe {
         return new Recipe({
             id,
             itemData,
@@ -244,4 +249,19 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     getByItemUuid(itemUuid: string) {
         return this._entriesByItemUuid.get(itemUuid);
     }
+
+    async create(recipeJson: RecipeJson): Promise<Recipe> {
+        const itemData = await this._documentManager.getDocumentByUuid(recipeJson.itemUuid);
+        if (itemData.hasErrors) {
+            throw new Error(`Could not load document with UUID "${recipeJson.itemUuid}". Errors ${itemData.errors.join(", ")} `);
+        }
+        if (!Properties.module.documents.supportedTypes.includes(itemData.sourceDocument.documentName)) {
+            throw new Error(`Document with UUID is a ${itemData.sourceDocument.documentName}. Fabricate only allows the following document types: ${Properties.module.documents.supportedTypes.join(", ")}`);
+        }
+        const recipeId = randomID();
+        const recipe = await this.buildRecipe(recipeId, recipeJson, itemData);
+        this.insert(recipe);
+        return recipe;
+    }
+
 }

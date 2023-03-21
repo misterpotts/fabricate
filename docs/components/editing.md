@@ -26,7 +26,7 @@ You can also define salvage for components and add essences to them.
 To add a component to a crafting system, simply navigate to the "Components" tab in the crafting system manager.
 This will open the component browser. 
 Make sure that you've selected the crafting system you want to add the components to from the left menu.
-The, simply drag and drop the items into the drop zone beneath "Add a component to `{my system}`".
+Then, simply drag and drop the items into the drop zone beneath "Add a component to `{my system}`".
 Fabricate will add the component to the crafting system and display a notification confirming it was successfully added.
 
 ![](/fabricate/img/adding-components.gif)

@@ -1,6 +1,7 @@
 import {Dictionary} from "./Dictionary";
 import {Essence, EssenceJson} from "../common/Essence";
 import {DocumentManager, FabricateItemData, PendingFabricateItemData} from "../foundry/DocumentManager";
+import Properties from "../Properties";
 
 export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
 
@@ -101,14 +102,8 @@ export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
             throw new Error(`Unable to load Essence with ID ${id}. No definition for the essence was found in source data. 
                 This can occur if an Essence is loaded before it is saved or an invalid ID is passed.`);
         }
-        const essence = new Essence({
-            id: id,
-            name: sourceRecord.name,
-            description: sourceRecord.description,
-            iconCode: sourceRecord.iconCode,
-            tooltip: sourceRecord.tooltip,
-            activeEffectSource: sourceRecord.activeEffectSourceItemUuid ? new PendingFabricateItemData(sourceRecord.activeEffectSourceItemUuid) : null
-        });
+        const itemData = sourceRecord.activeEffectSourceItemUuid ? new PendingFabricateItemData(sourceRecord.activeEffectSourceItemUuid) : null;
+        const essence = this.buildEssence(id, sourceRecord, itemData);
         if (essence.hasActiveEffectSource) {
             let itemData: FabricateItemData;
             if (itemDataCache.has(essence.activeEffectSource.uuid)) {
@@ -119,6 +114,17 @@ export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
             essence.activeEffectSource = itemData;
         }
         return essence;
+    }
+
+    private buildEssence(id: string, sourceRecord:EssenceJson, itemData: FabricateItemData): Essence {
+        return new Essence({
+            id: id,
+            name: sourceRecord.name,
+            description: sourceRecord.description,
+            iconCode: sourceRecord.iconCode,
+            tooltip: sourceRecord.tooltip,
+            activeEffectSource: itemData
+        })
     }
 
     toJson(): Record<string, EssenceJson> {
@@ -136,4 +142,23 @@ export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
         return this._entries.size === 0;
     }
 
+    async create(essenceJson: EssenceJson): Promise<Essence> {
+        let essence: Essence;
+        const essenceId = randomID();
+        if (essenceJson.activeEffectSourceItemUuid) {
+            const itemData = await this._documentManager.getDocumentByUuid(essenceJson.activeEffectSourceItemUuid);
+            if (itemData.hasErrors) {
+                throw new Error(`Could not load document with UUID "${essenceJson.activeEffectSourceItemUuid}". Errors ${itemData.errors.join(", ")} `);
+            }
+            if (!Properties.module.documents.supportedTypes.includes(itemData.sourceDocument.documentName)) {
+                throw new Error(`Document with UUID is a ${itemData.sourceDocument.documentName}. Fabricate only allows the following document types: ${Properties.module.documents.supportedTypes.join(", ")}`);
+            }
+            essence = await this.buildEssence(essenceId, essenceJson, itemData);
+            this.insert(essence);
+            return essence;
+        }
+        essence = await this.buildEssence(essenceId, essenceJson, null);
+        this.insert(essence);
+        return essence;
+    }
 }

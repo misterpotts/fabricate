@@ -181,6 +181,18 @@ class PartDictionary {
     getRecipeByItemUuid(uuid: string) {
         return this._recipeDictionary.getByItemUuid(uuid);
     }
+
+    async createRecipe(recipeJson: RecipeJson): Promise<Recipe> {
+        return this._recipeDictionary.create(recipeJson);
+    }
+
+    async createComponent(craftingComponentJson: CraftingComponentJson): Promise<CraftingComponent> {
+        return this._componentDictionary.create(craftingComponentJson);
+    }
+
+    async createEssence(essenceJson: EssenceJson): Promise<Essence> {
+        return this._essenceDictionary.create(essenceJson);
+    }
 }
 
 class PartDictionaryFactory {
@@ -218,9 +230,9 @@ class PartDictionaryFactory {
 }
 
 interface PartDictionaryJson {
-    components: Record<string, CraftingComponentJson>,
-    recipes: Record<string, RecipeJson>,
-    essences: Record<string, EssenceJson>
+    components: Record<string, CraftingComponentJson>;
+    recipes: Record<string, RecipeJson>;
+    essences: Record<string, EssenceJson>;
 }
 
 export { PartDictionary, PartDictionaryJson, PartDictionaryFactory }

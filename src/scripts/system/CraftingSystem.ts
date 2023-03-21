@@ -164,6 +164,18 @@ class CraftingSystem {
         return this._partDictionary.insertRecipe(recipe);
     }
 
+    public async createRecipe(recipeJson: RecipeJson): Promise<Recipe> {
+        return this._partDictionary.createRecipe(recipeJson);
+    }
+
+    public async createComponent(craftingComponentJson: CraftingComponentJson): Promise<CraftingComponent> {
+        return this._partDictionary.createComponent(craftingComponentJson);
+    }
+
+    public async createEssence(essenceJson: EssenceJson): Promise<Essence> {
+        return this._partDictionary.createEssence(essenceJson);
+    }
+
     get summary(): string {
         return this._details.summary;
     }

@@ -26,6 +26,8 @@ aux_links:
 
 permalink: pretty
 
+enable_copy_code_button: true
+
 callouts_level: quiet # or loud
 callouts:
   highlight:
