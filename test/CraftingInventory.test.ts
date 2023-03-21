@@ -21,6 +21,7 @@ import {StubActorFactory} from "./stubs/StubActorFactory";
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
 import {StubItem} from "./stubs/StubItem";
+import {SuccessfulSalvageResult} from "../src/scripts/crafting/result/SalvageResult";
 
 describe("Crafting Inventory", () => {
 
@@ -38,110 +39,201 @@ describe("Crafting Inventory", () => {
         .map(component => [component.itemUuid, component.itemData]));
     const documentManager = new StubDocumentManager(fabricateItemDataByUuid);
 
-    test("should index actor's inventory with no fabricate items", async () => {
+    describe("indexing", () => {
 
-        const ownedItems = generateInventory(Combination.EMPTY(), 40);
-        const actorFactory = new StubActorFactory({ownedItems});
-        const actor = actorFactory.make();
+        test("should index actor's inventory with no fabricate items", async () => {
 
-        const underTest = new CraftingInventory({
-            actor,
-            documentManager,
-            itemQuantityWriter: new DnD5EItemQuantityWriter(),
-            itemQuantityReader: new DnD5EItemQuantityReader(),
-            gameProvider: new StubGameProvider(stubGameObject),
-            objectUtils: new StubObjectUtility(),
-            knownComponentsByItemUuid
+            const ownedItems = generateInventory(Combination.EMPTY(), 40);
+            const actorFactory = new StubActorFactory({ownedItems});
+            const actor = actorFactory.make();
+
+            const underTest = new CraftingInventory({
+                actor,
+                documentManager,
+                itemQuantityWriter: new DnD5EItemQuantityWriter(),
+                itemQuantityReader: new DnD5EItemQuantityReader(),
+                gameProvider: new StubGameProvider(stubGameObject),
+                objectUtils: new StubObjectUtility(),
+                knownComponentsByItemUuid
+            });
+
+            await underTest.index();
+
+            expect(underTest.size).toEqual(0);
+            expect(underTest.amountFor(testComponentOne)).toEqual(0);
+            expect(underTest.amountFor(testComponentTwo)).toEqual(0);
+            expect(underTest.amountFor(testComponentThree)).toEqual(0);
+            expect(underTest.amountFor(testComponentFour)).toEqual(0);
+            expect(underTest.amountFor(testComponentFive)).toEqual(0);
+            expect(underTest.amountFor(testComponentSix)).toEqual(0);
+            expect(underTest.amountFor(testComponentSeven)).toEqual(0);
+
         });
 
-        await underTest.index();
+        test("should index actor's inventory with some fabricate items", async () => {
 
-        expect(underTest.size).toEqual(0);
-        expect(underTest.amountFor(testComponentOne)).toEqual(0);
-        expect(underTest.amountFor(testComponentTwo)).toEqual(0);
-        expect(underTest.amountFor(testComponentThree)).toEqual(0);
-        expect(underTest.amountFor(testComponentFour)).toEqual(0);
-        expect(underTest.amountFor(testComponentFive)).toEqual(0);
-        expect(underTest.amountFor(testComponentSix)).toEqual(0);
-        expect(underTest.amountFor(testComponentSeven)).toEqual(0);
+            const componentOneQuantity = 7;
+            const componentFiveQuantity = 4;
+            const componentSevenQuantity = 1;
+            const ownedItems = generateInventory(Combination.ofUnits([
+                new Unit<CraftingComponent>(testComponentOne, componentOneQuantity),
+                new Unit<CraftingComponent>(testComponentFive, componentFiveQuantity),
+                new Unit<CraftingComponent>(testComponentSeven, componentSevenQuantity)
+            ]), 34);
+            const actorFactory = new StubActorFactory({ownedItems});
+            const actor = actorFactory.make();
+
+            const underTest = new CraftingInventory({
+                actor,
+                documentManager,
+                itemQuantityWriter: new DnD5EItemQuantityWriter(),
+                itemQuantityReader: new DnD5EItemQuantityReader(),
+                gameProvider: new StubGameProvider(stubGameObject),
+                objectUtils: new StubObjectUtility(),
+                knownComponentsByItemUuid
+            });
+
+            await underTest.index();
+
+            expect(underTest.size).toEqual(12);
+            expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity);
+            expect(underTest.amountFor(testComponentTwo)).toEqual(0);
+            expect(underTest.amountFor(testComponentThree)).toEqual(0);
+            expect(underTest.amountFor(testComponentFour)).toEqual(0);
+            expect(underTest.amountFor(testComponentFive)).toEqual(componentFiveQuantity);
+            expect(underTest.amountFor(testComponentSix)).toEqual(0);
+            expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity);
+
+        });
+
+        test("should index actor's inventory without counting item quantity if reader not specified", async () => {
+
+            const componentOneQuantity = 7;
+            const componentFiveQuantity = 4;
+            const componentSevenQuantity = 1;
+            const ownedItems = generateInventory(Combination.ofUnits([
+                new Unit<CraftingComponent>(testComponentOne, componentOneQuantity),
+                new Unit<CraftingComponent>(testComponentFive, componentFiveQuantity),
+                new Unit<CraftingComponent>(testComponentSeven, componentSevenQuantity)
+            ]), 34);
+            generateInventory(Combination.of(testComponentOne, 1), 0)
+                .forEach(value => ownedItems.set(value.id, value));
+            const actorFactory = new StubActorFactory({ownedItems});
+            const actor = actorFactory.make();
+
+            const underTest = new CraftingInventory({
+                actor,
+                documentManager,
+                itemQuantityWriter: new NoItemQuantityWriter(),
+                itemQuantityReader: new AlwaysOneItemQuantityReader(),
+                gameProvider: new StubGameProvider(stubGameObject),
+                objectUtils: new StubObjectUtility(),
+                knownComponentsByItemUuid
+            });
+
+            await underTest.index();
+
+            expect(underTest.size).toEqual(4);
+
+            const justOne = 1;
+            const two = 2;
+
+            expect(underTest.amountFor(testComponentOne)).toEqual(two);
+            expect(underTest.amountFor(testComponentTwo)).toEqual(0);
+            expect(underTest.amountFor(testComponentThree)).toEqual(0);
+            expect(underTest.amountFor(testComponentFour)).toEqual(0);
+            expect(underTest.amountFor(testComponentFive)).toEqual(justOne);
+            expect(underTest.amountFor(testComponentSix)).toEqual(0);
+            expect(underTest.amountFor(testComponentSeven)).toEqual(justOne);
+
+        });
 
     });
 
-    test("should index actor's inventory with some fabricate items", async () => {
+    describe("accepting results", () => {
 
-        const componentOneQuantity = 7;
-        const componentFiveQuantity = 4;
-        const componentSevenQuantity = 1;
-        const ownedItems = generateInventory(Combination.ofUnits([
-            new Unit<CraftingComponent>(testComponentOne, componentOneQuantity),
-            new Unit<CraftingComponent>(testComponentFive, componentFiveQuantity),
-            new Unit<CraftingComponent>(testComponentSeven, componentSevenQuantity)
-        ]), 34);
-        const actorFactory = new StubActorFactory({ownedItems});
-        const actor = actorFactory.make();
+        test("should salvage a component when the results are not owned", async () => {
 
-        const underTest = new CraftingInventory({
-            actor,
-            documentManager,
-            itemQuantityWriter: new DnD5EItemQuantityWriter(),
-            itemQuantityReader: new DnD5EItemQuantityReader(),
-            gameProvider: new StubGameProvider(stubGameObject),
-            objectUtils: new StubObjectUtility(),
-            knownComponentsByItemUuid
+            const ownedItems = generateInventory(Combination.of(testComponentThree, 1));
+            const actorFactory = new StubActorFactory({ ownedItems });
+            const actor = actorFactory.make();
+
+            const underTest = new CraftingInventory({
+                actor,
+                documentManager,
+                itemQuantityWriter: new DnD5EItemQuantityWriter(),
+                itemQuantityReader: new DnD5EItemQuantityReader(),
+                gameProvider: new StubGameProvider(stubGameObject),
+                objectUtils: new StubObjectUtility(),
+                knownComponentsByItemUuid
+            });
+
+            await underTest.index();
+
+            expect(underTest.size).toEqual(1);
+
+            const componentSevenQuantity = 2;
+            const componentOneQuantity = 1;
+            const salvageResult = new SuccessfulSalvageResult({
+                consumed: Combination.of(testComponentThree, 1),
+                created: Combination.ofUnits([
+                    new Unit(testComponentSeven, componentSevenQuantity),
+                    new Unit(testComponentOne, componentOneQuantity)
+                ])
+            });
+
+            await underTest.acceptSalvageResult(salvageResult);
+
+            expect(underTest.size).toEqual(3);
+            expect(underTest.amountFor(testComponentThree)).toEqual(0);
+            expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity);
+            expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity);
+
         });
 
-        await underTest.index();
+        test("should salvage a component when the results are owned", async () => {
+            const ownedItems = generateInventory(Combination.ofUnits([
+                new Unit(testComponentThree, 1),
+                new Unit(testComponentSeven, 1),
+                new Unit(testComponentOne, 1)
+            ]));
+            const actorFactory = new StubActorFactory({ ownedItems });
+            const actor = actorFactory.make();
 
-        expect(underTest.size).toEqual(12);
-        expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity);
-        expect(underTest.amountFor(testComponentTwo)).toEqual(0);
-        expect(underTest.amountFor(testComponentThree)).toEqual(0);
-        expect(underTest.amountFor(testComponentFour)).toEqual(0);
-        expect(underTest.amountFor(testComponentFive)).toEqual(componentFiveQuantity);
-        expect(underTest.amountFor(testComponentSix)).toEqual(0);
-        expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity);
+            const underTest = new CraftingInventory({
+                actor,
+                documentManager,
+                itemQuantityWriter: new DnD5EItemQuantityWriter(),
+                itemQuantityReader: new DnD5EItemQuantityReader(),
+                gameProvider: new StubGameProvider(stubGameObject),
+                objectUtils: new StubObjectUtility(),
+                knownComponentsByItemUuid
+            });
 
-    });
+            await underTest.index();
 
-    test("should index actor's inventory without counting item quantity if reader not specified", async () => {
+            expect(underTest.size).toEqual(3);
+            const initialItemCollectionSize = actor.items.size;
 
-        const componentOneQuantity = 7;
-        const componentFiveQuantity = 4;
-        const componentSevenQuantity = 1;
-        const ownedItems = generateInventory(Combination.ofUnits([
-            new Unit<CraftingComponent>(testComponentOne, componentOneQuantity),
-            new Unit<CraftingComponent>(testComponentFive, componentFiveQuantity),
-            new Unit<CraftingComponent>(testComponentSeven, componentSevenQuantity)
-        ]), 34);
-        generateInventory(Combination.of(testComponentOne, 1), 0)
-            .forEach(value => ownedItems.set(value.id, value));
-        const actorFactory = new StubActorFactory({ownedItems});
-        const actor = actorFactory.make();
+            const componentSevenQuantity = 2;
+            const componentOneQuantity = 1;
+            const salvageResult = new SuccessfulSalvageResult({
+                consumed: Combination.of(testComponentThree, 1),
+                created: Combination.ofUnits([
+                    new Unit(testComponentSeven, componentSevenQuantity),
+                    new Unit(testComponentOne, componentOneQuantity)
+                ])
+            });
 
-        const underTest = new CraftingInventory({
-            actor,
-            documentManager,
-            itemQuantityWriter: new NoItemQuantityWriter(),
-            itemQuantityReader: new AlwaysOneItemQuantityReader(),
-            gameProvider: new StubGameProvider(stubGameObject),
-            objectUtils: new StubObjectUtility(),
-            knownComponentsByItemUuid
+            await underTest.acceptSalvageResult(salvageResult);
+
+            expect(underTest.size).toEqual(5);
+            expect(underTest.amountFor(testComponentThree)).toEqual(0);
+            expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity + 1);
+            expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity + 1);
+
+            expect(actor.items.size).toEqual(initialItemCollectionSize - 1);
         });
-
-        await underTest.index();
-
-        expect(underTest.size).toEqual(4);
-
-        const justOne = 1;
-        const two = 2;
-
-        expect(underTest.amountFor(testComponentOne)).toEqual(two);
-        expect(underTest.amountFor(testComponentTwo)).toEqual(0);
-        expect(underTest.amountFor(testComponentThree)).toEqual(0);
-        expect(underTest.amountFor(testComponentFour)).toEqual(0);
-        expect(underTest.amountFor(testComponentFive)).toEqual(justOne);
-        expect(underTest.amountFor(testComponentSix)).toEqual(0);
-        expect(underTest.amountFor(testComponentSeven)).toEqual(justOne);
 
     });
 
@@ -154,8 +246,9 @@ function generateInventory(ownedComponents: Combination<CraftingComponent> = Com
         result.set(id, new StubItem({ id }));
     }
     ownedComponents.units.map(unit => {
-        result.set(unit.part.itemUuid, new StubItem({
-            id: unit.part.id,
+        const id = randomIdentifier();
+        result.set(id, new StubItem({
+            id: id,
             flags: {
                 core: {
                     sourceId: unit.part.itemUuid

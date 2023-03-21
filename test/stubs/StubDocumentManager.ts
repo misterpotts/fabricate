@@ -14,7 +14,9 @@ class StubDocumentManager implements DocumentManager {
         name: "Item name",
         imageUrl: "path/to/image/webp",
         itemUuid: "NOT_A_UUID",
-        sourceDocument: {}
+        sourceDocument: {
+            effects: []
+        }
     });
 
     private readonly _itemDataByUuid: Map<string, FabricateItemData>;

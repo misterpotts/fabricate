@@ -253,18 +253,15 @@ class CraftingInventory implements Inventory {
 
     async deleteOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         const ids: string[] = itemsData.map((itemData: any) => itemData._id);
-        // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.deleteEmbeddedDocuments('Item', ids);
+        return actor.deleteEmbeddedDocuments("Item", ids);
     }
 
     async createOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
-        // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.createEmbeddedDocuments('Item', itemsData);
+        return actor.createEmbeddedDocuments("Item", itemsData);
     }
 
     async updateOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
-        // @ts-ignore todo: This works in foundry but doesn't seem to be supported by VTT Types - check with League
-        return actor.updateEmbeddedDocuments('Item', itemsData);
+        return actor.updateEmbeddedDocuments("Item", itemsData);
     }
 
     async index(): Promise<void> {
