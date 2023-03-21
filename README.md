@@ -134,7 +134,7 @@ The template was provided by the League of Extraordinary Foundry Developers and 
 
 ## Other Acknowledgements
 
-Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `valravn#7351`, `ghost#2000`, `BadIdeasBureau#7024` and `Calego#0914`. 
+Thanks are due to The League of Extraordinary Foundry Developers, in particular to their members `valravn#7351`, `ghost#2000`, `BadIdeasBureau#7024`, `Calego#0914` and `Mana#4176`. 
 Join their Discord below.
 
 ![League Discord](https://discordapp.com/api/guilds/732325252788387980/widget.png?style=banner1)

@@ -1,6 +1,7 @@
 ---
-title: About Fabricate
+title: About
 layout: home
+nav_order: 1
 ---
 
 ![](img/fabricate-repo-preview.png)
@@ -78,14 +79,13 @@ I'm always happy to talk about how people can contribute.
 ## Sponsor this project
 
 [MisterPotts] builds Fabricate alone, in his spare time, for free.
-It's sort of like how DMs do all of that prep, buy the books, paint the miniatures, but that players just _turn up_.
 
-If you like Fabricate and want to do more than just turn up, you can support him on [Patreon] for access to:
+If you like Fabricate and want to show some support, you can do so on [Patreon] for access to:
 
 - A library of over 500 RPG crafting icons
 - Early access to Fabricate releases
 - A small amount of 5E content
-- The ✨ good feels ✨ that come from supporting a module author 
+- The ✨ good feels ✨ that come from supporting an open source module author 
 - Access to Patron Discord channels and the ability to vote on new features 
 
 ----

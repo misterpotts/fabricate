@@ -2,25 +2,6 @@ const Properties = {
     module: {
         id: "fabricate",
         label: "Fabricate",
-        templates: {
-            itemSheetCraftingTab: "modules/fabricate/templates/item-sheet-crafting-tab.hbs",
-            craftingTab: "modules/fabricate/templates/crafting-tab.hbs",
-            craftingMessage: "modules/fabricate/templates/chat-message.hbs",
-            craftingSystemManagementApp: "modules/fabricate/templates/crafting-system-manager.hbs",
-            componentManagerApp: "modules/fabricate/templates/component-manager.hbs",
-            recipeManagerApp: "modules/fabricate/templates/recipe-manager.hbs",
-            editEssenceDialog: "modules/fabricate/templates/edit-essence-details.hbs",
-            editCraftingSystemDetailDialog: "modules/fabricate/templates/edit-crafting-system-detail.hbs",
-            partials: {
-                editableSystem: "modules/fabricate/templates/partials/editable-crafting-system.hbs",
-                readOnlySystem: "modules/fabricate/templates/partials/readonly-crafting-system.hbs",
-                recipesTab: "modules/fabricate/templates/partials/recipes-tab.hbs",
-                componentsTab: "modules/fabricate/templates/partials/components-tab.hbs",
-                essencesTab: "modules/fabricate/templates/partials/essences-tab.hbs",
-                alchemyTab: "modules/fabricate/templates/partials/alchemy-tab.hbs",
-                checksTab: "modules/fabricate/templates/partials/checks-tab.hbs",
-            }
-        },
         compendiums: {
             supportedTypes: ["Item"]
         },
@@ -32,7 +13,16 @@ const Properties = {
         defaults: {
             essenceIconCode: "fa-solid fa-mortar-pestle",
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
+            noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",
+            erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",
             recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp"
+        },
+        banners: {
+            componentEditor: "modules/fabricate/assets/components-hero-banner.webp",
+            detailsEditor: "modules/fabricate/assets/details-hero-banner.webp",
+            recipeEditor: "modules/fabricate/assets/recipes-hero-banner.webp",
+            essenceEditor: "modules/fabricate/assets/essences-hero-banner.webp",
+            alchemyEditor: "modules/fabricate/assets/alchemy-hero-banner.webp",
         },
         buttons: {
             openCraftingSystemManager: {
@@ -40,7 +30,9 @@ const Properties = {
             }
         },
         apps: {
-            craftingSystemManager: {}
+            craftingSystemManager: {
+                id: "fabricate-crafting-system-manager"
+            }
         }
     },
     flags: {
@@ -60,7 +52,7 @@ const Properties = {
     settings: {
         craftingSystems: {
             key: "craftingSystems",
-            targetVersion: "1"
+            targetVersion: "2"
         }
     }
 };

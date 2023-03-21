@@ -65,7 +65,7 @@ class PrimeNumberIdentityProvider<T extends Identifiable> implements IdentityPro
     }
 
     public getForCombination(combination: Combination<T>): number {
-        return combination.members.map((identifiable => this.getNumericIdentityFor(identifiable) * combination.amountFor(identifiable)))
+        return combination.members.map((identifiable => this.getNumericIdentityFor(identifiable) * combination.amountFor(identifiable.id)))
             .reduce((left: number, right: number) => left * right, 1);
     }
 

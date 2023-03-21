@@ -118,7 +118,7 @@ class DefaultAlchemyAttempt implements AlchemyAttempt {
     perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): AlchemyResult {
         const consumed = this._componentConsumptionCalculator.calculate(this._components);
 
-        const componentConstraintCheck: ConstraintCheck = this._alchemyConstraintEnforcer.checkComponents(this._components.size());
+        const componentConstraintCheck: ConstraintCheck = this._alchemyConstraintEnforcer.checkComponents(this._components.size);
         if (!componentConstraintCheck.isOk) {
             return new UnsuccessfulAlchemyResult({
                 detail: componentConstraintCheck.detail,

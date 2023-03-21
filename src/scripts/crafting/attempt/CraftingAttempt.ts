@@ -1,122 +1,123 @@
-import {
-    CraftingResult,
-    NoCraftingResult,
-    SuccessfulCraftingResult,
-    UnsuccessfulCraftingResult
-} from "../result/CraftingResult";
-import {CraftingCheck} from "../check/CraftingCheck";
-import {Recipe} from "../Recipe";
-import {Combination} from "../../common/Combination";
-import {CraftingCheckResult} from "../check/CraftingCheckResult";
+import {ComponentSelection} from "../../component/ComponentSelection";
+import {TrackedCombination} from "../../common/TrackedCombination";
+import {Essence} from "../../common/Essence";
 import {CraftingComponent} from "../../common/CraftingComponent";
+import {Combination} from "../../common/Combination";
 
 interface CraftingAttempt {
 
-    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult;
+    isPossible: boolean;
+    essenceAmounts: TrackedCombination<Essence>;
+    ingredientAmounts: TrackedCombination<CraftingComponent>;
+    catalystAmounts: TrackedCombination<CraftingComponent>;
+    requiresEssences: boolean;
+    requiresIngredients: boolean;
+    requiresCatalysts: boolean;
+    essenceSources: Combination<CraftingComponent>;
 
 }
 
 export {CraftingAttempt}
 
-class WastefulCraftingAttempt implements CraftingAttempt {
+class DefaultCraftingAttempt implements CraftingAttempt {
 
-    private readonly _recipe: Recipe;
-    private readonly _components: Combination<CraftingComponent>;
+    private readonly _componentSelection: ComponentSelection;
+    private readonly _possible: boolean;
 
     constructor({
-        recipe,
-        components
+        componentSelection,
+        possible
     }: {
-        recipe: Recipe;
-        components: Combination<CraftingComponent>;
+        componentSelection: ComponentSelection;
+        possible: boolean;
     }) {
-        this._recipe = recipe;
-        this._components = components;
+        this._componentSelection = componentSelection;
+        this._possible = possible;
     }
 
-    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult {
-        const craftingCheckResult: CraftingCheckResult = craftingCheck.perform(actor, this._components);
-        if (!craftingCheckResult.isSuccessful) {
-            return new UnsuccessfulCraftingResult({
-                checkResult: craftingCheckResult,
-                consumed: this._components,
-                recipe: this._recipe
-            });
-        }
-        return new SuccessfulCraftingResult({
-            checkResult: craftingCheckResult,
-            created: this._recipe.getSelectedResults(),
-            consumed: this._components,
-            recipe: this._recipe
-        });
+    get isPossible(): boolean {
+        return this._possible;
+    }
+
+    get essenceAmounts(): TrackedCombination<Essence> {
+        return this._componentSelection.essences;
+    }
+
+    get ingredientAmounts(): TrackedCombination<CraftingComponent> {
+        return this._componentSelection.ingredients;
+    }
+
+    get catalystAmounts(): TrackedCombination<CraftingComponent> {
+        return this._componentSelection.catalysts;
+    }
+
+    get essenceSources(): Combination<CraftingComponent> {
+        return this._componentSelection.essenceSources;
+    }
+
+    get requiresEssences(): boolean {
+        return !this._componentSelection.essences.isEmpty;
+    }
+
+    get requiresIngredients(): boolean {
+        return !this._componentSelection.ingredients.isEmpty;
+    }
+
+    get requiresCatalysts(): boolean {
+        return !this._componentSelection.catalysts.isEmpty;
+    }
+
+    get consumedComponents(): Combination<CraftingComponent> {
+        return this._componentSelection.essenceSources
+            .combineWith(this._componentSelection.ingredients.actual);
     }
 
 }
 
-export {WastefulCraftingAttempt};
+export {DefaultCraftingAttempt};
 
-class GenerousCraftingAttempt implements CraftingAttempt {
+class NoCraftingAttempt implements CraftingAttempt {
 
-    private readonly _recipe: Recipe;
-    private readonly _components: Combination<CraftingComponent>;
+    private static readonly _INSTANCE: NoCraftingAttempt = new NoCraftingAttempt();
 
-    constructor({
-        recipe,
-        components
-    }: {
-        recipe: Recipe;
-        components: Combination<CraftingComponent>;
-    }) {
-        this._recipe = recipe;
-        this._components = components;
+    private constructor() {}
+
+    static get INSTANCE(): NoCraftingAttempt {
+        return NoCraftingAttempt._INSTANCE;
     }
 
-    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult {
-        const craftingCheckResult: CraftingCheckResult = craftingCheck.perform(actor, this._components);
-        if (!craftingCheckResult.isSuccessful) {
-            return new UnsuccessfulCraftingResult({
-                checkResult: craftingCheckResult,
-                consumed: Combination.EMPTY(),
-                recipe: this._recipe
-            });
-        }
-        return new SuccessfulCraftingResult({
-            checkResult: craftingCheckResult,
-            created: this._recipe.getSelectedResults(),
-            consumed: this._components,
-            recipe: this._recipe
-        });
+    get isPossible(): boolean {
+        return false;
     }
 
-}
-
-export {GenerousCraftingAttempt};
-
-class AbandonedCraftingAttempt implements CraftingAttempt {
-
-    private readonly _recipe: Recipe;
-
-    constructor({
-        recipe
-    }: {
-        recipe: Recipe;
-    }) {
-        this._recipe = recipe;
+    get catalystAmounts(): TrackedCombination<CraftingComponent> {
+        return TrackedCombination.EMPTY();
     }
 
-    get recipe(): Recipe {
-        return this._recipe;
+    get essenceAmounts(): TrackedCombination<Essence> {
+        return TrackedCombination.EMPTY();
     }
 
-    /**
-     * AbandonedCraftingAttempt is a no-op implementation of CraftingAttempt. It should not operate on this function's
-     * arguments
-     * */
-    // @ts-ignore
-    perform(actor: Actor, craftingCheck: CraftingCheck<Actor>): CraftingResult {
-        return new NoCraftingResult();
+    get ingredientAmounts(): TrackedCombination<CraftingComponent> {
+        return TrackedCombination.EMPTY();
+    }
+
+    get requiresCatalysts(): boolean {
+        return false;
+    }
+
+    get requiresEssences(): boolean {
+        return false;
+    }
+
+    get requiresIngredients(): boolean {
+        return false;
+    }
+
+    get essenceSources(): Combination<CraftingComponent> {
+        return Combination.EMPTY();
     }
 
 }
 
-export {AbandonedCraftingAttempt};
+export {NoCraftingAttempt};

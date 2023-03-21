@@ -1,7 +1,7 @@
 {
   "id": "fabricate",
   "title": "Fabricate",
-  "version": "0.7.5",
+  "version": "0.8.3",
   "description": "A system-agnostic, flexible crafting module for FoundryVTT",
   "authors": [
     {
@@ -32,7 +32,7 @@
   "includes": [
     "./assets/**",
     "./lang/**",
-    ".fabricate.mjs",
+    ".fabricate.js",
     "style.css",
     "./packs/**",
     "./templates/**",
@@ -46,7 +46,7 @@
     }
   ],
   "esmodules": [
-    "fabricate.mjs"
+    "fabricate.js"
   ],
   "styles": [
     "style.css"

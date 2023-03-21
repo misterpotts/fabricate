@@ -144,7 +144,8 @@ class Combination<T extends Identifiable> {
         return this.amounts.get(unit.part.id).quantity >= unit.quantity;
     }
 
-    public amountFor(memberId: string): number {
+    public amountFor(member: string | T): number {
+        const memberId = typeof member === "string" ? member : member.id;
         return this._amounts.has(memberId) ? this._amounts.get(memberId).quantity : 0;
     }
 

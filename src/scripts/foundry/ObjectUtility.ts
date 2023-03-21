@@ -1,13 +1,21 @@
-class ObjectUtility {
+interface ObjectUtility {
 
-    public duplicate<T extends {}>(source: T): T {
+    duplicate<T extends {}>(source: T): T;
+
+    merge<T extends object>(target: T, source: T): T;
+
+}
+
+class DefaultObjectUtility implements ObjectUtility {
+
+    duplicate<T extends {}>(source: T): T {
         return duplicate(source) as T;
     }
 
-    public merge<T extends object>(target: T, source: T): T {
+    merge<T extends object>(target: T, source: T): T {
         return mergeObject(target, source) as T;
     }
 
 }
 
-export {ObjectUtility}
+export { ObjectUtility, DefaultObjectUtility }

@@ -1,5 +1,7 @@
-import type { UserConfig } from 'vite';
-const path = require("path");
+import type {UserConfig} from 'vite';
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+
+import * as path from "path";
 
 const config: UserConfig = {
     publicDir: "public",
@@ -13,7 +15,7 @@ const config: UserConfig = {
             "/socket.io": {
                 target: "ws://localhost:30000",
                 ws: true,
-            },
+            }
         }
     },
     build: {
@@ -26,7 +28,21 @@ const config: UserConfig = {
             formats: ["es"],
             fileName: "fabricate"
         }
-    }
+    },
+    plugins: [
+        svelte({
+            onwarn: (warning, defaultHandler) => {
+                /*
+                    Ignore Svelte accessibility warnings. Resolution path is to convert all non-button interactive
+                    element containers with a "<button>", which I'm just not doing.
+                */
+                if (warning.code.startsWith("a11y")) {
+                    return;
+                }
+                defaultHandler(warning);
+            }
+        })
+    ]
 }
 
 export default config;

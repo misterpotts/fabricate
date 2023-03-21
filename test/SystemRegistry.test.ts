@@ -1,14 +1,14 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
-import {DefaultSettingManager} from "../src/scripts/settings/FabricateSettings";
+import {DefaultSettingManager} from "../src/scripts/settings/FabricateSetting";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
 import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
-import {DefaultSystemRegistry, ErrorDecisionType} from "../src/scripts/registries/SystemRegistry";
+import {DefaultSystemRegistry} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
-import {RecipeJson} from "../src/scripts/crafting/Recipe";
+import {RecipeJson} from "../src/scripts/common/Recipe";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
-import {FabricateItemData} from "../src/scripts/foundry/DocumentManager";
+import {FabricateItemData, LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 
@@ -20,7 +20,7 @@ const stubGameObject = <Game><unknown>{
 }
 const stubGetSettingsMethod = Sandbox.stub(stubGameObject.settings, "get");
 const stubGameProvider: GameProvider = <GameProvider><unknown>{
-    globalGameObject: () => stubGameObject
+    get: () => stubGameObject
 }
 
 beforeEach(() => {
@@ -36,12 +36,17 @@ function randomIdentifier(): string {
 describe("integration test", () => {
 
     const systemOneId = randomIdentifier();
+    const componentOneId = randomIdentifier();
     const componentOneItemUuid = randomIdentifier();
     const componentTwoItemUuid = randomIdentifier();
+    const componentTwoId = randomIdentifier();
     const componentThreeItemUuid = randomIdentifier();
+    const componentThreeId = randomIdentifier();
     const essenceOneId = randomIdentifier();
     const essenceTwoId = randomIdentifier();
     const essenceThreeId = randomIdentifier();
+    const optionOneId = "Option One"
+    const optionTwoId = "Option Two"
 
     const componentOne: CraftingComponentJson = {
         itemUuid: componentOneItemUuid,
@@ -49,107 +54,134 @@ describe("integration test", () => {
             [essenceOneId]: 2,
             [essenceTwoId]: 1,
         },
-        salvage: {
-            [componentTwoItemUuid]: 2
-        }
+        salvageOptions: {
+            [optionOneId]: {
+                [componentTwoId]: 2
+            }
+        },
+        disabled: false
     };
     const componentTwo: CraftingComponentJson = {
         itemUuid: componentTwoItemUuid,
         essences: {
             [essenceThreeId]: 1
         },
-        salvage: {}
+        salvageOptions: {},
+        disabled: false
     };
     const componentThree: CraftingComponentJson = {
         itemUuid: componentThreeItemUuid,
         essences: {},
-        salvage: {
-            [componentOneItemUuid]: 2,
-            [componentTwoItemUuid]: 1,
-        }
+        salvageOptions: {
+            [optionOneId]: {
+                [componentOneId]: 2,
+                [componentTwoId]: 1
+            }
+        },
+        disabled: true
     };
 
     const recipeOneItemUuid = randomIdentifier();
+    const recipeOneId = randomIdentifier();
     const recipeTwoItemUuid = randomIdentifier();
+    const recipeTwoId = randomIdentifier();
     const recipeThreeItemUuid = randomIdentifier();
+    const recipeThreeId = randomIdentifier();
 
     const recipeOne: RecipeJson = {
         itemUuid: recipeOneItemUuid,
-        catalysts: {},
         essences: {
             [essenceOneId]: 1,
             [essenceTwoId]: 2
         },
-        ingredientGroups: [],
-        resultGroups: [{
-            [componentOneItemUuid]: 1
-        }]
+        ingredientOptions: {},
+        resultOptions: {
+            [optionOneId]: {
+                [componentOneId]: 1
+            }
+        },
+        disabled: true
     };
     const recipeTwo: RecipeJson = {
         itemUuid: recipeTwoItemUuid,
-        catalysts: {
-            [componentThreeItemUuid]: 1
-        },
         essences: {},
-        ingredientGroups: [{
-            [componentOneItemUuid]: 1
-        }],
-        resultGroups: [{
-            [componentTwoItemUuid]: 1
-        }]
+        ingredientOptions: {
+            [optionOneId]: {
+                catalysts: {
+                    [componentThreeId]: 1
+                },
+                ingredients: {
+                    [componentOneId]: 1
+                }
+            }
+        },
+        resultOptions: {
+            [optionOneId]: {
+                [componentTwoId]: 1
+            }
+        },
+        disabled: false
     };
     const recipeThree: RecipeJson = {
         itemUuid: recipeThreeItemUuid,
-        catalysts: {},
         essences: {},
-        ingredientGroups: [
-            {
-                [componentOneItemUuid]: 1,
-                [componentTwoItemUuid]: 1
+        ingredientOptions: {
+            [optionOneId]: {
+                ingredients: {
+                    [componentOneId]: 1,
+                    [componentTwoId]: 1
+                },
+                catalysts: {}
             },
-            {
-                [componentTwoItemUuid]: 2
+            [optionTwoId]: {
+                ingredients: {
+                    [componentTwoId]: 2
+                },
+                catalysts: {}
             }
-        ],
-        resultGroups: [{
-            [componentThreeItemUuid]: 1
-        }]
+        },
+        resultOptions: {
+            [optionOneId]: {
+                [componentThreeId]: 1
+            }
+        },
+        disabled: false
     };
 
     const systemOne: CraftingSystemJson = {
         id: systemOneId,
         parts: {
             components: {
-                [componentOneItemUuid]: componentOne,
-                [componentTwoItemUuid]: componentTwo,
-                [componentThreeItemUuid]: componentThree
+                [componentOneId]: componentOne,
+                [componentTwoId]: componentTwo,
+                [componentThreeId]: componentThree
             },
             recipes: {
-                [recipeOneItemUuid]: recipeOne,
-                [recipeTwoItemUuid]: recipeTwo,
-                [recipeThreeItemUuid]: recipeThree
+                [recipeOneId]: recipeOne,
+                [recipeTwoId]: recipeTwo,
+                [recipeThreeId]: recipeThree
             },
             essences: {
                 [essenceOneId]: {
-                    id: essenceOneId,
                     name: "Essence Name",
                     iconCode: "fa-solid circle",
                     tooltip: "Tooltip text",
-                    description: "Essence description"
+                    description: "Essence description",
+                    activeEffectSourceItemUuid: componentOneItemUuid
                 },
                 [essenceTwoId]: {
-                    id: essenceTwoId,
                     name: "Essence Name",
                     iconCode: "fa-solid circle",
                     tooltip: "Tooltip text",
-                    description: "Essence description"
+                    description: "Essence description",
+                    activeEffectSourceItemUuid: componentTwoItemUuid
                 },
                 [essenceThreeId]: {
-                    id: essenceThreeId,
                     name: "Essence Name",
                     iconCode: "fa-solid circle",
                     tooltip: "Tooltip text",
-                    description: "Essence description"
+                    description: "Essence description",
+                    activeEffectSourceItemUuid: undefined
                 }
             }
         },
@@ -190,12 +222,42 @@ describe("integration test", () => {
     };
 
     const itemData: Map<string, FabricateItemData> = new Map([
-        [componentOneItemUuid, {name: "Component One", imageUrl: "path/to/img.webp", uuid: componentOneItemUuid, source: componentOne}],
-        [componentTwoItemUuid, {name: "Component Two", imageUrl: "path/to/img.webp", uuid: componentTwoItemUuid, source: componentTwo}],
-        [componentThreeItemUuid, {name: "Component Three", imageUrl: "path/to/img.webp", uuid: componentThreeItemUuid, source: componentThree}],
-        [recipeOneItemUuid, {name: "Recipe One", imageUrl: "path/to/img.webp", uuid: recipeOneItemUuid, source: recipeOne}],
-        [recipeTwoItemUuid, {name: "Recipe Two", imageUrl: "path/to/img.webp", uuid: recipeTwoItemUuid, source: recipeTwo}],
-        [recipeThreeItemUuid, {name: "Recipe Three", imageUrl: "path/to/img.webp", uuid: recipeThreeItemUuid, source: recipeThree}],
+        [
+            componentOneItemUuid,
+            new LoadedFabricateItemData({
+                name: "Component One", imageUrl: "path/to/img.webp", itemUuid: componentOneItemUuid, sourceDocument: componentOne
+            })
+        ],
+        [
+            componentTwoItemUuid,
+            new LoadedFabricateItemData({
+                name: "Component Two", imageUrl: "path/to/img.webp", itemUuid: componentTwoItemUuid, sourceDocument: componentTwo
+            })
+        ],
+        [
+            componentThreeItemUuid,
+            new LoadedFabricateItemData({
+                name: "Component Three", imageUrl: "path/to/img.webp", itemUuid: componentThreeItemUuid, sourceDocument: componentThree
+            })
+        ],
+        [
+            recipeOneItemUuid,
+            new LoadedFabricateItemData({
+                name: "Recipe One", imageUrl: "path/to/img.webp", itemUuid: recipeOneItemUuid, sourceDocument: recipeOne
+            })
+        ],
+        [
+            recipeTwoItemUuid,
+            new LoadedFabricateItemData({
+                name: "Recipe Two", imageUrl: "path/to/img.webp", itemUuid: recipeTwoItemUuid, sourceDocument: recipeTwo
+            })
+        ],
+        [
+            recipeThreeItemUuid,
+            new LoadedFabricateItemData({
+                name: "Recipe Three", imageUrl: "path/to/img.webp", itemUuid: recipeThreeItemUuid, sourceDocument: recipeThree
+            })
+        ],
     ]);
 
     test('Should read all settings values and build crafting system correctly', async () => {
@@ -214,8 +276,7 @@ describe("integration test", () => {
         const underTest = new DefaultSystemRegistry({
             settingManager: fabricateSettingsManager,
             craftingSystemFactory,
-            gameSystem: "dnd5e",
-            errorDecisionProvider: () => Promise.resolve(ErrorDecisionType.RETAIN)
+            gameSystem: "dnd5e"
         });
 
         const result: Map<string, CraftingSystem> = await underTest.getAllCraftingSystems();
@@ -226,43 +287,47 @@ describe("integration test", () => {
         expect(craftingSystemOne).not.toBeUndefined();
         await craftingSystemOne.loadPartDictionary();
 
-        const essences = await craftingSystemOne.getEssences();
+        const essences = craftingSystemOne.getEssences();
         expect(essences.length).toEqual(3);
         expect(craftingSystemOne.hasEssence(essenceOneId)).toEqual(true);
         expect(craftingSystemOne.hasEssence(essenceTwoId)).toEqual(true);
         expect(craftingSystemOne.hasEssence(essenceThreeId)).toEqual(true);
 
-        const components = await craftingSystemOne.getComponents();
+        const components = craftingSystemOne.getComponents();
         expect(components.length).toEqual(3);
-        expect(craftingSystemOne.hasPart(componentOneItemUuid)).toEqual(true);
-        expect(craftingSystemOne.hasPart(componentTwoItemUuid)).toEqual(true);
-        expect(craftingSystemOne.hasPart(componentThreeItemUuid)).toEqual(true);
+        expect(craftingSystemOne.hasPart(componentOneId)).toEqual(true);
+        expect(craftingSystemOne.hasPart(componentTwoId)).toEqual(true);
+        expect(craftingSystemOne.hasPart(componentThreeId)).toEqual(true);
 
-        const componentOneResult = await craftingSystemOne.getComponentById(componentOneItemUuid);
-        expect(componentOneResult.id).toEqual(componentOneItemUuid);
+        const componentOneResult = craftingSystemOne.getComponentById(componentOneId);
+        expect(componentOneResult.id).toEqual(componentOneId);
         expect(componentOneResult.name).toEqual(itemData.get(componentOneItemUuid).name);
         expect(componentOneResult.imageUrl).toEqual(itemData.get(componentOneItemUuid).imageUrl);
-        expect(componentOneResult.salvage.size).toEqual(2);
-        expect(componentOneResult.salvage.amountFor(componentTwoItemUuid)).toEqual(2);
+        expect(componentOneResult.salvageOptions.length).toEqual(1);
+        expect(componentOneResult.salvageOptions[0].salvage.size).toEqual(2);
         expect(componentOneResult.essences.size).toEqual(3);
         expect(componentOneResult.essences.amountFor(essenceOneId)).toEqual(2);
         expect(componentOneResult.essences.amountFor(essenceTwoId)).toEqual(1);
 
-        const recipes = await craftingSystemOne.getRecipes();
+        const recipes = craftingSystemOne.getRecipes();
         expect(recipes.length).toEqual(3);
-        expect(craftingSystemOne.hasPart(recipeOneItemUuid)).toEqual(true);
-        expect(craftingSystemOne.hasPart(recipeTwoItemUuid)).toEqual(true);
-        expect(craftingSystemOne.hasPart(recipeThreeItemUuid)).toEqual(true);
+        expect(craftingSystemOne.hasPart(recipeOneId)).toEqual(true);
+        expect(craftingSystemOne.hasPart(recipeTwoId)).toEqual(true);
+        expect(craftingSystemOne.hasPart(recipeThreeId)).toEqual(true);
 
-        const recipeOneResult = await craftingSystemOne.getRecipeById(recipeOneItemUuid);
-        expect(recipeOneResult.id).toEqual(recipeOneItemUuid);
+        const recipeOneResult = await craftingSystemOne.getRecipeById(recipeOneId);
+        expect(recipeOneResult.id).toEqual(recipeOneId);
         expect(recipeOneResult.name).toEqual(itemData.get(recipeOneItemUuid).name);
         expect(recipeOneResult.imageUrl).toEqual(itemData.get(recipeOneItemUuid).imageUrl);
         expect(recipeOneResult.essences.amountFor(essenceOneId)).toEqual(1);
         expect(recipeOneResult.essences.amountFor(essenceTwoId)).toEqual(2);
-        expect(recipeOneResult.catalysts.size).toEqual(0);
-        expect(recipeOneResult.ingredientOptions.size).toEqual(0);
-        expect(recipeOneResult.resultOptions.size).toEqual(1);
+        expect(recipeOneResult.ingredientOptions.length).toEqual(0);
+        expect(recipeOneResult.hasIngredients).toEqual(false);
+        expect(recipeOneResult.resultOptions.length).toEqual(1);
+        expect(recipeOneResult.hasResults).toEqual(true);
+
+        const serialized = craftingSystemOne.toJson();
+        expect(serialized).toEqual(storedSettingsValue.value[craftingSystemOne.id])
 
     });
 

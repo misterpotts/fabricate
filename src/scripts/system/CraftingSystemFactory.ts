@@ -1,12 +1,11 @@
 import {CraftingSystem, CraftingSystemJson} from "./CraftingSystem";
-import {CraftingAttemptFactory} from "../crafting/attempt/CraftingAttemptFactory";
-import {DefaultComponentSelectionStrategy} from "../crafting/selection/DefaultComponentSelectionStrategy";
-import {WastageType} from "../common/ComponentConsumptionCalculator";
+import {RecipeCraftingPrepFactory} from "../crafting/attempt/RecipeCraftingPrepFactory";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
 import {PartDictionaryFactory} from "./PartDictionary";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {NoCraftingCheck} from "../crafting/check/CraftingCheck";
 import {DisabledAlchemyAttemptFactory} from "../crafting/alchemy/AlchemyAttemptFactory";
+import {DefaultComponentSelectionStrategy} from "../crafting/selection/ComponentSelectionStrategy";
 
 class CraftingSystemFactory {
 
@@ -35,9 +34,8 @@ class CraftingSystemFactory {
                 alchemy: new NoCraftingCheck(), // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI
                 recipe: new NoCraftingCheck() // todo: implement user-defined, system-agnostic, flexible macro-based checks in the UI
             },
-            craftingAttemptFactory: new CraftingAttemptFactory({
-                selectionStrategy: new DefaultComponentSelectionStrategy(),
-                wastageType: WastageType["PUNITIVE"] // todo: move this to the checks, not the attempts
+            craftingAttemptFactory: new RecipeCraftingPrepFactory({
+                selectionStrategy: new DefaultComponentSelectionStrategy()
             }),
             alchemyAttemptFactory: new DisabledAlchemyAttemptFactory() // todo: implement user-defined, system-agnostic, flexible macro-based alchemy in the UI
         });

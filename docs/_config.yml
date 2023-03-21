@@ -18,8 +18,6 @@ gh_edit_source: /docs
 
 heading_anchors: true
 
-logo: "/img/fabricate-repo-preview.png"
-
 aux_links:
   "Download Fabricate":
     - "//github.com/misterpotts/fabricate/releases/latest"
@@ -27,6 +25,8 @@ aux_links:
     - "//github.com/misterpotts/fabricate"
 
 permalink: pretty
+
+enable_copy_code_button: true
 
 callouts_level: quiet # or loud
 callouts:
