@@ -353,6 +353,7 @@ const myComponent = craftingSystem.getComponentById(myComponentId);
 console.log(`Before modification: ${myComponent}`);
 const componentData = myComponent.toJson();
 componentData.salvageOptions["My new Salvage Option"] = { "rLP3cTCTnQsxddDt": 1 } // Adds a new salvage option
+componentData.essences["bGfx37pYjqlf812"] = 3; // Adds an essence with a quantity of 3
 // perform any other modifications you want here. You can alter any of the fields in the `CraftingComponentJson`, 
 // including the item UUID. The new values meet the requirements specified in the interface.
 const updatedComponent = await craftingSystem.mutateComponent(myComponent.id, componentData);
@@ -385,7 +386,7 @@ CraftingSystem#deleteComponentById
 
 <details open markdown="block">
 <summary>
-Modifying a component
+Deleting a component
 </summary>
 
 ```js
