@@ -18,6 +18,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
+          cache: 'npm'
 
       - name: Install
         shell: bash
@@ -49,6 +50,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
+          cache: 'npm'
 
       - uses: actions/download-artifact@v3
         with:
@@ -89,7 +91,7 @@ jobs:
         uses: ncipollo/release-action@v1
         if: endsWith(github.ref, 'master')
         with:
-          allowUpdates: false
+          allowUpdates: true
           name: Latest
           draft: false
           prerelease: false
@@ -102,7 +104,7 @@ jobs:
         id: create_version_release
         uses: ncipollo/release-action@v1
         with:
-          allowUpdates: false # set this to false if you want to prevent updating existing releases
+          allowUpdates: true # set this to false if you want to prevent updating existing releases
           name: Release ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
