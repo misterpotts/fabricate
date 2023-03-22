@@ -26,7 +26,7 @@ import {LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 
 describe("Create", () => {
 
-    test("Should construct empty Part Dictionary", () => {
+    test("Should construct empty Part Dictionary", async () => {
         const underTest: PartDictionary = new PartDictionaryFactory({})
             .make({
                 essences: {},
@@ -41,6 +41,7 @@ describe("Create", () => {
         expect(underTest.hasComponent(id)).toBe(false);
         expect(underTest.hasRecipe(id)).toBe(false);
 
+        await underTest.loadAll();
         const asJson = underTest.toJson();
         expect(Object.keys(asJson.essences).length).toEqual(0);
         expect(Object.keys(asJson.recipes).length).toEqual(0);
