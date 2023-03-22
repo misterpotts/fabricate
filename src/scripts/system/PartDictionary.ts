@@ -90,6 +90,10 @@ class PartDictionary {
         this._componentDictionary.insert(craftingComponent);
     }
 
+    async mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent> {
+        return this._componentDictionary.mutate(id, mutation);
+    }
+
     public insertRecipe(recipe: Recipe): void {
         this._recipeDictionary.insert(recipe);
     }
@@ -125,7 +129,7 @@ class PartDictionary {
         await this._componentDictionary.loadAll();
         await this._recipeDictionary.loadAll();
     }
-    
+
     async loadEssences(updatedSource?: Record<string, EssenceJson>): Promise<void> {
         if (updatedSource) {
             this._essenceDictionary.sourceData = updatedSource;
@@ -148,6 +152,9 @@ class PartDictionary {
     }
 
     public toJson(): PartDictionaryJson {
+        if (!this.isLoaded) {
+            throw new Error("Fabricate currently requires that a part dictionary is loaded before it is serialized and saved. ");
+        }
         const essences = this._essenceDictionary.toJson();
         const components = this._componentDictionary.toJson();
         const recipes = this._recipeDictionary.toJson();
@@ -193,6 +200,7 @@ class PartDictionary {
     async createEssence(essenceJson: EssenceJson): Promise<Essence> {
         return this._essenceDictionary.create(essenceJson);
     }
+
 }
 
 class PartDictionaryFactory {
@@ -208,7 +216,10 @@ class PartDictionaryFactory {
 
     make(sourceData: PartDictionaryJson): PartDictionary {
         const documentManager = this._documentManager;
-        const essenceDictionary = new EssenceDictionary({sourceData: sourceData.essences, documentManager});
+        const essenceDictionary = new EssenceDictionary({
+            sourceData: sourceData.essences,
+            documentManager
+        });
         const componentDictionary = new ComponentDictionary({
             sourceData: sourceData.components,
             documentManager,

@@ -42,8 +42,8 @@
         component.isDisabled = true;
         $loading = true;
         await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
-        const message = this._localizationService.format(
-            `${this._localizationPath}.component.disabled`,
+        const message = localization.format(
+            `${localizationPath}.component.disabled`,
             {
                 componentName: component.name
             }
