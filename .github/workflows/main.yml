@@ -17,7 +17,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Install
         shell: bash
@@ -48,7 +49,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - uses: actions/download-artifact@v3
         with:
@@ -78,7 +80,7 @@ jobs:
           manifest: https://github.com/${{github.repository}}/releases/latest/download/module.json
           download: https://github.com/${{github.repository}}/releases/download/${{steps.get-version.outputs.version}}/module.zip
 
-      # Create a zip file with all files required by the module to add to the release
+      # create a zip file with all files required by the module to add to the release
       - name: Zip Files
         working-directory: ./dist
         run: zip -r ../module.zip ${{steps.get-includes.outputs.files}}
@@ -89,7 +91,7 @@ jobs:
         uses: ncipollo/release-action@v1
         if: endsWith(github.ref, 'master')
         with:
-          allowUpdates: false
+          allowUpdates: true
           name: Latest
           draft: false
           prerelease: false
@@ -102,7 +104,7 @@ jobs:
         id: create_version_release
         uses: ncipollo/release-action@v1
         with:
-          allowUpdates: false # set this to false if you want to prevent updating existing releases
+          allowUpdates: true # set this to false if you want to prevent updating existing releases
           name: Release ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false

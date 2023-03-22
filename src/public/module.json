@@ -32,7 +32,7 @@
   "includes": [
     "./assets/**",
     "./lang/**",
-    ".fabricate.js",
+    "fabricate.js",
     "style.css",
     "./packs/**",
     "./templates/**",
