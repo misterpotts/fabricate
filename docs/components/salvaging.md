@@ -35,7 +35,7 @@ Click that, and Fabricate will open a dialogue that prompts you to confirm your 
 Click “Yes” and Fabricate will remove the salvaged component (or decrement its quantity, depending on the game system).
 Then, it will add the salvage results to your inventory.
 
-You can skip the confirmation dialogue by holding the shift key when you click the delete button. 
+You can skip the confirmation dialogue by holding the shift key when you click the salvage button. 
 This is particularly useful when you have a lot of the same type of item to salvage.
 
 ![](/fabricate/img/salvage-a-component.gif)

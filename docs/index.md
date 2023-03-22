@@ -26,6 +26,25 @@ Fabricate is currently maintained by [MisterPotts].
 Use the left navigation, as well as the search at the top of this page, to learn how to build your own crafting systems using Fabricate.
 Read on below to find out more about this module and how to support its development. 
 
+## Known issues
+
+{: .highlight }
+> This section lists the known issues with this version of Fabricate
+
+### Items with existing source IDs
+
+**Impact**: Fabricate does not recognise your items when they are owned by actors
+
+**Discovered when:** Users were importing items from compendiums created with the [FVTT Data toolbox](https://github.com/SvenWerlen/fvtt-data-toolbox)
+
+**Caused by:** Imported items already had a `core.sourceId` flag set which pointed to a different item, or nothing. 
+Foundry copies this, preserving it for all items created from the original. 
+Fabricate expects you to have manually created or duplicated the items, and for the `sourceId` to be set for the first time when you import
+or add the item to an actor's inventory.
+
+**The fix:** Edit your compendium to remove any existing core flags (back up your data first!). 
+Then, re-create the items owned by actors that should be part of your crafting system.
+
 ## Embedded crafting systems
 
 The following crafting systems come pre-installed with Fabricate.

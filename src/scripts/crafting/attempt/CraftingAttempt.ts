@@ -69,7 +69,7 @@ class DefaultCraftingAttempt implements CraftingAttempt {
 
     get consumedComponents(): Combination<CraftingComponent> {
         return this._componentSelection.essenceSources
-            .combineWith(this._componentSelection.ingredients.actual);
+            .combineWith(this._componentSelection.ingredients.target);
     }
 
 }
