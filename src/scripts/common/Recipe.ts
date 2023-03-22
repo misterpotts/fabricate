@@ -117,6 +117,10 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
         this._results = results;
     }
 
+    get isEmpty(): boolean {
+        return this._results.isEmpty();
+    }
+
     get results(): Combination<CraftingComponent> {
         return this._results;
     }
