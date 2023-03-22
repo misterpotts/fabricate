@@ -128,6 +128,10 @@ class CraftingSystem {
         return this._partDictionary.insertComponent(component);
     }
 
+    public async mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent> {
+        return await this._partDictionary.mutateComponent(id, mutation);
+    }
+
     public getRecipes(): Recipe[] {
         return this._partDictionary.getRecipes();
     }

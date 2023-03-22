@@ -254,6 +254,11 @@ type SalvageOptionJson = Record<string, number>;
 To create one, get the crafting system you want to add it to, and call `CraftingSystem#createComponent`.
 Then, save the crafting system.
 
+{: .highlight }
+> If your crafting system has components and recipes already defined, make sure that you **load the part dictionary** 
+> before you save the crafting system. Attempts to save a crafting system that has not had its part dictionary loaded 
+> will produce an error. This area of the API is _likely to change_ in future. 
+
 <details open markdown="block">
 <summary>
 Add a component to a crafting system
@@ -271,6 +276,7 @@ const myComponent = {
 
 const myCraftingSystemId = "8Bn1VBc6noSUeKlG"; // replace this with your own crafting system ID
 const craftingSystem = await game.fabricate.SystemRegistry.getCraftingSystemById(myCraftingSystemId);
+await craftingSystem.loadPartDictionary() // <-- Do this before modifying systems that already have components
 const createdComponent = await craftingSystem.createComponent(myComponent);
 await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem); 
 console.log(`Created component with ID "${createdComponent.id}"`); // <-- You'll need this to edit the component
@@ -278,16 +284,116 @@ console.log(`Created component with ID "${createdComponent.id}"`); // <-- You'll
 
 </details>
 
+## Accessing a component
+
+To access a component, you will need to:
+
+1. Get the crafting system it belongs to
+2. Load the part dictionary for that system 
+3. Get the component by ID from the crafting system
+
+<details open markdown="block">
+<summary>
+Accessing a component
+</summary>
+
+```js
+const myCraftingSystemId = "8Bn1VBc6noSUeKlG"; // replace this with your own crafting system ID
+const craftingSystem = await game.fabricate.SystemRegistry.getCraftingSystemById(myCraftingSystemId);
+// Fabricate currently requires you to load essences, components and recipes into memory before you can act on them
+// **This area of the API is likely to change** in future as I move towards loading individual parts on demand
+await craftingSystem.loadPartDictionary();
+const myComponentId = "T3zD0zrcd0otXXwB"; // replace this with the ID of the component you want to get
+const myComponent = craftingSystem.getComponentById(myComponentId);
+```
+
+</details>
+
 ## Editing a component 
 
-{: .highlight }
-> The docs haven't caught up with the code here just yet. 
-> The API exists, if you want to [dig around in the sources](http://github.com/misterpotts/fabricate) and experiment.
-> Alternatively, you can wait for these docs to be updated.
+To edit a component, you will need to: 
+
+1. [Access the component](#accessing-a-component) 
+2. Serialize it
+3. Modify the serialized data
+4. Call `CraftingSystem#mutateComponent` with the component ID and the modified data
+5. Save the crafting system
+
+<details open markdown="block">
+<summary>
+CraftingSystem#mutateComponent
+</summary>
+
+```typescript
+    /**
+     * Modifies an existing component by applying the mutations defined in the supplied `CraftingComponentJson`
+     * 
+     * @param id The ID of the component to modify
+     * @param the complete target state of the component to apply. Anything you omit is deleted
+     * @return a Promise that resolves to the updated crafting component
+     * 
+     * @throws an Error if the ID is not for an existing component
+     * @throws an Error if the the component dictionary has not been loaded
+     * @throws an Error if the mutation contains an invalid item UUID
+     * @throws an Error if the mutation references essences orcomponents that do not exist
+    * */
+    mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent>;
+```
+
+</details>
+
+<details open markdown="block">
+<summary>
+Modifying a component
+</summary>
+
+```js
+// Access the component as described above
+const myComponent = craftingSystem.getComponentById(myComponentId);
+console.log(`Before modification: ${myComponent}`);
+const componentData = myComponent.toJson();
+componentData.salvageOptions["My new Salvage Option"] = { "rLP3cTCTnQsxddDt": 1 } // Adds a new salvage option
+// perform any other modifications you want here. You can alter any of the fields in the `CraftingComponentJson`, 
+// including the item UUID. The new values meet the requirements specified in the interface.
+const updatedComponent = await craftingSystem.mutateComponent(myComponent.id, componentData);
+await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
+console.log(`After modification: ${updatedComponent}`);
+```
+
+</details>
 
 ## Deleting a component
 
-{: .highlight }
-> The docs haven't caught up with the code here just yet.
-> The API exists, if you want to [dig around in the sources](http://github.com/misterpotts/fabricate) and experiment.
-> Alternatively, you can wait for these docs to be updated.
+Deleting a component requires only that you load the crafting system, delete the component using its ID by calling 
+`CraftingSystem#deleteComponentById` then save the crafting system.
+
+<details open markdown="block">
+<summary>
+CraftingSystem#deleteComponentById
+</summary>
+
+```typescript
+    /**
+     * Deletes a crafting component by ID
+     *
+     * @param the ID of the component to delete
+    * */
+    deleteComponentById(id: string): void;
+```
+
+</details>
+
+<details open markdown="block">
+<summary>
+Modifying a component
+</summary>
+
+```js
+// Obtain the component ID and load the crafting system part dictionary beforehand
+console.log(`Before deletion, CraftingSystem#hasComponent is ${craftingSystem.hasComponent(myComponentId)}`);
+craftingSystem.deleteComponentById(myComponentId);
+await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
+console.log(`After deletion, CraftingSystem#hasComponent is ${craftingSystem.hasComponent(myComponentId)}`);
+```
+
+</details>

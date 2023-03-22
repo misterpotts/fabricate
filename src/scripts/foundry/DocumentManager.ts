@@ -157,7 +157,8 @@ class PendingFabricateItemData implements FabricateItemData {
     }
 
     toJson(): FabricateItemDataJson {
-        throw new Error("Pending item data should never be serialised. ");
+        console.warn("Serialising pending item data. The item UUID has not been checked and may not be valid. ");
+        return { uuid: this._itemUuid };
     }
 
 }

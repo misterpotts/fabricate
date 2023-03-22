@@ -1,6 +1,10 @@
 import {Dictionary} from "./Dictionary";
 import {CraftingComponent, CraftingComponentJson, SalvageOption, SalvageOptionJson} from "../common/CraftingComponent";
-import {DocumentManager, FabricateItemData, NoFabricateItemData} from "../foundry/DocumentManager";
+import {
+    DocumentManager,
+    FabricateItemData,
+    NoFabricateItemData
+} from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {combinationFromRecord} from "./DictionaryUtils";
 import {SelectableOptions} from "../common/SelectableOptions";
@@ -245,4 +249,22 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         this.insert(component);
         return component;
     }
+
+    async mutate(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent> {
+        if (!this._loaded) {
+            throw new Error("Fabricate doesn't currently support modifying components before the component dictionary has been loaded. ");
+        }
+        if (!this._entriesById.has(id)) {
+            throw new Error(`Unable to mutate component with ID ${id}. It doesn't exist.`);
+        }
+        const target = this._entriesById.get(id);
+        const itemData = target.itemUuid === mutation.itemUuid ? target.itemData : await this._documentManager.getDocumentByUuid(mutation.itemUuid);
+        if (itemData.hasErrors) {
+            throw new Error(`Could not load document with UUID "${mutation.itemUuid}". Errors ${itemData.errors.join(", ")} `);
+        }
+        const result = this.buildComponent(target.id, mutation, itemData);
+        this.insert(result);
+        return result;
+    }
+
 }
