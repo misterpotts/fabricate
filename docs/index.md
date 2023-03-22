@@ -35,15 +35,27 @@ Read on below to find out more about this module and how to support its developm
 
 **Impact**: Fabricate does not recognise your items when they are owned by actors
 
-**Discovered when:** Users were importing items from compendiums created with the [FVTT Data toolbox](https://github.com/SvenWerlen/fvtt-data-toolbox)
+**Discovered when:** Users were importing items from compendiums. 
+Foundry sets a source ID on the item as it is added to the compendium.
 
 **Caused by:** Imported items already had a `core.sourceId` flag set which pointed to a different item, or nothing. 
 Foundry copies this, preserving it for all items created from the original. 
 Fabricate expects you to have manually created or duplicated the items, and for the `sourceId` to be set for the first time when you import
 or add the item to an actor's inventory.
 
-**The fix:** Edit your compendium to remove any existing core flags (back up your data first!). 
+**The mitigation:** Edit your compendium to remove any existing core flags (back up your data first!). 
 Then, re-create the items owned by actors that should be part of your crafting system.
+
+Run this script (as macro, or in the console), replacing the compendium ID with the ID of the compendium pack that you 
+want to use with Fabricate.
+
+```js
+game.packs.get("myCompendiumId").contents.forEach(item => item.unsetFlag("core", "sourceId"));
+```
+
+**The long-term fix:** Perhaps I could duplicate the `core.sourceId` flag system in Fabricate, adding custom flags for 
+the module, though that seems incredibly redundant. I could look to overwrite the source ID if you import it to 
+fabricate from a compendium. Honestly the answer isn't obvious to me right now.
 
 ## Embedded crafting systems
 
