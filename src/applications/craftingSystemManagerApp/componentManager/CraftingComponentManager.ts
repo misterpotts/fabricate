@@ -104,8 +104,26 @@ class CraftingComponentManager {
     }
 
     public async saveComponent(craftingComponent: CraftingComponent, selectedSystem: CraftingSystem) {
-        selectedSystem.editComponent(craftingComponent);
-        await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
+        if (this.validateOptionNames(craftingComponent)) {
+            selectedSystem.editComponent(craftingComponent);
+            await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
+            return;
+        }
+        const message = this._localization.format(`${this._localizationPath}.component.errors.optionNotUnique`, { componentName: craftingComponent.name });
+        ui.notifications.error(message);
+    }
+
+    private validateOptionNames(component: CraftingComponent) {
+        let valid = true;
+        component.salvageOptions
+            .map(salvageOption => salvageOption.name)
+            .forEach((value, index, array) => {
+                if (array.indexOf(value) !== index) {
+                    valid = false;
+                    console.error(`The salvage option name ${value} is not unique.`);
+                }
+            });
+        return valid;
     }
 
     public async duplicateComponent(craftingComponent: CraftingComponent, selectedSystem: CraftingSystem): Promise<CraftingComponent> {

@@ -168,7 +168,8 @@
             },
             "errors": {
               "itemNotFound": "The item does not exist or has been deleted.",
-              "itemNotSet": "No item configured. You can set one in the component editor."
+              "itemNotSet": "No item configured. You can set one in the component editor.",
+              "optionNotUnique": "The component {componentName} has options that are not uniquely named."
             },
             "labels": {
               "salvageName": "Option name",
@@ -218,7 +219,8 @@
             },
             "errors": {
               "itemNotFound": "The item does not exist or has been deleted.",
-              "itemNotSet": "No item configured. You can set one in the recipe editor."
+              "itemNotSet": "No item configured. You can set one in the recipe editor.",
+              "optionNotUnique": "The recipe {recipeName} has options that are not uniquely named."
             },
             "imported": "Imported recipe {recipeName} into {systemName}",
             "deleted": "Removed recipe {recipeName} from {systemName}",

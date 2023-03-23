@@ -24,7 +24,7 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
 
     private _catalysts: Combination<CraftingComponent>;
     private _ingredients: Combination<CraftingComponent>;
-    private readonly _name: string;
+    private _name: string;
 
     constructor({
         name,
@@ -66,6 +66,10 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
 
     get name(): string {
         return this._name;
+    }
+
+    set name(value: string) {
+        this._name = value;
     }
 
     get id(): string {

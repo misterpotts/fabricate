@@ -101,8 +101,34 @@ class RecipeManager {
     }
 
     public async saveRecipe(recipe: Recipe, selectedSystem: CraftingSystem) {
-        selectedSystem.editRecipe(recipe);
-        await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
+        if (this.validateOptionNames(recipe)) {
+            selectedSystem.editRecipe(recipe);
+            await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
+            return;
+        }
+        const message = this._localization.format(`${this._localizationPath}.recipe.errors.optionNotUnique`, { recipeName: recipe.name });
+        ui.notifications.error(message);
+    }
+
+    private validateOptionNames(recipe: Recipe) {
+        let valid = true;
+        recipe.ingredientOptions
+            .map(ingredientOption => ingredientOption.name)
+            .forEach((value, index, array) => {
+                if (array.indexOf(value) !== index) {
+                    valid = false;
+                    console.error(`The ingredient option name ${value} is not unique.`);
+                }
+            });
+        recipe.resultOptions
+            .map(ingredientOption => ingredientOption.name)
+            .forEach((value, index, array) => {
+                if (array.indexOf(value) !== index) {
+                    valid = false;
+                    console.error(`The result option name ${value} is not unique.`);
+                }
+            });
+        return valid;
     }
 
     public async duplicateRecipe(recipe: Recipe, selectedSystem: CraftingSystem): Promise<Recipe> {
