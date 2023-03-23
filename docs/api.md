@@ -578,38 +578,38 @@ console.log(`After modification: ${updatedComponent}`);
 
 </details>
 
-## Deleting a component
+## Deleting a recipe
 
-Deleting a component requires only that you load the crafting system, delete the component using its ID by calling
-`CraftingSystem#deleteComponentById` then save the crafting system.
+Deleting a recipe requires only that you load the crafting system, delete the recipe using its ID by calling
+`CraftingSystem#deleteRecipeById` then save the crafting system.
 
 <details open markdown="block">
 <summary>
-CraftingSystem#deleteComponentById
+CraftingSystem#deleteRecipeById
 </summary>
 
 ```typescript
     /**
-     * Deletes a crafting component by ID
+     * Deletes a recipe by ID
      *
-     * @param the ID of the component to delete
+     * @param the ID of the recipe to delete
     * */
-    deleteComponentById(id: string): void;
+    deleteRecipeById(id: string): void;
 ```
 
 </details>
 
 <details open markdown="block">
 <summary>
-Deleting a component
+Deleting a recipe
 </summary>
 
 ```js
 // Obtain the component ID and load the crafting system part dictionary beforehand
-console.log(`Before deletion, CraftingSystem#hasComponent is ${craftingSystem.hasComponent(myComponentId)}`);
+console.log(`Before deletion, CraftingSystem#hasRecipe is ${craftingSystem.hasRecipe(myRecipeId)}`);
 craftingSystem.deleteComponentById(myComponentId);
 await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
-console.log(`After deletion, CraftingSystem#hasComponent is ${craftingSystem.hasComponent(myComponentId)}`);
+console.log(`After deletion, CraftingSystem#hasComponent is ${craftingSystem.hasRecipe(myRecipeId)}`);
 ```
 
 </details>
