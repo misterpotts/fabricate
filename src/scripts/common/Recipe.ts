@@ -10,17 +10,17 @@ interface RecipeJson {
     disabled: boolean;
     essences: Record<string, number>,
     resultOptions: Record<string, ResultOptionJson>;
-    ingredientOptions: Record<string, IngredientOptionJson>;
+    ingredientOptions: Record<string, RequirementOptionJson>;
 }
 
 type ResultOptionJson = Record<string, number>;
 
-interface IngredientOptionJson {
+interface RequirementOptionJson {
     catalysts: Record<string, number>;
     ingredients: Record<string, number>;
 }
 
-class IngredientOption implements Identifiable, Serializable<IngredientOptionJson> {
+class RequirementOption implements Identifiable, Serializable<RequirementOptionJson> {
 
     private _catalysts: Combination<CraftingComponent>;
     private _ingredients: Combination<CraftingComponent>;
@@ -96,7 +96,7 @@ class IngredientOption implements Identifiable, Serializable<IngredientOptionJso
         return this._ingredients.isEmpty() && this._catalysts.isEmpty();
     }
 
-    toJson(): IngredientOptionJson {
+    toJson(): RequirementOptionJson {
         return {
             catalysts: this._catalysts.toJson(),
             ingredients: this._ingredients.toJson()
@@ -168,7 +168,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     private readonly _id: string;
     private _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
-    private _ingredientOptions: SelectableOptions<IngredientOptionJson, IngredientOption>;
+    private _ingredientOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
     private _resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
     private _disabled: boolean;
 
@@ -189,7 +189,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         disabled?: boolean;
         essences?: Combination<Essence>;
         resultOptions?: SelectableOptions<ResultOptionJson, ResultOption>;
-        ingredientOptions?: SelectableOptions<IngredientOptionJson, IngredientOption>;
+        ingredientOptions?: SelectableOptions<RequirementOptionJson, RequirementOption>;
     }) {
         this._id = id;
         this._itemData = itemData;
@@ -227,11 +227,11 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._itemData = value;
     }
 
-    get ingredientOptionsById(): Map<string, IngredientOption> {
+    get ingredientOptionsById(): Map<string, RequirementOption> {
         return this._ingredientOptions.optionsByName;
     }
 
-    get ingredientOptions(): IngredientOption[] {
+    get ingredientOptions(): RequirementOption[] {
         return this._ingredientOptions.options;
     }
 
@@ -278,7 +278,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._ingredientOptions.isReady && this._resultOptions.isReady;
     }
 
-    public getSelectedIngredients(): IngredientOption {
+    public getSelectedIngredients(): RequirementOption {
         if (this._ingredientOptions.isReady) {
             return this._ingredientOptions.selectedOption
         }
@@ -363,15 +363,15 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         }
     }
 
-    public editIngredientOption(ingredientOption: IngredientOption) {
+    public editIngredientOption(ingredientOption: RequirementOption) {
         if (!this._ingredientOptions.has(ingredientOption.id)) {
             throw new Error(`Cannot edit Ingredient Option "${ingredientOption.id}". It does not exist in this Recipe.`);
         }
         this._ingredientOptions.set(ingredientOption);
     }
 
-    set ingredientOptions(options: IngredientOption[]) {
-        this._ingredientOptions = new SelectableOptions<IngredientOptionJson, IngredientOption>({
+    set ingredientOptions(options: RequirementOption[]) {
+        this._ingredientOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({
             options
         });
     }
@@ -392,7 +392,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         };
     }
 
-    addIngredientOption(value: IngredientOption) {
+    addIngredientOption(value: RequirementOption) {
         if (this._ingredientOptions.has(value.id)) {
             throw new Error(`Ingredient option ${value.id} already exists in this recipe. `);
         }
@@ -406,7 +406,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions.add(value);
     }
 
-    setIngredientOption(value: IngredientOption) {
+    setIngredientOption(value: RequirementOption) {
         this._ingredientOptions.set(value);
     }
 
@@ -458,4 +458,4 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 }
 
-export { Recipe, RecipeJson, ResultOptionJson, ResultOption, IngredientOptionJson, IngredientOption }
+export { Recipe, RecipeJson, ResultOptionJson, ResultOption, RequirementOptionJson, RequirementOption }

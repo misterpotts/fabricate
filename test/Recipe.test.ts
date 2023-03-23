@@ -1,7 +1,7 @@
 import {expect, jest, test, beforeEach, describe} from "@jest/globals";
 import {
-    IngredientOption,
-    IngredientOptionJson,
+    RequirementOption,
+    RequirementOptionJson,
     Recipe, ResultOption, ResultOptionJson
 } from "../src/scripts/common/Recipe";
 
@@ -122,13 +122,13 @@ describe("When selecting ingredients", () => {
             id,
             disabled: false,
             itemData: NoFabricateItemData.INSTANCE(),
-            ingredientOptions: new SelectableOptions<IngredientOptionJson, IngredientOption>({
+            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
-                    new IngredientOption({
+                    new RequirementOption({
                         name: "Option 1",
                         ingredients: combinationOne
                     }),
-                    new IngredientOption({
+                    new RequirementOption({
                         name: "Option 2",
                         ingredients: combinationTwo
                     }),
@@ -149,7 +149,7 @@ describe("When selecting ingredients", () => {
             new Unit(testComponentTwo, 1)
         ]);
         const optionOneId = "1";
-        const optionOne = new IngredientOption({
+        const optionOne = new RequirementOption({
             name: optionOneId,
             ingredients: combinationOne
         });
@@ -158,7 +158,7 @@ describe("When selecting ingredients", () => {
         const combinationTwo = Combination.ofUnits([
             new Unit(testComponentThree, 2)
         ]);
-        const optionTwo = new IngredientOption({
+        const optionTwo = new RequirementOption({
             name: optionTwoId,
             ingredients: combinationTwo
         });
@@ -166,7 +166,7 @@ describe("When selecting ingredients", () => {
         const underTest = new Recipe({
             id,
             itemData: NoFabricateItemData.INSTANCE(),
-            ingredientOptions: new SelectableOptions<IngredientOptionJson, IngredientOption>({
+            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [optionOne, optionTwo]
             })
         });
@@ -220,9 +220,9 @@ describe("When selecting results", () => {
                     })
                 ]
             }),
-            ingredientOptions: new SelectableOptions<IngredientOptionJson, IngredientOption>({
+            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
-                    new IngredientOption({
+                    new RequirementOption({
                         name: "Option 1",
                         ingredients: singletonIngredient
                     })

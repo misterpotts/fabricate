@@ -3,7 +3,7 @@ import {CraftingSystemJson} from "../../system/CraftingSystem";
 import {V1ComponentJson, V1EssenceJson, V1RecipeJson, V1SystemJson} from "../../system/setting_versions/V1Json";
 import {EssenceJson} from "../../common/Essence";
 import {CraftingComponentJson, SalvageOptionJson} from "../../common/CraftingComponent";
-import {IngredientOptionJson, RecipeJson, ResultOptionJson} from "../../common/Recipe";
+import {RequirementOptionJson, RecipeJson, ResultOptionJson} from "../../common/Recipe";
 
 class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record<string, V1SystemJson>, Record<string, CraftingSystemJson>> {
 
@@ -93,11 +93,11 @@ class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record
         return result;
     }
 
-    private migrateIngredients(ingredientGroups: Record<string, number>[], catalysts: Record<string, number>): Record<string, IngredientOptionJson> {
-        const result: Record<string, IngredientOptionJson> = {};
+    private migrateIngredients(ingredientGroups: Record<string, number>[], catalysts: Record<string, number>): Record<string, RequirementOptionJson> {
+        const result: Record<string, RequirementOptionJson> = {};
         ingredientGroups.forEach((value, index) => {
             const optionName = `Option ${index + 1}`;
-            const option: IngredientOptionJson = {
+            const option: RequirementOptionJson = {
                 ingredients: value,
                 catalysts: catalysts
             };

@@ -1,7 +1,7 @@
 import {Combination} from "../../common/Combination";
 import {CraftingComponent} from "../../common/CraftingComponent";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
-import {IngredientOption, Recipe} from "../../common/Recipe";
+import {RequirementOption, Recipe} from "../../common/Recipe";
 import {CraftingAttempt, DefaultCraftingAttempt} from "./CraftingAttempt";
 import {MultipleRecipeCraftingPrep, RecipeCraftingPrep, SingletonRecipeCraftingPrep} from "./RecipeCraftingPrep";
 import {Essence} from "../../common/Essence";
@@ -54,7 +54,7 @@ class RecipeCraftingPrepFactory {
 
     }
 
-    private makeCraftingAttempt(ingredientOption: IngredientOption,
+    private makeCraftingAttempt(ingredientOption: RequirementOption,
                                 essences: Combination<Essence>,
                                 availableComponents: Combination<CraftingComponent>): CraftingAttempt {
 
