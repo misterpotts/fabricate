@@ -100,9 +100,6 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     insert(recipe: Recipe): void {
-        if (this._entriesByItemUuid.has(recipe.itemUuid)) {
-            return;
-        }
         if (recipe.itemUuid !== NoFabricateItemData.UUID()) {
             this._entriesByItemUuid.set(recipe.itemUuid, recipe);
         }
