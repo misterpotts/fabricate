@@ -89,6 +89,9 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     toJson(): Record<string, J> {
         return Array.from(this._options.values())
             .reduce((previousValue, currentValue) => {
+                if (previousValue[currentValue.id]) {
+                    throw new Error("Two options cannot have the same identity. ");
+                }
                 previousValue[currentValue.id] = currentValue.toJson();
                 return previousValue;
             }, <Record<string, J>>{});
