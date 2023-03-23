@@ -53,9 +53,14 @@ want to use with Fabricate.
 game.packs.get("myCompendiumId").contents.forEach(item => item.unsetFlag("core", "sourceId"));
 ```
 
-**The long-term fix:** Perhaps I could duplicate the `core.sourceId` flag system in Fabricate, adding custom flags for 
-the module, though that seems incredibly redundant. I could look to overwrite the source ID if you import it to 
-fabricate from a compendium. Honestly the answer isn't obvious to me right now.
+**The long-term fix:** I've [submitted an Issue to Foundry](https://github.com/foundryvtt/foundryvtt/issues/9097).
+To make Fabricate work more seamlessly _now_, I'm going to:
+
+1. Add a module config option, on by default, to clean your data when you import items into Fabricate
+2. Clean core.sourceId flag data in compendiums and items when they are imported into Fabricate
+3. Warn you when you import an item from a locked compendium if the core.sourceId flag is set to a value other than the Compendium item UUID
+
+You can track my progress on the fix in this [GitHub Issue](https://github.com/misterpotts/fabricate/issues/115).
 
 ## Embedded crafting systems
 
