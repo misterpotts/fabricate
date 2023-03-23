@@ -95,9 +95,6 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
     }
 
     insert(craftingComponent: CraftingComponent): void {
-        if (this._entriesByItemUuid.has(craftingComponent.itemUuid)) {
-            return;
-        }
         if (craftingComponent.itemUuid !== NoFabricateItemData.UUID()) {
             this._entriesByItemUuid.set(craftingComponent.itemUuid, craftingComponent);
         }
