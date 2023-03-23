@@ -94,6 +94,10 @@ class PartDictionary {
         return this._componentDictionary.mutate(id, mutation);
     }
 
+    async mutateRecipe(id: string, mutation: RecipeJson): Promise<Recipe> {
+        return this._recipeDictionary.mutate(id, mutation);
+    }
+
     public insertRecipe(recipe: Recipe): void {
         this._recipeDictionary.insert(recipe);
     }
@@ -200,6 +204,7 @@ class PartDictionary {
     async createEssence(essenceJson: EssenceJson): Promise<Essence> {
         return this._essenceDictionary.create(essenceJson);
     }
+
 
 }
 

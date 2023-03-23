@@ -168,6 +168,10 @@ class CraftingSystem {
         return this._partDictionary.insertRecipe(recipe);
     }
 
+    public async mutateRecipe(id: string, mutation: RecipeJson): Promise<Recipe> {
+        return await this._partDictionary.mutateRecipe(id, mutation);
+    }
+
     public async createRecipe(recipeJson: RecipeJson): Promise<Recipe> {
         return this._partDictionary.createRecipe(recipeJson);
     }

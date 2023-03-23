@@ -1,7 +1,7 @@
 import {Dictionary} from "./Dictionary";
 import {
-    IngredientOption,
-    IngredientOptionJson,
+    RequirementOption,
+    RequirementOptionJson,
     Recipe,
     RecipeJson,
     ResultOption,
@@ -154,10 +154,10 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         });
     }
 
-    private buildIngredientOptions(ingredientOptionsJson: Record<string, IngredientOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<IngredientOptionJson, IngredientOption> {
+    private buildIngredientOptions(ingredientOptionsJson: Record<string, RequirementOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<RequirementOptionJson, RequirementOption> {
         const options = Object.keys(ingredientOptionsJson)
             .map(name => this.buildIngredientOption(name, ingredientOptionsJson[name], allComponents));
-        return new SelectableOptions<IngredientOptionJson, IngredientOption>({
+        return new SelectableOptions<RequirementOptionJson, RequirementOption>({
             options
         });
     }
@@ -170,8 +170,8 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         });
     }
 
-    private buildIngredientOption(name: string, ingredientOptionJson: IngredientOptionJson, allComponents: Map<string, CraftingComponent>): IngredientOption {
-        return new IngredientOption({
+    private buildIngredientOption(name: string, ingredientOptionJson: RequirementOptionJson, allComponents: Map<string, CraftingComponent>): RequirementOption {
+        return new RequirementOption({
             name,
             catalysts: combinationFromRecord(ingredientOptionJson.catalysts, allComponents),
             ingredients: combinationFromRecord(ingredientOptionJson.ingredients, allComponents)
@@ -259,6 +259,23 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         const recipe = await this.buildRecipe(recipeId, recipeJson, itemData);
         this.insert(recipe);
         return recipe;
+    }
+
+    async mutate(id: string, mutation: RecipeJson): Promise<Recipe> {
+        if (!this._loaded) {
+            throw new Error("Fabricate doesn't currently support modifying recipes before the recipe dictionary has been loaded. ");
+        }
+        if (!this._entriesById.has(id)) {
+            throw new Error(`Unable to mutate recipe with ID ${id}. It doesn't exist.`);
+        }
+        const target = this._entriesById.get(id);
+        const itemData = target.itemUuid === mutation.itemUuid ? target.itemData : await this._documentManager.getDocumentByUuid(mutation.itemUuid);
+        if (itemData.hasErrors) {
+            throw new Error(`Could not load document with UUID "${mutation.itemUuid}". Errors ${itemData.errors.join(", ")} `);
+        }
+        const result = this.buildRecipe(target.id, mutation, itemData);
+        this.insert(result);
+        return result;
     }
 
 }

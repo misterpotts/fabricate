@@ -335,7 +335,7 @@ CraftingSystem#mutateComponent
      * @throws an Error if the ID is not for an existing component
      * @throws an Error if the the component dictionary has not been loaded
      * @throws an Error if the mutation contains an invalid item UUID
-     * @throws an Error if the mutation references essences orcomponents that do not exist
+     * @throws an Error if the mutation references essences or components that do not exist
     * */
     mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent>;
 ```
@@ -395,6 +395,221 @@ console.log(`Before deletion, CraftingSystem#hasComponent is ${craftingSystem.ha
 craftingSystem.deleteComponentById(myComponentId);
 await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
 console.log(`After deletion, CraftingSystem#hasComponent is ${craftingSystem.hasComponent(myComponentId)}`);
+```
+
+</details>
+
+## Add a recipe to a crafting system
+
+A recipe is specified by the `RecipeJson` interface.
+
+<details open markdown="block">
+<summary>
+RecipeJson Interface
+</summary>
+
+```typescript
+interface RecipeJson {
+    
+    /**
+     * The UUID of the Item document for this component
+     * */
+    itemUuid: string;
+
+    /**
+     * true if the component is disabled, false if enabled
+     * */
+    disabled: boolean;
+
+    /**
+     * Keyed on the ID of the essence, the value represents the quantity of essences required from amongst available 
+     * components, in addition to any catalysts and ingredients. This must be a valid essence ID for the crafting system
+     */
+    essences: Record<string, number>;
+
+    /**
+     * Keyed on the option name, the value represents the component combination for the recipe results. This must be a 
+     * valid component ID for the crafting system
+     */
+    resultOptions: Record<string, ResultOptionJson>;
+
+    /**
+     * Keyed on the option name, the value represents the requirements (catalysts and ingredients) for the recipe
+     */
+    ingredientOptions: Record<string, RequirementOptionJson>;
+    
+}
+
+/**
+ * Keyed on the ID of the component, the value represents the quantity produced by crafting the recipe with this option
+ * selected. This must be a valid component ID for the crafting system 
+ * */
+type ResultOptionJson = Record<string, number>;
+
+interface RequirementOptionJson {
+
+    /**
+     * Keyed on the ID of the component, the value represents the quantity of catalyst of each type required for this
+     * recipe option. This must be a valid component ID for the crafting system
+     * */
+    catalysts: Record<string, number>;
+
+    /**
+     * Keyed on the ID of the component, the value represents the quantity of ingredient of each type required for this
+     * recipe option. This must be a valid component ID for the crafting system
+     * */
+    ingredients: Record<string, number>;
+    
+}
+```
+
+</details>
+
+To create one, get the crafting system you want to add it to, and call `CraftingSystem#createRecipe`.
+Then, save the crafting system.
+
+{: .highlight }
+> If your crafting system has components and recipes already defined, make sure that you **load the part dictionary**
+> before you save the crafting system. Attempts to save a crafting system that has not had its part dictionary loaded
+> will produce an error. This area of the API is _likely to change_ in future.
+
+<details open markdown="block">
+<summary>
+Add a recipe to a crafting system
+</summary>
+
+```js
+const myRecipe = {
+    // you can obtain the Item UUID by right-clicking the passport icon in the top left of an item sheet.
+    // be sure to use an item from the item directory, or from a compendium. These begin with "Item." or "Compendium."
+    itemUuid: "Item.qefRHSJYoNK7m7wE",
+    disabled: false,
+    essences: {},
+    resultOptions: {},
+    ingredientOptions: {}
+};
+
+const myCraftingSystemId = "8Bn1VBc6noSUeKlG"; // replace this with your own crafting system ID
+const craftingSystem = await game.fabricate.SystemRegistry.getCraftingSystemById(myCraftingSystemId);
+await craftingSystem.loadPartDictionary() // <-- Do this before modifying systems that already have components
+const createdRecipe = await craftingSystem.createRecipe(myRecipe);
+await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem); 
+console.log(`Created recipe with ID "${createdRecipe.id}"`); // <-- You'll need this to edit the recipe
+```
+
+</details>
+
+## Accessing a recipe
+
+To access a recipe, you will need to:
+
+1. Get the crafting system it belongs to
+2. Load the part dictionary for that system
+3. Get the recipe by ID from the crafting system
+
+<details open markdown="block">
+<summary>
+Accessing a recipe
+</summary>
+
+```js
+const myCraftingSystemId = "8Bn1VBc6noSUeKlG"; // replace this with your own crafting system ID
+const craftingSystem = await game.fabricate.SystemRegistry.getCraftingSystemById(myCraftingSystemId);
+// Fabricate currently requires you to load essences, components and recipes into memory before you can act on them
+// **This area of the API is likely to change** in future as I move towards loading individual parts on demand
+await craftingSystem.loadPartDictionary();
+const myRecipeId = "T3zD0zrcd0otXXwB"; // replace this with the ID of the recipe you want to get
+const myComponent = craftingSystem.getRecipeById(myRecipeId);
+```
+
+</details>
+
+## Editing a recipe
+
+To edit a recipe, you will need to:
+
+1. [Access the recipe](#accessing-a-recipe)
+2. Serialize it
+3. Modify the serialized data
+4. Call `CraftingSystem#mutateRecipe` with the recipe ID and the modified data
+5. Save the crafting system
+
+<details open markdown="block">
+<summary>
+CraftingSystem#mutateRecipe
+</summary>
+
+```typescript
+    /**
+     * Modifies an existing recipe by applying the mutations defined in the supplied `RecipeJson`
+     * 
+     * @param id The ID of the recipe to modify
+     * @param the complete target state of the recipe to apply. Anything you omit is deleted
+     * @return a Promise that resolves to the updated recipe
+     * 
+     * @throws an Error if the ID is not for an existing recipe
+     * @throws an Error if the the recipe dictionary has not been loaded
+     * @throws an Error if the mutation contains an invalid item UUID
+     * @throws an Error if the mutation references essences or components that do not exist
+    * */
+    mutateRecipe(id: string, mutation: RecipeJson): Promise<Recipe>;
+```
+
+</details>
+
+<details open markdown="block">
+<summary>
+Modifying a component
+</summary>
+
+```js
+// Access the component as described above
+const myComponent = craftingSystem.getComponentById(myComponentId);
+console.log(`Before modification: ${myComponent}`);
+const componentData = myComponent.toJson();
+componentData.salvageOptions["My new Salvage Option"] = { "rLP3cTCTnQsxddDt": 1 } // Adds a new salvage option
+componentData.essences["bGfx37pYjqlf812"] = 3; // Adds an essence with a quantity of 3
+// perform any other modifications you want here. You can alter any of the fields in the `CraftingComponentJson`, 
+// including the item UUID. The new values meet the requirements specified in the interface.
+const updatedComponent = await craftingSystem.mutateComponent(myComponent.id, componentData);
+await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
+console.log(`After modification: ${updatedComponent}`);
+```
+
+</details>
+
+## Deleting a recipe
+
+Deleting a recipe requires only that you load the crafting system, delete the recipe using its ID by calling
+`CraftingSystem#deleteRecipeById` then save the crafting system.
+
+<details open markdown="block">
+<summary>
+CraftingSystem#deleteRecipeById
+</summary>
+
+```typescript
+    /**
+     * Deletes a recipe by ID
+     *
+     * @param the ID of the recipe to delete
+    * */
+    deleteRecipeById(id: string): void;
+```
+
+</details>
+
+<details open markdown="block">
+<summary>
+Deleting a recipe
+</summary>
+
+```js
+// Obtain the component ID and load the crafting system part dictionary beforehand
+console.log(`Before deletion, CraftingSystem#hasRecipe is ${craftingSystem.hasRecipe(myRecipeId)}`);
+craftingSystem.deleteComponentById(myComponentId);
+await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
+console.log(`After deletion, CraftingSystem#hasComponent is ${craftingSystem.hasRecipe(myRecipeId)}`);
 ```
 
 </details>

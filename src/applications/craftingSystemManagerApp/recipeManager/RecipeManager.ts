@@ -4,7 +4,7 @@ import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
-import {IngredientOption, Recipe, ResultOption} from "../../../scripts/common/Recipe";
+import {RequirementOption, Recipe, ResultOption} from "../../../scripts/common/Recipe";
 import {Combination} from "../../../scripts/common/Combination";
 
 class RecipeManager {
@@ -190,9 +190,9 @@ class RecipeManager {
         const name = this.generateIngredientOptionName(selectedRecipe);
         let ingredientOption;
         if (addAsCatalyst) {
-            ingredientOption = new IngredientOption({name, catalysts: Combination.of(component, 1)});
+            ingredientOption = new RequirementOption({name, catalysts: Combination.of(component, 1)});
         } else {
-            ingredientOption = new IngredientOption({name, ingredients: Combination.of(component, 1)});
+            ingredientOption = new RequirementOption({name, ingredients: Combination.of(component, 1)});
         }
         selectedRecipe.addIngredientOption(ingredientOption);
         selectedCraftingSystem.editRecipe(selectedRecipe);

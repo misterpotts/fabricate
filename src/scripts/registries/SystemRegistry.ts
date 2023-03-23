@@ -251,6 +251,7 @@ class DefaultSystemRegistry implements SystemRegistry {
         if (!systemDefinition.parts.essences) { systemDefinition.parts.essences = {}; }
 
         const craftingSystem = await this._craftingSystemFactory.make(systemDefinition);
+        await craftingSystem.loadPartDictionary();
         return this.saveCraftingSystem(craftingSystem);
     }
 

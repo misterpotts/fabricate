@@ -1,4 +1,4 @@
-import {IngredientOption, Recipe, ResultOption} from "../../src/scripts/common/Recipe";
+import {RequirementOption, Recipe, ResultOption} from "../../src/scripts/common/Recipe";
 import {Combination, Unit} from "../../src/scripts/common/Combination";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
@@ -22,11 +22,11 @@ const testRecipeOne: Recipe = new Recipe({
     }),
     ingredientOptions: new SelectableOptions({
         options: [
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 1",
                 ingredients: Combination.of(testComponentOne, 1)
             }),
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 2",
                 ingredients: Combination.of(testComponentThree, 2)
             }),
@@ -58,7 +58,7 @@ const testRecipeTwo: Recipe = new Recipe({
     }),
     ingredientOptions: new SelectableOptions({
         options: [
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 1",
                 ingredients: Combination.of(testComponentFour, 1),
                 catalysts: Combination.of(testComponentFive, 1)
@@ -123,7 +123,7 @@ const testRecipeFour: Recipe = new Recipe({
     ]),
     ingredientOptions: new SelectableOptions({
         options: [
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 1",
                 ingredients: Combination.of(testComponentTwo, 3),
                 catalysts: Combination.of(testComponentThree, 1)
@@ -160,7 +160,7 @@ const testRecipeFive: Recipe = new Recipe({
     ]),
     ingredientOptions: new SelectableOptions({
         options: [
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 1",
                 catalysts: Combination.of(testComponentFour, 1)
             })
@@ -196,14 +196,14 @@ const testRecipeSix: Recipe = new Recipe({
     ]),
     ingredientOptions: new SelectableOptions({
         options: [
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 1",
                 ingredients: Combination.ofUnits([
                     new Unit(testComponentOne, 1),
                     new Unit(testComponentThree, 2)
                 ])
             }),
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 2",
                 ingredients: Combination.of(testComponentTwo, 1)
             })
@@ -239,7 +239,7 @@ const testRecipeSeven: Recipe = new Recipe({
     }),
     ingredientOptions: new SelectableOptions({
         options: [
-            new IngredientOption({
+            new RequirementOption({
                 name: "Option 1",
                 ingredients: Combination.of(testComponentFour, 1)
             })
