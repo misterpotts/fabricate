@@ -3,7 +3,7 @@ import {V1ComponentJson, V1EssenceJson, V1RecipeJson} from "../src/scripts/syste
 import {EssenceJson} from "../src/scripts/common/Essence";
 import V1_CHILDS_PLAY_SYSTEM_DEFINITION from "./resources/V1ChildsPlaySystemSpec";
 import {V2CraftingSystemSettingMigrator} from "../src/scripts/settings/migrators/V2CraftingSystemSettingMigrator";
-import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
+import {ComponentJson} from "../src/scripts/common/Component";
 import {RecipeJson} from "../src/scripts/common/Recipe";
 import { V1_ALCHEMISTS_SUPPLIES_SYSTEM_DEFINITION } from "./resources/V1AlchemistsSuppliesSystemSpec";
 import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/bundled/AlchemistsSuppliesV16";
@@ -18,7 +18,7 @@ function expectEssenceMigrationSuccess(before: V1EssenceJson, allAfter: Record<s
     expect(after.activeEffectSourceItemUuid).toBeNull();
 }
 
-function expectComponentMigrationSuccess(before: V1ComponentJson, allAfter: Record<string, CraftingComponentJson>) {
+function expectComponentMigrationSuccess(before: V1ComponentJson, allAfter: Record<string, ComponentJson>) {
     expect(allAfter[before.itemUuid]).not.toBeNull();
     const after = allAfter[before.itemUuid];
     expect(after.itemUuid).toEqual(before.itemUuid);

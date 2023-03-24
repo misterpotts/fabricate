@@ -1,4 +1,4 @@
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Component} from "../common/Component";
 import {Combination, Unit} from "../common/Combination";
 import {ObjectUtility} from "../foundry/ObjectUtility";
 import {CraftingResult} from "../crafting/result/CraftingResult";
@@ -20,19 +20,19 @@ import {SalvageResult} from "../crafting/result/SalvageResult";
 
 interface Inventory {
     actor: any;
-    ownedComponents: Combination<CraftingComponent>;
+    ownedComponents: Combination<Component>;
     acceptCraftingResult(craftingResult: CraftingResult): Promise<void>;
     acceptSalvageResult(salvageResult: SalvageResult): Promise<void>;
     acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<void>;
     index(): Promise<void>;
-    contains(craftingComponent: CraftingComponent, quantity: number): boolean;
+    contains(craftingComponent: Component, quantity: number): boolean;
     size: number
-    amountFor(craftingComponent: CraftingComponent): number;
+    amountFor(craftingComponent: Component): number;
 }
 
 interface InventoryActions {
-    additions: Combination<CraftingComponent>;
-    removals: Combination<CraftingComponent>;
+    additions: Combination<Component>;
+    removals: Combination<Component>;
 }
 
 interface InventoryRecord {
@@ -45,8 +45,8 @@ class CraftingInventory implements Inventory {
     private readonly _documentManager: DocumentManager;
     private readonly _objectUtils: ObjectUtility;
     private readonly _actor: any;
-    private readonly _knownComponentsByItemUuid: Map<string, CraftingComponent>;
-    private _managedItems: Map<CraftingComponent, InventoryRecord[]>;
+    private readonly _knownComponentsByItemUuid: Map<string, Component>;
+    private _managedItems: Map<Component, InventoryRecord[]>;
     private readonly _itemQuantityReader: ItemQuantityReader;
     private readonly _itemQuantityWriter: ItemQuantityWriter;
 
@@ -63,9 +63,9 @@ class CraftingInventory implements Inventory {
         gameProvider: GameProvider;
         documentManager: DocumentManager;
         objectUtils: ObjectUtility;
-        knownComponentsByItemUuid?: Map<string, CraftingComponent>;
-        ownedComponents?: Combination<CraftingComponent>;
-        managedItems?: Map<CraftingComponent, InventoryRecord[]>;
+        knownComponentsByItemUuid?: Map<string, Component>;
+        ownedComponents?: Combination<Component>;
+        managedItems?: Map<Component, InventoryRecord[]>;
         itemQuantityReader?: ItemQuantityReader;
         itemQuantityWriter?: ItemQuantityWriter;
     }) {
@@ -83,14 +83,14 @@ class CraftingInventory implements Inventory {
         return this._actor;
     }
 
-    contains(craftingComponent: CraftingComponent, quantity: number = 1): boolean {
+    contains(craftingComponent: Component, quantity: number = 1): boolean {
         if (!this._managedItems.has(craftingComponent)) {
             return false;
         }
         return quantity <= this.amountFor(craftingComponent);
     }
 
-    amountFor(craftingComponent: CraftingComponent) {
+    amountFor(craftingComponent: Component) {
         if (!this._managedItems.has(craftingComponent)) {
             return 0;
         }
@@ -99,11 +99,11 @@ class CraftingInventory implements Inventory {
         }, 0);
     }
 
-    async removeAll(components: Combination<CraftingComponent>): Promise<void> {
+    async removeAll(components: Combination<Component>): Promise<void> {
         const updates: any[] = [];
         const deletes: any[] = [];
         for (const unit of components.units) {
-            const craftingComponent: CraftingComponent = unit.part;
+            const craftingComponent: Component = unit.part;
             if (!this.contains(craftingComponent)) {
                 throw new InventoryContentsNotFoundError(unit, 0, this._actor.id);
             }
@@ -143,7 +143,7 @@ class CraftingInventory implements Inventory {
 
     }
 
-    async addAll(components: Combination<CraftingComponent>, activeEffects: ActiveEffect[]): Promise<void> {
+    async addAll(components: Combination<Component>, activeEffects: ActiveEffect[]): Promise<void> {
 
         const creates: any[] = await Promise.all(components.units
             .filter(unit => !this.contains(unit.part))
@@ -179,7 +179,7 @@ class CraftingInventory implements Inventory {
         return newItemData;
     }
 
-    private async buildItemData(unit: Unit<CraftingComponent>, activeEffects: ActiveEffect[]): Promise<any> {
+    private async buildItemData(unit: Unit<Component>, activeEffects: ActiveEffect[]): Promise<any> {
         const sourceData: FabricateItemData = unit.part.itemData;
         const itemData: any = this._objectUtils.duplicate(sourceData.sourceDocument);
         itemData.effects = [...itemData.effects, ...activeEffects];
@@ -196,7 +196,7 @@ class CraftingInventory implements Inventory {
         return this.acceptResult(salvageResult.created, salvageResult.consumed);
     }
 
-    private async acceptResult(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): Promise<void> {
+    private async acceptResult(created: Combination<Component>, consumed: Combination<Component>): Promise<void> {
         await this.index();
 
         const activeEffects = consumed
@@ -223,15 +223,15 @@ class CraftingInventory implements Inventory {
         return null;
     }
 
-    private rationalise(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): InventoryActions {
+    private rationalise(created: Combination<Component>, consumed: Combination<Component>): InventoryActions {
         if (!consumed.intersects(created)) {
             return ({
                 additions: created,
                 removals: consumed
             });
         }
-        let rationalisedCreated: Combination<CraftingComponent> = created;
-        let rationalisedConsumed: Combination<CraftingComponent> = Combination.EMPTY();
+        let rationalisedCreated: Combination<Component> = created;
+        let rationalisedConsumed: Combination<Component> = Combination.EMPTY();
         consumed.units.forEach(consumedUnit => {
             if (!created.has(consumedUnit.part)) {
                 rationalisedConsumed = rationalisedCreated.add(consumedUnit);
@@ -239,7 +239,7 @@ class CraftingInventory implements Inventory {
             if (created.containsAll(consumedUnit)) {
                 rationalisedCreated = rationalisedCreated.minus(consumedUnit);
             } else {
-                const updatedConsumedUnit: Unit<CraftingComponent> = rationalisedCreated.amounts.get(consumedUnit.part.id)
+                const updatedConsumedUnit: Unit<Component> = rationalisedCreated.amounts.get(consumedUnit.part.id)
                     .minus(consumedUnit.quantity);
                 rationalisedCreated = rationalisedCreated.minus(consumedUnit);
                 rationalisedConsumed = rationalisedConsumed.add(updatedConsumedUnit.invert());
@@ -267,7 +267,7 @@ class CraftingInventory implements Inventory {
     async index(): Promise<void> {
         const actor: any = this.actor;
         const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
-        const itemsByComponentType: Map<CraftingComponent, InventoryRecord[]> = new Map();
+        const itemsByComponentType: Map<Component, InventoryRecord[]> = new Map();
         await Promise.all(Array.from(ownedItems.values())
             .filter((item: any) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
             .map(async (item: BaseItem) => {
@@ -289,7 +289,7 @@ class CraftingInventory implements Inventory {
             .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
     }
 
-    get ownedComponents(): Combination<CraftingComponent> {
+    get ownedComponents(): Combination<Component> {
         return Array.from(this._managedItems.keys())
             .flatMap(component => this._managedItems.get(component).map(itemRecord => Combination.of(component, itemRecord.quantity)))
             .reduce((previousValue, currentValue) => previousValue.combineWith(currentValue), Combination.EMPTY());

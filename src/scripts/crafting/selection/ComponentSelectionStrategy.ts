@@ -1,6 +1,6 @@
 import {Combination, Unit} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {Essence} from "../../common/Essence";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {EssenceSelection} from "../../actor/EssenceSelection";
@@ -9,10 +9,10 @@ import {Identifiable} from "../../common/Identity";
 interface ComponentSelectionStrategy {
 
     perform(
-        requiredCatalysts: Combination<CraftingComponent>,
-        requiredIngredients: Combination<CraftingComponent>,
+        requiredCatalysts: Combination<Component>,
+        requiredIngredients: Combination<Component>,
         requiredEssences: Combination<Essence>,
-        availableComponents: Combination<CraftingComponent>
+        availableComponents: Combination<Component>
     ): ComponentSelection;
 
 }
@@ -21,10 +21,10 @@ export {ComponentSelectionStrategy}
 
 class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
-    perform(requiredCatalysts: Combination<CraftingComponent>,
-            requiredIngredients: Combination<CraftingComponent>,
+    perform(requiredCatalysts: Combination<Component>,
+            requiredIngredients: Combination<Component>,
             requiredEssences: Combination<Essence>,
-            availableComponents: Combination<CraftingComponent>): ComponentSelection {
+            availableComponents: Combination<Component>): ComponentSelection {
 
         const catalysts = this.selectCombination(requiredCatalysts, availableComponents)
 
@@ -37,7 +37,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
         const componentsForEssences = componentsForIngredients.subtract(ingredientAmountToSubtract);
 
         const essenceSelectionAlgorithm = new EssenceSelection(requiredEssences);
-        const essenceSources: Combination<CraftingComponent> = essenceSelectionAlgorithm.perform(componentsForEssences);
+        const essenceSources: Combination<Component> = essenceSelectionAlgorithm.perform(componentsForEssences);
         const actualEssences = essenceSources.explode(component => component.essences);
         const essences = new TrackedCombination({ target: requiredEssences, actual: actualEssences })
 

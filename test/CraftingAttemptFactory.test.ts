@@ -3,7 +3,7 @@ import {RecipeCraftingPrepFactory} from "../src/scripts/crafting/attempt/RecipeC
 import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
 import {Combination, Unit} from "../src/scripts/common/Combination";
 import {testRecipeFive, testRecipeFour} from "./test_data/TestRecipes";
-import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {Component} from "../src/scripts/common/Component";
 import {TrackedUnit} from "../src/scripts/common/TrackedCombination";
 import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
@@ -23,7 +23,7 @@ describe("Create a Crafting Attempt", () => {
 
             const underTest = new RecipeCraftingPrepFactory({ selectionStrategy });
 
-            const availableComponents = Combination.EMPTY<CraftingComponent>();
+            const availableComponents = Combination.EMPTY<Component>();
 
             const result = underTest.make(testRecipeFive, availableComponents);
 

@@ -1,5 +1,5 @@
 import {Dictionary} from "./Dictionary";
-import {CraftingComponent, CraftingComponentJson, SalvageOption, SalvageOptionJson} from "../common/CraftingComponent";
+import {Component, ComponentJson, SalvageOption, SalvageOptionJson} from "../common/Component";
 import {
     DocumentManager,
     FabricateItemData,
@@ -11,13 +11,13 @@ import {SelectableOptions} from "../common/SelectableOptions";
 import {Essence} from "../common/Essence";
 import Properties from "../Properties";
 
-export class ComponentDictionary implements Dictionary<CraftingComponentJson, CraftingComponent> {
+export class ComponentDictionary implements Dictionary<ComponentJson, Component> {
 
-    private _sourceData: Record<string, CraftingComponentJson>;
+    private _sourceData: Record<string, ComponentJson>;
     private readonly _documentManager: DocumentManager;
     private readonly _essenceDictionary: EssenceDictionary;
-    private readonly _entriesById: Map<string, CraftingComponent>;
-    private readonly _entriesByItemUuid: Map<string, CraftingComponent>;
+    private readonly _entriesById: Map<string, Component>;
+    private readonly _entriesByItemUuid: Map<string, Component>;
     private _loaded: boolean;
 
     constructor({
@@ -28,11 +28,11 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         entriesByItemUuid = new Map(),
         loaded = false
     }: {
-        sourceData: Record<string, CraftingComponentJson>;
+        sourceData: Record<string, ComponentJson>;
         documentManager: DocumentManager;
         essenceDictionary: EssenceDictionary;
-        entriesById?: Map<string, CraftingComponent>;
-        entriesByItemUuid?: Map<string, CraftingComponent>;
+        entriesById?: Map<string, Component>;
+        entriesByItemUuid?: Map<string, Component>;
         loaded?: boolean;
     }) {
         this._sourceData = sourceData;
@@ -51,7 +51,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         })
     }
 
-    get entriesWithErrors(): CraftingComponent[] {
+    get entriesWithErrors(): Component[] {
         return Array.from(this._entriesById.values()).filter(entry => entry.hasErrors);
     }
 
@@ -71,30 +71,30 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         return this._entriesById.has(id);
     }
 
-    getAll(): Map<string, CraftingComponent> {
+    getAll(): Map<string, Component> {
         return new Map(this._entriesById);
     }
 
-    getById(id: string): CraftingComponent {
+    getById(id: string): Component {
         if (!this._entriesById.has(id)) {
             throw new Error(`No Component data was found for the id "${id}". Known Component IDs for this system are: ${Array.from(this._entriesById.keys()).join(", ")}`);
         }
         return this._entriesById.get(id);
     }
 
-    get allByItemUuid(): Map<string, CraftingComponent> {
+    get allByItemUuid(): Map<string, Component> {
         return new Map(this._entriesByItemUuid)
     }
 
-    get sourceData(): Record<string, CraftingComponentJson> {
+    get sourceData(): Record<string, ComponentJson> {
         return this._sourceData;
     }
 
-    set sourceData(value: Record<string, CraftingComponentJson>) {
+    set sourceData(value: Record<string, ComponentJson>) {
         this._sourceData = value;
     }
 
-    insert(craftingComponent: CraftingComponent): void {
+    insert(craftingComponent: Component): void {
         if (craftingComponent.itemUuid !== NoFabricateItemData.UUID()) {
             this._entriesByItemUuid.set(craftingComponent.itemUuid, craftingComponent);
         }
@@ -124,7 +124,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
             });
     }
 
-    async loadAll(): Promise<CraftingComponent[]> {
+    async loadAll(): Promise<Component[]> {
         if (!this._sourceData) {
             throw new Error("Unable to load Crafting components. No source data was provided. ");
         }
@@ -139,7 +139,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
             .map(id => {
                 return {id, json: this._sourceData[id]}
             })
-            .map(data => new CraftingComponent({
+            .map(data => new Component({
                 id: data.id,
                 itemData: cachedItemDataByUUid.get(data.json.itemUuid),
                 essences: combinationFromRecord(data.json.essences, this._essenceDictionary.getAll()),
@@ -160,7 +160,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         return craftingComponents;
     }
 
-    async loadById(id: string): Promise<CraftingComponent> {
+    async loadById(id: string): Promise<Component> {
         const sourceRecord = this._sourceData[id];
         if (!sourceRecord) {
             throw new Error(`Unable to load Crafting Component with ID ${id}. No definition for the component was found in source data. 
@@ -172,8 +172,8 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         return this.buildComponent(id, sourceRecord, itemData);
     }
 
-    private buildComponent(id: string, sourceRecord: CraftingComponentJson, itemData: FabricateItemData): CraftingComponent {
-        return new CraftingComponent({
+    private buildComponent(id: string, sourceRecord: ComponentJson, itemData: FabricateItemData): Component {
+        return new Component({
             id,
             itemData,
             disabled: sourceRecord.disabled,
@@ -182,7 +182,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         });
     }
 
-    private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<SalvageOptionJson, SalvageOption> {
+    private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>, allComponents: Map<string, Component>): SelectableOptions<SalvageOptionJson, SalvageOption> {
         const options = Object.keys(salvageOptionsJson)
             .map(name => this.buildSalvageOption(name, salvageOptionsJson[name], allComponents));
         return new SelectableOptions<SalvageOptionJson, SalvageOption>({
@@ -190,7 +190,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         });
     }
 
-    private buildSalvageOption(name: string, salvageOptionJson: SalvageOptionJson, allComponents: Map<string, CraftingComponent>): SalvageOption {
+    private buildSalvageOption(name: string, salvageOptionJson: SalvageOptionJson, allComponents: Map<string, Component>): SalvageOption {
         return new SalvageOption({
             name,
             salvage: combinationFromRecord(salvageOptionJson, allComponents)
@@ -203,7 +203,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         }
     }
 
-    toJson(): Record<string, CraftingComponentJson> {
+    toJson(): Record<string, ComponentJson> {
         return Array.from(this._entriesById.entries())
             .map(entry => {
                 return {key: entry[0], value: entry[1].toJson()}
@@ -211,7 +211,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
             .reduce((left, right) => {
                 left[right.key] = right.value;
                 return left;
-            }, <Record<string, CraftingComponentJson>>{});
+            }, <Record<string, ComponentJson>>{});
     }
 
     get isEmpty(): boolean {
@@ -233,7 +233,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         return this._entriesByItemUuid.get(uuid);
     }
 
-    async create(craftingComponentJson: CraftingComponentJson): Promise<CraftingComponent> {
+    async create(craftingComponentJson: ComponentJson): Promise<Component> {
         const itemData = await this._documentManager.getDocumentByUuid(craftingComponentJson.itemUuid);
         if (itemData.hasErrors) {
             throw new Error(`Could not load document with UUID "${craftingComponentJson.itemUuid}". Errors ${itemData.errors.join(", ")} `);
@@ -247,7 +247,7 @@ export class ComponentDictionary implements Dictionary<CraftingComponentJson, Cr
         return component;
     }
 
-    async mutate(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent> {
+    async mutate(id: string, mutation: ComponentJson): Promise<Component> {
         if (!this._loaded) {
             throw new Error("Fabricate doesn't currently support modifying components before the component dictionary has been loaded. ");
         }

@@ -1,7 +1,7 @@
 import {RollResult} from "../../foundry/DiceRoller";
 import {OutcomeType} from "../result/OutcomeType";
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {ContributionCounter} from "./ContributionCounter";
 
 enum ThresholdType {
@@ -63,7 +63,7 @@ export {ThresholdType, InclusiveThreshold, ExclusiveThreshold, Threshold};
 
 interface ThresholdCalculator {
 
-    calculateFor(components: Combination<CraftingComponent>): Threshold;
+    calculateFor(components: Combination<Component>): Threshold;
 
 }
 
@@ -85,7 +85,7 @@ class DefaultThresholdCalculator implements ThresholdCalculator {
         this._contributionCounter = config.contributionCounter;
     }
 
-    calculateFor(components: Combination<CraftingComponent>): Threshold {
+    calculateFor(components: Combination<Component>): Threshold {
         const dcModifier: number = this._contributionCounter.determineDCModifier(components);
         const thresholdValue: number = dcModifier + this._baseValue;
         switch (this._thresholdType) {

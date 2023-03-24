@@ -1,6 +1,6 @@
 import {SvelteApplication} from "../SvelteApplication";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/common/Component";
 import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
 import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
@@ -10,13 +10,13 @@ import {DefaultInventoryFactory} from "../../scripts/actor/InventoryFactory";
 
 interface ComponentSalvageAppFactory {
 
-    make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor, appId: string): SvelteApplication;
+    make(craftingComponent: Component, craftingSystem: CraftingSystem, actor: Actor, appId: string): SvelteApplication;
 
 }
 
 class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
 
-    make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
+    make(craftingComponent: Component, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
 
         const gameProvider = new DefaultGameProvider();
         const GAME = gameProvider.get();

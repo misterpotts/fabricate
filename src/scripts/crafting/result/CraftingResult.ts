@@ -1,12 +1,12 @@
 import {Combination} from "../../common/Combination";
 import {Recipe} from "../../common/Recipe";
 import {CraftingCheckResult, NoCraftingCheckResult} from "../check/CraftingCheckResult";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 
 interface CraftingResult {
 
-    consumed: Combination<CraftingComponent>;
-    created: Combination<CraftingComponent>;
+    consumed: Combination<Component>;
+    created: Combination<Component>;
     isSuccessful: boolean;
 
 }
@@ -17,11 +17,11 @@ class NoCraftingResult implements CraftingResult {
 
     constructor() {}
 
-    get created(): Combination<CraftingComponent> {
+    get created(): Combination<Component> {
         return Combination.EMPTY();
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get consumed(): Combination<Component> {
         return Combination.EMPTY();
     }
 
@@ -36,8 +36,8 @@ export {NoCraftingResult};
 class DefaultCraftingResult implements CraftingResult {
 
     private readonly _recipe: Recipe;
-    private readonly _consumed: Combination<CraftingComponent>;
-    private readonly _created: Combination<CraftingComponent>;
+    private readonly _consumed: Combination<Component>;
+    private readonly _created: Combination<Component>;
     private readonly _checkResult?: CraftingCheckResult;
 
     constructor({
@@ -47,8 +47,8 @@ class DefaultCraftingResult implements CraftingResult {
         checkResult = new NoCraftingCheckResult()
     }: {
         recipe: Recipe;
-        consumed?: Combination<CraftingComponent>;
-        created?: Combination<CraftingComponent>;
+        consumed?: Combination<Component>;
+        created?: Combination<Component>;
         checkResult?: CraftingCheckResult;
     }) {
         this._recipe = recipe;
@@ -57,11 +57,11 @@ class DefaultCraftingResult implements CraftingResult {
         this._checkResult = checkResult;
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get consumed(): Combination<Component> {
         return this._consumed;
     }
 
-    get created(): Combination<CraftingComponent> {
+    get created(): Combination<Component> {
         return this._created;
     }
 

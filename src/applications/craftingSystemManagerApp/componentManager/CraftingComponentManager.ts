@@ -2,7 +2,7 @@ import {CraftingSystemEditor} from "../CraftingSystemEditor";
 import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
-import {CraftingComponent} from "../../../scripts/common/CraftingComponent";
+import {Component} from "../../../scripts/common/Component";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
 
@@ -36,7 +36,7 @@ class CraftingComponentManager {
         await this.createComponent(dropData.itemData, selectedSystem);
     }
 
-    public async createComponent(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<CraftingComponent> {
+    public async createComponent(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<Component> {
         if (selectedSystem.includesComponentByItemUuid(itemData.uuid)) {
             const existingComponent = selectedSystem.getComponentByItemUuid(itemData.uuid);
             const message = this._localization.format(
@@ -50,7 +50,7 @@ class CraftingComponentManager {
             ui.notifications.warn(message);
             return;
         }
-        const craftingComponent = new CraftingComponent({
+        const craftingComponent = new Component({
             id: randomID(),
             itemData: itemData
         });
@@ -67,7 +67,7 @@ class CraftingComponentManager {
         return craftingComponent;
     }
 
-    public async deleteComponent(event: any, component: CraftingComponent, selectedSystem: CraftingSystem) {
+    public async deleteComponent(event: any, component: Component, selectedSystem: CraftingSystem) {
         let doDelete;
         if (event.shiftKey) {
             doDelete = true;
@@ -103,7 +103,7 @@ class CraftingComponentManager {
         ui.notifications.info(message);
     }
 
-    public async saveComponent(craftingComponent: CraftingComponent, selectedSystem: CraftingSystem) {
+    public async saveComponent(craftingComponent: Component, selectedSystem: CraftingSystem) {
         if (this.validateOptionNames(craftingComponent)) {
             selectedSystem.editComponent(craftingComponent);
             await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
@@ -113,7 +113,7 @@ class CraftingComponentManager {
         ui.notifications.error(message);
     }
 
-    private validateOptionNames(component: CraftingComponent) {
+    private validateOptionNames(component: Component) {
         let valid = true;
         component.salvageOptions
             .map(salvageOption => salvageOption.name)
@@ -126,14 +126,14 @@ class CraftingComponentManager {
         return valid;
     }
 
-    public async duplicateComponent(craftingComponent: CraftingComponent, selectedSystem: CraftingSystem): Promise<CraftingComponent> {
+    public async duplicateComponent(craftingComponent: Component, selectedSystem: CraftingSystem): Promise<Component> {
         const clonedComponent = craftingComponent.clone(randomID());
         selectedSystem.editComponent(clonedComponent);
         await this._craftingSystemEditor.saveCraftingSystem(selectedSystem);
         return clonedComponent;
     }
 
-    public async replaceItem(event: any, selectedSystem: CraftingSystem, selectedComponent: CraftingComponent) {
+    public async replaceItem(event: any, selectedSystem: CraftingSystem, selectedComponent: Component) {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),

@@ -5,7 +5,7 @@
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import {Combination, Unit} from "../../../scripts/common/Combination";
     import truncate from "../../common/Truncate";
-    import {SalvageOption} from "../../../scripts/common/CraftingComponent";
+    import {SalvageOption} from "../../../scripts/common/Component";
     import {Tab, Tabs} from "../../common/FabricateTabs.js";
     import TabList from "../../common/TabList.svelte";
     import TabPanel from "../../common/TabPanel.svelte";

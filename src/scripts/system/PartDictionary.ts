@@ -1,4 +1,4 @@
-import {CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
+import {Component, ComponentJson} from "../common/Component";
 import {Recipe, RecipeJson} from "../common/Recipe";
 import {Essence, EssenceJson} from "../common/Essence";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
@@ -55,7 +55,7 @@ class PartDictionary {
         return this._recipeDictionary.getById(id);
     }
 
-    public getComponent(id: string): CraftingComponent {
+    public getComponent(id: string): Component {
         return this._componentDictionary.getById(id);
     }
 
@@ -67,12 +67,12 @@ class PartDictionary {
         return this._recipeDictionary.size + this._componentDictionary.size + this._essenceDictionary.size;
     }
 
-    public getComponents(): CraftingComponent[] {
+    public getComponents(): Component[] {
         const componentsById = this._componentDictionary.getAll();
         return Array.from(componentsById.values());
     }
 
-    get componentsByUuid(): Map<string, CraftingComponent> {
+    get componentsByUuid(): Map<string, Component> {
         return this._componentDictionary.allByItemUuid;
     }
 
@@ -86,11 +86,11 @@ class PartDictionary {
         return Array.from(essencesById.values());
     }
 
-    public insertComponent(craftingComponent: CraftingComponent): void {
+    public insertComponent(craftingComponent: Component): void {
         this._componentDictionary.insert(craftingComponent);
     }
 
-    async mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent> {
+    async mutateComponent(id: string, mutation: ComponentJson): Promise<Component> {
         return this._componentDictionary.mutate(id, mutation);
     }
 
@@ -141,7 +141,7 @@ class PartDictionary {
         await this._essenceDictionary.loadAll();
     }
 
-    async loadComponents(updatedSource?: Record<string, CraftingComponentJson>): Promise<void> {
+    async loadComponents(updatedSource?: Record<string, ComponentJson>): Promise<void> {
         if (updatedSource) {
             this._componentDictionary.sourceData = updatedSource;
         }
@@ -197,7 +197,7 @@ class PartDictionary {
         return this._recipeDictionary.create(recipeJson);
     }
 
-    async createComponent(craftingComponentJson: CraftingComponentJson): Promise<CraftingComponent> {
+    async createComponent(craftingComponentJson: ComponentJson): Promise<Component> {
         return this._componentDictionary.create(craftingComponentJson);
     }
 
@@ -246,7 +246,7 @@ class PartDictionaryFactory {
 }
 
 interface PartDictionaryJson {
-    components: Record<string, CraftingComponentJson>;
+    components: Record<string, ComponentJson>;
     recipes: Record<string, RecipeJson>;
     essences: Record<string, EssenceJson>;
 }

@@ -1,5 +1,5 @@
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
 import {RequirementOption, Recipe} from "../../common/Recipe";
 import {CraftingAttempt, DefaultCraftingAttempt} from "./CraftingAttempt";
@@ -18,7 +18,7 @@ class RecipeCraftingPrepFactory {
         this._selectionStrategy = selectionStrategy;
     }
 
-    make(recipe: Recipe, availableComponents: Combination<CraftingComponent>): RecipeCraftingPrep {
+    make(recipe: Recipe, availableComponents: Combination<Component>): RecipeCraftingPrep {
 
         if (!recipe.hasIngredients) {
             const componentSelection = this._selectionStrategy.perform(Combination.EMPTY(), Combination.EMPTY(), recipe.essences, availableComponents);
@@ -56,7 +56,7 @@ class RecipeCraftingPrepFactory {
 
     private makeCraftingAttempt(ingredientOption: RequirementOption,
                                 essences: Combination<Essence>,
-                                availableComponents: Combination<CraftingComponent>): CraftingAttempt {
+                                availableComponents: Combination<Component>): CraftingAttempt {
 
         const componentSelection = this._selectionStrategy.perform(
             ingredientOption.catalysts,

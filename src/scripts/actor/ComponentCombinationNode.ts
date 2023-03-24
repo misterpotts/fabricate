@@ -1,36 +1,36 @@
 import {Combination, Unit} from "../common/Combination";
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Component} from "../common/Component";
 import {Essence} from "../common/Essence";
 
 export class ComponentCombinationNode {
     private readonly _requiredEssences: Combination<Essence>;
-    private readonly _componentCombination: Combination<CraftingComponent>;
+    private readonly _componentCombination: Combination<Component>;
     private readonly _essenceCombination: Combination<Essence>;
-    private readonly _remainingPicks: Combination<CraftingComponent>;
+    private readonly _remainingPicks: Combination<Component>;
 
     private _children: ComponentCombinationNode[];
 
-    constructor(requiredEssences: Combination<Essence>, nodeCombination: Combination<CraftingComponent>, remainingPicks: Combination<CraftingComponent>) {
+    constructor(requiredEssences: Combination<Essence>, nodeCombination: Combination<Component>, remainingPicks: Combination<Component>) {
         this._requiredEssences = requiredEssences;
         this._componentCombination = nodeCombination;
         this._remainingPicks = remainingPicks;
-        this._essenceCombination = nodeCombination.explode((component: CraftingComponent) => component.essences);
+        this._essenceCombination = nodeCombination.explode((component: Component) => component.essences);
     }
 
     public populate(): void {
         if (this._requiredEssences.isIn(this._essenceCombination)) {
             return;
         }
-        this._children = this._remainingPicks.members.map((component: CraftingComponent) => {
+        this._children = this._remainingPicks.members.map((component: Component) => {
             const deltaUnit = new Unit(component, 1);
-            const childComponentCombination: Combination<CraftingComponent> = this._componentCombination.add(deltaUnit);
-            const remainingPicksForChild: Combination<CraftingComponent> = this._remainingPicks.subtract(Combination.ofUnit(deltaUnit));
+            const childComponentCombination: Combination<Component> = this._componentCombination.add(deltaUnit);
+            const remainingPicksForChild: Combination<Component> = this._remainingPicks.subtract(Combination.ofUnit(deltaUnit));
             return new ComponentCombinationNode(this._requiredEssences, childComponentCombination, remainingPicksForChild);
         });
         this._children.forEach((child: ComponentCombinationNode) => child.populate());
     }
 
-    get componentCombination(): Combination<CraftingComponent> {
+    get componentCombination(): Combination<Component> {
         return this._componentCombination;
     }
 

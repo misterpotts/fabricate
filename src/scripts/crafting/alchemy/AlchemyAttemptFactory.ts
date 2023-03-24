@@ -1,4 +1,4 @@
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {Combination} from "../../common/Combination";
 import {AlchemyFormula} from "./AlchemyFormula";
 import {
@@ -15,7 +15,7 @@ interface AlchemyAttemptFactory {
 
     formulaeByBasePartId: Map<string, AlchemyFormula>;
 
-    make(baseComponent: CraftingComponent, componentSelection: Combination<CraftingComponent>): AlchemyAttempt;
+    make(baseComponent: Component, componentSelection: Combination<Component>): AlchemyAttempt;
 
     isEnabled(): boolean;
 }
@@ -52,7 +52,7 @@ class DefaultAlchemyAttemptFactory implements AlchemyAttemptFactory {
         return true;
     }
 
-    make(baseComponent: CraftingComponent, components: Combination<CraftingComponent>): AlchemyAttempt {
+    make(baseComponent: Component, components: Combination<Component>): AlchemyAttempt {
 
         if (!this._alchemyFormulaeByBasePartId.has(baseComponent.id)) {
             throw new Error(`There is no Alchemy Formula specified for the base component with ID: ${baseComponent.id}. `);
@@ -81,7 +81,7 @@ class DisabledAlchemyAttemptFactory implements AlchemyAttemptFactory {
         return false;
     }
 
-    make(_baseComponent: CraftingComponent, _componentSelection: Combination<CraftingComponent>): AlchemyAttempt {
+    make(_baseComponent: Component, _componentSelection: Combination<Component>): AlchemyAttempt {
         return new AbandonedAlchemyAttempt("This crafting system does not support Alchemy. ");
     }
 

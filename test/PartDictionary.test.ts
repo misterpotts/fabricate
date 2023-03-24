@@ -20,7 +20,7 @@ import {
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {EssenceJson} from "../src/scripts/common/Essence";
 import {RecipeJson} from "../src/scripts/common/Recipe";
-import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
+import {ComponentJson} from "../src/scripts/common/Component";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 
@@ -74,7 +74,7 @@ describe("Index and Retrieve", () => {
     }
 
     function rawComponentData() {
-        const components: Record<string, CraftingComponentJson> = {};
+        const components: Record<string, ComponentJson> = {};
         components[testComponentOne.id] = testComponentOne.toJson();
         components[testComponentTwo.id] = testComponentTwo.toJson();
         components[testComponentThree.id] = testComponentThree.toJson();

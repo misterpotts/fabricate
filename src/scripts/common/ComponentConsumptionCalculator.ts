@@ -1,5 +1,5 @@
 import {Combination} from "./Combination";
-import {CraftingComponent} from "./CraftingComponent";
+import {Component} from "./Component";
 
 enum WastageType {
     PUNITIVE,
@@ -21,13 +21,13 @@ class ComponentConsumptionCalculatorFactory {
 
 interface ComponentConsumptionCalculator {
 
-    calculate(components: Combination<CraftingComponent>): Combination<CraftingComponent>;
+    calculate(components: Combination<Component>): Combination<Component>;
 
 }
 
 class PunitiveComponentConsumptionCalculator implements ComponentConsumptionCalculator {
 
-    calculate(components: Combination<CraftingComponent>): Combination<CraftingComponent> {
+    calculate(components: Combination<Component>): Combination<Component> {
         return components;
     }
 
@@ -35,7 +35,7 @@ class PunitiveComponentConsumptionCalculator implements ComponentConsumptionCalc
 
 class NonPunitiveComponentConsumptionCalculator implements ComponentConsumptionCalculator {
 
-    calculate(_components: Combination<CraftingComponent>): Combination<CraftingComponent> {
+    calculate(_components: Combination<Component>): Combination<Component> {
         return Combination.EMPTY();
     }
 

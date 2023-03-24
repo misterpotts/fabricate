@@ -1,7 +1,7 @@
 import {AlchemicalCombination, AlchemicalEffect, NoAlchemicalEffect} from "./AlchemicalEffect";
 import {Essence} from "../../common/Essence";
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {PrimeNumberIdentityProvider} from "../../common/Identity";
 
 interface AlchemyFormula {
@@ -14,7 +14,7 @@ interface AlchemyFormula {
 
     getAllEffects(): AlchemicalEffect<AlchemicalCombination>[];
 
-    getEffectsForComponents(components: Combination<CraftingComponent>): AlchemicalEffect<AlchemicalCombination>[];
+    getEffectsForComponents(components: Combination<Component>): AlchemicalEffect<AlchemicalCombination>[];
 
     hasEffectFor(essences: Combination<Essence>): boolean;
 
@@ -81,7 +81,7 @@ class DefaultAlchemyFormula implements AlchemyFormula {
         return previousEffect;
     }
 
-    getEffectsForComponents(components: Combination<CraftingComponent>): AlchemicalEffect<AlchemicalCombination>[] {
+    getEffectsForComponents(components: Combination<Component>): AlchemicalEffect<AlchemicalCombination>[] {
         if (components.isEmpty()) {
             return []
         }

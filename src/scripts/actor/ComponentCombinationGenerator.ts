@@ -1,10 +1,10 @@
 import {ComponentCombinationNode} from "./ComponentCombinationNode";
 import {Combination, Unit} from "../common/Combination";
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Component} from "../common/Component";
 import {Essence} from "../common/Essence";
 
 interface ComponentEssenceCombination {
-    components: Combination<CraftingComponent>;
+    components: Combination<Component>;
     essences: Combination<Essence>;
     isSufficientFor(requiredEssences: Combination<Essence>): boolean;
 }
@@ -69,15 +69,15 @@ class SuccessfulCombinationGenerationResult implements CombinationGenerationResu
 
 class DefaultComponentEssenceCombination implements ComponentEssenceCombination {
 
-    private readonly _components: Combination<CraftingComponent>;
+    private readonly _components: Combination<Component>;
     private readonly _essences: Combination<Essence>;
 
-    constructor(components: Combination<CraftingComponent>, essences: Combination<Essence>) {
+    constructor(components: Combination<Component>, essences: Combination<Essence>) {
         this._components = components;
         this._essences = essences;
     }
 
-    get components(): Combination<CraftingComponent> {
+    get components(): Combination<Component> {
         return this._components;
     }
 
@@ -97,7 +97,7 @@ class ComponentCombinationGenerator {
     private readonly _roots: ComponentCombinationNode[];
     private readonly _requiredEssences: Combination<Essence>;
 
-    constructor(availableComponents: Combination<CraftingComponent>, requiredEssences: Combination<Essence>) {
+    constructor(availableComponents: Combination<Component>, requiredEssences: Combination<Essence>) {
         this._requiredEssences = requiredEssences;
         this._roots = availableComponents.members
             .map((component) => Combination.ofUnit(new Unit(component, 1)))

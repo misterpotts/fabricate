@@ -1,5 +1,5 @@
 import {writable, Writable, Readable, derived, Subscriber} from "svelte/store";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/common/Component";
 
 interface SalvageSearchTerms {
     name?: string;
@@ -7,9 +7,9 @@ interface SalvageSearchTerms {
 
 class SalvageSearchStore {
 
-    private readonly _availableComponents: Readable<CraftingComponent[]>;
-    private readonly _selectedComponent: Readable<CraftingComponent>;
-    private readonly _searchResults: Readable<CraftingComponent[]>;
+    private readonly _availableComponents: Readable<Component[]>;
+    private readonly _selectedComponent: Readable<Component>;
+    private readonly _searchResults: Readable<Component[]>;
     private readonly _searchTerms: Writable<SalvageSearchTerms>;
 
     constructor({
@@ -17,8 +17,8 @@ class SalvageSearchStore {
         selectedComponent,
         searchTerms = {}
     }: {
-        availableComponents: Readable<CraftingComponent[]>;
-        selectedComponent: Readable<CraftingComponent>;
+        availableComponents: Readable<Component[]>;
+        selectedComponent: Readable<Component>;
         searchTerms?: SalvageSearchTerms;
     }) {
         this._availableComponents = availableComponents;
@@ -34,15 +34,15 @@ class SalvageSearchStore {
         this.clearOnComponentSelection(this._selectedComponent);
     }
 
-    private clearOnSystemSelection(availableComponents: Readable<CraftingComponent[]>) {
+    private clearOnSystemSelection(availableComponents: Readable<Component[]>) {
         availableComponents.subscribe(() => this.clear());
     }
 
-    private clearOnComponentSelection(selectedComponent: Readable<CraftingComponent>) {
+    private clearOnComponentSelection(selectedComponent: Readable<Component>) {
         selectedComponent.subscribe(() => this.clear());
     }
 
-    private searchComponents(craftingComponents: CraftingComponent[], selectedComponent: CraftingComponent, searchTerms: SalvageSearchTerms) {
+    private searchComponents(craftingComponents: Component[], selectedComponent: Component, searchTerms: SalvageSearchTerms) {
         return craftingComponents
             .filter(component => component !== selectedComponent)
             .filter((component) => {
@@ -53,7 +53,7 @@ class SalvageSearchStore {
         });
     }
 
-    public subscribe(subscriber: Subscriber<CraftingComponent[]>) {
+    public subscribe(subscriber: Subscriber<Component[]>) {
         return this._searchResults.subscribe(subscriber);
     }
 

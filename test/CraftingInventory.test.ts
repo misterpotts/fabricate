@@ -19,7 +19,7 @@ import {
 } from "./test_data/TestCraftingComponents";
 import {StubActorFactory} from "./stubs/StubActorFactory";
 import {Combination, Unit} from "../src/scripts/common/Combination";
-import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {Component} from "../src/scripts/common/Component";
 import {StubItem} from "./stubs/StubItem";
 import {SuccessfulSalvageResult} from "../src/scripts/crafting/result/SalvageResult";
 
@@ -76,9 +76,9 @@ describe("Crafting Inventory", () => {
             const componentFiveQuantity = 4;
             const componentSevenQuantity = 1;
             const ownedItems = generateInventory(Combination.ofUnits([
-                new Unit<CraftingComponent>(testComponentOne, componentOneQuantity),
-                new Unit<CraftingComponent>(testComponentFive, componentFiveQuantity),
-                new Unit<CraftingComponent>(testComponentSeven, componentSevenQuantity)
+                new Unit<Component>(testComponentOne, componentOneQuantity),
+                new Unit<Component>(testComponentFive, componentFiveQuantity),
+                new Unit<Component>(testComponentSeven, componentSevenQuantity)
             ]), 34);
             const actorFactory = new StubActorFactory({ownedItems});
             const actor = actorFactory.make();
@@ -112,9 +112,9 @@ describe("Crafting Inventory", () => {
             const componentFiveQuantity = 4;
             const componentSevenQuantity = 1;
             const ownedItems = generateInventory(Combination.ofUnits([
-                new Unit<CraftingComponent>(testComponentOne, componentOneQuantity),
-                new Unit<CraftingComponent>(testComponentFive, componentFiveQuantity),
-                new Unit<CraftingComponent>(testComponentSeven, componentSevenQuantity)
+                new Unit<Component>(testComponentOne, componentOneQuantity),
+                new Unit<Component>(testComponentFive, componentFiveQuantity),
+                new Unit<Component>(testComponentSeven, componentSevenQuantity)
             ]), 34);
             generateInventory(Combination.of(testComponentOne, 1), 0)
                 .forEach(value => ownedItems.set(value.id, value));
@@ -239,7 +239,7 @@ describe("Crafting Inventory", () => {
 
 });
 
-function generateInventory(ownedComponents: Combination<CraftingComponent> = Combination.EMPTY(), additionalItemCount = 10): Map<string, StubItem> {
+function generateInventory(ownedComponents: Combination<Component> = Combination.EMPTY(), additionalItemCount = 10): Map<string, StubItem> {
     const result: Map<string, StubItem> = new Map();
     for (let i = 0; i < additionalItemCount; i++) {
         const id = randomIdentifier();

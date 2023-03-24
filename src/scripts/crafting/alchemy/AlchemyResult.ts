@@ -1,5 +1,5 @@
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {AlchemicalCombination, NoAlchemicalCombination} from "./AlchemicalEffect";
 
@@ -7,17 +7,17 @@ interface AlchemyResult {
 
     describe(): string;
 
-    consumed: Combination<CraftingComponent>;
+    consumed: Combination<Component>;
 
     effects: AlchemicalCombination;
 
-    baseComponent: CraftingComponent;
+    baseComponent: Component;
 
 }
 
 interface AlchemyResultConfig {
     detail: string;
-    consumed: Combination<CraftingComponent>;
+    consumed: Combination<Component>;
 }
 
 interface NoAlchemyResultConfig extends AlchemyResultConfig {
@@ -27,14 +27,14 @@ interface NoAlchemyResultConfig extends AlchemyResultConfig {
 class NoAlchemyResult implements AlchemyResult {
 
     private readonly _description: string;
-    private readonly _consumed: Combination<CraftingComponent>;
+    private readonly _consumed: Combination<Component>;
 
     constructor(config: NoAlchemyResultConfig) {
         this._consumed = config.consumed;
         this._description = config.detail;
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get consumed(): Combination<Component> {
         return this._consumed;
     }
 
@@ -46,7 +46,7 @@ class NoAlchemyResult implements AlchemyResult {
         return new NoAlchemicalCombination();
     }
 
-    get baseComponent(): CraftingComponent {
+    get baseComponent(): Component {
         return null;
     }
 
@@ -54,15 +54,15 @@ class NoAlchemyResult implements AlchemyResult {
 
 interface SuccessfulAlchemyResultConfig extends AlchemyResultConfig {
     alchemicalEffect: AlchemicalCombination;
-    baseComponent: CraftingComponent;
+    baseComponent: Component;
 }
 
 class SuccessfulAlchemyResult implements AlchemyResult {
 
     private readonly _detail: string;
-    private readonly _baseComponent: CraftingComponent;
+    private readonly _baseComponent: Component;
     private readonly _alchemicalEffect: AlchemicalCombination;
-    private readonly _consumed: Combination<CraftingComponent>;
+    private readonly _consumed: Combination<Component>;
 
     constructor(config: SuccessfulAlchemyResultConfig) {
         this._consumed = config.consumed;
@@ -71,7 +71,7 @@ class SuccessfulAlchemyResult implements AlchemyResult {
         this._alchemicalEffect = config.alchemicalEffect;
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get consumed(): Combination<Component> {
         return this._consumed;
     }
 
@@ -83,7 +83,7 @@ class SuccessfulAlchemyResult implements AlchemyResult {
         return this._alchemicalEffect;
     }
 
-    get baseComponent(): CraftingComponent {
+    get baseComponent(): Component {
         return this._baseComponent;
     }
 }
@@ -95,13 +95,13 @@ interface UnsuccessfulAlchemyResultConfig extends AlchemyResultConfig {
 class UnsuccessfulAlchemyResult implements AlchemyResult {
 
     private readonly _description: string;
-    private readonly _consumed: Combination<CraftingComponent>;
+    private readonly _consumed: Combination<Component>;
 
     constructor(config: UnsuccessfulAlchemyResultConfig) {
         this._description = config.detail;
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get consumed(): Combination<Component> {
         return this._consumed;
     }
 
@@ -113,7 +113,7 @@ class UnsuccessfulAlchemyResult implements AlchemyResult {
         return baseItemData;
     }
 
-    get baseComponent(): CraftingComponent {
+    get baseComponent(): Component {
         return null;
     }
 

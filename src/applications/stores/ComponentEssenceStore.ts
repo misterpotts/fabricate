@@ -2,7 +2,7 @@ import {derived, Readable, Subscriber} from "svelte/store";
 import {Essence} from "../../scripts/common/Essence";
 import {Unit} from "../../scripts/common/Combination";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/common/Component";
 
 class ComponentEssenceStore {
 
@@ -13,7 +13,7 @@ class ComponentEssenceStore {
         selectedComponent
     }: {
         selectedCraftingSystem: Readable<CraftingSystem>;
-        selectedComponent: Readable<CraftingComponent>;
+        selectedComponent: Readable<Component>;
     }) {
         this._essences = derived(
             [selectedCraftingSystem, selectedComponent],

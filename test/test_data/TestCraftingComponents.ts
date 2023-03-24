@@ -1,4 +1,4 @@
-import {CraftingComponent, SalvageOption} from "../../src/scripts/common/CraftingComponent";
+import {Component, SalvageOption} from "../../src/scripts/common/Component";
 import {Combination, Unit} from "../../src/scripts/common/Combination";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
@@ -6,7 +6,7 @@ import Properties from "../../src/scripts/Properties";
 import {SelectableOptions} from "../../src/scripts/common/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 
-const testComponentOne: CraftingComponent = new CraftingComponent({
+const testComponentOne: Component = new Component({
     id: "iyeUGBbSts0ij92X",
     itemData: new LoadedFabricateItemData({
         name: "Test Component One",
@@ -17,7 +17,7 @@ const testComponentOne: CraftingComponent = new CraftingComponent({
     essences: Combination.ofUnits([new Unit(elementalEarth, 2)]),
 });
 
-const testComponentTwo: CraftingComponent = new CraftingComponent({
+const testComponentTwo: Component = new Component({
     id: "Ie7NoXMja9wI6xya",
     itemData: new LoadedFabricateItemData({
         name: "Test Component Two",
@@ -28,7 +28,7 @@ const testComponentTwo: CraftingComponent = new CraftingComponent({
     essences: Combination.ofUnits([new Unit(elementalFire, 2)]),
 });
 
-const testComponentThree: CraftingComponent = new CraftingComponent({
+const testComponentThree: Component = new Component({
     id: "tdyV4AWuTMkXbepw",
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.tdyV4AWuTMkXbepw",
@@ -39,7 +39,7 @@ const testComponentThree: CraftingComponent = new CraftingComponent({
     essences: Combination.ofUnits([new Unit(elementalWater, 2)]),
 });
 
-const testComponentFour: CraftingComponent = new CraftingComponent({
+const testComponentFour: Component = new Component({
     id: "Ra2Z1ujre76weR0i",
     itemData: new LoadedFabricateItemData({
         name: "Test Component Four",
@@ -58,7 +58,7 @@ const testComponentFour: CraftingComponent = new CraftingComponent({
     })
 });
 
-const testComponentFive: CraftingComponent = new CraftingComponent({
+const testComponentFive: Component = new Component({
     id:"74K6TAuSg2xzd209",
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.74K6TAuSg2xzd209",
@@ -83,7 +83,7 @@ const testComponentFive: CraftingComponent = new CraftingComponent({
     })
 });
 
-const testComponentSix: CraftingComponent = new CraftingComponent({
+const testComponentSix: Component = new Component({
     id: "rgTv21iOSwjK1882",
     itemData: new LoadedFabricateItemData({
         name: "Test Component Six",
@@ -94,7 +94,7 @@ const testComponentSix: CraftingComponent = new CraftingComponent({
     essences: Combination.ofUnits([new Unit(elementalWater, 1)])
 });
 
-const testComponentSeven: CraftingComponent = new CraftingComponent({
+const testComponentSeven: Component = new Component({
     id: "u9jwSlvIUhlQiEe1",
     itemData: new LoadedFabricateItemData({
         name: "Test Component Seven",

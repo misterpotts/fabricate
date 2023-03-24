@@ -3,7 +3,7 @@ import {AlchemyResult, NoAlchemyResult, SuccessfulAlchemyResult, UnsuccessfulAlc
 import {AlchemicalCombination, AlchemicalCombiner, AlchemicalEffect} from "./AlchemicalEffect";
 import {CraftingCheckResult} from "../check/CraftingCheckResult";
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {ComponentConsumptionCalculator} from "../../common/ComponentConsumptionCalculator";
 import {AlchemyFormula} from "./AlchemyFormula";
 
@@ -18,8 +18,8 @@ interface AlchemyConstraints {
 }
 
 interface AlchemyAttemptConfig {
-    baseComponent: CraftingComponent;
-    components: Combination<CraftingComponent>;
+    baseComponent: Component;
+    components: Combination<Component>;
     alchemyFormula: AlchemyFormula;
     alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>;
     componentConsumptionCalculator: ComponentConsumptionCalculator;
@@ -99,10 +99,10 @@ class AbandonedAlchemyAttempt implements AlchemyAttempt {
 
 class DefaultAlchemyAttempt implements AlchemyAttempt {
 
-    private readonly _baseComponent: CraftingComponent;
+    private readonly _baseComponent: Component;
     private readonly _alchemicalCombiner: AlchemicalCombiner<AlchemicalCombination>;
     private readonly _alchemyFormula: AlchemyFormula;
-    private readonly _components: Combination<CraftingComponent>;
+    private readonly _components: Combination<Component>;
     private readonly _alchemyConstraintEnforcer: AlchemyConstraintEnforcer;
     private readonly _componentConsumptionCalculator: ComponentConsumptionCalculator;
 

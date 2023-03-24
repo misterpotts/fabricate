@@ -2,7 +2,7 @@ import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 import {DefaultSettingManager} from "../src/scripts/settings/FabricateSetting";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
-import {CraftingComponentJson} from "../src/scripts/common/CraftingComponent";
+import {ComponentJson} from "../src/scripts/common/Component";
 import {DefaultSystemRegistry} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
@@ -48,7 +48,7 @@ describe("integration test", () => {
     const optionOneId = "Option One"
     const optionTwoId = "Option Two"
 
-    const componentOne: CraftingComponentJson = {
+    const componentOne: ComponentJson = {
         itemUuid: componentOneItemUuid,
         essences: {
             [essenceOneId]: 2,
@@ -61,7 +61,7 @@ describe("integration test", () => {
         },
         disabled: false
     };
-    const componentTwo: CraftingComponentJson = {
+    const componentTwo: ComponentJson = {
         itemUuid: componentTwoItemUuid,
         essences: {
             [essenceThreeId]: 1
@@ -69,7 +69,7 @@ describe("integration test", () => {
         salvageOptions: {},
         disabled: false
     };
-    const componentThree: CraftingComponentJson = {
+    const componentThree: ComponentJson = {
         itemUuid: componentThreeItemUuid,
         essences: {},
         salvageOptions: {

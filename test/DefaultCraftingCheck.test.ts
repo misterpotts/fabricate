@@ -7,7 +7,7 @@ import {DefaultCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck"
 import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {GameSystemRollModifierProvider} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
-import {CraftingComponent} from "../src/scripts/common/CraftingComponent";
+import {Component} from "../src/scripts/common/Component";
 import {testComponentFour, testComponentTwo} from "./test_data/TestCraftingComponents";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
@@ -187,8 +187,8 @@ describe("Perform", () => {
             stubEvaluateMethod.returns(new RollResult(11, "1d20"));
 
             const ingredients = Combination.ofUnits([
-                new Unit<CraftingComponent>(testComponentFour, 1),
-                new Unit<CraftingComponent>(testComponentTwo, 1)
+                new Unit<Component>(testComponentFour, 1),
+                new Unit<Component>(testComponentTwo, 1)
             ])
 
             const result = underTest.perform(stubActor, ingredients);
@@ -219,8 +219,8 @@ describe("Perform", () => {
             stubEvaluateMethod.returns(new RollResult(11, "1d20"));
 
             const ingredients = Combination.ofUnits([
-                new Unit<CraftingComponent>(testComponentFour, 1),
-                new Unit<CraftingComponent>(testComponentTwo, 1)
+                new Unit<Component>(testComponentFour, 1),
+                new Unit<Component>(testComponentTwo, 1)
             ])
 
             const result = underTest.perform(stubActor, ingredients);

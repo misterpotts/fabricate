@@ -1,22 +1,22 @@
 import {get, Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/common/Component";
 
 class SelectedCraftingComponentStore {
 
-    private readonly _selectedCraftingComponent: Writable<CraftingComponent>;
+    private readonly _selectedCraftingComponent: Writable<Component>;
 
     constructor({
         craftingComponents,
         selectedComponent
     }: {
-        craftingComponents: Readable<CraftingComponent[]>;
-        selectedComponent?: CraftingComponent;
+        craftingComponents: Readable<Component[]>;
+        selectedComponent?: Component;
     }) {
         this._selectedCraftingComponent = writable(selectedComponent);
         this.deselectOrUpdateWhenAvailableComponentsChange(craftingComponents);
     }
 
-    private deselectOrUpdateWhenAvailableComponentsChange(craftingComponents: Readable<CraftingComponent[]>) {
+    private deselectOrUpdateWhenAvailableComponentsChange(craftingComponents: Readable<Component[]>) {
         craftingComponents.subscribe(value => {
             if (!value) {
                 throw new Error("Components may not be null");
@@ -33,15 +33,15 @@ class SelectedCraftingComponentStore {
         });
     }
 
-    public subscribe(subscriber: Subscriber<CraftingComponent>) {
+    public subscribe(subscriber: Subscriber<Component>) {
         return this._selectedCraftingComponent.subscribe(subscriber);
     }
 
-    public set(value: CraftingComponent) {
+    public set(value: Component) {
         return this._selectedCraftingComponent.set(value);
     }
 
-    public update(updater: Updater<CraftingComponent>) {
+    public update(updater: Updater<Component>) {
         this._selectedCraftingComponent.update(updater);
     }
 

@@ -1,11 +1,11 @@
 import {ComponentSalvageAppFactory} from "./ComponentSalvageAppFactory";
 import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/common/Component";
 import {SvelteApplication} from "../SvelteApplication";
 
 interface ComponentSalvageAppCatalog {
-    load(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication>;
+    load(craftingComponent: Component, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication>;
 }
 
 class DefaultComponentSalvageAppCatalog implements ComponentSalvageAppCatalog {
@@ -29,7 +29,7 @@ class DefaultComponentSalvageAppCatalog implements ComponentSalvageAppCatalog {
         this._appIndex = appIndex;
     }
 
-    async load(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication> {
+    async load(craftingComponent: Component, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication> {
         const appId = `fabricate-component-salvage-app-${craftingComponent.id}`;
         if (this._appIndex.has(appId)) {
             const svelteApplication = this._appIndex.get(appId);

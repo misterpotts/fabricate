@@ -1,5 +1,5 @@
 import {Combination, Unit} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 
 /**
  * Determines how a Combination of Crafting Components impacts the difficulty of a Crafting check (if at all)
@@ -12,7 +12,7 @@ interface ContributionCounter {
      * @param components The components to be considered for the Crafting Check
      * @returns number The numeric modifier for the providedComponents to apply to the Check
      * */
-    determineDCModifier(components: Combination<CraftingComponent>): number;
+    determineDCModifier(components: Combination<Component>): number;
 
 }
 
@@ -37,8 +37,8 @@ class EssenceContributionCounter implements ContributionCounter {
      * @param components The components to be considered for the Crafting Check
      * @returns number The numeric modifier for the providedComponents to apply to the Check
      * */
-    determineDCModifier(components: Combination<CraftingComponent>): number {
-        return components.explode((component: CraftingComponent) => component.essences)
+    determineDCModifier(components: Combination<Component>): number {
+        return components.explode((component: Component) => component.essences)
             .units
             .map(((unit) => this._essenceModifier * unit.quantity))
             .reduce((left: number, right: number) => left + right, 0);
@@ -67,8 +67,8 @@ class IngredientContributionCounter implements ContributionCounter {
      * @param components The components to be considered for the Crafting Check
      * @returns number The numeric modifier for the providedComponents to apply to the Check
      * */
-    determineDCModifier(components: Combination<CraftingComponent>): number {
-        return components.units.map((unit: Unit<CraftingComponent>) => this._ingredientModifier * unit.quantity)
+    determineDCModifier(components: Combination<Component>): number {
+        return components.units.map((unit: Unit<Component>) => this._ingredientModifier * unit.quantity)
             .reduce((left: number, right: number) => left + right, 0);
     }
 
@@ -100,7 +100,7 @@ class CombinedContributionCounter implements ContributionCounter {
      * @param components The components to be considered for the Crafting Check
      * @returns number The numeric modifier for the providedComponents to apply to the Check
      * */
-    determineDCModifier(components: Combination<CraftingComponent>): number {
+    determineDCModifier(components: Combination<Component>): number {
         const ingredientContribution: number = this._ingredientContributionCounter.determineDCModifier(components);
         const essenceContribution: number = this._essenceContributionCounter.determineDCModifier(components);
         return ingredientContribution + essenceContribution;

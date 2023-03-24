@@ -1,19 +1,19 @@
 import {ComponentSelection} from "../../component/ComponentSelection";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {Essence} from "../../common/Essence";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {Combination} from "../../common/Combination";
 
 interface CraftingAttempt {
 
     isPossible: boolean;
     essenceAmounts: TrackedCombination<Essence>;
-    ingredientAmounts: TrackedCombination<CraftingComponent>;
-    catalystAmounts: TrackedCombination<CraftingComponent>;
+    ingredientAmounts: TrackedCombination<Component>;
+    catalystAmounts: TrackedCombination<Component>;
     requiresEssences: boolean;
     requiresIngredients: boolean;
     requiresCatalysts: boolean;
-    essenceSources: Combination<CraftingComponent>;
+    essenceSources: Combination<Component>;
 
 }
 
@@ -43,15 +43,15 @@ class DefaultCraftingAttempt implements CraftingAttempt {
         return this._componentSelection.essences;
     }
 
-    get ingredientAmounts(): TrackedCombination<CraftingComponent> {
+    get ingredientAmounts(): TrackedCombination<Component> {
         return this._componentSelection.ingredients;
     }
 
-    get catalystAmounts(): TrackedCombination<CraftingComponent> {
+    get catalystAmounts(): TrackedCombination<Component> {
         return this._componentSelection.catalysts;
     }
 
-    get essenceSources(): Combination<CraftingComponent> {
+    get essenceSources(): Combination<Component> {
         return this._componentSelection.essenceSources;
     }
 
@@ -67,7 +67,7 @@ class DefaultCraftingAttempt implements CraftingAttempt {
         return !this._componentSelection.catalysts.isEmpty;
     }
 
-    get consumedComponents(): Combination<CraftingComponent> {
+    get consumedComponents(): Combination<Component> {
         return this._componentSelection.essenceSources
             .combineWith(this._componentSelection.ingredients.target);
     }
@@ -90,7 +90,7 @@ class NoCraftingAttempt implements CraftingAttempt {
         return false;
     }
 
-    get catalystAmounts(): TrackedCombination<CraftingComponent> {
+    get catalystAmounts(): TrackedCombination<Component> {
         return TrackedCombination.EMPTY();
     }
 
@@ -98,7 +98,7 @@ class NoCraftingAttempt implements CraftingAttempt {
         return TrackedCombination.EMPTY();
     }
 
-    get ingredientAmounts(): TrackedCombination<CraftingComponent> {
+    get ingredientAmounts(): TrackedCombination<Component> {
         return TrackedCombination.EMPTY();
     }
 
@@ -114,7 +114,7 @@ class NoCraftingAttempt implements CraftingAttempt {
         return false;
     }
 
-    get essenceSources(): Combination<CraftingComponent> {
+    get essenceSources(): Combination<Component> {
         return Combination.EMPTY();
     }
 

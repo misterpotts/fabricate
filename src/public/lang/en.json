@@ -43,6 +43,16 @@
         "plural": "Active Effect Sources"
       }
     },
+    "settings": {
+      "settingDeleted": "The setting {settingPath} was deleted. ",
+      "errors": {
+        "invalidRead": "The stored value for the setting {settingPath} is not valid, and could not be read. {errors}",
+        "invalidWrite": "The provided value for the setting {settingPath} is not valid, and could not be saved. {errors}",
+        "craftingSystem": {
+          "doesNotExist": "The crafting system {craftingSystemId} does not exist. "
+        }
+      }
+    },
     "CraftingComponentCarousel": {
       "buttons": {
         "next": "Next option",

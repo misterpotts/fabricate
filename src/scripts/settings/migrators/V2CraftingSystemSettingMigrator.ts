@@ -2,7 +2,7 @@ import {FabricateSettingMigrator} from "../FabricateSetting";
 import {CraftingSystemJson} from "../../system/CraftingSystem";
 import {V1ComponentJson, V1EssenceJson, V1RecipeJson, V1SystemJson} from "../../system/setting_versions/V1Json";
 import {EssenceJson} from "../../common/Essence";
-import {CraftingComponentJson, SalvageOptionJson} from "../../common/CraftingComponent";
+import {ComponentJson, SalvageOptionJson} from "../../common/Component";
 import {RequirementOptionJson, RecipeJson, ResultOptionJson} from "../../common/Recipe";
 
 class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record<string, V1SystemJson>, Record<string, CraftingSystemJson>> {
@@ -55,8 +55,8 @@ class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record
         return result;
     }
 
-    private migrateComponents(inputComponents: Record<string, V1ComponentJson>): Record<string, CraftingComponentJson> {
-        const result: Record<string, CraftingComponentJson> = {};
+    private migrateComponents(inputComponents: Record<string, V1ComponentJson>): Record<string, ComponentJson> {
+        const result: Record<string, ComponentJson> = {};
         Object.keys(inputComponents).forEach(componentId => {
             const inputComponent: V1ComponentJson = inputComponents[componentId];
             result[componentId] = {

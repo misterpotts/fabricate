@@ -1,10 +1,10 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {derived, Readable, Subscriber} from "svelte/store";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/common/Component";
 
 class CraftingComponentsStore {
 
-    private readonly _craftingComponents: Readable<CraftingComponent[]>;
+    private readonly _craftingComponents: Readable<Component[]>;
 
     constructor({
         selectedCraftingSystem
@@ -17,7 +17,7 @@ class CraftingComponentsStore {
         );
     }
 
-    public subscribe(subscriber: Subscriber<CraftingComponent[]>) {
+    public subscribe(subscriber: Subscriber<Component[]>) {
         return this._craftingComponents.subscribe(subscriber);
     }
 

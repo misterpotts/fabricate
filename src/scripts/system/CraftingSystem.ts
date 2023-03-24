@@ -1,5 +1,5 @@
 import {Recipe, RecipeJson} from "../common/Recipe";
-import {CraftingComponent, CraftingComponentJson} from "../common/CraftingComponent";
+import {Component, ComponentJson} from "../common/Component";
 import {Essence, EssenceJson} from "../common/Essence";
 import {PartDictionary, PartDictionaryJson} from "./PartDictionary";
 import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystemDetails";
@@ -88,7 +88,7 @@ class CraftingSystem {
         return this._partDictionary.insertEssence(essence);
     }
 
-    public getComponents(): CraftingComponent[] {
+    public getComponents(): Component[] {
         return this._partDictionary.getComponents();
     }
 
@@ -108,11 +108,11 @@ class CraftingSystem {
         return this.includesComponentByItemUuid(itemUuid) || this.includesRecipeByItemUuid(itemUuid);
     }
 
-    public getComponentById(id: string): CraftingComponent {
+    public getComponentById(id: string): Component {
         return this._partDictionary.getComponent(id);
     }
 
-    public getComponentByItemUuid(uuid: string): CraftingComponent {
+    public getComponentByItemUuid(uuid: string): Component {
         return this._partDictionary.getComponentByItemUuid(uuid);
     }
 
@@ -124,11 +124,11 @@ class CraftingSystem {
         return this._partDictionary.deleteComponentById(id);
     }
 
-    public editComponent(component: CraftingComponent): void {
+    public editComponent(component: Component): void {
         return this._partDictionary.insertComponent(component);
     }
 
-    public async mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent> {
+    public async mutateComponent(id: string, mutation: ComponentJson): Promise<Component> {
         return await this._partDictionary.mutateComponent(id, mutation);
     }
 
@@ -140,11 +140,11 @@ class CraftingSystem {
         return this._partDictionary.getRecipes();
     }
 
-    get craftingComponents(): CraftingComponent[] {
+    get craftingComponents(): Component[] {
         return this._partDictionary.getComponents();
     }
 
-    get craftingComponentsByItemUuid(): Map<string, CraftingComponent> {
+    get craftingComponentsByItemUuid(): Map<string, Component> {
         return this._partDictionary.componentsByUuid;
     }
 
@@ -176,7 +176,7 @@ class CraftingSystem {
         return this._partDictionary.createRecipe(recipeJson);
     }
 
-    public async createComponent(craftingComponentJson: CraftingComponentJson): Promise<CraftingComponent> {
+    public async createComponent(craftingComponentJson: ComponentJson): Promise<Component> {
         return this._partDictionary.createComponent(craftingComponentJson);
     }
 
@@ -243,7 +243,7 @@ class CraftingSystem {
         await this._partDictionary.loadEssences(updatedSource);
     }
 
-    public async loadComponents(updatedSource?: Record<string, CraftingComponentJson>): Promise<void> {
+    public async loadComponents(updatedSource?: Record<string, ComponentJson>): Promise<void> {
         await this._partDictionary.loadComponents(updatedSource);
     }
 

@@ -1,6 +1,6 @@
 import {Combination, Unit} from "./Combination";
 import {Identifiable, Serializable} from "./Identity";
-import {CraftingComponent} from "./CraftingComponent";
+import {Component} from "./Component";
 import {Essence} from "./Essence";
 import {SelectableOptions} from "./SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../foundry/DocumentManager";
@@ -22,8 +22,8 @@ interface RequirementOptionJson {
 
 class RequirementOption implements Identifiable, Serializable<RequirementOptionJson> {
 
-    private _catalysts: Combination<CraftingComponent>;
-    private _ingredients: Combination<CraftingComponent>;
+    private _catalysts: Combination<Component>;
+    private _ingredients: Combination<Component>;
     private _name: string;
 
     constructor({
@@ -32,8 +32,8 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         ingredients = Combination.EMPTY()
     }: {
         name: string;
-        catalysts?: Combination<CraftingComponent>;
-        ingredients?: Combination<CraftingComponent>;
+        catalysts?: Combination<Component>;
+        ingredients?: Combination<Component>;
     }) {
         this._name = name;
         this._catalysts = catalysts;
@@ -48,19 +48,19 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         return !this._ingredients.isEmpty();
     }
 
-    set catalysts(value: Combination<CraftingComponent>) {
+    set catalysts(value: Combination<Component>) {
         this._catalysts = value;
     }
 
-    set ingredients(value: Combination<CraftingComponent>) {
+    set ingredients(value: Combination<Component>) {
         this._ingredients = value;
     }
 
-    get catalysts(): Combination<CraftingComponent> {
+    get catalysts(): Combination<Component> {
         return this._catalysts;
     }
 
-    get ingredients(): Combination<CraftingComponent> {
+    get ingredients(): Combination<Component> {
         return this._ingredients;
     }
 
@@ -76,20 +76,20 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         return this._name;
     }
 
-    public addCatalyst(component: CraftingComponent, amount = 1) {
-        this._catalysts = this._catalysts.add(new Unit<CraftingComponent>(component, amount));
+    public addCatalyst(component: Component, amount = 1) {
+        this._catalysts = this._catalysts.add(new Unit<Component>(component, amount));
     }
 
-    public subtractCatalyst(component: CraftingComponent, amount = 1) {
-        this._catalysts = this._catalysts.minus(new Unit<CraftingComponent>(component, amount));
+    public subtractCatalyst(component: Component, amount = 1) {
+        this._catalysts = this._catalysts.minus(new Unit<Component>(component, amount));
     }
 
-    public addIngredient(component: CraftingComponent, amount = 1) {
-        this._ingredients = this._ingredients.add(new Unit<CraftingComponent>(component, amount));
+    public addIngredient(component: Component, amount = 1) {
+        this._ingredients = this._ingredients.add(new Unit<Component>(component, amount));
     }
 
-    public subtractIngredient(component: CraftingComponent, amount = 1) {
-        this._ingredients = this._ingredients.minus(new Unit<CraftingComponent>(component, amount));
+    public subtractIngredient(component: Component, amount = 1) {
+        this._ingredients = this._ingredients.minus(new Unit<Component>(component, amount));
     }
 
     public get isEmpty(): boolean {
@@ -107,7 +107,7 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
 
 class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
 
-    private _results: Combination<CraftingComponent>;
+    private _results: Combination<Component>;
     private _name: string;
 
     constructor({
@@ -115,7 +115,7 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
         results
     }: {
         name: string;
-        results: Combination<CraftingComponent>;
+        results: Combination<Component>;
     }) {
         this._name = name;
         this._results = results;
@@ -125,11 +125,11 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
         return this._results.isEmpty();
     }
 
-    get results(): Combination<CraftingComponent> {
+    get results(): Combination<Component> {
         return this._results;
     }
 
-    set results(value: Combination<CraftingComponent>) {
+    set results(value: Combination<Component>) {
         this._results = value;
     }
 
@@ -145,12 +145,12 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
         return this._name;
     }
 
-    public add(component: CraftingComponent, amount = 1) {
-        this._results = this._results.add(new Unit<CraftingComponent>(component, amount));
+    public add(component: Component, amount = 1) {
+        this._results = this._results.add(new Unit<Component>(component, amount));
     }
 
-    public subtract(component: CraftingComponent, amount = 1) {
-        this._results = this._results.minus(new Unit<CraftingComponent>(component, amount));
+    public subtract(component: Component, amount = 1) {
+        this._results = this._results.minus(new Unit<Component>(component, amount));
     }
 
     toJson(): ResultOptionJson {

@@ -11,7 +11,7 @@ import {DocumentManager, FabricateItemData, NoFabricateItemData} from "../foundr
 import {EssenceDictionary} from "./EssenceDictionary";
 import {ComponentDictionary} from "./ComponentDictionary";
 import {combinationFromRecord} from "./DictionaryUtils";
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Component} from "../common/Component";
 import {SelectableOptions} from "../common/SelectableOptions";
 import {Essence} from "../common/Essence";
 import Properties from "../Properties";
@@ -154,7 +154,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         });
     }
 
-    private buildIngredientOptions(ingredientOptionsJson: Record<string, RequirementOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<RequirementOptionJson, RequirementOption> {
+    private buildIngredientOptions(ingredientOptionsJson: Record<string, RequirementOptionJson>, allComponents: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
         const options = Object.keys(ingredientOptionsJson)
             .map(name => this.buildIngredientOption(name, ingredientOptionsJson[name], allComponents));
         return new SelectableOptions<RequirementOptionJson, RequirementOption>({
@@ -162,7 +162,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         });
     }
 
-    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>, allComponents: Map<string, CraftingComponent>): SelectableOptions<ResultOptionJson, ResultOption> {
+    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>, allComponents: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
         const options = Object.keys(resultOptionsJson)
             .map(name => this.buildResultOption(name, resultOptionsJson[name], allComponents));
         return new SelectableOptions<ResultOptionJson, ResultOption>({
@@ -170,7 +170,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         });
     }
 
-    private buildIngredientOption(name: string, ingredientOptionJson: RequirementOptionJson, allComponents: Map<string, CraftingComponent>): RequirementOption {
+    private buildIngredientOption(name: string, ingredientOptionJson: RequirementOptionJson, allComponents: Map<string, Component>): RequirementOption {
         return new RequirementOption({
             name,
             catalysts: combinationFromRecord(ingredientOptionJson.catalysts, allComponents),
@@ -178,7 +178,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         });
     }
 
-    private buildResultOption(name: string, resultOptionJson: ResultOptionJson, allComponents: Map<string, CraftingComponent>): ResultOption {
+    private buildResultOption(name: string, resultOptionJson: ResultOptionJson, allComponents: Map<string, Component>): ResultOption {
         return new ResultOption({
             name,
             results: combinationFromRecord(resultOptionJson, allComponents)
@@ -209,7 +209,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         return this._entriesById.size === 0;
     }
 
-    dropComponentReferences(componentToDelete: CraftingComponent) {
+    dropComponentReferences(componentToDelete: Component) {
         Array.from(this._entriesById.values())
             .forEach(recipe => {
                 recipe.ingredientOptions = recipe.ingredientOptions

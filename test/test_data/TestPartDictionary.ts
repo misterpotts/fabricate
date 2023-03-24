@@ -1,5 +1,5 @@
 import {PartDictionary, PartDictionaryFactory} from "../../src/scripts/system/PartDictionary";
-import {CraftingComponentJson} from "../../src/scripts/common/CraftingComponent";
+import {ComponentJson} from "../../src/scripts/common/Component";
 import {RecipeJson} from "../../src/scripts/common/Recipe";
 import {
     testComponentFive,
@@ -28,7 +28,7 @@ const components = {
 };
 const componentsJson = Array.from(Object.values(components))
     .map(component => component.toJson())
-    .reduce((left: Record<string, CraftingComponentJson>, right) => {
+    .reduce((left: Record<string, ComponentJson>, right) => {
         left[right.itemUuid] = right;
         return left;
     }, {});

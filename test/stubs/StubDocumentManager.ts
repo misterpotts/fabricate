@@ -4,7 +4,7 @@ import {
     ItemNotFoundError,
     LoadedFabricateItemData
 } from "../../src/scripts/foundry/DocumentManager";
-import {CraftingComponent, CraftingComponentJson} from "../../src/scripts/common/CraftingComponent";
+import {Component, ComponentJson} from "../../src/scripts/common/Component";
 import {Recipe, RecipeJson} from "../../src/scripts/common/Recipe";
 
 class StubDocumentManager implements DocumentManager {
@@ -31,11 +31,11 @@ class StubDocumentManager implements DocumentManager {
        craftingComponents = [],
        recipes = []
    }: {
-        craftingComponents?: CraftingComponent[];
+        craftingComponents?: Component[];
         recipes?: Recipe[]
     }): StubDocumentManager {
         const itemData = new Map<string, FabricateItemData>();
-        this.ingest((component: CraftingComponent) => {
+        this.ingest((component: Component) => {
             return new LoadedFabricateItemData({
                 itemUuid: component.itemUuid,
                 name: component.name,
@@ -58,12 +58,12 @@ class StubDocumentManager implements DocumentManager {
        craftingComponentsJson = [],
        recipesJson = []
     }: {
-        craftingComponentsJson?: CraftingComponentJson[];
+        craftingComponentsJson?: ComponentJson[];
         recipesJson?: RecipeJson[]
     }): StubDocumentManager {
         const itemData = new Map<string, FabricateItemData>();
         const notLoaded = "NOT_LOADED";
-        this.ingest((componentJson: CraftingComponentJson) => {
+        this.ingest((componentJson: ComponentJson) => {
             return new LoadedFabricateItemData({
                 itemUuid: componentJson.itemUuid,
                 name: notLoaded,

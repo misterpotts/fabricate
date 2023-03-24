@@ -1,5 +1,5 @@
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../../common/Component";
 import {
     CraftingCheckResult,
     FailedCraftingCheckResult,
@@ -14,7 +14,7 @@ import {DnD5ECraftingCheckSpec} from "../../system/bundled/DnD5e";
 
 interface CraftingCheck<A extends Actor> {
 
-    perform(actor: A, components: Combination<CraftingComponent>): CraftingCheckResult;
+    perform(actor: A, components: Combination<Component>): CraftingCheckResult;
 
     toCheckDefinition(): DnD5ECraftingCheckSpec;
 }
@@ -37,7 +37,7 @@ class DefaultCraftingCheck<A extends Actor> implements CraftingCheck<A> {
         this._thresholdCalculator = craftingCheckConfig.thresholdCalculator;
     }
 
-    perform(actor: A, components: Combination<CraftingComponent>): CraftingCheckResult {
+    perform(actor: A, components: Combination<Component>): CraftingCheckResult {
 
         const roll = this._diceRoller.createUnmodifiedRoll();
         const modifiers = this._gameSystemRollModifierProvider.getForActor(actor);
@@ -76,7 +76,7 @@ class NoCraftingCheck implements CraftingCheck<Actor> {
 
     constructor() {}
 
-    perform(_actor: Actor, _components: Combination<CraftingComponent>): CraftingCheckResult {
+    perform(_actor: Actor, _components: Combination<Component>): CraftingCheckResult {
         return new NoCraftingCheckResult();
     }
 

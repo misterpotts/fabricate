@@ -1,5 +1,5 @@
 import {Combination} from "../common/Combination";
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Component} from "../common/Component";
 import {ComponentCombinationGenerator, ComponentEssenceCombination} from "./ComponentCombinationGenerator";
 import {Essence} from "../common/Essence";
 import {TrackedCombination} from "../common/TrackedCombination";
@@ -12,12 +12,12 @@ export class EssenceSelection {
         this._essences = essences;
     }
 
-    perform(contents: Combination<CraftingComponent>): Combination<CraftingComponent> {
+    perform(contents: Combination<Component>): Combination<Component> {
         if (this._essences.isEmpty()) {
             return Combination.EMPTY();
         }
         let availableComponents = contents.clone();
-        contents.members.forEach(((thisComponent: CraftingComponent) => {
+        contents.members.forEach(((thisComponent: Component) => {
             if (thisComponent.essences.isEmpty() || !thisComponent.essences.intersects(this._essences)) {
                 availableComponents = availableComponents.subtract(availableComponents.just(thisComponent));
             }
@@ -30,7 +30,7 @@ export class EssenceSelection {
         return this.selectClosestMatch(generationResult.insufficientCombinations, this._essences);
     }
 
-    private selectBestMatch(combinations: ComponentEssenceCombination[]): Combination<CraftingComponent> {
+    private selectBestMatch(combinations: ComponentEssenceCombination[]): Combination<Component> {
         if (combinations.length === 0) {
             return Combination.EMPTY();
         }
@@ -45,7 +45,7 @@ export class EssenceSelection {
         return sortedCombinations[0].components;
     }
 
-    private selectClosestMatch(combinations: ComponentEssenceCombination[], requiredEssences: Combination<Essence>): Combination<CraftingComponent> {
+    private selectClosestMatch(combinations: ComponentEssenceCombination[], requiredEssences: Combination<Essence>): Combination<Component> {
         if (combinations.length === 0) {
             return Combination.EMPTY();
         }

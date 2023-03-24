@@ -176,7 +176,7 @@ interface CraftingSystemDetailsJson {
 }
 
 interface PartDictionaryJson {
-    components: Record<string, CraftingComponentJson>;
+    components: Record<string, ComponentJson>;
     recipes: Record<string, RecipeJson>;
     essences: Record<string, EssenceJson>;
 }
@@ -210,15 +210,15 @@ console.log(`Created crafting system with ID "${craftingSystem.id}"`); // <-- Yo
 
 ## Add a component to a crafting system
 
-A crafting component is specified by the `CraftingComponentJson` interface.
+A crafting component is specified by the `ComponentJson` interface.
 
 <details open markdown="block">
 <summary>
-CraftingComponentJson Interface
+ComponentJson Interface
 </summary>
 
 ```typescript
-interface CraftingComponentJson {
+interface ComponentJson {
     
     /**
      * The UUID of the Item document for this component 
@@ -326,7 +326,7 @@ CraftingSystem#mutateComponent
 
 ```typescript
     /**
-     * Modifies an existing component by applying the mutations defined in the supplied `CraftingComponentJson`
+     * Modifies an existing component by applying the mutations defined in the supplied `ComponentJson`
      * 
      * @param id The ID of the component to modify
      * @param the complete target state of the component to apply. Anything you omit is deleted
@@ -337,7 +337,7 @@ CraftingSystem#mutateComponent
      * @throws an Error if the mutation contains an invalid item UUID
      * @throws an Error if the mutation references essences or components that do not exist
     * */
-    mutateComponent(id: string, mutation: CraftingComponentJson): Promise<CraftingComponent>;
+    mutateComponent(id: string, mutation: ComponentJson): Promise<Component>;
 ```
 
 </details>
@@ -354,7 +354,7 @@ console.log(`Before modification: ${myComponent}`);
 const componentData = myComponent.toJson();
 componentData.salvageOptions["My new Salvage Option"] = { "rLP3cTCTnQsxddDt": 1 } // Adds a new salvage option
 componentData.essences["bGfx37pYjqlf812"] = 3; // Adds an essence with a quantity of 3
-// perform any other modifications you want here. You can alter any of the fields in the `CraftingComponentJson`, 
+// perform any other modifications you want here. You can alter any of the fields in the `ComponentJson`, 
 // including the item UUID. The new values meet the requirements specified in the interface.
 const updatedComponent = await craftingSystem.mutateComponent(myComponent.id, componentData);
 await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
@@ -569,7 +569,7 @@ console.log(`Before modification: ${myComponent}`);
 const componentData = myComponent.toJson();
 componentData.salvageOptions["My new Salvage Option"] = { "rLP3cTCTnQsxddDt": 1 } // Adds a new salvage option
 componentData.essences["bGfx37pYjqlf812"] = 3; // Adds an essence with a quantity of 3
-// perform any other modifications you want here. You can alter any of the fields in the `CraftingComponentJson`, 
+// perform any other modifications you want here. You can alter any of the fields in the `ComponentJson`, 
 // including the item UUID. The new values meet the requirements specified in the interface.
 const updatedComponent = await craftingSystem.mutateComponent(myComponent.id, componentData);
 await game.fabricate.SystemRegistry.saveCraftingSystem(craftingSystem);
