@@ -4,9 +4,9 @@ interface LocalizationService {
 
     localizeAll(basePath: string, childPaths: string[], lineBreak: boolean): string;
 
-    localize(path: string): any;
+    localize(path: string): string;
 
-    format(path: string, params: {}): any;
+    format(path: string, params: {}): string;
 
 }
 

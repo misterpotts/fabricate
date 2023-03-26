@@ -18,9 +18,9 @@ import {
     testRecipeTwo
 } from "./test_data/TestRecipes";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
-import {EssenceJson} from "../src/scripts/common/Essence";
-import {RecipeJson} from "../src/scripts/common/Recipe";
-import {ComponentJson} from "../src/scripts/common/Component";
+import {EssenceJson} from "../src/scripts/crafting/essence/Essence";
+import {RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
+import {ComponentJson} from "../src/scripts/crafting/component/Component";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 

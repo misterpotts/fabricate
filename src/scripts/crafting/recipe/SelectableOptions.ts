@@ -1,4 +1,4 @@
-import {Identifiable, Serializable} from "./Identity";
+import {Identifiable, Serializable} from "../../common/Identity";
 
 class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements Serializable<Record<string, J>> {
 

@@ -1,4 +1,4 @@
-import {Component} from "../common/Component";
+import {Component} from "../crafting/component/Component";
 import {Combination, Unit} from "../common/Combination";
 import {ObjectUtility} from "../foundry/ObjectUtility";
 import {CraftingResult} from "../crafting/result/CraftingResult";

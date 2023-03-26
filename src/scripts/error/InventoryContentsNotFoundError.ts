@@ -1,4 +1,4 @@
-import {Component} from "../common/Component";
+import {Component} from "../crafting/component/Component";
 import {Unit} from "../common/Combination";
 
 class InventoryContentsNotFoundError extends Error {

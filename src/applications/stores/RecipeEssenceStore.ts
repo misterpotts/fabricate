@@ -1,8 +1,8 @@
 import {derived, Readable, Subscriber} from "svelte/store";
-import {Essence} from "../../scripts/common/Essence";
+import {Essence} from "../../scripts/crafting/essence/Essence";
 import {Unit} from "../../scripts/common/Combination";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 class RecipeEssenceStore {
 

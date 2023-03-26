@@ -6,14 +6,14 @@ import {
     RecipeJson,
     ResultOption,
     ResultOptionJson
-} from "../common/Recipe";
+} from "../crafting/recipe/Recipe";
 import {DocumentManager, FabricateItemData, NoFabricateItemData} from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {ComponentDictionary} from "./ComponentDictionary";
 import {combinationFromRecord} from "./DictionaryUtils";
-import {Component} from "../common/Component";
-import {SelectableOptions} from "../common/SelectableOptions";
-import {Essence} from "../common/Essence";
+import {Component} from "../crafting/component/Component";
+import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
+import {Essence} from "../crafting/essence/Essence";
 import Properties from "../Properties";
 
 export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {

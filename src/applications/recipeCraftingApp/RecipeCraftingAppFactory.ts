@@ -4,7 +4,7 @@ import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
 import {DefaultLocalizationService} from "../common/LocalizationService";
 import RecipeCraftingApp from "./RecipeCraftingApp.svelte";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 import {DefaultInventoryFactory} from "../../scripts/actor/InventoryFactory";
 
 interface RecipeCraftingAppFactory {

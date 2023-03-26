@@ -1,0 +1,5 @@
+class StubEssenceApi {
+
+}
+
+export { StubEssenceApi }

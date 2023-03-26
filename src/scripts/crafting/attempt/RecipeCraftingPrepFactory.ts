@@ -1,10 +1,10 @@
 import {Combination} from "../../common/Combination";
-import {Component} from "../../common/Component";
+import {Component} from "../component/Component";
 import {ComponentSelectionStrategy} from "../selection/ComponentSelectionStrategy";
-import {RequirementOption, Recipe} from "../../common/Recipe";
+import {RequirementOption, Recipe} from "../recipe/Recipe";
 import {CraftingAttempt, DefaultCraftingAttempt} from "./CraftingAttempt";
 import {MultipleRecipeCraftingPrep, RecipeCraftingPrep, SingletonRecipeCraftingPrep} from "./RecipeCraftingPrep";
-import {Essence} from "../../common/Essence";
+import {Essence} from "../essence/Essence";
 
 class RecipeCraftingPrepFactory {
 

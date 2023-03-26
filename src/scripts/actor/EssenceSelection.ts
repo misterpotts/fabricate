@@ -1,7 +1,7 @@
 import {Combination} from "../common/Combination";
-import {Component} from "../common/Component";
+import {Component} from "../crafting/component/Component";
 import {ComponentCombinationGenerator, ComponentEssenceCombination} from "./ComponentCombinationGenerator";
-import {Essence} from "../common/Essence";
+import {Essence} from "../crafting/essence/Essence";
 import {TrackedCombination} from "../common/TrackedCombination";
 
 export class EssenceSelection {

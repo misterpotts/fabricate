@@ -2,11 +2,11 @@ import {beforeEach, describe, expect, test} from "@jest/globals";
 import * as Sinon from "sinon";
 import {DefaultSettingManager} from "../src/scripts/settings/FabricateSetting";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
-import {ComponentJson} from "../src/scripts/common/Component";
+import {ComponentJson} from "../src/scripts/crafting/component/Component";
 import {DefaultSystemRegistry} from "../src/scripts/registries/SystemRegistry";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
-import {RecipeJson} from "../src/scripts/common/Recipe";
+import {RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {FabricateItemData, LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 

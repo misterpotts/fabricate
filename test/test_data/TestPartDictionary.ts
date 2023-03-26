@@ -1,6 +1,6 @@
 import {PartDictionary, PartDictionaryFactory} from "../../src/scripts/system/PartDictionary";
-import {ComponentJson} from "../../src/scripts/common/Component";
-import {RecipeJson} from "../../src/scripts/common/Recipe";
+import {ComponentJson} from "../../src/scripts/crafting/component/Component";
+import {RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";
 import {
     testComponentFive,
     testComponentFour,

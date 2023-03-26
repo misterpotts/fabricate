@@ -4,6 +4,8 @@ interface GameProvider {
 
 }
 
+export { GameProvider }
+
 class DefaultGameProvider implements GameProvider {
 
     get(): Game {
@@ -16,4 +18,4 @@ class DefaultGameProvider implements GameProvider {
 
 }
 
-export { GameProvider, DefaultGameProvider }
+export { DefaultGameProvider }

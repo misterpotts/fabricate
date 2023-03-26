@@ -1,9 +1,9 @@
-import {Component, SalvageOption} from "../../src/scripts/common/Component";
+import {Component, SalvageOption} from "../../src/scripts/crafting/component/Component";
 import {Combination, Unit} from "../../src/scripts/common/Combination";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import Properties from "../../src/scripts/Properties";
-import {SelectableOptions} from "../../src/scripts/common/SelectableOptions";
+import {SelectableOptions} from "../../src/scripts/crafting/recipe/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 
 const testComponentOne: Component = new Component({

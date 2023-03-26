@@ -1,13 +1,23 @@
-import {Component, ComponentJson} from "../common/Component";
+import {Component, ComponentJson} from "../crafting/component/Component";
 
 interface ComponentApi {
-    create(craftingSystemId: string, componentJson: ComponentJson): Promise<Component>;
+
+    /**
+     * Retrieves the component with the specified ID.
+     *
+     * @async
+     * @param {string} id - The ID of the component to retrieve.
+     * @returns {Promise<Essence | undefined>} A Promise that resolves with the component, or undefined if it does not
+     *  exist.
+     */
+    getById(id: string): Promise<Component | undefined>;
+
 }
 
 export { ComponentApi };
 class DefaultComponentApi implements ComponentApi {
 
-    create(craftingSystemId: string, componentJson: ComponentJson): Promise<Component> {
+    getById(id: string): Promise<Component | undefined> {
         return Promise.resolve(undefined);
     }
 

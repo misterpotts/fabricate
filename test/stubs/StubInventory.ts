@@ -1,6 +1,6 @@
 import {Inventory} from "../../src/scripts/actor/Inventory";
 import {Combination} from "../../src/scripts/common/Combination";
-import {Component} from "../../src/scripts/common/Component";
+import {Component} from "../../src/scripts/crafting/component/Component";
 import {AlchemyResult} from "../../src/scripts/crafting/alchemy/AlchemyResult";
 import {CraftingResult} from "../../src/scripts/crafting/result/CraftingResult";
 import {SalvageResult} from "../../src/scripts/crafting/result/SalvageResult";

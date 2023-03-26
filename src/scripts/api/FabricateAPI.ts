@@ -1,15 +1,17 @@
-import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
-import {Component, ComponentJson} from "../common/Component";
-import {CraftingSystemApi} from "./CraftingSystemApi";
+import {CraftingSystemApi, DefaultCraftingSystemApi} from "./CraftingSystemApi";
 import {EssenceApi} from "./EssenceApi";
 import {ComponentApi} from "./ComponentApi";
 import {RecipeApi} from "./RecipeApi";
-import {Essence, EssenceJson} from "../common/Essence";
-import {Recipe, RecipeJson} from "../common/Recipe";
+import {DefaultIdentityFactory} from "../foundry/IdentityFactory";
+import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
+import {DefaultGameProvider} from "../foundry/GameProvider";
+import {DefaultSettingManager} from "./SettingManager";
+import Properties from "../Properties";
+import {CraftingSystemSettingValidator} from "./CraftingSystemSettingValidator";
 
 interface FabricateApiFactory {
 
-    make(): FabricateAPI;
+    make(): FabricateApi;
 
 }
 
@@ -17,64 +19,127 @@ export { FabricateApiFactory }
 
 class DefaultFabricateApiFactory implements FabricateApiFactory {
 
-    make(): FabricateAPI {
-        return undefined;
+    private readonly gameSystem: string;
+
+
+    make(): FabricateApi {
+
+        const notificationService = new DefaultNotificationService();
+        const identityFactory = new DefaultIdentityFactory();
+        const gameProvider = new DefaultGameProvider();
+        const localizationService = new DefaultLocalizationService(gameProvider);
+
+        const craftingSystemApi = new DefaultCraftingSystemApi({
+            gameSystem: this.gameSystem,
+            notificationService,
+            identityFactory,
+            localizationService,
+            settingManager: new DefaultSettingManager({
+                moduleId: Properties.module.id,
+                settingKey: "craftingSystems",
+                notificationService,
+                localizationService,
+                settingValidator: new CraftingSystemSettingValidator(),
+                clientSettings: gameProvider.get().settings
+            })
+        });
+        return new DefaultFabricateApi({
+            craftingSystemApi,
+            essenceApi: undefined,
+            componentApi: undefined,
+            recipeApi: undefined
+        });
+
     }
 
 }
 
 export { DefaultFabricateApiFactory }
 
-interface FabricateAPI {
+/**
+ * Represents an API for managing crafting systems, components, essences, and recipes.
+ *
+ * @interface
+ */
+interface FabricateApi {
 
-    createCraftingSystem(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem>;
+    /**
+     * Gets the API for managing crafting systems.
+     */
+    readonly craftingSystems: CraftingSystemApi;
 
-    createComponent(craftingSystemId: string, componentJson: ComponentJson): Promise<Component>;
+    /**
+     * Gets the API for managing essences.
+     */
+    readonly essences: EssenceApi;
+
+    /**
+     * Gets the API for managing components.
+     */
+    readonly components: ComponentApi;
+
+    /**
+     * Gets the API for managing recipes.
+     */
+    readonly recipes: RecipeApi;
+
+    /**
+     * Migrates Fabricate's stored data from older model versions to the most recent
+     *
+     * @async
+     * @return { Promise<void> } a promise that resolves when the data migration has been completed
+     * */
+    migrateData(): Promise<void>;
+
+    /**
+     * Gets the most recent Fabricate data model version
+     * */
+    readonly dataModelVersion: string;
 
 }
+export { FabricateApi }
 
-export { FabricateAPI }
+class DefaultFabricateApi implements FabricateApi {
 
-class DefaultFabricateApi implements FabricateAPI {
-
-    private readonly _craftingSystemApi: CraftingSystemApi;
-    private readonly _essenceApi: EssenceApi;
-    private readonly _componentApi: ComponentApi;
-    private readonly _recipeApi: RecipeApi;
+    private readonly recipeApi: RecipeApi;
+    private readonly componentApi: ComponentApi;
+    private readonly essenceApi: EssenceApi;
+    private readonly craftingSystemApi: CraftingSystemApi;
 
     constructor({
-        craftingSystemApi,
-        essenceApi,
+        recipeApi,
         componentApi,
-        recipeApi
+        essenceApi,
+        craftingSystemApi,
     }: {
-        craftingSystemApi: CraftingSystemApi;
-        essenceApi: EssenceApi;
+        recipeApi: RecipeApi;
         componentApi: ComponentApi;
-        recipeApi: RecipeApi
+        essenceApi: EssenceApi;
+        craftingSystemApi: CraftingSystemApi;
     }) {
-        this._craftingSystemApi = craftingSystemApi;
-        this._essenceApi = essenceApi;
-        this._componentApi = componentApi;
-        this._recipeApi = recipeApi;
+        this.recipeApi = recipeApi;
+        this.componentApi = componentApi;
+        this.essenceApi = essenceApi;
+        this.craftingSystemApi = craftingSystemApi;
     }
 
-    createCraftingSystem(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
-        return this._craftingSystemApi.create(craftingSystemJson);
+    get craftingSystems(): CraftingSystemApi {
+        return this.craftingSystemApi;
     }
 
-    createEssence(craftingSystemId: string, essenceJson: EssenceJson): Promise<Essence> {
-        return this._essenceApi.create(craftingSystemId, essenceJson);
+    get essences(): EssenceApi {
+        return this.essenceApi;
     }
 
-    createComponent(craftingSystemId: string, componentJson: ComponentJson): Promise<Component> {
-        return this._componentApi.create(craftingSystemId, componentJson);
+    get components(): ComponentApi {
+        return this.componentApi;
     }
 
-    createRecipe(craftingSystemId: string, recipeJson: RecipeJson): Promise<Recipe> {
-        return this._recipeApi.create(craftingSystemId, recipeJson);
+    get recipes(): RecipeApi {
+        return this.recipeApi;
     }
 
 }
+
 
 export { DefaultFabricateApi }

@@ -1,5 +1,5 @@
 import {Dictionary} from "./Dictionary";
-import {Essence, EssenceJson} from "../common/Essence";
+import {Essence, EssenceJson} from "../crafting/essence/Essence";
 import {DocumentManager, FabricateItemData, PendingFabricateItemData} from "../foundry/DocumentManager";
 import Properties from "../Properties";
 

@@ -1,13 +1,11 @@
 import {Combination} from "../../common/Combination";
-import {Recipe} from "../../common/Recipe";
-import {CraftingCheckResult, NoCraftingCheckResult} from "../check/CraftingCheckResult";
-import {Component} from "../../common/Component";
+import {Recipe} from "../recipe/Recipe";
+import {Component} from "../component/Component";
 
 interface CraftingResult {
 
     consumed: Combination<Component>;
     created: Combination<Component>;
-    isSuccessful: boolean;
 
 }
 
@@ -25,36 +23,28 @@ class NoCraftingResult implements CraftingResult {
         return Combination.EMPTY();
     }
 
-    get isSuccessful(): boolean {
-        return false;
-    }
-
 }
 
-export {NoCraftingResult};
+export { NoCraftingResult };
 
 class DefaultCraftingResult implements CraftingResult {
 
     private readonly _recipe: Recipe;
     private readonly _consumed: Combination<Component>;
     private readonly _created: Combination<Component>;
-    private readonly _checkResult?: CraftingCheckResult;
 
     constructor({
         recipe,
         consumed = Combination.EMPTY(),
         created = Combination.EMPTY(),
-        checkResult = new NoCraftingCheckResult()
     }: {
         recipe: Recipe;
         consumed?: Combination<Component>;
         created?: Combination<Component>;
-        checkResult?: CraftingCheckResult;
     }) {
         this._recipe = recipe;
         this._consumed = consumed;
         this._created = created;
-        this._checkResult = checkResult;
     }
 
     get consumed(): Combination<Component> {
@@ -69,14 +59,6 @@ class DefaultCraftingResult implements CraftingResult {
         return this._recipe;
     }
 
-    get checkResult(): CraftingCheckResult {
-        return this._checkResult;
-    }
-
-    get isSuccessful(): boolean {
-        return this._checkResult.isSuccessful;
-    }
-
 }
 
-export {DefaultCraftingResult};
+export { DefaultCraftingResult };

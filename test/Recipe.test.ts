@@ -3,7 +3,7 @@ import {
     RequirementOption,
     RequirementOptionJson,
     Recipe, ResultOption, ResultOptionJson
-} from "../src/scripts/common/Recipe";
+} from "../src/scripts/crafting/recipe/Recipe";
 
 import {
     testComponentOne,
@@ -21,7 +21,7 @@ import {
     testRecipeTwo
 } from "./test_data/TestRecipes";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
-import {SelectableOptions} from "../src/scripts/common/SelectableOptions";
+import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
 
 beforeEach(() => {
     jest.resetAllMocks();

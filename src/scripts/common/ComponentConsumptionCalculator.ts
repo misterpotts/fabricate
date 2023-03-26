@@ -1,5 +1,5 @@
 import {Combination} from "./Combination";
-import {Component} from "./Component";
+import {Component} from "../crafting/component/Component";
 
 enum WastageType {
     PUNITIVE,

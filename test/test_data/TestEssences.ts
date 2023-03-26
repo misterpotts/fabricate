@@ -1,4 +1,4 @@
-import {Essence} from "../../src/scripts/common/Essence";
+import {Essence} from "../../src/scripts/crafting/essence/Essence";
 
 const elementalEarth = new Essence({
     description: "One of the four fundamental forces, Elemental Earth.",

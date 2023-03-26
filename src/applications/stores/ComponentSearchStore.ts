@@ -1,5 +1,5 @@
 import {writable, Writable, Readable, derived, Subscriber} from "svelte/store";
-import {Component} from "../../scripts/common/Component";
+import {Component} from "../../scripts/crafting/component/Component";
 
 interface ComponentSearchTerms {
     name?: string;

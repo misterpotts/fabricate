@@ -1,7 +1,7 @@
 import {Combination, Unit} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
-import {Component} from "../../common/Component";
-import {Essence} from "../../common/Essence";
+import {Component} from "../component/Component";
+import {Essence} from "../essence/Essence";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {EssenceSelection} from "../../actor/EssenceSelection";
 import {Identifiable} from "../../common/Identity";

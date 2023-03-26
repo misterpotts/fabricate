@@ -1,6 +1,6 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {Component} from "../../scripts/common/Component";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Component} from "../../scripts/crafting/component/Component";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 const registeredNodes: Map<string, any[]> = new Map();
 const eventBus = function(node: any, eventTypes: string[] | string) {

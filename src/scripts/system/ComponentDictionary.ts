@@ -1,5 +1,5 @@
 import {Dictionary} from "./Dictionary";
-import {Component, ComponentJson, SalvageOption, SalvageOptionJson} from "../common/Component";
+import {Component, ComponentJson, SalvageOption, SalvageOptionJson} from "../crafting/component/Component";
 import {
     DocumentManager,
     FabricateItemData,
@@ -7,8 +7,8 @@ import {
 } from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {combinationFromRecord} from "./DictionaryUtils";
-import {SelectableOptions} from "../common/SelectableOptions";
-import {Essence} from "../common/Essence";
+import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
+import {Essence} from "../crafting/essence/Essence";
 import Properties from "../Properties";
 
 export class ComponentDictionary implements Dictionary<ComponentJson, Component> {

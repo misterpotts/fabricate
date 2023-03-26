@@ -1,6 +1,6 @@
-import {Component} from "../common/Component";
+import {Component} from "../crafting/component/Component";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {Essence} from "../common/Essence";
+import {Essence} from "../crafting/essence/Essence";
 import {Combination} from "../common/Combination";
 
 interface ComponentSelection {

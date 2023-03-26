@@ -1,6 +1,6 @@
 import {SvelteApplication} from "../SvelteApplication";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {Component} from "../../scripts/common/Component";
+import {Component} from "../../scripts/crafting/component/Component";
 import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
 import ComponentSalvageApp from "./ComponentSalvageApp.svelte";

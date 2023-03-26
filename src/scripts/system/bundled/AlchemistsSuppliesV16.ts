@@ -1,7 +1,6 @@
 import {CraftingSystemJson} from "../CraftingSystem";
 
 const SYSTEM_DEFINITION: CraftingSystemJson = {
-    "id": "alchemists-supplies-v1.6",
     "locked": true,
     "details": {
         "name": "Alchemist's Supplies v1.6",
@@ -491,6 +490,7 @@ const SYSTEM_DEFINITION: CraftingSystemJson = {
 
 const ALCHEMISTS_SUPPLIES_SYSTEM_DATA = {
     definition: SYSTEM_DEFINITION,
+    id: "alchemists-supplies-v1.6",
     gameSystem: "dnd5e"
 }
 

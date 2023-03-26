@@ -1,5 +1,5 @@
 import {Combination} from "../../common/Combination";
-import {Component} from "../../common/Component";
+import {Component} from "../component/Component";
 
 interface SalvageResult {
 

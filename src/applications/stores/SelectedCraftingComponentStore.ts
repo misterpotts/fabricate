@@ -1,5 +1,5 @@
 import {get, Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
-import {Component} from "../../scripts/common/Component";
+import {Component} from "../../scripts/crafting/component/Component";
 
 class SelectedCraftingComponentStore {
 

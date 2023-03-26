@@ -1,25 +1,10 @@
 import Properties from "../Properties";
 import {LocalizationService} from "../../applications/common/LocalizationService";
-
-interface SettingValidator<T> {
-
-    validate(value: T): SettingValidationResult<T>;
-
-}
-
-interface SettingValidationResult<T> {
-
-    errors: string[];
-
-    isSuccessful: boolean;
-
-    value: T;
-
-}
+import {EntityValidator} from "./EntityValidator";
 
 interface SettingManager<T> {
 
-    read(): T;
+    read(): Promise<T>;
 
     write(value: T): Promise<void>;
 
@@ -27,82 +12,86 @@ interface SettingManager<T> {
 
 }
 
+export { SettingManager }
+
 class DefaultSettingManager<T> implements SettingManager<T> {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
-    private readonly _moduleId: string;
-    private readonly _settingKey: string;
-    private readonly _settingValidator: SettingValidator<T>;
-    private readonly _clientSettings: ClientSettings;
-    private readonly _notifications: Notifications;
-    private readonly _localizationService: LocalizationService;
+    private readonly moduleId: string;
+    private readonly settingKey: string;
+    private readonly settingValidator: EntityValidator<T>;
+    private readonly clientSettings: ClientSettings;
+    private readonly notificationService: NotificationService;
+    private readonly localizationService: LocalizationService;
 
     constructor({
         moduleId = Properties.module.id,
         settingKey,
         settingValidator,
         clientSettings,
-        notifications,
+        notificationService,
         localizationService
     }: {
         moduleId?: string;
         settingKey: string;
-        settingValidator: SettingValidator<T>;
+        settingValidator: EntityValidator<T>;
         clientSettings: ClientSettings;
-        notifications: Notifications;
+        notificationService: NotificationService;
         localizationService: LocalizationService;
     }) {
-        this._moduleId = moduleId;
-        this._settingKey = settingKey;
-        this._settingValidator = settingValidator;
-        this._clientSettings = clientSettings;
-        this._notifications = notifications;
-        this._localizationService = localizationService;
+        this.moduleId = moduleId;
+        this.settingKey = settingKey;
+        this.settingValidator = settingValidator;
+        this.clientSettings = clientSettings;
+        this.notificationService = notificationService;
+        this.localizationService = localizationService;
     }
 
     async delete(): Promise<T> {
-        const setting = this._clientSettings.storage.get("world").getSetting(`${this._moduleId}.${this._settingKey}`);
+        const setting = this.clientSettings.storage.get("world").getSetting(`${this.moduleId}.${this.settingKey}`);
         await setting.delete();
-        const message = this._localizationService.format(
+        const message = this.localizationService.format(
             `${DefaultSettingManager._LOCALIZATION_PATH}.settingDeleted`,
             {
-                settingPath: this._settingKey
+                settingPath: this.settingKey
             });
-        this._notifications.warn(message);
+        this.notificationService.warn(message);
         return setting;
     }
 
-    read(): T {
-        const readValue = this._clientSettings.get(this._moduleId, this._settingKey) as T;
-        const validationResult = this._settingValidator.validate(readValue);
+    async read(): Promise<T> {
+        const readValue = this.clientSettings.get(this.moduleId, this.settingKey) as T;
+        const validationResult = await this.settingValidator.validate(readValue);
         if (validationResult.isSuccessful) {
-            return validationResult.value;
+            return validationResult.entity;
         }
-        const message = this._localizationService.format(
+        const message = this.localizationService.format(
             `${DefaultSettingManager._LOCALIZATION_PATH}.errors.invalidRead`,
             {
-                settingPath: this._settingKey,
+                settingPath: this.settingKey,
                 errors: validationResult.errors.join(", ")
             });
-        this._notifications.error(message);
+        this.notificationService.error(message);
+        throw new Error(message);
     }
 
     async write(writeValue: T): Promise<void> {
-        const validationResult = this._settingValidator.validate(writeValue);
+        const validationResult = await this.settingValidator.validate(writeValue);
         if (validationResult.isSuccessful) {
-            await this._clientSettings.set(this._moduleId, this._settingKey, validationResult.value);
+            await this.clientSettings.set(this.moduleId, this.settingKey, validationResult.entity);
             return;
         }
-        const message = this._localizationService.format(
+        const message = this.localizationService.format(
             `${DefaultSettingManager._LOCALIZATION_PATH}.errors.invalidWrite`,
             {
-                settingPath: this._settingKey,
+                settingPath: this.settingKey,
                 errors: validationResult.errors.join(", ")
             });
-        this._notifications.error(message);
+        this.notificationService.error(message);
+        throw new Error(message);
     }
 
 }
 
-export { SettingManager, DefaultSettingManager }
+export { DefaultSettingManager }

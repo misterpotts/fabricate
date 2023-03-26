@@ -1,6 +1,6 @@
 import {DocumentManager, FabricateItemData} from "../../scripts/foundry/DocumentManager";
 import Properties from "../../scripts/Properties";
-import {Component} from "../../scripts/common/Component";
+import {Component} from "../../scripts/crafting/component/Component";
 import {LocalizationService} from "./LocalizationService";
 
 class DropData {

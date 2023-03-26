@@ -1,6 +1,6 @@
-import {Component, ComponentJson} from "../common/Component";
-import {Recipe, RecipeJson} from "../common/Recipe";
-import {Essence, EssenceJson} from "../common/Essence";
+import {Component, ComponentJson} from "../crafting/component/Component";
+import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
+import {Essence, EssenceJson} from "../crafting/essence/Essence";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {ComponentDictionary} from "./ComponentDictionary";

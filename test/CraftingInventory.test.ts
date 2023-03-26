@@ -19,7 +19,7 @@ import {
 } from "./test_data/TestCraftingComponents";
 import {StubActorFactory} from "./stubs/StubActorFactory";
 import {Combination, Unit} from "../src/scripts/common/Combination";
-import {Component} from "../src/scripts/common/Component";
+import {Component} from "../src/scripts/crafting/component/Component";
 import {StubItem} from "./stubs/StubItem";
 import {SuccessfulSalvageResult} from "../src/scripts/crafting/result/SalvageResult";
 

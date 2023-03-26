@@ -1,4 +1,4 @@
-import {Recipe} from "../../common/Recipe";
+import {Recipe} from "../recipe/Recipe";
 import {CraftingAttempt} from "./CraftingAttempt";
 
 interface RecipeCraftingPrep {

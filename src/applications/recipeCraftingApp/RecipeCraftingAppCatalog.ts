@@ -2,7 +2,7 @@ import {RecipeCraftingAppFactory} from "./RecipeCraftingAppFactory";
 import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {SvelteApplication} from "../SvelteApplication";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 interface RecipeCraftingAppCatalog {
     load(recipe: Recipe, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication>;

@@ -7,7 +7,7 @@ import {DefaultCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck"
 import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {GameSystemRollModifierProvider} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
-import {Component} from "../src/scripts/common/Component";
+import {Component} from "../src/scripts/crafting/component/Component";
 import {testComponentFour, testComponentTwo} from "./test_data/TestCraftingComponents";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();

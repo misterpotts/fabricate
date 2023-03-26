@@ -4,8 +4,8 @@ import {
     ItemNotFoundError,
     LoadedFabricateItemData
 } from "../../src/scripts/foundry/DocumentManager";
-import {Component, ComponentJson} from "../../src/scripts/common/Component";
-import {Recipe, RecipeJson} from "../../src/scripts/common/Recipe";
+import {Component, ComponentJson} from "../../src/scripts/crafting/component/Component";
+import {Recipe, RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";
 
 class StubDocumentManager implements DocumentManager {
 

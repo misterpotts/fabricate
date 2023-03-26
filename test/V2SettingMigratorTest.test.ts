@@ -1,10 +1,10 @@
 import {describe, expect, test} from "@jest/globals";
 import {V1ComponentJson, V1EssenceJson, V1RecipeJson} from "../src/scripts/system/setting_versions/V1Json";
-import {EssenceJson} from "../src/scripts/common/Essence";
+import {EssenceJson} from "../src/scripts/crafting/essence/Essence";
 import V1_CHILDS_PLAY_SYSTEM_DEFINITION from "./resources/V1ChildsPlaySystemSpec";
 import {V2CraftingSystemSettingMigrator} from "../src/scripts/settings/migrators/V2CraftingSystemSettingMigrator";
-import {ComponentJson} from "../src/scripts/common/Component";
-import {RecipeJson} from "../src/scripts/common/Recipe";
+import {ComponentJson} from "../src/scripts/crafting/component/Component";
+import {RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import { V1_ALCHEMISTS_SUPPLIES_SYSTEM_DEFINITION } from "./resources/V1AlchemistsSuppliesSystemSpec";
 import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/bundled/AlchemistsSuppliesV16";
 

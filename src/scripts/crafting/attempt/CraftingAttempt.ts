@@ -1,7 +1,7 @@
 import {ComponentSelection} from "../../component/ComponentSelection";
 import {TrackedCombination} from "../../common/TrackedCombination";
-import {Essence} from "../../common/Essence";
-import {Component} from "../../common/Component";
+import {Essence} from "../essence/Essence";
+import {Component} from "../component/Component";
 import {Combination} from "../../common/Combination";
 
 interface CraftingAttempt {

@@ -1,6 +1,6 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {derived, Readable, Subscriber} from "svelte/store";
-import {Component} from "../../scripts/common/Component";
+import {Component} from "../../scripts/crafting/component/Component";
 
 class CraftingComponentsStore {
 

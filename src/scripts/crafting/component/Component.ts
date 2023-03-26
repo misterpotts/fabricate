@@ -1,8 +1,8 @@
-import {StringIdentity, Combination, Unit} from "./Combination";
-import {Identifiable, Serializable} from "./Identity";
-import {Essence} from "./Essence";
-import {SelectableOptions} from "./SelectableOptions";
-import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../foundry/DocumentManager";
+import {StringIdentity, Combination, Unit} from "../../common/Combination";
+import {Identifiable, Serializable} from "../../common/Identity";
+import {Essence} from "../essence/Essence";
+import {SelectableOptions} from "../recipe/SelectableOptions";
+import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
 
 interface ComponentJson {
     itemUuid: string;

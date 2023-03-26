@@ -1,7 +1,7 @@
 import {ComponentSalvageAppFactory} from "./ComponentSalvageAppFactory";
 import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {Component} from "../../scripts/common/Component";
+import {Component} from "../../scripts/crafting/component/Component";
 import {SvelteApplication} from "../SvelteApplication";
 
 interface ComponentSalvageAppCatalog {

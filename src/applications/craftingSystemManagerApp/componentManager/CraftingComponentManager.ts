@@ -2,7 +2,7 @@ import {CraftingSystemEditor} from "../CraftingSystemEditor";
 import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
-import {Component} from "../../../scripts/common/Component";
+import {Component} from "../../../scripts/crafting/component/Component";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
 
