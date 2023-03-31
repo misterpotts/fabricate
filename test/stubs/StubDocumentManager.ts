@@ -22,7 +22,7 @@ class StubDocumentManager implements DocumentManager {
     private readonly _itemDataByUuid: Map<string, FabricateItemData>;
     private readonly _poisonIds: string[] = [];
 
-    constructor(itemDataByUuid: Map<string, FabricateItemData>, permissive = true) {
+    constructor(itemDataByUuid: Map<string, FabricateItemData> = new Map(), permissive = true) {
         this._itemDataByUuid = itemDataByUuid;
         this._permissive = permissive;
     }

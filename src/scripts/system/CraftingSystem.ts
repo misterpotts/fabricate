@@ -2,6 +2,7 @@ import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystem
 import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../api/EntityValidator";
 
 interface CraftingSystemJson {
+    id: string;
     details: CraftingSystemDetailsJson;
     locked: boolean;
     enabled: boolean;
@@ -99,6 +100,7 @@ class UserDefinedCraftingSystem implements CraftingSystem{
 
     toJson(): CraftingSystemJson {
         return {
+            id: this._id,
             details: this.craftingSystemDetails.toJson(),
             enabled: this.enabled,
             locked: UserDefinedCraftingSystem.IS_LOCKED
@@ -168,6 +170,7 @@ class EmbeddedCraftingSystem implements CraftingSystem{
 
     toJson(): CraftingSystemJson {
         return {
+            id: this._id,
             details: this.details.toJson(),
             enabled: this.enabled,
             locked: EmbeddedCraftingSystem.IS_LOCKED

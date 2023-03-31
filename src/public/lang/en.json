@@ -57,6 +57,9 @@
           "doesNotExist": "The crafting system {craftingSystemId} does not exist. ",
           "invalid": "The crafting system entity is not valid. Errors: {errors}. ",
           "reservedId": "The crafting system ID {craftingSystemId} is reserved. "
+        },
+        "document": {
+          "notFound": "The document with UUID {documentUuid} could not be found. "
         }
       }
     },

@@ -12,6 +12,16 @@ interface ComponentApi {
      */
     getById(id: string): Promise<Component | undefined>;
 
+    /**
+     * Returns all components for a given crafting system ID.
+     *
+     * @async
+     * @param {string} craftingSystemId - The ID of the crafting system.
+     * @returns {Promise<Map<string, Recipe>>} A Promise that resolves to a Map of component instances for the given
+     * crafting system, where the keys are the component IDs, or rejects with an Error if the settings cannot be read.
+     */
+    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Component>>;
+
 }
 
 export { ComponentApi };

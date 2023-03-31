@@ -210,7 +210,7 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
         if (!validationResult.isSuccessful) {
             const message = this.localizationService.format(
                 `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.notValid`,
-                {errors: validationResult.errors.join(", ")}
+                { errors: validationResult.errors.join(", ") }
             );
             this.notificationService.error(message);
             throw new Error(message);

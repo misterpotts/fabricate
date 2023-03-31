@@ -1,8 +1,7 @@
+import {ComponentApi} from "../../../src/scripts/api/ComponentApi";
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
-import {EssenceApi} from "../../../src/scripts/api/EssenceApi";
-import {Essence} from "../../../src/scripts/crafting/essence/Essence";
 
-class StubEssenceApi implements EssenceApi {
+class StubComponentApi implements ComponentApi {
 
     private readonly _identityFactory: IdentityFactory;
     private readonly _notifications: NotificationService;
@@ -16,15 +15,14 @@ class StubEssenceApi implements EssenceApi {
         return this._notifications;
     }
 
-    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Essence>> {
+    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Component>> {
         return Promise.resolve(undefined);
     }
 
-    getById(id: string): Promise<Essence | undefined> {
+    getById(id: string): Promise<Component | undefined> {
         return Promise.resolve(undefined);
     }
-
 
 }
 
-export { StubEssenceApi }
+export { StubComponentApi }

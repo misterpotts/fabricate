@@ -7,6 +7,7 @@ import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../fo
 
 interface RecipeJson {
     itemUuid: string;
+    id: string;
     craftingSystemId: string;
     disabled: boolean;
     essences: Record<string, number>,
@@ -393,6 +394,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     public toJson(): RecipeJson {
         return {
+            id: this._id,
             itemUuid: this._itemData.uuid,
             craftingSystemId: this._craftingSystemId,
             disabled: this.disabled,

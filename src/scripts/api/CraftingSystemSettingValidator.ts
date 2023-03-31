@@ -3,7 +3,7 @@ import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} 
 
 class CraftingSystemSettingValidator implements EntityValidator<CraftingSystemData>{
 
-    validate(value: CraftingSystemData): EntityValidationResult<CraftingSystemData> {
+    async validate(value: CraftingSystemData): Promise<EntityValidationResult<CraftingSystemData>> {
 
         const errors: string[] = [];
 
