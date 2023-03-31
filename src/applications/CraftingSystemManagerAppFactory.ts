@@ -15,7 +15,7 @@ class CraftingSystemManagerAppFactory {
         const applicationOptions = {
             title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
             id: Properties.ui.apps.craftingSystemManager.id,
-            resizable: false,
+            resizable: true,
             width: 1020,
             height: 780
         }
