@@ -42,8 +42,8 @@ class StubDocumentManager implements DocumentManager {
         this.allowUnknownIds = allowUnknownIds;
         this.poisonIds = poisonIds;
         this.cachedState = {
-            itemDataByUuid,
-            poisonIds,
+            itemDataByUuid: new Map(itemDataByUuid),
+            poisonIds: Array.from(poisonIds),
             allowUnknownIds
         };
     }

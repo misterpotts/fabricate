@@ -87,41 +87,44 @@ const recipeValidator = new RecipeValidator({
     componentApi,
     essenceApi
 });
-const settingManager = new StubSettingManager<RecipeData>({
-    recipesById: {
-        [ testRecipeOne.id ]: testRecipeOne.toJson(),
-        [ testRecipeTwo.id ]: testRecipeTwo.toJson(),
-        [ testRecipeThree.id ]: testRecipeThree.toJson(),
-        [ testRecipeFour.id ]: testRecipeFour.toJson(),
-        [ testRecipeFive.id ]: testRecipeFive.toJson(),
-        [ testRecipeSix.id ]: testRecipeSix.toJson(),
-        [ testRecipeSeven.id ]: testRecipeSeven.toJson()
-    },
-    recipeIdsByItemUuid: {
-        [ testRecipeOne.itemUuid ]: [ testRecipeOne.id ],
-        [ testRecipeTwo.itemUuid ]: [ testRecipeTwo.id ],
-        [ testRecipeThree.itemUuid ]: [ testRecipeThree.id ],
-        [ testRecipeFour.itemUuid ]: [ testRecipeFour.id ],
-        [ testRecipeFive.itemUuid ]: [ testRecipeFive.id ],
-        [ testRecipeSix.itemUuid ]: [ testRecipeSix.id ],
-        [ testRecipeSeven.itemUuid ]: [ testRecipeSeven.id ]
-    },
-    recipeIdsByCraftingSystemId: {
-        [ testCraftingSystem.id ]:
-            [
-                testRecipeOne.id,
-                testRecipeTwo.id,
-                testRecipeThree.id,
-                testRecipeFour.id,
-                testRecipeFive.id,
-                testRecipeSix.id,
-                testRecipeSeven.id
-            ]
-    }
-});
+const settingValueProvider = () => {
+   return {
+        recipesById: {
+            [ testRecipeOne.id ]: testRecipeOne.toJson(),
+            [ testRecipeTwo.id ]: testRecipeTwo.toJson(),
+            [ testRecipeThree.id ]: testRecipeThree.toJson(),
+            [ testRecipeFour.id ]: testRecipeFour.toJson(),
+            [ testRecipeFive.id ]: testRecipeFive.toJson(),
+            [ testRecipeSix.id ]: testRecipeSix.toJson(),
+            [ testRecipeSeven.id ]: testRecipeSeven.toJson()
+        },
+        recipeIdsByItemUuid: {
+            [ testRecipeOne.itemUuid ]: [ testRecipeOne.id ],
+            [ testRecipeTwo.itemUuid ]: [ testRecipeTwo.id ],
+            [ testRecipeThree.itemUuid ]: [ testRecipeThree.id ],
+            [ testRecipeFour.itemUuid ]: [ testRecipeFour.id ],
+            [ testRecipeFive.itemUuid ]: [ testRecipeFive.id ],
+            [ testRecipeSix.itemUuid ]: [ testRecipeSix.id ],
+            [ testRecipeSeven.itemUuid ]: [ testRecipeSeven.id ]
+        },
+        recipeIdsByCraftingSystemId: {
+            [ testCraftingSystem.id ]:
+                [
+                    testRecipeOne.id,
+                    testRecipeTwo.id,
+                    testRecipeThree.id,
+                    testRecipeFour.id,
+                    testRecipeFive.id,
+                    testRecipeSix.id,
+                    testRecipeSeven.id
+                ]
+        }
+    };
+};
+const settingManager = new StubSettingManager<RecipeData>(settingValueProvider());
 
 beforeEach(() => {
-    settingManager.reset();
+    settingManager.reset(settingValueProvider());
     documentManager.reset();
 });
 
@@ -356,6 +359,84 @@ describe("Access", () => {
 
     });
 
+    test("Should get all recipes without loading", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const result = await underTest.getAll();
+
+        expect(result).not.toBeUndefined();
+        expect(result.size).toEqual(7);
+        expect(result.has(testRecipeOne.id)).toEqual(true);
+        expect(result.has(testRecipeTwo.id)).toEqual(true);
+        expect(result.has(testRecipeThree.id)).toEqual(true);
+        expect(result.has(testRecipeFour.id)).toEqual(true);
+        expect(result.has(testRecipeFive.id)).toEqual(true);
+        expect(result.has(testRecipeSix.id)).toEqual(true);
+        expect(result.has(testRecipeSeven.id)).toEqual(true);
+        expect(Array.from(result.values()).filter(recipe => recipe.isLoaded).length).toEqual(0);
+
+    });
+
+    test("Should get all recipes by crafting system ID without loading", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const result = await underTest.getAllByCraftingSystemId(testCraftingSystem.id);
+
+        expect(result).not.toBeUndefined();
+        expect(result.size).toEqual(7);
+        expect(result.has(testRecipeOne.id)).toEqual(true);
+        expect(result.has(testRecipeTwo.id)).toEqual(true);
+        expect(result.has(testRecipeThree.id)).toEqual(true);
+        expect(result.has(testRecipeFour.id)).toEqual(true);
+        expect(result.has(testRecipeFive.id)).toEqual(true);
+        expect(result.has(testRecipeSix.id)).toEqual(true);
+        expect(result.has(testRecipeSeven.id)).toEqual(true);
+        expect(Array.from(result.values()).filter(recipe => recipe.isLoaded).length).toEqual(0);
+
+    });
+
+    test("Should get all recipes by item UUID without loading", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const result = await underTest.getAllByItemUuid(testRecipeOne.itemUuid);
+
+        expect(result).not.toBeUndefined();
+        expect(result.size).toEqual(1);
+        expect(result.has(testRecipeOne.id)).toEqual(true);
+        expect(result.get(testRecipeOne.id).isLoaded).toEqual(false);
+
+    });
+
 });
 
 describe("Edit", () => {
@@ -366,6 +447,92 @@ describe("Edit", () => {
 
 describe("Delete", () => {
 
+    test("should delete a recipe by ID", async () => {
 
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const before = await underTest.getById(testRecipeOne.id);
+        const allBefore = await underTest.getAll();
+
+        await underTest.deleteById(testRecipeOne.id);
+
+        const after = await underTest.getById(testRecipeOne.id);
+        const allAfter = await underTest.getAll();
+
+        expect(before).not.toBeUndefined();
+        expect(allBefore.size).toEqual(7);
+        expect(after).toBeUndefined();
+        expect(allAfter.size).toEqual(6);
+
+    });
+
+    test("should delete recipes by crafting system ID", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const before = await underTest.getById(testRecipeOne.id);
+        const allBefore = await underTest.getAll();
+
+        await underTest.deleteByCraftingSystemId(testCraftingSystem.id);
+
+        const after = await underTest.getById(testRecipeOne.id);
+        const allAfter = await underTest.getAll();
+
+        expect(before).not.toBeUndefined();
+        expect(allBefore.size).toEqual(7);
+        expect(after).toBeUndefined();
+        expect(allAfter.size).toEqual(0);
+
+    });
+
+    test("should delete recipes by item UUID", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const before = await underTest.getById(testRecipeOne.id);
+        const allBefore = await underTest.getAll();
+
+        await underTest.deleteByItemUuid(testRecipeOne.itemUuid);
+
+        const after = await underTest.getById(testRecipeOne.id);
+        const allAfter = await underTest.getAll();
+
+        expect(before).not.toBeUndefined();
+        expect(allBefore.size).toEqual(7);
+        expect(after).toBeUndefined();
+        expect(allAfter.size).toEqual(6);
+
+    });
+
+    test("should remove all component references from all recipes", async () => {});
+
+    test("should remove all essence references from all recipes", async () => {});
 
 });

@@ -1,13 +1,14 @@
 import {SettingManager} from "../../../src/scripts/api/SettingManager";
+import {cloneDeep} from "lodash";
 
 class StubSettingManager<T> implements SettingManager<T>{
 
     private readonly initialValue: T;
     private value: T;
 
-    constructor(value?: T) {
+    constructor(value?: T, initialValue?: T) {
         this.value = value;
-        this.initialValue = value;
+        this.initialValue = initialValue ?? cloneDeep(value);
     }
 
     async delete(): Promise<T> {
@@ -24,8 +25,8 @@ class StubSettingManager<T> implements SettingManager<T>{
         return;
     }
 
-    reset(): void {
-        this.value = this.initialValue;
+    reset(value?: T): void {
+        this.value = value ?? this.initialValue;
     }
 
 }
