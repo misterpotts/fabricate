@@ -215,7 +215,7 @@ class CraftingInventory implements Inventory {
     }
 
     async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<void> {
-        const baseItem = await this._documentManager.getDocumentByUuid(alchemyResult.baseComponent.itemUuid)
+        const baseItem = await this._documentManager.loadItemDataByDocumentUuid(alchemyResult.baseComponent.itemUuid)
         const baseItemData = this._objectUtils.duplicate(baseItem);
         // todo: implement once types and process are known
         // @ts-ignore

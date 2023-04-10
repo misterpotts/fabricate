@@ -60,7 +60,7 @@
     }
 
     async function openActiveEffectSourceItemSheet(essence) {
-        const document = await new DefaultDocumentManager().getDocumentByUuid(essence.activeEffectSource.uuid);
+        const document = await new DefaultDocumentManager().loadItemDataByDocumentUuid(essence.activeEffectSource.uuid);
         await document.sourceDocument.sheet.render(true);
     }
 

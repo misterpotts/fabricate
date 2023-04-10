@@ -5,19 +5,18 @@ import {
     RequirementOptionJson, ResultOption,
     ResultOptionJson
 } from "../crafting/recipe/Recipe";
-import {CraftingSystemApi} from "./CraftingSystemApi";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import {SettingManager} from "./SettingManager";
 import Properties from "../Properties";
 import {IdentityFactory} from "../foundry/IdentityFactory";
-import {RecipeValidator} from "../crafting/recipe/RecipeValidator";
 import {DocumentManager} from "../foundry/DocumentManager";
-import {combinationFromRecord} from "../system/DictionaryUtils";
 import {Component} from "../crafting/component/Component";
 import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
 import {ComponentApi} from "./ComponentApi";
 import {EssenceApi} from "./EssenceApi";
 import {Essence} from "../crafting/essence/Essence";
+import {EntityValidationResult, EntityValidator} from "./EntityValidator";
+import {Combination} from "../common/Combination";
 
 interface RecipeData {
 
@@ -26,6 +25,8 @@ interface RecipeData {
     recipesById: Record<string, RecipeJson>;
 
 }
+
+export { RecipeData }
 
 /**
  * Options for creating a new recipe.
@@ -81,6 +82,8 @@ interface RecipeOptions {
     resultOptions?: Record<string, Record<string, number>>;
 
 }
+
+export { RecipeOptions }
 
 /**
  * An API for managing recipes.
@@ -159,6 +162,17 @@ interface RecipeApi {
     deleteByItemUuid(recipeId: string): Promise<Recipe[]>;
 
     /**
+     * Deletes all recipes associated with a given crafting system.
+     *
+     * @async
+     * @param {string} craftingSystemId - The ID of the crafting system to delete recipes for.
+     * @returns {Promise<Recipe | undefined>} A Promise that resolves to the deleted recipe(s) or an empty array if no
+     *  recipes were associated with the given crafting system. Rejects with an Error if the recipes could not be
+     *  deleted.
+     */
+    deleteByCraftingSystemId(craftingSystemId: string): Promise<Recipe[]>;
+
+    /**
      *
      * Removes all references to the specified crafting component from all recipes within the specified crafting system.
      * @async
@@ -216,8 +230,7 @@ class DefaultRecipeApi implements RecipeApi {
 
     private readonly identityFactory: IdentityFactory;
     private readonly settingManager: SettingManager<RecipeData>;
-    private readonly recipeValidator: RecipeValidator;
-    private readonly craftingSystemApi: CraftingSystemApi;
+    private readonly recipeValidator: EntityValidator<Recipe>;
     private readonly essenceApi: EssenceApi;
     private readonly componentApi: ComponentApi;
     private readonly notificationService: NotificationService;
@@ -225,27 +238,32 @@ class DefaultRecipeApi implements RecipeApi {
     private readonly documentManager: DocumentManager;
 
     constructor({
-        craftingSystemApi,
         componentApi,
         essenceApi,
+        identityFactory,
         notificationService,
         localizationService,
-        documentManager
+        settingManager,
+        documentManager,
+        recipeValidator
     }: {
-        craftingSystemApi: CraftingSystemApi;
         essenceApi: EssenceApi;
         componentApi: ComponentApi;
+        identityFactory: IdentityFactory;
         notificationService: NotificationService;
         localizationService: LocalizationService;
         settingManager: SettingManager<RecipeData>;
         documentManager: DocumentManager;
+        recipeValidator: EntityValidator<Recipe>;
     }) {
-        this.craftingSystemApi = craftingSystemApi;
         this.essenceApi = essenceApi;
         this.componentApi = componentApi;
+        this.identityFactory = identityFactory;
         this.notificationService = notificationService;
         this.localizationService = localizationService;
+        this.settingManager = settingManager;
         this.documentManager = documentManager;
+        this.recipeValidator = recipeValidator;
     }
 
     get notifications() {
@@ -264,7 +282,7 @@ class DefaultRecipeApi implements RecipeApi {
         }
         const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(settingValue.recipesById[id].craftingSystemId);
         const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(settingValue.recipesById[id].craftingSystemId);
-        const deletedRecipe = await this.buildRecipe(id, settingValue.recipesById[id], componentsForSystem, essencesForSystem);
+        const deletedRecipe = await this.buildRecipe(settingValue.recipesById[id], componentsForSystem, essencesForSystem);
         delete settingValue.recipesById[id];
         await this.settingManager.write(settingValue);
 
@@ -278,7 +296,7 @@ class DefaultRecipeApi implements RecipeApi {
         let localizationActivity = !!recipeData.recipesById[recipe.id] ? "updated" : "created";
         const message = this.localizationService.format(
             `${DefaultRecipeApi._LOCALIZATION_PATH}.settings.recipe.${localizationActivity}`,
-            { recipeName: recipe.name }
+            { recipeId: recipe.name }
         );
 
         if (!recipeData.recipesById[recipe.id]) {
@@ -296,24 +314,11 @@ class DefaultRecipeApi implements RecipeApi {
     async create({
         itemUuid,
         craftingSystemId,
-        essences,
-        disabled,
-        requirementOptions,
-        resultOptions,
+        essences = {},
+        disabled = false,
+        requirementOptions = {},
+        resultOptions = {},
     }: RecipeOptions): Promise<Recipe> {
-        const craftingSystem = await this.craftingSystemApi.getById(craftingSystemId);
-        if (!craftingSystem) {
-            throw new Error(`Cannot create recipe for non-existent crafting system "${craftingSystemId}". `);
-        }
-        const itemData = await this.documentManager.getDocumentByUuid(itemUuid);
-        if (!itemData.loaded) {
-            const message = this.localizationService.format(
-                `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.document.doesNotExist`,
-                { documentUuid: itemUuid }
-            );
-            this.notificationService.warn(message);
-            throw new Error(`Cannot create a recipe for non-existent item "${itemUuid}"`);
-        }
         const settingValue = this.settingManager.read();
         const assignedIds = Object.keys(settingValue);
         const id = this.identityFactory.make(assignedIds);
@@ -349,6 +354,16 @@ class DefaultRecipeApi implements RecipeApi {
         const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(recipeJson.craftingSystemId);
         const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(recipeJson.craftingSystemId);
         return this.buildRecipe(recipeJson, componentsForSystem, essencesForSystem);
+    }
+
+    async getAllById(recipeIds: string[]): Promise<Map<string, Recipe | undefined>> {
+        const recipes = await Promise.all(recipeIds.map(async id => {
+            return {
+                id,
+                recipe: await this.getById(id)
+            }
+        }));
+        return new Map(recipes.map(recipeData => [ recipeData.id, recipeData.recipe ]));
     }
 
     async cloneById(recipeId: string): Promise<Recipe> {
@@ -400,6 +415,10 @@ class DefaultRecipeApi implements RecipeApi {
         return recipes;
     }
 
+    async deleteByCraftingSystemId(craftingSystemId: string): Promise<Recipe[]> {
+        return Promise.resolve([]);
+    }
+
     private getUniqueComponentIds(recipes: RecipeJson[]) {
         return recipes.flatMap(recipe => {
             const requirementComponentIds = Object.values(recipe.ingredientOptions)
@@ -431,7 +450,7 @@ class DefaultRecipeApi implements RecipeApi {
     }
 
     private async buildRecipe(recipeJson: RecipeJson, componentsForSystem: Map<string, Component>, essencesForSystem: Map<string, Essence>): Promise<Recipe> {
-        const itemData = await this.documentManager.getDocumentByUuid(recipeJson.itemUuid);
+        const itemData = await this.documentManager.prepareItemDataByDocumentUuid(recipeJson.itemUuid);
         const { id, craftingSystemId, disabled } = recipeJson;
         return new Recipe({
             id,
@@ -440,7 +459,7 @@ class DefaultRecipeApi implements RecipeApi {
             disabled,
             ingredientOptions: this.buildIngredientOptions(recipeJson.ingredientOptions, componentsForSystem),
             resultOptions: this.buildResultOptions(recipeJson.resultOptions, componentsForSystem),
-            essences: combinationFromRecord(recipeJson.essences, essencesForSystem)
+            essences: Combination.fromRecord(recipeJson.essences, essencesForSystem)
         });
     }
 
@@ -463,15 +482,15 @@ class DefaultRecipeApi implements RecipeApi {
     private buildIngredientOption(name: string, ingredientOptionJson: RequirementOptionJson, allComponents: Map<string, Component>): RequirementOption {
         return new RequirementOption({
             name,
-            catalysts: combinationFromRecord(ingredientOptionJson.catalysts, allComponents),
-            ingredients: combinationFromRecord(ingredientOptionJson.ingredients, allComponents)
+            catalysts: Combination.fromRecord(ingredientOptionJson.catalysts, allComponents),
+            ingredients: Combination.fromRecord(ingredientOptionJson.ingredients, allComponents)
         });
     }
 
     private buildResultOption(name: string, resultOptionJson: ResultOptionJson, allComponents: Map<string, Component>): ResultOption {
         return new ResultOption({
             name,
-            results: combinationFromRecord(resultOptionJson, allComponents)
+            results: Combination.fromRecord(resultOptionJson, allComponents)
         });
     }
 
@@ -484,16 +503,18 @@ class DefaultRecipeApi implements RecipeApi {
         return collectionDictionary;
     }
 
-    private async rejectSavingInvalidRecipe(recipe: Recipe) {
+    private async rejectSavingInvalidRecipe(recipe: Recipe): Promise<EntityValidationResult<Recipe>> {
         const validationResult = await this.recipeValidator.validate(recipe);
-        if (!validationResult.isSuccessful) {
-            const message = this.localizationService.format(
-                `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.notValid`,
-                { errors: validationResult.errors.join(", ") }
-            );
-            this.notificationService.error(message);
-            throw new Error(message);
+        if (validationResult.isSuccessful) {
+            return validationResult;
         }
+        const message = this.localizationService.format(
+            `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.notValid`,
+            { errors: validationResult.errors.join(", ") }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
+
     }
 }
 

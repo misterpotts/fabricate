@@ -86,7 +86,7 @@ class DropEventParser {
                 ui.notifications.warn(message);
                 return new DropData({});
             }
-            const itemData = await this._documentManager.getDocumentByUuid(dropData.uuid);
+            const itemData = await this._documentManager.loadItemDataByDocumentUuid(dropData.uuid);
             if (this._strict && ! this._allowedCraftingComponentsByItemUuid.has(itemData.uuid)) {
                 const message = this._localizationService.format(
                     `${Properties.module.id}.DropEventParser.errors.unrecognisedComponent`,

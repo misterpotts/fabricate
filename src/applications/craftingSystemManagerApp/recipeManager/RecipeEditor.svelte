@@ -272,7 +272,7 @@
                             <div class="fab-row">
                                 <h3>{localization.localize(`${localizationPath}.recipe.labels.requirementsHeading`)}</h3>
                             </div>
-                            {#if $selectedRecipe.hasIngredients}
+                            {#if $selectedRecipe.hasRequirements}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
                                     <TabList>
                                         {#each $selectedRecipe.ingredientOptions as ingredientOption}

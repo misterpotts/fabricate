@@ -5,9 +5,11 @@ import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./Tes
 import Properties from "../../src/scripts/Properties";
 import {SelectableOptions} from "../../src/scripts/crafting/recipe/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
+import {testCraftingSystem} from "./TestCrafingSystem";
 
 const testComponentOne: Component = new Component({
     id: "iyeUGBbSts0ij92X",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Component One",
         imageUrl: Properties.ui.defaults.itemImageUrl,
@@ -19,6 +21,7 @@ const testComponentOne: Component = new Component({
 
 const testComponentTwo: Component = new Component({
     id: "Ie7NoXMja9wI6xya",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Component Two",
         itemUuid: "Compendium.module.compendium-name.Ie7NoXMja9wI6xya",
@@ -30,6 +33,7 @@ const testComponentTwo: Component = new Component({
 
 const testComponentThree: Component = new Component({
     id: "tdyV4AWuTMkXbepw",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.tdyV4AWuTMkXbepw",
         name: "Test Component Three",
@@ -41,6 +45,7 @@ const testComponentThree: Component = new Component({
 
 const testComponentFour: Component = new Component({
     id: "Ra2Z1ujre76weR0i",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Component Four",
         itemUuid: "Compendium.module.compendium-name.Ra2Z1ujre76weR0i",
@@ -60,6 +65,7 @@ const testComponentFour: Component = new Component({
 
 const testComponentFive: Component = new Component({
     id:"74K6TAuSg2xzd209",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.74K6TAuSg2xzd209",
         name: "Test Component Five",
@@ -85,6 +91,7 @@ const testComponentFive: Component = new Component({
 
 const testComponentSix: Component = new Component({
     id: "rgTv21iOSwjK1882",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Component Six",
         itemUuid: "Compendium.module.compendium-name.rgTv21iOSwjK1882",
@@ -96,6 +103,7 @@ const testComponentSix: Component = new Component({
 
 const testComponentSeven: Component = new Component({
     id: "u9jwSlvIUhlQiEe1",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Component Seven",
         itemUuid: "Compendium.module.compendium-name.u9jwSlvIUhlQiEe1",

@@ -10,11 +10,11 @@ import {
 import {DocumentManager, FabricateItemData, NoFabricateItemData} from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {ComponentDictionary} from "./ComponentDictionary";
-import {combinationFromRecord} from "./DictionaryUtils";
 import {Component} from "../crafting/component/Component";
 import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
 import {Essence} from "../crafting/essence/Essence";
 import Properties from "../Properties";
+import {Combination} from "../common/Combination";
 
 export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     private _sourceData: Record<string, RecipeJson>;
@@ -121,7 +121,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
         await this.loadDependencies();
         const itemUuids = Object.values(this._sourceData)
             .map(data => data.itemUuid);
-        const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
+        const cachedItemDataByUUid = await this._documentManager.loadItemDataForDocumentsByUuid(itemUuids);
         this._entriesById.clear();
         this._entriesByItemUuid.clear();
         const recipes = await Promise.all(Object.keys(this._sourceData)
@@ -138,7 +138,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
                 This can occur if a recipe is loaded before it is saved or an invalid ID is passed.`);
         }
         const itemUuid = sourceRecord.itemUuid;
-        const itemData = itemDataCache.has(itemUuid) ? itemDataCache.get(itemUuid) : await this._documentManager.getDocumentByUuid(itemUuid);
+        const itemData = itemDataCache.has(itemUuid) ? itemDataCache.get(itemUuid) : await this._documentManager.loadItemDataByDocumentUuid(itemUuid);
         await this.loadDependencies();
         return this.buildRecipe(id, sourceRecord, itemData);
     }
@@ -150,7 +150,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
             disabled: sourceRecord.disabled,
             ingredientOptions: this.buildIngredientOptions(sourceRecord.ingredientOptions, this._componentDictionary.getAll()),
             resultOptions: this.buildResultOptions(sourceRecord.resultOptions, this._componentDictionary.getAll()),
-            essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll())
+            essences: Combination.fromRecord(sourceRecord.essences, this._essenceDictionary.getAll())
         });
     }
 
@@ -173,15 +173,15 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     private buildIngredientOption(name: string, ingredientOptionJson: RequirementOptionJson, allComponents: Map<string, Component>): RequirementOption {
         return new RequirementOption({
             name,
-            catalysts: combinationFromRecord(ingredientOptionJson.catalysts, allComponents),
-            ingredients: combinationFromRecord(ingredientOptionJson.ingredients, allComponents)
+            catalysts: Combination.fromRecord(ingredientOptionJson.catalysts, allComponents),
+            ingredients: Combination.fromRecord(ingredientOptionJson.ingredients, allComponents)
         });
     }
 
     private buildResultOption(name: string, resultOptionJson: ResultOptionJson, allComponents: Map<string, Component>): ResultOption {
         return new ResultOption({
             name,
-            results: combinationFromRecord(resultOptionJson, allComponents)
+            results: Combination.fromRecord(resultOptionJson, allComponents)
         });
     }
 
@@ -248,7 +248,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     }
 
     async create(recipeJson: RecipeJson): Promise<Recipe> {
-        const itemData = await this._documentManager.getDocumentByUuid(recipeJson.itemUuid);
+        const itemData = await this._documentManager.loadItemDataByDocumentUuid(recipeJson.itemUuid);
         if (itemData.hasErrors) {
             throw new Error(`Could not load document with UUID "${recipeJson.itemUuid}". Errors ${itemData.errors.join(", ")} `);
         }
@@ -269,7 +269,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
             throw new Error(`Unable to mutate recipe with ID ${id}. It doesn't exist.`);
         }
         const target = this._entriesById.get(id);
-        const itemData = target.itemUuid === mutation.itemUuid ? target.itemData : await this._documentManager.getDocumentByUuid(mutation.itemUuid);
+        const itemData = target.itemUuid === mutation.itemUuid ? target.itemData : await this._documentManager.loadItemDataByDocumentUuid(mutation.itemUuid);
         if (itemData.hasErrors) {
             throw new Error(`Could not load document with UUID "${mutation.itemUuid}". Errors ${itemData.errors.join(", ")} `);
         }

@@ -40,7 +40,7 @@ class RecipeSearchStore {
             if (searchTerms.requiresEssences && !recipe.requiresEssences) {
                 return false;
             }
-            if (searchTerms.requiresNamedIngredients && !recipe.hasIngredients) {
+            if (searchTerms.requiresNamedIngredients && !recipe.hasRequirements) {
                 return false;
             }
             if (!searchTerms.name) {

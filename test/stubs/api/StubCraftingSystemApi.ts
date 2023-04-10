@@ -2,20 +2,28 @@ import {CraftingSystemApi} from "../../../src/scripts/api/CraftingSystemApi";
 import {CraftingSystem, UserDefinedCraftingSystem} from "../../../src/scripts/system/CraftingSystem";
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
 import {CraftingSystemDetails} from "../../../src/scripts/system/CraftingSystemDetails";
+import {StubIdentityFactory} from "../foundry/StubIdentityFactory";
 
 class StubCraftingSystemApi implements CraftingSystemApi {
 
-    private readonly _identityFactory: IdentityFactory;
-    private readonly _notifications: NotificationService;
+    private readonly identityFactory: IdentityFactory;
 
-    constructor({ identityFactory, notifications }: { identityFactory: IdentityFactory; notifications: NotificationService }) {
-        this._identityFactory = identityFactory;
-        this._notifications = notifications;
+    private readonly valuesById: Map<string, CraftingSystem>;
+
+    constructor({
+        identityFactory = new StubIdentityFactory(),
+        valuesById = new Map()
+    }: {
+        identityFactory?: IdentityFactory;
+        valuesById?: Map<string, CraftingSystem>
+    }) {
+        this.identityFactory = identityFactory;
+        this.valuesById = valuesById;
     }
 
     async create(): Promise<CraftingSystem> {
         return new UserDefinedCraftingSystem({
-            id: this._identityFactory.make(),
+            id: this.identityFactory.make(),
             craftingSystemDetails: new CraftingSystemDetails({
                 name: "Crafting system name",
                 summary: "Crafting system summary",
@@ -27,23 +35,26 @@ class StubCraftingSystemApi implements CraftingSystemApi {
     }
 
     get notifications(): NotificationService {
-        return this._notifications;
+        throw new Error("This is a stub. Stubs do not provide user interface notifications. ");
     }
 
-    deleteById(id: string): Promise<CraftingSystem | undefined> {
-        return Promise.resolve(undefined);
+    async deleteById(id: string): Promise<CraftingSystem | undefined> {
+        const value = await this.getById(id);;
+        this.valuesById.delete(id);
+        return value;
     }
 
-    getAll(): Promise<Map<string, CraftingSystem>> {
-        return Promise.resolve(undefined);
+    async getAll(): Promise<Map<string, CraftingSystem>> {
+        return new Map(this.valuesById);
     }
 
-    getById(id: string): Promise<CraftingSystem | undefined> {
-        return Promise.resolve(undefined);
+    async getById(id: string): Promise<CraftingSystem | undefined> {
+        return this.valuesById.get(id);
     }
 
-    save(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
-        return Promise.resolve(undefined);
+    async save(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
+        this.valuesById.set(craftingSystem.id, craftingSystem);
+        return craftingSystem;
     }
 
 }

@@ -71,6 +71,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     private static readonly _NONE: Component = new Component({
         id: "NO_ID",
+        craftingSystemId: "NO_CRAFTING_SYSTEM_ID",
         itemData: NoFabricateItemData.INSTANCE(),
         disabled: true,
         essences: Combination.EMPTY(),
@@ -82,21 +83,25 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     private _essences: Combination<Essence>;
     private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
     private _isDisabled: boolean;
+    private _craftingSystemId: string;
 
     constructor({
         id,
+        craftingSystemId,
         itemData = NoFabricateItemData.INSTANCE(),
         disabled = false,
         essences = Combination.EMPTY<Essence>(),
         salvageOptions = new SelectableOptions({})
     }: {
         id: string;
+        craftingSystemId: string;
         itemData?: FabricateItemData;
         disabled?: boolean;
         essences?: Combination<Essence>;
         salvageOptions?: SelectableOptions<SalvageOptionJson, SalvageOption>;
     }) {
         this._id = id;
+        this._craftingSystemId = craftingSystemId;
         this._itemData = itemData;
         this._isDisabled = disabled;
         this._essences = essences;
@@ -113,6 +118,10 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     get id(): string {
         return this._id;
+    }
+
+    get craftingSystemId(): string {
+        return this._craftingSystemId;
     }
 
     get itemUuid(): string {
@@ -184,6 +193,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     public clone(cloneId: string): Component {
         return new Component({
             id: cloneId,
+            craftingSystemId: this._craftingSystemId,
             itemData: NoFabricateItemData.INSTANCE(),
             salvageOptions: this._salvageOptions.clone(),
             disabled: this._isDisabled,

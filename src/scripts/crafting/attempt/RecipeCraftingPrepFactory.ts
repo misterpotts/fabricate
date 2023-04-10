@@ -20,7 +20,7 @@ class RecipeCraftingPrepFactory {
 
     make(recipe: Recipe, availableComponents: Combination<Component>): RecipeCraftingPrep {
 
-        if (!recipe.hasIngredients) {
+        if (!recipe.hasRequirements) {
             const componentSelection = this._selectionStrategy.perform(Combination.EMPTY(), Combination.EMPTY(), recipe.essences, availableComponents);
             const singletonCraftingAttempt = new DefaultCraftingAttempt({
                 componentSelection,

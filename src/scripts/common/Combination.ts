@@ -103,6 +103,20 @@ class Combination<T extends Identifiable> {
         return new Combination(amounts);
     }
 
+    public static fromRecord<T extends Identifiable>(amounts: Record<string, number>, candidatesById: Map<string, T>): Combination<T> {
+        if (!amounts) {
+            return Combination.EMPTY();
+        }
+        return Object.keys(amounts)
+            .map(id => {
+                if (!candidatesById.has(id)) {
+                    throw new Error(`Unable to resolve ID ${id}. `);
+                }
+                return Combination.of(candidatesById.get(id), amounts[id]);
+            })
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY());
+    }
+
     public static of<T extends Identifiable>(member: T, quantity: number): Combination<T> {
         const unit: Unit<T> = new Unit<T>(member, quantity);
         return Combination.ofUnit(unit);

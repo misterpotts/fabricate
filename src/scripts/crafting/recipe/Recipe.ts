@@ -302,7 +302,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         throw new Error("You must select a result group. ");
     }
 
-    public get hasIngredients() {
+    public get hasRequirements() {
         return !this._requirementOptions.isEmpty;
     }
 
@@ -314,7 +314,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return !this._essences || !this._essences.isEmpty();
     }
     
-    public selectIngredientOption(optionName: string) {
+    public selectRequirementOption(optionName: string) {
         return this._requirementOptions.select(optionName);
     }
 
@@ -322,18 +322,18 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._resultOptions.select(optionName);
     }
 
-    get selectedIngredientOptionName(): string {
+    get selectedRequirementOptionName(): string {
         return this._requirementOptions.selectedOptionId;
     }
 
     public selectNextIngredientOption(): string {
         this._requirementOptions.selectNext();
-        return this.selectedIngredientOptionName;
+        return this.selectedRequirementOptionName;
     }
 
     public selectPreviousIngredientOption(): string {
         this._requirementOptions.selectPrevious();
-        return this.selectedIngredientOptionName;
+        return this.selectedRequirementOptionName;
     }
 
     get selectedResultOptionName(): string {
@@ -366,7 +366,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     public makeDefaultSelections() {
         if (!this._requirementOptions.isEmpty) {
-            this.selectIngredientOption(this.ingredientOptions[0].name);
+            this.selectRequirementOption(this.ingredientOptions[0].name);
         }
         if (!this._resultOptions.isEmpty) {
             this.selectResultOption(this.resultOptions[0].name);
@@ -483,6 +483,15 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             }, Combination.EMPTY<Component>());
         return componentFromRequirements.combineWith(componentsFromResults).members;
     }
+
+    async load() {
+        this.itemData = await this.itemData.load();
+    }
+
+    get isLoaded(): boolean {
+        return this.itemData.isLoaded;
+    }
+
 }
 
 export { Recipe, RecipeJson, ResultOptionJson, ResultOption, RequirementOptionJson, RequirementOption }

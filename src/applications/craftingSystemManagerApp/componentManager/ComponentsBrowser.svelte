@@ -77,7 +77,7 @@
     }
 
     async function openItemSheet(component) {
-        const document = await new DefaultDocumentManager().getDocumentByUuid(component.itemUuid);
+        const document = await new DefaultDocumentManager().loadItemDataByDocumentUuid(component.itemUuid);
         await document.sourceDocument.sheet.render(true);
     }
 

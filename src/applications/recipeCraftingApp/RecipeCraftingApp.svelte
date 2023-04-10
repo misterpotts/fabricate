@@ -24,7 +24,7 @@
     const craftingPrepFactory = new RecipeCraftingPrepFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
     let craftingPrep;
     let craftingAttempt;
-    let selectedIngredientOptionName;
+    let selectedRequirementOptionName;
 
     function resetSelections() {
         recipe.makeDefaultSelections();
@@ -122,19 +122,19 @@
     async function reIndex() {
         await inventory.index();
         craftingPrep = craftingPrepFactory.make(recipe, inventory.ownedComponents);
-        craftingAttempt = craftingPrep.isSingleton ? craftingPrep.getSingletonCraftingAttempt() : craftingPrep.getCraftingAttemptByIngredientOptionName(recipe.selectedIngredientOptionName);
-        selectedIngredientOptionName = recipe.selectedIngredientOptionName;
+        craftingAttempt = craftingPrep.isSingleton ? craftingPrep.getSingletonCraftingAttempt() : craftingPrep.getCraftingAttemptByIngredientOptionName(recipe.selectedRequirementOptionName);
+        selectedRequirementOptionName = recipe.selectedRequirementOptionName;
         loaded = true;
     }
 
     function selectNextIngredientOption() {
-        selectedIngredientOptionName = recipe.selectNextIngredientOption();
-        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedIngredientOptionName);
+        selectedRequirementOptionName = recipe.selectNextIngredientOption();
+        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedRequirementOptionName);
     }
 
     function selectPreviousIngredientOption() {
-        selectedIngredientOptionName = recipe.selectPreviousIngredientOption();
-        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedIngredientOptionName);
+        selectedRequirementOptionName = recipe.selectPreviousIngredientOption();
+        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedRequirementOptionName);
     }
 
 </script>
@@ -154,7 +154,7 @@
                     {#if !craftingPrep.isSingleton}
                         <CraftingAttemptCarousel columns={3}
                                                  craftingAttempt={craftingAttempt}
-                                                 selectedIngredientOptionName={selectedIngredientOptionName}
+                                                 selectedRequirementOptionName={selectedRequirementOptionName}
                                                  on:nextIngredientOptionSelected={selectNextIngredientOption}
                                                  on:previousIngredientOptionSelected={selectPreviousIngredientOption} />
                     {:else}

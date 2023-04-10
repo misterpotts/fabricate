@@ -1,11 +1,13 @@
 import {Essence} from "../../src/scripts/crafting/essence/Essence";
+import {testCraftingSystem} from "./TestCrafingSystem";
 
 const elementalEarth = new Essence({
     description: "One of the four fundamental forces, Elemental Earth.",
     iconCode: "mountain",
     name: "Earth",
     tooltip: "Elemental Earth",
-    id: "earth"
+    id: "earth",
+    craftingSystemId: testCraftingSystem.id
 });
 
 const elementalWater = new Essence({
@@ -13,7 +15,8 @@ const elementalWater = new Essence({
     iconCode: "water",
     name: "Water",
     tooltip: "Elemental Water",
-    id: "water"
+    id: "water",
+    craftingSystemId: testCraftingSystem.id
 });
 
 const elementalAir = new Essence({
@@ -21,7 +24,8 @@ const elementalAir = new Essence({
     iconCode: "air",
     name: "Air",
     tooltip: "Elemental Air",
-    id: "air"
+    id: "air",
+    craftingSystemId: testCraftingSystem.id
 });
 
 const elementalFire = new Essence({
@@ -29,7 +33,8 @@ const elementalFire = new Essence({
     iconCode: "fire",
     name: "Fire",
     tooltip: "Elemental Fire",
-    id: "fire"
+    id: "fire",
+    craftingSystemId: testCraftingSystem.id
 });
 
 export { elementalEarth, elementalWater, elementalAir, elementalFire }

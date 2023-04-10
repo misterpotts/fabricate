@@ -2,125 +2,159 @@ import {
     DocumentManager,
     FabricateItemData,
     ItemNotFoundError,
-    LoadedFabricateItemData
+    LoadedFabricateItemData, PendingFabricateItemData
 } from "../../src/scripts/foundry/DocumentManager";
 import {Component, ComponentJson} from "../../src/scripts/crafting/component/Component";
 import {Recipe, RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";
 
 class StubDocumentManager implements DocumentManager {
 
-    private readonly _permissive: boolean;
-    private static readonly _defaultItemData: FabricateItemData = new LoadedFabricateItemData({
-        name: "Item name",
-        imageUrl: "path/to/image/webp",
-        itemUuid: "NOT_A_UUID",
-        sourceDocument: {
-            effects: []
-        }
-    });
+    private static DEFAULT_ITEM_DATA(uuid: string): FabricateItemData {
+        return new LoadedFabricateItemData({
+            name: "Item name",
+            imageUrl: "path/to/image/webp",
+            itemUuid: uuid,
+            sourceDocument: {
+                effects: []
+            }
+        });
+    }
 
-    private readonly _itemDataByUuid: Map<string, FabricateItemData>;
-    private readonly _poisonIds: string[] = [];
+    private itemDataByUuid: Map<string, FabricateItemData>;
+    private poisonIds: string[] = [];
+    private allowUnknownIds: boolean;
+    private cachedState: {
+        itemDataByUuid: Map<string, FabricateItemData>;
+        poisonIds: string[];
+        allowUnknownIds: boolean;
+    };
 
-    constructor(itemDataByUuid: Map<string, FabricateItemData> = new Map(), permissive = true) {
-        this._itemDataByUuid = itemDataByUuid;
-        this._permissive = permissive;
+    constructor({
+        itemDataByUuid = new Map(),
+        allowUnknownIds = false,
+        poisonIds = []
+    }: {
+        itemDataByUuid?: Map<string, FabricateItemData>;
+        allowUnknownIds?: boolean;
+        poisonIds?: string[];
+    } = {}) {
+        this.itemDataByUuid = itemDataByUuid;
+        this.allowUnknownIds = allowUnknownIds;
+        this.poisonIds = poisonIds;
+        this.cachedState = {
+            itemDataByUuid,
+            poisonIds,
+            allowUnknownIds
+        };
     }
 
     public static forParts({
-       craftingComponents = [],
+       components = [],
        recipes = []
-   }: {
-        craftingComponents?: Component[];
+    }: {
+        components?: Component[];
         recipes?: Recipe[]
     }): StubDocumentManager {
-        const itemData = new Map<string, FabricateItemData>();
-        this.ingest((component: Component) => {
+        const result = new StubDocumentManager();
+        result.ingest((component: Component) => {
             return new LoadedFabricateItemData({
                 itemUuid: component.itemUuid,
                 name: component.name,
                 imageUrl: component.imageUrl,
                 sourceDocument: component
             });
-        }, craftingComponents, itemData);
-        this.ingest((recipe: Recipe) => {
+        }, components);
+        result.ingest((recipe: Recipe) => {
             return new LoadedFabricateItemData({
                 itemUuid: recipe.itemUuid,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,
                 sourceDocument: recipe
             });
-        }, recipes, itemData);
-        return new StubDocumentManager(itemData);
+        }, recipes);
+        return result;
     }
 
     public static forPartDefinitions({
-       craftingComponentsJson = [],
+       componentsJson = [],
        recipesJson = []
     }: {
-        craftingComponentsJson?: ComponentJson[];
+        componentsJson?: ComponentJson[];
         recipesJson?: RecipeJson[]
     }): StubDocumentManager {
-        const itemData = new Map<string, FabricateItemData>();
+        const result = new StubDocumentManager();
         const notLoaded = "NOT_LOADED";
-        this.ingest((componentJson: ComponentJson) => {
+        result.ingest((componentJson: ComponentJson) => {
             return new LoadedFabricateItemData({
                 itemUuid: componentJson.itemUuid,
                 name: notLoaded,
                 imageUrl: notLoaded,
                 sourceDocument: componentJson
             });
-        }, craftingComponentsJson, itemData);
-        this.ingest((recipeJson: RecipeJson) => {
+        }, componentsJson);
+        result.ingest((recipeJson: RecipeJson) => {
             return new LoadedFabricateItemData({
                 itemUuid: recipeJson.itemUuid,
                 name: notLoaded,
                 imageUrl: notLoaded,
                 sourceDocument: recipeJson
             })
-        }, recipesJson, itemData);
-        return new StubDocumentManager(itemData);
+        }, recipesJson);
+        return result;
     }
 
-    private static ingest<T>(mappingFunction: (part: T) => FabricateItemData, parts: T[], target: Map<string, FabricateItemData>): void {
+    private ingest<T>(mappingFunction: (part: T) => FabricateItemData, parts: T[]): void {
         parts.map(part => mappingFunction(part))
-            .forEach(itemData => target.set(itemData.uuid, itemData));
+            .forEach(itemData => this.itemDataByUuid.set(itemData.uuid, itemData));
     }
 
-    public async getDocumentByUuid(id: string): Promise<any> {
-        if (this._poisonIds.includes(id)) {
-            throw new ItemNotFoundError(id);
+    public async loadItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData> {
+        if (this.poisonIds.includes(uuid)) {
+            throw new ItemNotFoundError(uuid);
         }
-        const result = this._itemDataByUuid.get(id);
-        if (!result && this._permissive) {
-            return StubDocumentManager._defaultItemData;
+        const result = this.itemDataByUuid.get(uuid);
+        if (!result && this.allowUnknownIds) {
+            return StubDocumentManager.DEFAULT_ITEM_DATA(uuid);
         } else if (!result) {
-            throw new ItemNotFoundError(id);
+            throw new ItemNotFoundError(uuid);
         } else {
             return result;
         }
     }
 
-    public async getDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>> {
-        const results = new Map<string, FabricateItemData>();
-        for (const id of ids) {
-            if (this._poisonIds.includes(id)) {
-                throw new ItemNotFoundError(id);
-            }
-            const result = this._itemDataByUuid.get(id);
-            if (!result && this._permissive) {
-                results.set(id, StubDocumentManager._defaultItemData);
-            } else if (!result) {
-                throw new ItemNotFoundError(id);
-            } else {
-                results.set(id, this._itemDataByUuid.get(id));
-            }
-        }
-        return results;
+    public async loadItemDataForDocumentsByUuid(uuids: string[]): Promise<Map<string, FabricateItemData>> {
+        const itemData = await Promise.all(uuids.map(uuid => this.loadItemDataByDocumentUuid(uuid)));
+        return new Map(itemData.map(data => [data.uuid, data]));
     }
 
-    poison(id: string) {
-        this._poisonIds.push(id);
+    poison(poisonId: string): void {
+        this.poisonIds.push(poisonId);
+    }
+
+    cure(cureId: string): void {
+        this.poisonIds = this.poisonIds.filter(poisonId => poisonId !== cureId);
+    }
+
+    public setAllowUnknownIds(value: boolean): void {
+        this.allowUnknownIds = value;
+    }
+
+    public save(): void {
+        this.cachedState = {
+            itemDataByUuid: this.itemDataByUuid,
+            poisonIds: this.poisonIds,
+            allowUnknownIds: this.allowUnknownIds
+        }
+    }
+
+    public reset(): void {
+        this.itemDataByUuid = this.cachedState.itemDataByUuid;
+        this.poisonIds = this.cachedState.poisonIds;
+        this.allowUnknownIds = this.cachedState.allowUnknownIds;
+    }
+
+    async prepareItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData> {
+        return new PendingFabricateItemData(uuid, () => this.loadItemDataByDocumentUuid(uuid))
     }
 
 }

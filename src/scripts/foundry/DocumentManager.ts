@@ -59,15 +59,80 @@ interface FabricateItemDataJson {
     uuid?: string;
 }
 
+/**
+ * Fabricate Item Data abstracts away the document loading process, detects and describes loading errors, as well as
+ * providing a reduced document data model that Fabricate uses to render parts in the Foundry UI.
+ *
+ * @interface
+ */
 interface FabricateItemData {
+
+    /**
+     * The UUID of the item.
+     *
+     * @type {string}
+     */
     uuid: string;
+
+    /**
+     * The name of the item. Accessing this property before the item has been loaded will produce an error.
+     *
+     * @type {string}
+     */
     name: string;
+
+    /**
+     * The item's image URL. Accessing this property before the item has been loaded will produce an error.
+     *
+     * @type {string}
+     */
     imageUrl: string;
+
+    /**
+     * The source document for the item. Accessing this property before the item has been loaded will produce an error.
+     *
+     * @type {any}
+     */
     sourceDocument: any;
+
+    /**
+     * An array of item loading errors. Will be empty if no errors occurred when loading the item, or if it has not been
+     * loaded yet.
+     *
+     * @type {ItemLoadingError[]}
+     */
     errors: ItemLoadingError[];
+
+    /**
+     * A convenience function that indicates whether the item has loading errors or not. Checks the length of `errors`
+     * is zero.
+     *
+     * @type {boolean}
+     */
     hasErrors: boolean;
-    loaded: boolean;
+
+    /**
+     * Indicates whether the item is loaded or not.
+     *
+     * @type {boolean}
+     */
+    isLoaded: boolean;
+
+    /**
+     * Converts the item data to its JSON representation.
+     *
+     * @returns {FabricateItemDataJson} - The JSON representation of the item data.
+     */
     toJson(): FabricateItemDataJson;
+
+    /**
+     * Loads the item data asynchronously. If no Item UUID has been set this method will produce an error.
+     *
+     * @async
+     * @returns {Promise<void>} - A promise that resolves when the item data has been loaded.
+     */
+    load(): Promise<FabricateItemData>;
+
 }
 
 class NoFabricateItemData implements FabricateItemData {
@@ -75,7 +140,7 @@ class NoFabricateItemData implements FabricateItemData {
     private static readonly _INSTANCE = new NoFabricateItemData();
     private static readonly _UUID = "NO_ITEM_UUID";
     private static readonly _NAME = "No Item Configured";
-    private static readonly _ERRORS = [new ItemNotConfiguredError()];
+    private static readonly _ERRORS = [ new ItemNotConfiguredError() ];
     private static readonly _IMAGE_URL = Properties.ui.defaults.noItemImageUrl;
 
     public static INSTANCE(): NoFabricateItemData {
@@ -86,7 +151,7 @@ class NoFabricateItemData implements FabricateItemData {
         return NoFabricateItemData._UUID;
     }
 
-    get loaded(): boolean {
+    get isLoaded(): boolean {
         return false;
     }
 
@@ -118,14 +183,20 @@ class NoFabricateItemData implements FabricateItemData {
         return { uuid: null };
     }
 
+    load(): Promise<FabricateItemData> {
+        throw new Error("An attempt was made to load item data for a part with no item UUID set. ");
+    }
+
 }
 
 class PendingFabricateItemData implements FabricateItemData {
 
     private readonly _itemUuid: string;
+    private readonly _cachedLoadingFunction: CachedLoadingFunction;
 
-    constructor(itemUuid?: string) {
+    constructor(itemUuid: string, cachedLoadingFunction: CachedLoadingFunction) {
         this._itemUuid = itemUuid;
+        this._cachedLoadingFunction = cachedLoadingFunction;
     }
 
     get errors(): ItemLoadingError[] {
@@ -137,19 +208,22 @@ class PendingFabricateItemData implements FabricateItemData {
     }
 
     get imageUrl(): string {
-        return null;
+        throw new Error("Cannot get the item image URL before the item has been loaded. " +
+            "Call the part's `load()` method before accessing this field. ");
     }
 
-    get loaded(): boolean {
+    get isLoaded(): boolean {
         return false;
     }
 
     get name(): string {
-        return null;
+        throw new Error("Cannot get the item name before the item has been loaded. " +
+            "Call the part's `load()` method before accessing this field. ");
     }
 
     get sourceDocument(): any {
-        return null;
+        throw new Error("Cannot get the item source document before the item has been loaded. " +
+            "Call the part's `load()` method before accessing this field. ");
     }
 
     get uuid(): string {
@@ -157,13 +231,17 @@ class PendingFabricateItemData implements FabricateItemData {
     }
 
     toJson(): FabricateItemDataJson {
-        console.warn("Serialising pending item data. The item UUID has not been checked and may not be valid. ");
         return { uuid: this._itemUuid };
+    }
+
+    load(): Promise<FabricateItemData> {
+        return this._cachedLoadingFunction(this._itemUuid);
     }
 
 }
 
 class LoadedFabricateItemData implements FabricateItemData {
+
     private readonly _errors: ItemLoadingError[];
     private readonly _itemUuid: string;
     private readonly _name: string;
@@ -190,7 +268,7 @@ class LoadedFabricateItemData implements FabricateItemData {
         this._sourceDocument = sourceDocument;
     }
 
-    get loaded(): boolean {
+    get isLoaded(): boolean {
         return !this.hasErrors && !!this.sourceDocument;
     }
 
@@ -222,6 +300,10 @@ class LoadedFabricateItemData implements FabricateItemData {
         return { uuid: this._itemUuid };
     }
 
+    async load(): Promise<FabricateItemData> {
+        return this;
+    }
+
 }
 
 class BrokenFabricateItemData implements FabricateItemData {
@@ -240,7 +322,7 @@ class BrokenFabricateItemData implements FabricateItemData {
         this._itemUuid = itemUuid;
     }
 
-    get loaded(): boolean {
+    get isLoaded(): boolean {
         return false;
     }
 
@@ -272,35 +354,50 @@ class BrokenFabricateItemData implements FabricateItemData {
         return { uuid: this._itemUuid };
     }
 
+    load(): Promise<FabricateItemData> {
+        throw new Error("Cannot load item data for this part. There are problems with the item document.");
+    }
+
 }
+
+type CachedLoadingFunction = (uuid: string) => Promise<FabricateItemData>;
 
 interface DocumentManager {
 
-    getDocumentByUuid(id: string): Promise<FabricateItemData>;
+    loadItemDataByDocumentUuid(id: string): Promise<FabricateItemData>;
 
-    getDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>>;
+    loadItemDataForDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>>;
+
+    prepareItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData>;
 
 }
 
 class DefaultDocumentManager implements DocumentManager {
 
-    public async getDocumentByUuid(id: string): Promise<FabricateItemData> {
-        if (!id || id === NoFabricateItemData.UUID()) {
+    public async loadItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData> {
+        if (!uuid || uuid === NoFabricateItemData.UUID()) {
             return new NoFabricateItemData();
         }
-        const document = await fromUuid(id);
+        const document = await fromUuid(uuid);
         if (document) {
             return this.formatItemData(document);
         } else {
             return new BrokenFabricateItemData({
-                itemUuid: id,
-                errors: [new ItemNotFoundError(id)]
+                itemUuid: uuid,
+                errors: [new ItemNotFoundError(uuid)]
             });
         }
     }
 
-    public async getDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>> {
-        const itemData = await Promise.all(ids.map(id => this.getDocumentByUuid(id).catch(e => e)));
+    async prepareItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData> {
+        if (!uuid || uuid === NoFabricateItemData.UUID()) {
+            return new NoFabricateItemData();
+        }
+        return new PendingFabricateItemData(uuid, (id: string) => this.loadItemDataByDocumentUuid(id));
+    }
+
+    public async loadItemDataForDocumentsByUuid(uuids: string[]): Promise<Map<string, FabricateItemData>> {
+        const itemData = await Promise.all(uuids.map(id => this.loadItemDataByDocumentUuid(id).catch(e => e)));
         return new Map(itemData.map(item => [item.uuid, item]));
     }
 

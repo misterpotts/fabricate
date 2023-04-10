@@ -18,6 +18,7 @@ import {
 } from "./TestRecipes";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import {StubDocumentManager} from "../stubs/StubDocumentManager";
+import {EssenceJson} from "../../src/scripts/crafting/essence/Essence";
 
 const components = {
     [testComponentOne.id]: testComponentOne,
@@ -44,7 +45,7 @@ const recipes = {
 const recipesJson = Array.from(Object.values(recipes))
     .map(recipe => recipe.toJson())
     .reduce((left: Record<string, RecipeJson>, right) => {
-        left[right.itemUuid] = right;
+        left[right.id] = right;
         return left;
     }, {});
 const essences = {
@@ -53,16 +54,22 @@ const essences = {
     [elementalWater.id]: elementalWater,
     [elementalAir.id]: elementalAir
 };
+const essencesJson = Array.from(Object.values(essences))
+    .map(essence => essence.toJson())
+    .reduce((left: Record<string, EssenceJson>, right) => {
+        left[right.id] = right;
+        return left;
+    }, {});
 
 const testPartDictionaryFactory = new PartDictionaryFactory({
     documentManager: StubDocumentManager.forParts({
-        craftingComponents: Array.from(Object.values(components)),
+        components: Array.from(Object.values(components)),
         recipes: Array.from(Object.values(recipes))
     }),
 });
 
 const testPartDictionary: PartDictionary = testPartDictionaryFactory.make({
-    essences,
+    essences: essencesJson,
     components: componentsJson,
     recipes: recipesJson
 });

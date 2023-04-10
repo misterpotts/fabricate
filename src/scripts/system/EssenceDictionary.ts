@@ -88,7 +88,7 @@ export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
         const itemUuids = Object.values(this._sourceData)
             .filter(data => !!data.activeEffectSourceItemUuid)
             .map(data => data.activeEffectSourceItemUuid);
-        const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
+        const cachedItemDataByUUid = await this._documentManager.loadItemDataForDocumentsByUuid(itemUuids);
         this._entries.clear();
         const essences = await Promise.all(Object.keys(this._sourceData).map(id => this.loadById(id, cachedItemDataByUUid)));
         essences.forEach(essence => this._entries.set(essence.id, essence));
@@ -109,7 +109,7 @@ export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
             if (itemDataCache.has(essence.activeEffectSource.uuid)) {
                 itemData = itemDataCache.get(essence.activeEffectSource.uuid);
             } else {
-                itemData = await this._documentManager.getDocumentByUuid(essence.activeEffectSource.uuid);
+                itemData = await this._documentManager.loadItemDataByDocumentUuid(essence.activeEffectSource.uuid);
             }
             essence.activeEffectSource = itemData;
         }
@@ -146,7 +146,7 @@ export class EssenceDictionary implements Dictionary<EssenceJson, Essence> {
         let essence: Essence;
         const essenceId = randomID();
         if (essenceJson.activeEffectSourceItemUuid) {
-            const itemData = await this._documentManager.getDocumentByUuid(essenceJson.activeEffectSourceItemUuid);
+            const itemData = await this._documentManager.loadItemDataByDocumentUuid(essenceJson.activeEffectSourceItemUuid);
             if (itemData.hasErrors) {
                 throw new Error(`Could not load document with UUID "${essenceJson.activeEffectSourceItemUuid}". Errors ${itemData.errors.join(", ")} `);
             }

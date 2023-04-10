@@ -6,10 +6,10 @@ import {
     NoFabricateItemData
 } from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
-import {combinationFromRecord} from "./DictionaryUtils";
 import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
 import {Essence} from "../crafting/essence/Essence";
 import Properties from "../Properties";
+import {Combination} from "../common/Combination";
 
 export class ComponentDictionary implements Dictionary<ComponentJson, Component> {
 
@@ -131,7 +131,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
         await this.loadDependencies();
         const itemUuids = Object.values(this._sourceData)
             .map(data => data.itemUuid);
-        const cachedItemDataByUUid = await this._documentManager.getDocumentsByUuid(itemUuids);
+        const cachedItemDataByUUid = await this._documentManager.loadItemDataForDocumentsByUuid(itemUuids);
         this._entriesById.clear();
         this._entriesByItemUuid.clear();
         // Loads all components _without_ loading salvage data
@@ -142,7 +142,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
             .map(data => new Component({
                 id: data.id,
                 itemData: cachedItemDataByUUid.get(data.json.itemUuid),
-                essences: combinationFromRecord(data.json.essences, this._essenceDictionary.getAll()),
+                essences: Combination.fromRecord(data.json.essences, this._essenceDictionary.getAll()),
                 disabled: data.json.disabled,
                 salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({})
             }))
@@ -168,7 +168,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
         }
         await this.loadDependencies();
         const itemUuid = sourceRecord.itemUuid;
-        const itemData = await this._documentManager.getDocumentByUuid(itemUuid);
+        const itemData = await this._documentManager.loadItemDataByDocumentUuid(itemUuid);
         return this.buildComponent(id, sourceRecord, itemData);
     }
 
@@ -178,7 +178,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
             itemData,
             disabled: sourceRecord.disabled,
             salvageOptions: this.buildSalvageOptions(sourceRecord.salvageOptions, this._entriesById),
-            essences: combinationFromRecord(sourceRecord.essences, this._essenceDictionary.getAll()),
+            essences: Combination.fromRecord(sourceRecord.essences, this._essenceDictionary.getAll()),
         });
     }
 
@@ -193,7 +193,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
     private buildSalvageOption(name: string, salvageOptionJson: SalvageOptionJson, allComponents: Map<string, Component>): SalvageOption {
         return new SalvageOption({
             name,
-            salvage: combinationFromRecord(salvageOptionJson, allComponents)
+            salvage: Combination.fromRecord(salvageOptionJson, allComponents)
         });
     }
 
@@ -234,7 +234,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
     }
 
     async create(craftingComponentJson: ComponentJson): Promise<Component> {
-        const itemData = await this._documentManager.getDocumentByUuid(craftingComponentJson.itemUuid);
+        const itemData = await this._documentManager.loadItemDataByDocumentUuid(craftingComponentJson.itemUuid);
         if (itemData.hasErrors) {
             throw new Error(`Could not load document with UUID "${craftingComponentJson.itemUuid}". Errors ${itemData.errors.join(", ")} `);
         }
@@ -255,7 +255,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
             throw new Error(`Unable to mutate component with ID ${id}. It doesn't exist.`);
         }
         const target = this._entriesById.get(id);
-        const itemData = target.itemUuid === mutation.itemUuid ? target.itemData : await this._documentManager.getDocumentByUuid(mutation.itemUuid);
+        const itemData = target.itemUuid === mutation.itemUuid ? target.itemData : await this._documentManager.loadItemDataByDocumentUuid(mutation.itemUuid);
         if (itemData.hasErrors) {
             throw new Error(`Could not load document with UUID "${mutation.itemUuid}". Errors ${itemData.errors.join(", ")} `);
         }

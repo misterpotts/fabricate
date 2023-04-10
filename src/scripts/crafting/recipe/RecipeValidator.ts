@@ -1,5 +1,4 @@
 import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../../api/EntityValidator";
-import {DocumentManager} from "../../foundry/DocumentManager";
 import {Recipe} from "./Recipe";
 import {CraftingSystemApi} from "../../api/CraftingSystemApi";
 import {EssenceApi} from "../../api/EssenceApi";
@@ -7,23 +6,19 @@ import {ComponentApi} from "../../api/ComponentApi";
 
 class RecipeValidator implements EntityValidator<Recipe> {
 
-    private readonly documentManager: DocumentManager;
     private readonly craftingSystemApi: CraftingSystemApi;
     private readonly componentApi: ComponentApi;
     private readonly essenceApi: EssenceApi;
 
     constructor({
-        documentManager,
         craftingSystemApi,
         componentApi,
         essenceApi
     }: {
-        documentManager: DocumentManager;
         craftingSystemApi: CraftingSystemApi;
         componentApi: ComponentApi;
         essenceApi: EssenceApi;
     }) {
-        this.documentManager = documentManager;
         this.craftingSystemApi = craftingSystemApi;
         this.componentApi = componentApi;
         this.essenceApi = essenceApi;
@@ -32,9 +27,12 @@ class RecipeValidator implements EntityValidator<Recipe> {
     async validate(candidate: Recipe): Promise<EntityValidationResult<Recipe>> {
         const errors: string[] = [];
 
-        const document = await this.documentManager.getDocumentByUuid(candidate.itemUuid);
-        if (!document) {
-            errors.push(`The item with UUID ${candidate.itemUuid} does not exist`);
+        if (!candidate.itemData.isLoaded) {
+            await candidate.load();
+            if (candidate.itemData.hasErrors) {
+                errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. 
+                    Caused by: ${candidate.errors.map(error => error.message).join(", ")} `)
+            }
         }
 
         const craftingSystem = await this.craftingSystemApi.getById(candidate.craftingSystemId);
@@ -66,7 +64,7 @@ class RecipeValidator implements EntityValidator<Recipe> {
             errors.push(`The components with the following IDs do not exist: ${undefinedComponents.map(undefinedComponent => undefinedComponent.id).join(", ")}`)
         }
 
-        candidate.ingredientOptions
+        candidate.requirementOptions
             .map(ingredientOption => ingredientOption.name)
             .map((ingredientOptionName, index, allIngredientOptionNames) => {
                 if (allIngredientOptionNames.indexOf(ingredientOptionName) !== index) {

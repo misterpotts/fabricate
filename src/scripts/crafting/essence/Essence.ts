@@ -13,6 +13,7 @@ interface EssenceJson {
 class Essence implements Identifiable, Serializable<EssenceJson> {
 
     private readonly _id: string;
+    private readonly _craftingSystemId: string;
     private _name: string;
     private _activeEffectSource: FabricateItemData;
     private _description: string;
@@ -21,6 +22,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     constructor({
         id,
+        craftingSystemId,
         name,
         tooltip,
         description,
@@ -28,6 +30,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         iconCode = Properties.ui.defaults.essenceIconCode
     }: {
         id: string;
+        craftingSystemId: string;
         name: string;
         tooltip: string;
         iconCode?: string;
@@ -35,6 +38,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         activeEffectSource?: FabricateItemData;
     }) {
         this._id = id;
+        this._craftingSystemId = craftingSystemId;
         this._name = name;
         this._tooltip = tooltip;
         this._iconCode = iconCode;
@@ -54,6 +58,10 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     get id(): string {
         return this._id;
+    }
+
+    get craftingSystemId(): string {
+        return this._craftingSystemId;
     }
 
     get hasActiveEffectSource(): boolean {

@@ -5,6 +5,7 @@ import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import {SelectableOptions} from "../../src/scripts/crafting/recipe/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 import Properties from "../../src/scripts/Properties";
+import {testCraftingSystem} from "./TestCrafingSystem";
 
 /**
 * Essences: None
@@ -14,6 +15,7 @@ import Properties from "../../src/scripts/Properties";
 * */
 const testRecipeOne: Recipe = new Recipe({
     id: "z2ixo2m312l",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Recipe One",
         itemUuid: "Compendium.module.compendium-name.z2ixo2m312l",
@@ -50,6 +52,7 @@ const testRecipeOne: Recipe = new Recipe({
 * */
 const testRecipeTwo: Recipe = new Recipe({
     id: "fzv66f90sd",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Recipe Two",
         itemUuid: "Compendium.module.compendium-name.fzv66f90sd",
@@ -83,6 +86,7 @@ const testRecipeTwo: Recipe = new Recipe({
 * */
 const testRecipeThree: Recipe = new Recipe({
     id: "5pux8ghlct",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Recipe Three",
         itemUuid: "Compendium.module.compendium-name.5pux8ghlct",
@@ -111,6 +115,7 @@ const testRecipeThree: Recipe = new Recipe({
 * */
 const testRecipeFour: Recipe = new Recipe({
     id: "3lieym2gjef",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Recipe Four",
         itemUuid: "Compendium.module.compendium-name.3lieym2gjef",
@@ -148,6 +153,7 @@ const testRecipeFour: Recipe = new Recipe({
 * */
 const testRecipeFive: Recipe = new Recipe({
     id: "fequ5qvoqh",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.fequ5qvoqh",
         name: "Test Recipe Five",
@@ -184,6 +190,7 @@ const testRecipeFive: Recipe = new Recipe({
 * */
 const testRecipeSix: Recipe = new Recipe({
     id: "bx8luu4cpd",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Recipe Six",
         itemUuid: "Compendium.module.compendium-name.bx8luu4cpd",
@@ -231,6 +238,7 @@ const testRecipeSix: Recipe = new Recipe({
 * */
 const testRecipeSeven: Recipe = new Recipe({
     id: "8kimdf8z83",
+    craftingSystemId: testCraftingSystem.id,
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.8kimdf8z83",
         name: "Test Recipe Seven",

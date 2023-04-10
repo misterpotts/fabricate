@@ -219,7 +219,7 @@ class RecipeManager {
     }
 
     public generateIngredientOptionName(recipe: Recipe) {
-        if (!recipe.hasIngredients) {
+        if (!recipe.hasRequirements) {
             return this._localization.format(`${Properties.module.id}.typeNames.recipe.ingredientOption.name`, { number: 1 });
         }
         const existingNames = recipe.ingredientOptions.map(ingredientOption => ingredientOption.name);
