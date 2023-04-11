@@ -1,6 +1,7 @@
-import {Combination, Unit} from "../common/Combination";
+import {Combination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
 import {Essence} from "../crafting/essence/Essence";
+import {Unit} from "../common/Unit";
 
 export class ComponentCombinationNode {
     private readonly _requiredEssences: Combination<Essence>;
@@ -23,7 +24,7 @@ export class ComponentCombinationNode {
         }
         this._children = this._remainingPicks.members.map((component: Component) => {
             const deltaUnit = new Unit(component, 1);
-            const childComponentCombination: Combination<Component> = this._componentCombination.add(deltaUnit);
+            const childComponentCombination: Combination<Component> = this._componentCombination.addUnit(deltaUnit);
             const remainingPicksForChild: Combination<Component> = this._remainingPicks.subtract(Combination.ofUnit(deltaUnit));
             return new ComponentCombinationNode(this._requiredEssences, childComponentCombination, remainingPicksForChild);
         });

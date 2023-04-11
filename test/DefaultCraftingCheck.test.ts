@@ -2,13 +2,14 @@ import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import * as Sinon from "sinon";
 
 import {DiceRoller, RollResult} from "../src/scripts/foundry/DiceRoller";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {DefaultCraftingCheck} from "../src/scripts/crafting/check/CraftingCheck";
 import {DefaultThresholdCalculator, ThresholdType} from "../src/scripts/crafting/check/Threshold";
 import {ContributionCounterFactory} from "../src/scripts/crafting/check/ContributionCounter";
 import {GameSystemRollModifierProvider} from "../src/scripts/crafting/check/GameSystemRollModifierProvider";
 import {Component} from "../src/scripts/crafting/component/Component";
 import {testComponentFour, testComponentTwo} from "./test_data/TestCraftingComponents";
+import {Unit} from "../src/scripts/common/Unit";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
 

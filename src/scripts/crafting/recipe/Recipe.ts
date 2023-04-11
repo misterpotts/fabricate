@@ -1,9 +1,11 @@
-import {Combination, Unit} from "../../common/Combination";
-import {Identifiable, Serializable} from "../../common/Identity";
+import {Combination} from "../../common/Combination";
+import {Identifiable} from "../../common/Identifiable";
 import {Component} from "../component/Component";
 import {Essence} from "../essence/Essence";
 import {SelectableOptions} from "./SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
+import {Unit} from "../../common/Unit";
+import {Serializable} from "../../common/Serializable";
 
 interface RecipeJson {
     itemUuid: string;
@@ -79,19 +81,19 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
     }
 
     public addCatalyst(component: Component, amount = 1) {
-        this._catalysts = this._catalysts.add(new Unit<Component>(component, amount));
+        this._catalysts = this._catalysts.addUnit(new Unit<Component>(component, amount));
     }
 
     public subtractCatalyst(component: Component, amount = 1) {
-        this._catalysts = this._catalysts.minus(new Unit<Component>(component, amount));
+        this._catalysts = this._catalysts.subtractUnit(new Unit<Component>(component, amount));
     }
 
     public addIngredient(component: Component, amount = 1) {
-        this._ingredients = this._ingredients.add(new Unit<Component>(component, amount));
+        this._ingredients = this._ingredients.addUnit(new Unit<Component>(component, amount));
     }
 
     public subtractIngredient(component: Component, amount = 1) {
-        this._ingredients = this._ingredients.minus(new Unit<Component>(component, amount));
+        this._ingredients = this._ingredients.subtractUnit(new Unit<Component>(component, amount));
     }
 
     public get isEmpty(): boolean {
@@ -148,11 +150,11 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
     }
 
     public add(component: Component, amount = 1) {
-        this._results = this._results.add(new Unit<Component>(component, amount));
+        this._results = this._results.addUnit(new Unit<Component>(component, amount));
     }
 
     public subtract(component: Component, amount = 1) {
-        this._results = this._results.minus(new Unit<Component>(component, amount));
+        this._results = this._results.subtractUnit(new Unit<Component>(component, amount));
     }
 
     toJson(): ResultOptionJson {

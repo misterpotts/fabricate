@@ -3,7 +3,7 @@
     import Properties from "../../../scripts/Properties.js";
     import {DropEventParser} from "../../common/DropEventParser";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
-    import {Combination, Unit} from "../../../scripts/common/Combination";
+    import {Combination} from "../../../scripts/common/Combination";
     import truncate from "../../common/Truncate";
     import {SalvageOption} from "../../../scripts/crafting/component/Component";
     import {Tab, Tabs} from "../../common/FabricateTabs.js";
@@ -13,6 +13,7 @@
     import {getContext, onDestroy} from "svelte";
     import {SalvageSearchStore} from "../../stores/SalvageSearchStore";
     import {ComponentEssenceStore} from "../../stores/ComponentEssenceStore";
+    import {Unit} from "../../../scripts/common/Unit";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectPreviousTab;

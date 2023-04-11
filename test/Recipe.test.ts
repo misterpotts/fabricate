@@ -12,7 +12,7 @@ import {
     testComponentFour,
     testComponentFive
 } from "./test_data/TestCraftingComponents";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
     testRecipeFive,
@@ -22,6 +22,7 @@ import {
 } from "./test_data/TestRecipes";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
+import {Unit} from "../src/scripts/common/Unit";
 
 beforeEach(() => {
     jest.resetAllMocks();

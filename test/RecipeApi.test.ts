@@ -472,6 +472,30 @@ describe("Edit", () => {
 
     });
 
+    test("should modify a recipe", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const result = await underTest.getById(testRecipeOne.id);
+
+        const essencesBefore = {
+            size: result.essences.size,
+            fireCount: result.essences.amountFor(elementalFire.id)
+        };
+        result.essences = result.essences.addUnit()
+        const essencesBefore = result.essences.amountFor(elementalEarth.id);
+
+    });
+
 });
 
 describe("Delete", () => {

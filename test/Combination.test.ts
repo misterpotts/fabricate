@@ -1,11 +1,12 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
 
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {Component, SalvageOption, SalvageOptionJson} from "../src/scripts/crafting/component/Component";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
+import {Unit} from "../src/scripts/common/Unit";
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -148,7 +149,7 @@ test('Should add one Combination to another', () => {
         new Unit(testComponentThree, 36)
     ]);
 
-    const underTest: Combination<Component> = source.add(new Unit(testComponentOne, 10));
+    const underTest: Combination<Component> = source.addUnit(new Unit(testComponentOne, 10));
     expect(underTest.size).toBe(84);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);

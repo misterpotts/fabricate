@@ -1,10 +1,11 @@
-import {Combination, Unit} from "../../common/Combination";
+import {Combination} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
 import {Component} from "../component/Component";
 import {Essence} from "../essence/Essence";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {EssenceSelection} from "../../actor/EssenceSelection";
-import {Identifiable} from "../../common/Identity";
+import {Identifiable} from "../../common/Identifiable";
+import {Unit} from "../../common/Unit";
 
 interface ComponentSelectionStrategy {
 
@@ -52,7 +53,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
     private selectCombination<T extends Identifiable>(target: Combination<T>, pool: Combination<T>): TrackedCombination<T> {
         const actualUnits = target.units
-            .map(unit => new Unit(unit.part, pool.amountFor(unit.part)));
+            .map(unit => new Unit(unit.element, pool.amountFor(unit.element)));
         const actual = Combination.ofUnits(actualUnits);
         return new TrackedCombination({
             target: target,

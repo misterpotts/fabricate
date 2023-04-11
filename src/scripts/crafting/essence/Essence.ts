@@ -1,6 +1,7 @@
 import Properties from "../../Properties";
-import {Identifiable, Serializable} from "../../common/Identity";
+import {Identifiable} from "../../common/Identifiable";
 import {FabricateItemData, ItemLoadingError} from "../../foundry/DocumentManager";
+import {Serializable} from "../../common/Serializable";
 
 interface EssenceJson {
     activeEffectSourceItemUuid: string;

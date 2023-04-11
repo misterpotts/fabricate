@@ -1,5 +1,5 @@
 import {Component} from "../crafting/component/Component";
-import {Combination, Unit} from "../common/Combination";
+import {Combination} from "../common/Combination";
 import {ObjectUtility} from "../foundry/ObjectUtility";
 import {CraftingResult} from "../crafting/result/CraftingResult";
 import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
@@ -17,6 +17,7 @@ import {
     NoItemQuantityWriter
 } from "./ItemQuantity";
 import {SalvageResult} from "../crafting/result/SalvageResult";
+import {Unit} from "../common/Unit";
 
 interface Inventory {
     actor: any;
@@ -103,7 +104,7 @@ class CraftingInventory implements Inventory {
         const updates: any[] = [];
         const deletes: any[] = [];
         for (const unit of components.units) {
-            const craftingComponent: Component = unit.part;
+            const craftingComponent: Component = unit.element;
             if (!this.contains(craftingComponent)) {
                 throw new InventoryContentsNotFoundError(unit, 0, this._actor.id);
             }
@@ -146,16 +147,16 @@ class CraftingInventory implements Inventory {
     async addAll(components: Combination<Component>, activeEffects: ActiveEffect[]): Promise<void> {
 
         const creates: any[] = await Promise.all(components.units
-            .filter(unit => !this.contains(unit.part))
+            .filter(unit => !this.contains(unit.element))
             .map(unit => {
                 return this.buildItemData(unit, activeEffects);
             })
         );
 
         const updates: any[] = await Promise.all(components.units
-            .filter(unit => this.contains(unit.part))
+            .filter(unit => this.contains(unit.element))
             .map(unit => {
-                const records = this._managedItems.get(unit.part)
+                const records = this._managedItems.get(unit.element)
                     .sort((left, right) => right.quantity - left.quantity);
                 const inventoryRecord: InventoryRecord = records[0];
                 const targetQuantity = unit.quantity + inventoryRecord.quantity;
@@ -180,7 +181,7 @@ class CraftingInventory implements Inventory {
     }
 
     private async buildItemData(unit: Unit<Component>, activeEffects: ActiveEffect[]): Promise<any> {
-        const sourceData: FabricateItemData = unit.part.itemData;
+        const sourceData: FabricateItemData = unit.element.itemData;
         const itemData: any = this._objectUtils.duplicate(sourceData.sourceDocument);
         itemData.effects = [...itemData.effects, ...activeEffects];
         itemData.flags.core = {sourceId: sourceData.uuid};
@@ -233,16 +234,16 @@ class CraftingInventory implements Inventory {
         let rationalisedCreated: Combination<Component> = created;
         let rationalisedConsumed: Combination<Component> = Combination.EMPTY();
         consumed.units.forEach(consumedUnit => {
-            if (!created.has(consumedUnit.part)) {
-                rationalisedConsumed = rationalisedCreated.add(consumedUnit);
+            if (!created.has(consumedUnit.element)) {
+                rationalisedConsumed = rationalisedCreated.addUnit(consumedUnit);
             }
-            if (created.containsAll(consumedUnit)) {
-                rationalisedCreated = rationalisedCreated.minus(consumedUnit);
+            if (created.containsUnit(consumedUnit)) {
+                rationalisedCreated = rationalisedCreated.subtractUnit(consumedUnit);
             } else {
-                const updatedConsumedUnit: Unit<Component> = rationalisedCreated.amounts.get(consumedUnit.part.id)
+                const updatedConsumedUnit: Unit<Component> = rationalisedCreated.amounts.get(consumedUnit.element.id)
                     .minus(consumedUnit.quantity);
-                rationalisedCreated = rationalisedCreated.minus(consumedUnit);
-                rationalisedConsumed = rationalisedConsumed.add(updatedConsumedUnit.invert());
+                rationalisedCreated = rationalisedCreated.subtractUnit(consumedUnit);
+                rationalisedConsumed = rationalisedConsumed.addUnit(updatedConsumedUnit.invert());
             }
         });
         return ({

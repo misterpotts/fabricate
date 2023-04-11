@@ -1,14 +1,5 @@
 import {Combination} from "./Combination";
-
-interface Identifiable {
-    id: string;
-}
-
-interface Serializable<T> {
-
-    toJson(): T;
-
-}
+import {Identifiable} from "./Identifiable";
 
 interface IdentityProvider<T extends Identifiable> {
 
@@ -22,7 +13,7 @@ class HashcodeIdentityProvider<T extends Identifiable> implements IdentityProvid
 
     public getForCombination(combination: Combination<T>): number {
         return combination.units
-            .map(unit => this.hashcodeForString(unit.part.id) * unit.quantity)
+            .map(unit => this.hashcodeForString(unit.element.id) * unit.quantity)
             .reduce((left, right) => left + right, 0);
     }
 
@@ -46,9 +37,9 @@ class PrimeNumberIdentityProvider<T extends Identifiable> implements IdentityPro
     private readonly _valuesById: Map<string, T>;
 
     private constructor({
-        numericalIdentitiesById = new Map(),
-        valuesById = new Map()
-    }: {
+                            numericalIdentitiesById = new Map(),
+                            valuesById = new Map()
+                        }: {
         numericalIdentitiesById?: Map<string, number>,
         valuesById?: Map<string, T>
     }) {
@@ -101,4 +92,6 @@ class PrimeNumberIdentityProvider<T extends Identifiable> implements IdentityPro
 
 }
 
-export { Identifiable, Serializable, IdentityProvider, PrimeNumberIdentityProvider, HashcodeIdentityProvider };
+export {PrimeNumberIdentityProvider};
+export {HashcodeIdentityProvider};
+export {IdentityProvider};

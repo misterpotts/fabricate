@@ -1,7 +1,8 @@
 import {ComponentCombinationNode} from "./ComponentCombinationNode";
-import {Combination, Unit} from "../common/Combination";
+import {Combination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
 import {Essence} from "../crafting/essence/Essence";
+import {Unit} from "../common/Unit";
 
 interface ComponentEssenceCombination {
     components: Combination<Component>;

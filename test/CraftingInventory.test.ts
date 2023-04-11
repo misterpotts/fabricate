@@ -18,10 +18,11 @@ import {
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
 import {StubActorFactory} from "./stubs/StubActorFactory";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {Component} from "../src/scripts/crafting/component/Component";
 import {StubItem} from "./stubs/StubItem";
 import {SuccessfulSalvageResult} from "../src/scripts/crafting/result/SalvageResult";
+import {Unit} from "../src/scripts/common/Unit";
 
 describe("Crafting Inventory", () => {
 
@@ -251,7 +252,7 @@ function generateInventory(ownedComponents: Combination<Component> = Combination
             id: id,
             flags: {
                 core: {
-                    sourceId: unit.part.itemUuid
+                    sourceId: unit.element.itemUuid
                 }
             },
             system: {

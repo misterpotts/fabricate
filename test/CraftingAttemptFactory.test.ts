@@ -1,7 +1,7 @@
 import {describe, expect, test} from "@jest/globals";
 import {RecipeCraftingPrepFactory} from "../src/scripts/crafting/attempt/RecipeCraftingPrepFactory";
 import {DefaultComponentSelectionStrategy} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {testRecipeFive, testRecipeFour} from "./test_data/TestRecipes";
 import {Component} from "../src/scripts/crafting/component/Component";
 import {TrackedUnit} from "../src/scripts/common/TrackedCombination";
@@ -12,6 +12,7 @@ import {
     testComponentSix, testComponentThree,
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
+import {Unit} from "../src/scripts/common/Unit";
 
 describe("Create a Crafting Attempt", () => {
 

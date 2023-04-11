@@ -1,5 +1,6 @@
-import {Combination, Unit} from "./Combination";
-import {Identifiable} from "./Identity";
+import {Combination} from "./Combination";
+import {Identifiable} from "./Identifiable";
+import {Unit} from "./Unit";
 
 class TrackedUnit<T extends Identifiable> {
 
@@ -78,7 +79,7 @@ class TrackedCombination<T extends Identifiable> {
         return this._target.units
             .map(target => new TrackedUnit<T>({
                 target,
-                actual: new Unit(target.part, this._actual.amountFor(target.part.id))
+                actual: new Unit(target.element, this._actual.amountFor(target.element.id))
             }));
     }
 

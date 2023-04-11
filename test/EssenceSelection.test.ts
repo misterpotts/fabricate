@@ -1,6 +1,6 @@
 import {describe, expect, test} from "@jest/globals";
 import {EssenceSelection} from "../src/scripts/actor/EssenceSelection";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
     testComponentFive,
@@ -8,6 +8,7 @@ import {
     testComponentSix,
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
+import {Unit} from "../src/scripts/common/Unit";
 
 describe("Essence selection", () => {
 

@@ -11,8 +11,8 @@
     import {DropEventParser} from "../../common/DropEventParser";
     import {recipeUpdated} from "../../common/EventBus";
     import {RecipeEssenceStore} from "../../stores/RecipeEssenceStore";
-    import {Unit} from "../../../scripts/common/Combination";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
+    import {Unit} from "../../../scripts/common/Unit";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes`;
     const {

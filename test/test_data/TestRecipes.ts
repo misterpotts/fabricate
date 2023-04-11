@@ -1,11 +1,12 @@
 import {RequirementOption, Recipe, ResultOption} from "../../src/scripts/crafting/recipe/Recipe";
-import {Combination, Unit} from "../../src/scripts/common/Combination";
+import {Combination} from "../../src/scripts/common/Combination";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import {SelectableOptions} from "../../src/scripts/crafting/recipe/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 import Properties from "../../src/scripts/Properties";
 import {testCraftingSystem} from "./TestCrafingSystem";
+import {Unit} from "../../src/scripts/common/Unit";
 
 /**
 * Essences: None

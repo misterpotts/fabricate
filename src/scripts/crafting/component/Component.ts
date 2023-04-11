@@ -1,8 +1,10 @@
-import {StringIdentity, Combination, Unit} from "../../common/Combination";
-import {Identifiable, Serializable} from "../../common/Identity";
+import {StringIdentity, Combination} from "../../common/Combination";
+import {Identifiable} from "../../common/Identifiable";
 import {Essence} from "../essence/Essence";
 import {SelectableOptions} from "../recipe/SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
+import {Unit} from "../../common/Unit";
+import {Serializable} from "../../common/Serializable";
 
 interface ComponentJson {
     itemUuid: string;
@@ -54,11 +56,11 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
     }
 
     public add(component: Component, quantity = 1) {
-        this._salvage = this._salvage.add(new Unit(component, quantity));
+        this._salvage = this._salvage.addUnit(new Unit(component, quantity));
     }
 
     public subtract(component: Component, quantity = 1) {
-        this._salvage = this._salvage.minus(new Unit(component, quantity));
+        this._salvage = this._salvage.subtractUnit(new Unit(component, quantity));
     }
 
     toJson(): SalvageOptionJson {
