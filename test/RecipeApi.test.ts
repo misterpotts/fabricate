@@ -173,7 +173,9 @@ describe("Create", () => {
         const itemUuid = "1234abcd";
         documentManager.setAllowUnknownIds(true);
         const craftingSystemId = "2345abcd";
-        await expect(() => underTest.create({itemUuid, craftingSystemId})).rejects;
+
+        expect.assertions(1);
+        await expect(underTest.create({itemUuid, craftingSystemId})).rejects.toThrow();
 
     });
 
@@ -192,7 +194,9 @@ describe("Create", () => {
         });
 
         const itemUuid = "1234abcd";
-        await expect(() => underTest.create({itemUuid, craftingSystemId})).rejects;
+
+        expect.assertions(1);
+        await expect(underTest.create({itemUuid, craftingSystemId})).rejects.toThrow();
 
     });
 
@@ -242,7 +246,8 @@ describe("Create", () => {
             disabled: testRecipeOne.isDisabled
         });
 
-        await expect(() => underTest.save(modified)).rejects;
+        expect.assertions(1);
+        await expect(underTest.save(modified)).rejects.toThrow();
 
     });
 
@@ -259,12 +264,14 @@ describe("Create", () => {
             recipeValidator: {
                 validate: async (recipe: Recipe) => new DefaultEntityValidationResult({
                     entity: recipe,
-                    isSuccessful: false
+                    isSuccessful: false,
+                    errors: ["Test Error"]
                 })
             }
         });
 
-        await expect(() => underTest.save(testRecipeOne)).rejects;
+        expect.assertions(1);
+        await expect(underTest.save(testRecipeOne)).rejects.toThrow();
 
     });
 
@@ -441,7 +448,29 @@ describe("Access", () => {
 
 describe("Edit", () => {
 
+    test("should clone a recipe by ID", async () => {
 
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const result = await underTest.cloneById(testRecipeOne.id);
+
+        expect(result).not.toBeNull();
+        expect(result.id.length).toBeGreaterThan(1);
+        expect(result.id).not.toEqual(testRecipeOne.id);
+        expect(result.requirementOptions.length).toEqual(testRecipeOne.requirementOptions.length);
+        expect(result.resultOptions.length).toEqual(testRecipeOne.resultOptions.length);
+        expect(result.essences.size).toEqual(testRecipeOne.essences.size);
+
+    });
 
 });
 
@@ -458,6 +487,39 @@ describe("Delete", () => {
             settingManager,
             documentManager,
             recipeValidator
+        });
+
+        const before = await underTest.getById(testRecipeOne.id);
+        const allBefore = await underTest.getAll();
+
+        await underTest.deleteById(testRecipeOne.id);
+
+        const after = await underTest.getById(testRecipeOne.id);
+        const allAfter = await underTest.getAll();
+
+        expect(before).not.toBeUndefined();
+        expect(allBefore.size).toEqual(7);
+        expect(after).toBeUndefined();
+        expect(allAfter.size).toEqual(6);
+
+    });
+
+    test("should delete a recipe by ID even if the crafting system does not exist", async () => {
+
+        const emptyCraftingSystemApi = new StubCraftingSystemApi();
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator: new RecipeValidator({
+                craftingSystemApi: emptyCraftingSystemApi,
+                componentApi,
+                essenceApi
+            })
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -503,6 +565,39 @@ describe("Delete", () => {
 
     });
 
+    test("should delete recipes by crafting system ID even if the crafting system does not exist", async () => {
+
+        const emptyCraftingSystemApi = new StubCraftingSystemApi();
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator: new RecipeValidator({
+                craftingSystemApi: emptyCraftingSystemApi,
+                componentApi,
+                essenceApi
+            })
+        });
+
+        const before = await underTest.getById(testRecipeOne.id);
+        const allBefore = await underTest.getAll();
+
+        await underTest.deleteByCraftingSystemId(testCraftingSystem.id);
+
+        const after = await underTest.getById(testRecipeOne.id);
+        const allAfter = await underTest.getAll();
+
+        expect(before).not.toBeUndefined();
+        expect(allBefore.size).toEqual(7);
+        expect(after).toBeUndefined();
+        expect(allAfter.size).toEqual(0);
+
+    });
+
     test("should delete recipes by item UUID", async () => {
 
         const underTest = new DefaultRecipeApi({
@@ -531,8 +626,109 @@ describe("Delete", () => {
 
     });
 
-    test("should remove all component references from all recipes", async () => {});
+    function countComponentReferences(recipes: Recipe[], componentId: string) {
+        return recipes
+            .map(recipe => {
+                const amountInIngredients = recipe.requirementOptions
+                    .map(requirementOption => requirementOption.ingredients.amountFor(componentId))
+                    .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+                const amountInCatalysts = recipe.requirementOptions
+                    .map(requirementOption => requirementOption.catalysts.amountFor(componentId))
+                    .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+                const amountInResults = recipe.resultOptions
+                    .map(resultOption => resultOption.results.amountFor(componentId))
+                    .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+                const amount = amountInIngredients + amountInCatalysts + amountInResults;
+                return {
+                    amount,
+                    matches: amount > 0 ? [recipe.id] : []
+                };
+            })
+            .reduce((previousValue, currentValue) => {
+                return {
+                    amount: previousValue.amount + currentValue.amount,
+                    matches: previousValue.matches.concat(currentValue.matches)
+                }
+            }, { amount: 0, matches: [] });
+    }
 
-    test("should remove all essence references from all recipes", async () => {});
+    function countEssenceReferences(recipes: Recipe[], essenceId: string) {
+        return recipes
+            .map(recipe => {
+                const amount = recipe.essences.amountFor(essenceId);
+                return {
+                    amount,
+                    matches: amount > 0 ? [recipe.id] : []
+                };
+            })
+            .reduce((previousValue, currentValue) => {
+                return {
+                    amount: previousValue.amount + currentValue.amount,
+                    matches: previousValue.matches.concat(currentValue.matches)
+                }
+            }, { amount: 0, matches: [] });
+    }
+
+    test("should remove all component references from all recipes", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const componentIdToDelete = testComponentThree.id;
+        const craftingSystemId = testCraftingSystem.id;
+        const allBefore = await underTest.getAllByCraftingSystemId(craftingSystemId);
+        const countBefore = countComponentReferences(Array.from(allBefore.values()), componentIdToDelete);
+        expect(countBefore.matches.length).toBeGreaterThan(0);
+        expect(countBefore.amount).toBeGreaterThan(0);
+
+        const modified = await underTest.removeComponentReferences(componentIdToDelete, craftingSystemId);
+        expect(modified.length).toEqual(countBefore.matches.length);
+        modified.forEach(recipe => expect(countBefore.matches.includes(recipe.id)).toEqual(true));
+
+        const allAfter = await underTest.getAllByCraftingSystemId(craftingSystemId);
+        const countAfter = countComponentReferences(Array.from(allAfter.values()), componentIdToDelete);
+        expect(countAfter.matches.length).toEqual(0);
+        expect(countAfter.amount).toEqual(0);
+
+    });
+
+    test("should remove all essence references from all recipes", async () => {
+
+        const underTest = new DefaultRecipeApi({
+            essenceApi,
+            componentApi,
+            identityFactory,
+            localizationService,
+            notificationService,
+            settingManager,
+            documentManager,
+            recipeValidator
+        });
+
+        const essenceIdToDelete = elementalFire.id;
+        const craftingSystemId = testCraftingSystem.id;
+        const allBefore = await underTest.getAllByCraftingSystemId(craftingSystemId);
+        const countBefore = countEssenceReferences(Array.from(allBefore.values()), essenceIdToDelete);
+        expect(countBefore.matches.length).toBeGreaterThan(0);
+        expect(countBefore.amount).toBeGreaterThan(0);
+
+        const modified = await underTest.removeEssenceReferences(essenceIdToDelete, craftingSystemId);
+        expect(modified.length).toEqual(countBefore.matches.length);
+        modified.forEach(recipe => expect(countBefore.matches.includes(recipe.id)).toEqual(true));
+
+        const allAfter = await underTest.getAllByCraftingSystemId(craftingSystemId);
+        const countAfter = countEssenceReferences(Array.from(allAfter.values()), essenceIdToDelete);
+        expect(countAfter.matches.length).toEqual(0);
+        expect(countAfter.amount).toEqual(0);
+
+    });
 
 });

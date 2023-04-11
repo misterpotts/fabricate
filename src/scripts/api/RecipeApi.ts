@@ -183,9 +183,21 @@ interface RecipeApi {
      * @param {string} craftingSystemId - The ID of the crafting system containing the recipes to modify.
      * @returns {Promise<Recipe[]>} A Promise that resolves with an array of all modified recipes that contain
      *  references to the removed crafting component, or an empty array if no modifications were made. If the specified
-     *  crafting system or crafting component does not exist, the Promise will reject with an Error.
+     *  crafting system has no recipes, the Promise will reject with an Error.
      */
     removeComponentReferences(craftingComponentId: string, craftingSystemId: string): Promise<Recipe[]>;
+
+    /**
+     *
+     * Removes all references to the specified essence from all recipes within the specified crafting system.
+     * @async
+     * @param {string} essenceId - The ID of the essence to remove references to.
+     * @param {string} craftingSystemId - The ID of the crafting system containing the recipes to modify.
+     * @returns {Promise<Recipe[]>} A Promise that resolves with an array of all modified recipes that contain
+     *  references to the removed essence, or an empty array if no modifications were made. If the specified
+     *  crafting system has no recipes, the Promise will reject with an Error.
+     */
+    removeEssenceReferences(essenceId: string, craftingSystemId: string): Promise<Recipe[]>;
 
     /**
      * Returns all recipes for a given crafting system ID.
@@ -462,8 +474,59 @@ class DefaultRecipeApi implements RecipeApi {
         return new Map(recipeData.map(recipe => [recipe.id, recipe]));
     }
 
-    removeComponentReferences(craftingComponentId: string, craftingSystemId: string): Promise<Recipe[]> {
-        return Promise.resolve([]);
+    async removeComponentReferences(componentIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
+        const settingValue = await this.settingManager.read();
+        const recipeIdsForCraftingSystem = settingValue.recipeIdsByCraftingSystemId[craftingSystemId];
+        if (!recipeIdsForCraftingSystem) {
+            throw new Error(`No Recipes exist for the crafting system ID "${craftingSystemId}". `);
+        }
+        const modifiedRecipeIds: string[] = [];
+        recipeIdsForCraftingSystem
+            .map(recipeId => settingValue.recipesById[recipeId])
+            .forEach(recipeJson => {
+                let modified = false;
+                Object.values(recipeJson.ingredientOptions)
+                    .forEach(ingredientOption => {
+                        if (ingredientOption.ingredients[componentIdToDelete] || ingredientOption.catalysts[componentIdToDelete]) {
+                            modified = true;
+                            delete ingredientOption.ingredients[componentIdToDelete];
+                            delete ingredientOption.catalysts[componentIdToDelete];
+                        }
+                    });
+                Object.values(recipeJson.resultOptions)
+                    .forEach(resultOption => {
+                        if (resultOption[componentIdToDelete]) {
+                            modified = true;
+                            delete resultOption[componentIdToDelete];
+                        }
+                    });
+                if (modified) {
+                    modifiedRecipeIds.push(recipeJson.id);
+                }
+            });
+        await this.settingManager.write(settingValue);
+        const allRecipesForCraftingSystem = await this.getAllByCraftingSystemId(craftingSystemId);
+        return Array.from(allRecipesForCraftingSystem.values()).filter(recipe => modifiedRecipeIds.includes(recipe.id));
+    }
+
+    async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
+        const settingValue = await this.settingManager.read();
+        const recipeIdsForCraftingSystem = settingValue.recipeIdsByCraftingSystemId[craftingSystemId];
+        if (!recipeIdsForCraftingSystem) {
+            throw new Error(`No Recipes exist for the crafting system ID "${craftingSystemId}". `);
+        }
+        const modifiedRecipeIds: string[] = [];
+        recipeIdsForCraftingSystem
+            .map(recipeId => settingValue.recipesById[recipeId])
+            .forEach(recipeJson => {
+                if (recipeJson.essences[essenceIdToDelete]) {
+                    delete recipeJson.essences[essenceIdToDelete];
+                    modifiedRecipeIds.push(recipeJson.id);
+                }
+            });
+        await this.settingManager.write(settingValue);
+        const allRecipesForCraftingSystem = await this.getAllByCraftingSystemId(craftingSystemId);
+        return Array.from(allRecipesForCraftingSystem.values()).filter(recipe => modifiedRecipeIds.includes(recipe.id));
     }
 
     private async buildRecipe(recipeJson: RecipeJson, componentsForSystem: Map<string, Component>, essencesForSystem: Map<string, Essence>): Promise<Recipe> {
@@ -531,7 +594,6 @@ class DefaultRecipeApi implements RecipeApi {
         );
         this.notificationService.error(message);
         throw new Error(message);
-
     }
 }
 

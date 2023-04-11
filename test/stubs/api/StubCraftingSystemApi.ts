@@ -16,7 +16,7 @@ class StubCraftingSystemApi implements CraftingSystemApi {
     }: {
         identityFactory?: IdentityFactory;
         valuesById?: Map<string, CraftingSystem>
-    }) {
+    } = {}) {
         this.identityFactory = identityFactory;
         this.valuesById = valuesById;
     }

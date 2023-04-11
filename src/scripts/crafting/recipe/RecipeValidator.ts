@@ -3,6 +3,7 @@ import {Recipe} from "./Recipe";
 import {CraftingSystemApi} from "../../api/CraftingSystemApi";
 import {EssenceApi} from "../../api/EssenceApi";
 import {ComponentApi} from "../../api/ComponentApi";
+import {NoFabricateItemData} from "../../foundry/DocumentManager";
 
 class RecipeValidator implements EntityValidator<Recipe> {
 
@@ -27,7 +28,7 @@ class RecipeValidator implements EntityValidator<Recipe> {
     async validate(candidate: Recipe): Promise<EntityValidationResult<Recipe>> {
         const errors: string[] = [];
 
-        if (!candidate.itemData.isLoaded) {
+        if (!candidate.itemData.isLoaded && !(candidate.itemData instanceof NoFabricateItemData)) {
             await candidate.load();
             if (candidate.itemData.hasErrors) {
                 errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. 
