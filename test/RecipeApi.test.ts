@@ -485,14 +485,20 @@ describe("Edit", () => {
             recipeValidator
         });
 
-        const result = await underTest.getById(testRecipeOne.id);
+        const recipeToEdit = await underTest.getById(testRecipeOne.id);
 
         const essencesBefore = {
-            size: result.essences.size,
-            fireCount: result.essences.amountFor(elementalFire.id)
+            size: recipeToEdit.essences.size,
+            fireCount: recipeToEdit.essences.amountFor(elementalFire.id)
         };
-        result.essences = result.essences.addUnit()
-        const essencesBefore = result.essences.amountFor(elementalEarth.id);
+        recipeToEdit.essences = recipeToEdit.essences.increment(elementalFire);
+
+        await underTest.save(recipeToEdit);
+
+        const editedRecipe = await underTest.getById(testRecipeOne.id);
+
+        expect(editedRecipe.essences.size).toEqual(essencesBefore.size + 1);
+        expect(editedRecipe.essences.amountFor(elementalFire)).toEqual(essencesBefore.fireCount + 1);
 
     });
 
