@@ -37,4 +37,17 @@ const elementalFire = new Essence({
     craftingSystemId: testCraftingSystem.id
 });
 
-export { elementalEarth, elementalWater, elementalAir, elementalFire }
+const allTestEssences = new Map([
+    [elementalEarth.id, elementalEarth],
+    [elementalAir.id, elementalAir],
+    [elementalWater.id, elementalWater],
+    [elementalFire.id, elementalFire]
+]);
+
+export {
+    allTestEssences,
+    elementalEarth,
+    elementalWater,
+    elementalAir,
+    elementalFire
+}

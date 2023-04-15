@@ -3,7 +3,11 @@ import {Identifiable} from "../../common/Identifiable";
 import {Component} from "../component/Component";
 import {Essence} from "../essence/Essence";
 import {SelectableOptions} from "./SelectableOptions";
-import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
+import {
+    FabricateItemData,
+    ItemLoadingError,
+    NoFabricateItemData
+} from "../../foundry/DocumentManager";
 import {Unit} from "../../common/Unit";
 import {Serializable} from "../../common/Serializable";
 
@@ -13,13 +17,17 @@ interface RecipeJson {
     craftingSystemId: string;
     disabled: boolean;
     essences: Record<string, number>,
-    resultOptions: Record<string, ResultOptionJson>;
-    ingredientOptions: Record<string, RequirementOptionJson>;
+    resultOptions: ResultOptionJson[];
+    requirementOptions: RequirementOptionJson[];
 }
 
-type ResultOptionJson = Record<string, number>;
+type ResultOptionJson = {
+    name: string;
+    results: Record<string, number>;
+};
 
 interface RequirementOptionJson {
+    name: string,
     catalysts: Record<string, number>;
     ingredients: Record<string, number>;
 }
@@ -102,9 +110,23 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
 
     toJson(): RequirementOptionJson {
         return {
+            name:this._name,
             catalysts: this._catalysts.toJson(),
             ingredients: this._ingredients.toJson()
         };
+    }
+
+    static fromJson(requirementOptionJson: RequirementOptionJson, components: Map<string, Component>): RequirementOption {
+        try {
+            return new RequirementOption({
+                name: requirementOptionJson.name,
+                catalysts: Combination.fromRecord(requirementOptionJson.catalysts, components),
+                ingredients: Combination.fromRecord(requirementOptionJson.ingredients, components)
+            });
+        } catch (e: any) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) :new Error("An unknown error occurred");
+            throw new Error(`Unable to build requirement option ${requirementOptionJson.name}`, { cause });
+        }
     }
 
 }
@@ -158,9 +180,23 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
     }
 
     toJson(): ResultOptionJson {
-        return this._results.toJson()
+        return {
+            name: this._name,
+            results: this._results.toJson()
+        }
     }
 
+    static fromJson(resultOptionJson: ResultOptionJson, components: Map<string, Component>) {
+        try {
+            return new ResultOption({
+                name: resultOptionJson.name,
+                results: Combination.fromRecord(resultOptionJson.results, components)
+            });
+        } catch (e: any) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) :new Error("An unknown error occurred");
+            throw new Error(`Unable to build result option ${resultOptionJson.name}`, { cause });
+        }
+    }
 }
 
 class Recipe implements Identifiable, Serializable<RecipeJson> {
@@ -184,7 +220,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     constructor({
         id,
         craftingSystemId,
-        disabled,
+        disabled = false,
         essences = Combination.EMPTY(),
         itemData = NoFabricateItemData.INSTANCE(),
         resultOptions = new SelectableOptions({}),
@@ -239,12 +275,8 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._itemData = value;
     }
 
-    get requirementOptionsById(): Map<string, RequirementOption> {
-        return this._requirementOptions.optionsByName;
-    }
-
-    get requirementOptions(): RequirementOption[] {
-        return this._requirementOptions.options;
+    get requirementOptions(): SelectableOptions<RequirementOptionJson, RequirementOption> {
+        return this._requirementOptions;
     }
 
     get essences(): Combination<Essence> {
@@ -263,12 +295,8 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this.disabled;
     }
 
-    get resultOptionsById(): Map<string, ResultOption> {
-        return this._resultOptions.optionsByName;
-    }
-
-    get resultOptions(): ResultOption[] {
-        return this._resultOptions.options;
+    get resultOptions(): SelectableOptions<ResultOptionJson, ResultOption> {
+        return this._resultOptions;
     }
 
     public get hasOptions(): boolean {
@@ -352,27 +380,9 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this.selectedResultOptionName;
     }
 
-    get firstIngredientOptionName(): string {
-        if (this._requirementOptions.isEmpty) {
-            return "";
-        }
-        return this.ingredientOptions[0].name;
-    }
-
-    get firstResultOptionName(): string {
-        if (this._resultOptions.isEmpty) {
-            return "";
-        }
-        return this.resultOptions[0].name;
-    }
-
     public makeDefaultSelections() {
-        if (!this._requirementOptions.isEmpty) {
-            this.selectRequirementOption(this.ingredientOptions[0].name);
-        }
-        if (!this._resultOptions.isEmpty) {
-            this.selectResultOption(this.resultOptions[0].name);
-        }
+        this._requirementOptions.selectFirst();
+        this._resultOptions.selectFirst();
     }
 
     public editIngredientOption(ingredientOption: RequirementOption) {
@@ -382,28 +392,12 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._requirementOptions.set(ingredientOption);
     }
 
-    set ingredientOptions(options: RequirementOption[]) {
-        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({
-            options
-        });
+    set ingredientOptions(value: SelectableOptions<RequirementOptionJson, RequirementOption>) {
+        this._requirementOptions = value;
     }
 
-    set resultOptions(options: ResultOption[]) {
-        this._resultOptions = new SelectableOptions<ResultOptionJson, ResultOption>({
-            options
-        });
-    }
-
-    public toJson(): RecipeJson {
-        return {
-            id: this._id,
-            itemUuid: this._itemData.uuid,
-            craftingSystemId: this._craftingSystemId,
-            disabled: this.disabled,
-            essences: this._essences.toJson(),
-            resultOptions: this._resultOptions.toJson(),
-            ingredientOptions: this._requirementOptions.toJson()
-        };
+    set resultOptions(value: SelectableOptions<ResultOptionJson, ResultOption>) {
+        this._resultOptions = value;
     }
 
     addIngredientOption(value: RequirementOption) {
@@ -473,12 +467,12 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     getIncludedComponents(): Component[] {
-        const componentsFromResults = this.resultOptions
+        const componentsFromResults = this.resultOptions.options
             .map(resultOption => resultOption.results)
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
             }, Combination.EMPTY<Component>());
-        const componentFromRequirements = this.requirementOptions
+        const componentFromRequirements = this.requirementOptions.options
             .map(requirementOption => requirementOption.ingredients.combineWith(requirementOption.catalysts))
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
@@ -494,6 +488,70 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this.itemData.isLoaded;
     }
 
+    public toJson(): RecipeJson {
+        return {
+            id: this._id,
+            itemUuid: this._itemData.uuid,
+            craftingSystemId: this._craftingSystemId,
+            disabled: this.disabled,
+            essences: this._essences.toJson(),
+            resultOptions: this._resultOptions.toJson(),
+            requirementOptions: this._requirementOptions.toJson()
+        };
+    }
+
+    static fromJson(recipeJson: RecipeJson,
+                    itemDataByItemUuid: Map<string, FabricateItemData> = new Map(),
+                    essences: Map<string, Essence> = new Map(),
+                    components: Map<string, Component> = new Map()): Recipe {
+        const { id, craftingSystemId, disabled, itemUuid } = recipeJson;
+        const itemData = itemDataByItemUuid.get(itemUuid);
+        try {
+            return new Recipe({
+                id,
+                craftingSystemId,
+                itemData,
+                disabled,
+                ingredientOptions: Recipe.buildIngredientOptions(recipeJson.requirementOptions, components),
+                resultOptions: Recipe.buildResultOptions(recipeJson.resultOptions, components),
+                essences: Combination.fromRecord(recipeJson.essences, essences)
+            });
+        } catch (e: any) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) :new Error("An unknown error occurred");
+            throw new Error(`Unable to build recipe ${id}`, { cause });
+        }
+    }
+
+    private static buildIngredientOptions(ingredientOptionsJson: RequirementOptionJson[], components: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
+        const options = ingredientOptionsJson
+            .map(json => RequirementOption.fromJson(json, components));
+        return new SelectableOptions<RequirementOptionJson, RequirementOption>({ options });
+    }
+
+    private static buildResultOptions(resultOptionsJson: ResultOptionJson[], components: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
+        const options = resultOptionsJson
+            .map(json => ResultOption.fromJson(json, components));
+        return new SelectableOptions<ResultOptionJson, ResultOption>({ options });
+    }
+
+    equals(other: Recipe) {
+        if (!other) {
+            return false;
+        }
+        if (this === other ) {
+            return true;
+        }
+        if (this._id !== other.id) {
+            return false;
+        }
+        return this._id === other.id
+            && this._craftingSystemId === other.craftingSystemId
+            && this.isDisabled === other.isDisabled
+            && this._essences.equals(other.essences)
+            && this._itemData.equals(other.itemData)
+            && this._requirementOptions.equals(other.requirementOptions)
+            && this._resultOptions.equals(other.resultOptions);
+    }
 }
 
 export { Recipe, RecipeJson, ResultOptionJson, ResultOption, RequirementOptionJson, RequirementOption }

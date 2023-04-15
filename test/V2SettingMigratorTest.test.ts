@@ -55,8 +55,8 @@ function expectRecipeMigrationSuccess(before: V1RecipeJson, allAfter: Record<str
         expect(after.essences[essenceId]).toEqual(before.essences[essenceId]);
     });
 
-    const ingredientOptionIdsAfter = Object.keys(after.ingredientOptions);
-    const ingredientOptionsAfter = ingredientOptionIdsAfter.map(ingredientOptionId => after.ingredientOptions[ingredientOptionId]);
+    const ingredientOptionIdsAfter = Object.keys(after.requirementOptions);
+    const ingredientOptionsAfter = ingredientOptionIdsAfter.map(ingredientOptionId => after.requirementOptions[ingredientOptionId]);
     expect(ingredientOptionsAfter.length).toEqual(before.ingredientGroups.length);
     before.ingredientGroups.forEach(ingredientGroupBefore => {
         const ingredientsFound = ingredientOptionsAfter.find(ingredientOptionAfter => {

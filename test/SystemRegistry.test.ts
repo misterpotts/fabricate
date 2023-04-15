@@ -94,7 +94,7 @@ describe("integration test", () => {
             [essenceOneId]: 1,
             [essenceTwoId]: 2
         },
-        ingredientOptions: {},
+        requirementOptions: {},
         resultOptions: {
             [optionOneId]: {
                 [componentOneId]: 1
@@ -105,7 +105,7 @@ describe("integration test", () => {
     const recipeTwo: RecipeJson = {
         itemUuid: recipeTwoItemUuid,
         essences: {},
-        ingredientOptions: {
+        requirementOptions: {
             [optionOneId]: {
                 catalysts: {
                     [componentThreeId]: 1
@@ -125,7 +125,7 @@ describe("integration test", () => {
     const recipeThree: RecipeJson = {
         itemUuid: recipeThreeItemUuid,
         essences: {},
-        ingredientOptions: {
+        requirementOptions: {
             [optionOneId]: {
                 ingredients: {
                     [componentOneId]: 1,

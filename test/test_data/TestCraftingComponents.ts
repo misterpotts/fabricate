@@ -114,7 +114,18 @@ const testComponentSeven: Component = new Component({
     essences: Combination.ofUnits([new Unit(elementalAir, 1)])
 });
 
+const allTestComponents = new Map([
+    [testComponentOne.id, testComponentOne],
+    [testComponentTwo.id, testComponentTwo],
+    [testComponentThree.id, testComponentThree],
+    [testComponentFour.id, testComponentFour],
+    [testComponentFive.id,testComponentFive],
+    [testComponentSix.id, testComponentSix],
+    [testComponentSeven.id, testComponentSeven]
+]);
+
 export {
+    allTestComponents,
     testComponentOne,
     testComponentTwo,
     testComponentThree,

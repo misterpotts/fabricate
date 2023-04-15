@@ -1,4 +1,4 @@
-import {StringIdentity, Combination} from "../../common/Combination";
+import {Combination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
 import {Essence} from "../essence/Essence";
 import {SelectableOptions} from "../recipe/SelectableOptions";
@@ -267,4 +267,4 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
 }
 
-export { Component, StringIdentity, ComponentJson, SalvageOptionJson, SalvageOption }
+export { Component, ComponentJson, SalvageOptionJson, SalvageOption }

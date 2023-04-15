@@ -264,8 +264,18 @@ const testRecipeSeven: Recipe = new Recipe({
     })
 })
 
+const allTestRecipes = new Map([
+    [testRecipeOne.id, testRecipeOne],
+    [testRecipeTwo.id, testRecipeTwo],
+    [testRecipeThree.id, testRecipeThree],
+    [testRecipeFour.id, testRecipeFour],
+    [testRecipeFive.id, testRecipeFive],
+    [testRecipeSix.id, testRecipeSix],
+    [testRecipeSeven.id, testRecipeSeven]
+]);
 
 export {
+    allTestRecipes,
     testRecipeOne,
     testRecipeTwo,
     testRecipeThree,

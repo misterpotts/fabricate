@@ -86,7 +86,7 @@ class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record
                 essences: inputRecipe.essences,
                 disabled: false,
                 itemUuid: inputRecipe.itemUuid,
-                ingredientOptions: this.migrateIngredients(inputRecipe.ingredientGroups, inputRecipe.catalysts),
+                requirementOptions: this.migrateIngredients(inputRecipe.ingredientGroups, inputRecipe.catalysts),
                 resultOptions: this.migrateResults(inputRecipe.resultGroups)
             }
         });

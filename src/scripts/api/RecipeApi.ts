@@ -53,14 +53,16 @@ interface RecipeOptions {
     essences?: Record<string, number>;
 
     /**
-     * Whether the recipe is disabled.
+     * Whether the recipe is disabled. Defaults to false.
      * */
     disabled?: boolean;
 
     /**
      * Optional dictionary of requirement options for the recipe, keyed on the option name.
      * */
-    requirementOptions?: Record<string, {
+    requirementOptions?: {
+
+        name: string;
 
         /**
          * The catalysts necessary for this requirement option. The object is a dictionary keyed on the component ID with
@@ -74,13 +76,13 @@ interface RecipeOptions {
          */
         ingredients: Record<string, number>;
 
-    }>;
+    }[];
 
     /**
      * Optional dictionary of result options for the recipe, keyed on the option name. Each option is a dictionary keyed
      * on the component ID with the values representing the created quantities.
      * */
-    resultOptions?: Record<string, Record<string, number>>;
+    resultOptions?: { name: string, results: Record<string, number>}[];
 
 }
 
@@ -132,6 +134,26 @@ interface RecipeApi {
      * the recipe IDs. Values are undefined if the recipe with the corresponding ID does not exist
      */
     getAllById(recipeIds: string[]): Promise<Map<string, Recipe | undefined>>;
+
+    /**
+     * Returns all recipes for a given crafting system ID.
+     *
+     * @async
+     * @param {string} craftingSystemId - The ID of the crafting system.
+     * @returns {Promise<Map<string, Recipe>>} A Promise that resolves to a Map of Recipe instances for the given
+     * crafting system, where the keys are the recipe IDs, or rejects with an Error if the settings cannot be read.
+     */
+    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Recipe>>;
+
+    /**
+     * Returns all recipes in a map keyed on recipe ID, for a given item UUID.
+     *
+     * @async
+     * @param {string} itemUuid - The UUID of the item.
+     * @returns {Promise<Map<string, Recipe>>} A Promise that resolves to a Map of recipe instances, where the keys
+     * are the recipe IDs, or rejects with an Error if the settings cannot be read.
+     */
+    getAllByItemUuid(itemUuid: string): Promise<Map<string, Recipe>>;
 
     /**
      * Saves a recipe.
@@ -198,26 +220,6 @@ interface RecipeApi {
      *  crafting system has no recipes, the Promise will reject with an Error.
      */
     removeEssenceReferences(essenceId: string, craftingSystemId: string): Promise<Recipe[]>;
-
-    /**
-     * Returns all recipes for a given crafting system ID.
-     *
-     * @async
-     * @param {string} craftingSystemId - The ID of the crafting system.
-     * @returns {Promise<Map<string, Recipe>>} A Promise that resolves to a Map of Recipe instances for the given
-     * crafting system, where the keys are the recipe IDs, or rejects with an Error if the settings cannot be read.
-     */
-    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Recipe>>;
-
-    /**
-     * Returns all recipes in a map keyed on crafting system ID, for a given item UUID.
-     *
-     * @async
-     * @param {string} itemUuid - The UUID of the item.
-     * @returns {Promise<Map<string, Recipe>>} A Promise that resolves to a Map of `Recipe` instances, where the keys
-     * are the crafting system IDs, or rejects with an Error if the recipes cannot be read.
-     */
-    getAllByItemUuid(itemUuid: string): Promise<Map<string, Recipe>>;
 
     /**
      * Clones a recipe by ID.
@@ -334,8 +336,8 @@ class DefaultRecipeApi implements RecipeApi {
         craftingSystemId,
         essences = {},
         disabled = false,
-        requirementOptions = {},
-        resultOptions = {},
+        requirementOptions = [],
+        resultOptions = [],
     }: RecipeOptions): Promise<Recipe> {
         const settingValue = this.settingManager.read();
         const assignedIds = Object.keys(settingValue);
@@ -349,7 +351,7 @@ class DefaultRecipeApi implements RecipeApi {
                 craftingSystemId,
                 disabled,
                 essences,
-                ingredientOptions: requirementOptions,
+                requirementOptions,
                 resultOptions
             },
             componentsForSystem,
@@ -485,7 +487,7 @@ class DefaultRecipeApi implements RecipeApi {
             .map(recipeId => settingValue.recipesById[recipeId])
             .forEach(recipeJson => {
                 let modified = false;
-                Object.values(recipeJson.ingredientOptions)
+                Object.values(recipeJson.requirementOptions)
                     .forEach(ingredientOption => {
                         if (ingredientOption.ingredients[componentIdToDelete] || ingredientOption.catalysts[componentIdToDelete]) {
                             modified = true;
@@ -537,7 +539,7 @@ class DefaultRecipeApi implements RecipeApi {
             craftingSystemId,
             itemData,
             disabled,
-            ingredientOptions: this.buildIngredientOptions(recipeJson.ingredientOptions, componentsForSystem),
+            ingredientOptions: this.buildIngredientOptions(recipeJson.requirementOptions, componentsForSystem),
             resultOptions: this.buildResultOptions(recipeJson.resultOptions, componentsForSystem),
             essences: Combination.fromRecord(recipeJson.essences, essencesForSystem)
         });

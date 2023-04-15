@@ -1,7 +1,7 @@
 import {Identifiable} from "../../common/Identifiable";
 import {Serializable} from "../../common/Serializable";
 
-class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements Serializable<Record<string, J>> {
+class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements Serializable<J[]> {
 
     private _options: Map<string, T>;
     private _selectedOptionId?: string;
@@ -87,15 +87,11 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         return !!this._selectedOptionId;
     }
 
-    toJson(): Record<string, J> {
+    toJson(): J[]{
         return Array.from(this._options.values())
             .reduce((previousValue, currentValue) => {
-                if (previousValue[currentValue.id]) {
-                    throw new Error("Two options cannot have the same identity. ");
-                }
-                previousValue[currentValue.id] = currentValue.toJson();
-                return previousValue;
-            }, <Record<string, J>>{});
+                return [currentValue.toJson(), ...previousValue]
+            }, <J[]>[]);
     }
 
     add(value: T) {
@@ -121,7 +117,7 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     }
 
     getById(id: string) {
-        this._options.get(id);
+        return this._options.get(id);
     }
 
     private clearSelection() {
@@ -194,6 +190,25 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         }
         const next = this.findNext();
         this._selectedOptionId = next.id;
+    }
+
+    equals(other: SelectableOptions<J, T>) {
+        if (!other) {
+            return false;
+        }
+        if (this.size !== other.size) {
+            return false;
+        }
+        return Array.from(this._options.values())
+            .map(thisOption => other.has(thisOption.id))
+            .reduce((left, right) => left && right, true);
+    }
+
+    selectFirst() {
+        if (this._options.size === 0) {
+            this._selectedOptionId = "";
+        }
+        this._selectedOptionId = Array.from(this._options.values())[0].id;
     }
 }
 

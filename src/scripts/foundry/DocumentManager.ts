@@ -133,6 +133,14 @@ interface FabricateItemData {
      */
     load(): Promise<FabricateItemData>;
 
+    /**
+     * Determines whether the provided item data is equivalent to the current item data instance.
+     *
+     * @param {FabricateItemData} other - The other item data to compare with the current instance
+     * @returns {boolean} - Returns `true` if the provided item data is equal to the current instance, `false` otherwise.
+     */
+    equals(other: FabricateItemData): boolean;
+
 }
 
 class NoFabricateItemData implements FabricateItemData {
@@ -187,6 +195,10 @@ class NoFabricateItemData implements FabricateItemData {
         throw new Error("An attempt was made to load item data for a part with no item UUID set. ");
     }
 
+    equals(other: FabricateItemData): boolean {
+        return this === other;
+    }
+
 }
 
 class PendingFabricateItemData implements FabricateItemData {
@@ -236,6 +248,13 @@ class PendingFabricateItemData implements FabricateItemData {
 
     load(): Promise<FabricateItemData> {
         return this._cachedLoadingFunction(this._itemUuid);
+    }
+
+    equals(other: FabricateItemData): boolean {
+        if (!other || !(other instanceof PendingFabricateItemData)) {
+            return false;
+        }
+        return this.uuid === other.uuid;
     }
 
 }
@@ -304,6 +323,23 @@ class LoadedFabricateItemData implements FabricateItemData {
         return this;
     }
 
+    equals(other: FabricateItemData): boolean {
+        if (!other || !(other instanceof LoadedFabricateItemData)) {
+            return false;
+        }
+        if (this === other) {
+            return true;
+        }
+        return this.uuid === other.uuid
+            && this.isLoaded === other.isLoaded
+            && this.hasErrors === other.hasErrors
+            && this.sourceDocument?.id === other.sourceDocument?.id
+            && this.errors.length === other.errors.length
+            && this.errors
+                .map(thisError => other.errors.includes(thisError))
+                .reduce((left, right) => left && right, true);
+    }
+
 }
 
 class BrokenFabricateItemData implements FabricateItemData {
@@ -356,6 +392,20 @@ class BrokenFabricateItemData implements FabricateItemData {
 
     load(): Promise<FabricateItemData> {
         throw new Error("Cannot load item data for this part. There are problems with the item document.");
+    }
+
+    equals(other: FabricateItemData): boolean {
+        if (!other || !(other instanceof BrokenFabricateItemData)) {
+            return false;
+        }
+        if (this === other) {
+            return true;
+        }
+        return this.uuid === other.uuid
+            && this.errors.length === other.errors.length
+            && this.errors
+                .map(thisError => other.errors.includes(thisError))
+                .reduce((left, right) => left && right, true);
     }
 
 }
