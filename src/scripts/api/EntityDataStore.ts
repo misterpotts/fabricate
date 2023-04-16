@@ -73,12 +73,13 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         }
     }
 
-    public removeFromCollection(collectionName: string, entityId: string, collectionNamePrefix: string = ""): void {
+    public removeFromCollection(entityId: string, collectionName: string, collectionNamePrefix: string = ""): boolean {
         const fullCollectionName = this.getCollectionName(collectionNamePrefix, collectionName);
         const collection = this.collections.get(fullCollectionName);
         if (collection) {
-            collection.delete(entityId);
+            return collection.delete(entityId);
         }
+        return false;
     }
 
     public getCollection(collectionName: string, collectionNamePrefix: string = ""): T[] {
@@ -111,7 +112,9 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         const collectionsObj: { [key: string]: string[] } = {};
 
         this.collections.forEach((collection, key) => {
-            collectionsObj[key] = Array.from(collection.values());
+            if (collection.size > 0) {
+                collectionsObj[key] = Array.from(collection.values());
+            }
         });
 
         const serializedData = {
