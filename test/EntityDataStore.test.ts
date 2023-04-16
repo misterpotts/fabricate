@@ -302,7 +302,7 @@ describe("Serialization", () => {
 
 });
 
-describe("Mutation", () => {
+describe("Addition", () => {
 
     test("should add entities", () => {
 
@@ -352,6 +352,14 @@ describe("Mutation", () => {
         expect(collectionAfter.length).toEqual(2);
         expect(recipeInArray(testRecipeOne, collectionAfter)).toEqual(true);
         expect(recipeInArray(testRecipeTwo, collectionAfter)).toEqual(true);
+
+    });
+
+});
+
+describe("Deletion", () => {
+
+    test("", () => {
 
     });
 
