@@ -25,6 +25,14 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         return this._entityName;
     }
 
+    get size(): number {
+        return this.entities.size;
+    }
+
+    get collectionCount(): number {
+        return this.collections.size;
+    }
+
     public insertEntity(entity: T): void {
         this.entities.set(entity.id, entity);
     }
@@ -51,7 +59,7 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         return prefix + name;
     }
 
-    public addToCollection(collectionName: string, entityId: string, collectionNamePrefix: string = ""): void {
+    public addToCollection(entityId: string, collectionName: string, collectionNamePrefix: string = ""): void {
         const fullCollectionName = this.getCollectionName(collectionNamePrefix, collectionName);
         if (!this.collections.has(fullCollectionName)) {
             this.collections.set(fullCollectionName, new Set<string>());
@@ -147,7 +155,7 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         for (const collectionName in parsedData.collections) {
             const entityIds = parsedData.collections[collectionName];
             for (const entityId of entityIds) {
-                dataStore.addToCollection(collectionName, entityId);
+                dataStore.addToCollection(entityId, collectionName);
             }
         }
 

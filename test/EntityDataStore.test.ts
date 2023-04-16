@@ -1,6 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import { EntityDataStore } from "../src/scripts/api/EntityDataStore";
-import {testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
+import {testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
 import {testCraftingSystem} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import {allTestEssences} from "./test_data/TestEssences";
@@ -87,7 +87,7 @@ describe('Deserialization', () => {
         });
 
         // Use fromJson to create a new EntityDataStore
-        const dataStore = EntityDataStore.fromJson<RecipeJson, Recipe>(
+        const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             serializedData,
             Recipe.fromJson,
@@ -100,24 +100,24 @@ describe('Deserialization', () => {
         );
 
         // Verify the entities are added correctly
-        const allEntities = dataStore.getAllEntities();
+        const allEntities = underTest.getAllEntities();
         expect(allEntities.length).toEqual(2);
-        expect(testRecipeOne.equals(allEntities.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
-        expect(testRecipeTwo.equals(allEntities.find(recipe => recipe.id === testRecipeTwo.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, allEntities)).toEqual(true);
 
         // Verify the crafting system collection is added correctly
-        const craftingSystemCollection = dataStore.getCollection(testCraftingSystem.id);
+        const craftingSystemCollection = underTest.getCollection(testCraftingSystem.id);
         expect(craftingSystemCollection.length).toEqual(2);
-        expect(testRecipeOne.equals(craftingSystemCollection.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
-        expect(testRecipeTwo.equals(craftingSystemCollection.find(recipe => recipe.id === testRecipeTwo.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, craftingSystemCollection)).toEqual(true);
 
         // Verify the item UUID collections are added correctly
-        const itemOneCollection = dataStore.getCollection(testRecipeOne.itemUuid);
+        const itemOneCollection = underTest.getCollection(testRecipeOne.itemUuid);
         expect(itemOneCollection.length).toEqual(1);
-        expect(testRecipeOne.equals(itemOneCollection.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
-        const itemTwoCollection = dataStore.getCollection(testRecipeTwo.itemUuid);
+        expect(recipeInArray(testRecipeOne, itemOneCollection)).toEqual(true);
+        const itemTwoCollection = underTest.getCollection(testRecipeTwo.itemUuid);
         expect(itemTwoCollection.length).toEqual(1);
-        expect(testRecipeTwo.equals(itemTwoCollection.find(recipe => recipe.id === testRecipeTwo.id))).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, itemTwoCollection)).toEqual(true);
 
     });
 
@@ -154,22 +154,22 @@ describe('Deserialization', () => {
         // Verify the entities are added correctly
         const allEntities = dataStore.getAllEntities();
         expect(allEntities.length).toEqual(2);
-        expect(testRecipeOne.equals(allEntities.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
-        expect(testRecipeTwo.equals(allEntities.find(recipe => recipe.id === testRecipeTwo.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, allEntities)).toEqual(true);
 
         // Verify the crafting system collection is added correctly
         const craftingSystemCollection = dataStore.getCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
         expect(craftingSystemCollection.length).toEqual(2);
-        expect(testRecipeOne.equals(craftingSystemCollection.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
-        expect(testRecipeTwo.equals(craftingSystemCollection.find(recipe => recipe.id === testRecipeTwo.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, craftingSystemCollection)).toEqual(true);
 
         // Verify the item UUID collections are added correctly
         const itemOneCollection = dataStore.getCollection(testRecipeOne.itemUuid, itemCollectionPrefix);
         expect(itemOneCollection.length).toEqual(1);
-        expect(testRecipeOne.equals(itemOneCollection.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, itemOneCollection)).toEqual(true);
         const itemTwoCollection = dataStore.getCollection(testRecipeTwo.itemUuid, itemCollectionPrefix);
         expect(itemTwoCollection.length).toEqual(1);
-        expect(testRecipeTwo.equals(itemTwoCollection.find(recipe => recipe.id === testRecipeTwo.id))).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, itemTwoCollection)).toEqual(true);
 
     });
 
@@ -204,12 +204,12 @@ describe('Deserialization', () => {
         // Verify the entity is added correctly
         const allEntities = dataStore.getAllEntities();
         expect(allEntities.length).toEqual(1);
-        expect(testRecipeOne.equals(allEntities.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
 
         // Verify the crafting system collection is added as expected
         const craftingSystemCollection = dataStore.getCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
         expect(craftingSystemCollection.length).toEqual(3);
-        expect(testRecipeOne.equals(craftingSystemCollection.find(recipe => recipe.id === testRecipeOne.id))).toEqual(true);
+        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
         expect(craftingSystemCollection.find(recipe => recipe?.id === testRecipeTwo.id)).toBeUndefined()
         expect(craftingSystemCollection.find(recipe => recipe?.id === testRecipeThree.id)).toBeUndefined()
 
@@ -260,4 +260,106 @@ describe("Serialization", () => {
 
     });
 
+    test("should correctly serialise an Entity Data Store with entities in collections", () => {
+
+        const expected = {
+            entities: [
+                testRecipeOne.toJson(),
+                testRecipeTwo.toJson(),
+                testRecipeThree.toJson()
+            ],
+            collections: {
+                [ `CraftingSystem.${testCraftingSystem.id}` ]: [
+                    testRecipeOne.id,
+                    testRecipeTwo.id,
+                    testRecipeThree.id
+                ],
+                [ `Item.${testRecipeOne.itemUuid}` ] : [ testRecipeOne.id ],
+                [ `Item.${testRecipeTwo.itemUuid}` ] : [ testRecipeTwo.id ],
+                [ `Item.${testRecipeThree.itemUuid}` ] : [ testRecipeThree.id ],
+            }
+        };
+
+        const underTest = new EntityDataStore({
+            entities: new Map([
+                [ testRecipeOne.id, testRecipeOne ],
+                [ testRecipeTwo.id, testRecipeTwo ],
+                [ testRecipeThree.id, testRecipeThree ]
+            ]),
+            collections: new Map([
+                [`CraftingSystem.${testCraftingSystem.id}`, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
+                [ `Item.${testRecipeOne.itemUuid}`, new Set([ testRecipeOne.id ]) ],
+                [ `Item.${testRecipeTwo.itemUuid}`, new Set([ testRecipeTwo.id ]) ],
+                [ `Item.${testRecipeThree.itemUuid}`, new Set([ testRecipeThree.id ]) ]
+            ])
+        });
+
+        const result = underTest.toJson();
+
+        expect(JSON.parse(result)).toMatchSnapshot(expected);
+
+    });
+
 });
+
+describe("Mutation", () => {
+
+    test("should add entities", () => {
+
+        const underTest = new EntityDataStore<RecipeJson, Recipe>();
+
+        const allBefore = underTest.getAllEntities();
+
+        expect(underTest.size).toEqual(0);
+        expect(allBefore.length).toEqual(0);
+
+        underTest.insertEntity(testRecipeOne);
+        underTest.insertEntity(testRecipeTwo);
+        underTest.insertEntity(testRecipeThree);
+        underTest.insertEntity(testRecipeFour);
+
+        const allAfter = underTest.getAllEntities();
+
+        expect(underTest.size).toEqual(4);
+        expect(allAfter.length).toEqual(4);
+        expect(underTest.collectionCount).toEqual(0);
+
+    });
+
+    test("should add entities to collections", () => {
+
+        const underTest = new EntityDataStore({
+            entities: new Map([
+                [ testRecipeOne.id, testRecipeOne ],
+                [ testRecipeTwo.id, testRecipeTwo ],
+                [ testRecipeThree.id, testRecipeThree ]
+            ])
+        });
+
+        const collectionPrefix = `CraftingSystem.`;
+        const collectionName = testCraftingSystem.id;
+        const collectionBefore = underTest.getCollection(collectionName, collectionPrefix);
+
+        expect(collectionBefore).not.toBeNull();
+        expect(collectionBefore.length).toEqual(0);
+
+        underTest.addToCollection(testRecipeOne.id, collectionName, collectionPrefix);
+        underTest.addToCollection(testRecipeTwo.id, collectionName, collectionPrefix);
+
+        const collectionAfter = underTest.getCollection(collectionName, collectionPrefix);
+
+        expect(collectionAfter).not.toBeNull();
+        expect(collectionAfter.length).toEqual(2);
+        expect(recipeInArray(testRecipeOne, collectionAfter)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, collectionAfter)).toEqual(true);
+
+    });
+
+});
+
+function recipeInArray(expected: Recipe, known: Recipe[]): boolean {
+    if (!known || known.length === 0) {
+        return false;
+    }
+    return !!known.find(candidate => expected.equals(candidate));
+}
