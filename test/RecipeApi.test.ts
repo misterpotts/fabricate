@@ -40,7 +40,6 @@ import {
     PendingFabricateItemData
 } from "../src/scripts/foundry/DocumentManager";
 import Properties from "../src/scripts/Properties";
-import {RecipeFactory} from "../src/scripts/crafting/recipe/RecipeFactory";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
