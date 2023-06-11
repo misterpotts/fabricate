@@ -153,7 +153,7 @@ class StubDocumentManager implements DocumentManager {
         this.allowUnknownIds = this.cachedState.allowUnknownIds;
     }
 
-    async prepareItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData> {
+    prepareItemDataByDocumentUuid(uuid: string): FabricateItemData {
         return new PendingFabricateItemData(uuid, () => this.loadItemDataByDocumentUuid(uuid))
     }
 

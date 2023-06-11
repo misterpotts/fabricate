@@ -1,24 +1,37 @@
 import {Identifiable} from "../common/Identifiable";
 import {Serializable} from "../common/Serializable";
+import {EntityFactory} from "./EntityFactory";
 
-class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
+interface SerialisedEntityData<J> {
 
-    private readonly entities: Map<string, T>;
+    entities: J[];
+
+    collections: Record<string, string[]>;
+
+}
+
+class EntityDataStore<J extends {}, T extends Identifiable & Serializable<J>> {
+
+    private readonly entitiesJsonById: Map<string, J>;
+    private readonly entityFactory: EntityFactory<J, T>;
     private readonly collections: Map<string, Set<string>>;
     private readonly _entityName: string;
 
     constructor({
         entityName = "Unnamed entity",
-        entities = new Map(),
-        collections = new Map()
+        entitiesJsonById = new Map(),
+        collections = new Map(),
+        entityFactory
     }: {
         entityName?: string;
-        entities?: Map<string, T>;
+        entitiesJsonById?: Map<string, J>;
         collections?: Map<string, Set<string>>;
-    } = {}) {
-        this.entities = entities;
+        entityFactory: EntityFactory<J, T>;
+    }) {
+        this.entitiesJsonById = entitiesJsonById;
         this.collections = collections;
         this._entityName = entityName;
+        this.entityFactory = entityFactory;
     }
 
     get entityName(): string {
@@ -26,7 +39,7 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
     }
 
     get size(): number {
-        return this.entities.size;
+        return this.entitiesJsonById.size;
     }
 
     get collectionCount(): number {
@@ -34,11 +47,14 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
     }
 
     public insertEntity(entity: T): void {
-        this.entities.set(entity.id, entity);
+        this.entitiesJsonById.set(entity.id, entity.toJson());
     }
 
     public getEntity(id: string): T | undefined {
-        return this.entities.get(id);
+        if (!this.entitiesJsonById.has(id)) {
+            return undefined;
+        }
+        return this.entityFactory.make(this.entitiesJsonById.get(id));
     }
 
     public deleteEntity(id: string): boolean {
@@ -48,11 +64,12 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         });
 
         // Remove entity from the entities map
-        return this.entities.delete(id);
+        return this.entitiesJsonById.delete(id);
     }
 
     public getAllEntities(): T[] {
-        return Array.from(this.entities.values());
+        return Array.from(this.entitiesJsonById.values())
+            .map(entityJson => this.entityFactory.make(entityJson));
     }
 
     private getCollectionName(prefix: string, name: string) {
@@ -68,7 +85,7 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         if (set) {
             set.add(entityId);
         }
-        if (!this.entities.has(entityId)) {
+        if (!this.entitiesJsonById.has(entityId)) {
             console.warn(`The entity ID ${entityId} was added to the collection ${fullCollectionName} in the ${this.entityName} store, but the entity is not yet known to this store. You will need to either add the entity, or remove its ID from the collection`);
         }
     }
@@ -89,7 +106,13 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
             return [];
         }
         return Array.from(collection.values())
-            .map(id => this.entities.get(id));
+            .map(id => this.entitiesJsonById.get(id))
+            .map(entityJson => {
+                if (!entityJson) {
+                    return undefined;
+                }
+                return this.entityFactory.make(entityJson)
+            });
     }
 
     public deleteCollection(collectionName: string, collectionNamePrefix: string = ""): boolean {
@@ -125,20 +148,18 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
         return JSON.stringify(serializedData);
     }
 
-    public static fromJson<J, T extends Identifiable & Serializable<J>>(
+    public static fromJson<J extends {}, T extends Identifiable & Serializable<J>>(
         entityName: string,
         json: string,
-        itemFactory: (itemData: any, ...args: any[]) => T,
-        ...itemFactoryArgs: any[]
+        entityFactory: EntityFactory<J, T>
     ): EntityDataStore<J, T> {
-        let parsedData;
+        let parsedData: SerialisedEntityData<J>;
         try {
             parsedData = JSON.parse(json);
         } catch (e) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) :new Error("An unknown error occurred");
             throw new Error(`The data source for the ${entityName} store is not valid JSON`, { cause });
         }
-        const dataStore = new EntityDataStore<J, T>({ entityName });
 
         if (!("entities" in parsedData)) {
             throw new Error(`The data source for the ${entityName} store is missing the required property "entities"`);
@@ -148,11 +169,16 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
             throw new Error(`The data source for the ${entityName} store is missing the required property "collections"`);
         }
 
-        // Add entities to the data store
-        for (const itemData of parsedData.entities) {
-            const newItem = itemFactory(itemData, ...itemFactoryArgs);
-            dataStore.insertEntity(newItem);
-        }
+        // Prepare entities JSON to initialise the data store
+        const entitiesJsonById= new Map(parsedData.entities
+            .map(entityJson => {
+                if ("id" in entityJson) {
+                    return [entityJson.id as string, entityJson as J];
+                }
+                throw new Error(`Entity JSON missing required property "id"`);
+            }));
+
+        const dataStore = new EntityDataStore<J, T>({ entityName, entitiesJsonById, entityFactory });
 
         // Add collections to the data store
         for (const collectionName in parsedData.collections) {
@@ -167,4 +193,4 @@ class EntityDataStore<J, T extends Identifiable & Serializable<J>> {
 
 }
 
-export { EntityDataStore }
+export { EntityDataStore, SerialisedEntityData }

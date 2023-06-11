@@ -418,7 +418,7 @@ interface DocumentManager {
 
     loadItemDataForDocumentsByUuid(ids: string[]): Promise<Map<string, FabricateItemData>>;
 
-    prepareItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData>;
+    prepareItemDataByDocumentUuid(uuid: string): FabricateItemData;
 
 }
 
@@ -439,7 +439,7 @@ class DefaultDocumentManager implements DocumentManager {
         }
     }
 
-    async prepareItemDataByDocumentUuid(uuid: string): Promise<FabricateItemData> {
+    prepareItemDataByDocumentUuid(uuid: string): FabricateItemData {
         if (!uuid || uuid === NoFabricateItemData.UUID()) {
             return new NoFabricateItemData();
         }

@@ -61,7 +61,7 @@ interface RecipeOptions {
      * Optional dictionary of requirement options for the recipe, keyed on the option name.
      * */
     requirementOptions?: {
-
+        
         name: string;
 
         /**
@@ -497,9 +497,9 @@ class DefaultRecipeApi implements RecipeApi {
                     });
                 Object.values(recipeJson.resultOptions)
                     .forEach(resultOption => {
-                        if (resultOption[componentIdToDelete]) {
+                        if (resultOption.results[componentIdToDelete]) {
                             modified = true;
-                            delete resultOption[componentIdToDelete];
+                            delete resultOption.results[componentIdToDelete];
                         }
                     });
                 if (modified) {
@@ -539,40 +539,40 @@ class DefaultRecipeApi implements RecipeApi {
             craftingSystemId,
             itemData,
             disabled,
-            ingredientOptions: this.buildIngredientOptions(recipeJson.requirementOptions, componentsForSystem),
+            requirementOptions: this.buildIngredientOptions(recipeJson.requirementOptions, componentsForSystem),
             resultOptions: this.buildResultOptions(recipeJson.resultOptions, componentsForSystem),
             essences: Combination.fromRecord(recipeJson.essences, essencesForSystem)
         });
     }
 
-    private buildIngredientOptions(ingredientOptionsJson: Record<string, RequirementOptionJson>, allComponents: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
-        const options = Object.keys(ingredientOptionsJson)
-            .map(name => this.buildIngredientOption(name, ingredientOptionsJson[name], allComponents));
+    private buildIngredientOptions(requirementOptionsJson: RequirementOptionJson[], allComponents: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
+        const options = requirementOptionsJson
+            .map(requirementOptionJson => this.buildRequirementOption(requirementOptionJson, allComponents));
         return new SelectableOptions<RequirementOptionJson, RequirementOption>({
             options
         });
     }
 
-    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>, allComponents: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
-        const options = Object.keys(resultOptionsJson)
-            .map(name => this.buildResultOption(name, resultOptionsJson[name], allComponents));
+    private buildResultOptions(resultOptionsJson: ResultOptionJson[], allComponents: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
+        const options = resultOptionsJson
+            .map(resultOptionJson => this.buildResultOption(resultOptionJson, allComponents));
         return new SelectableOptions<ResultOptionJson, ResultOption>({
             options
         });
     }
 
-    private buildIngredientOption(name: string, ingredientOptionJson: RequirementOptionJson, allComponents: Map<string, Component>): RequirementOption {
+    private buildRequirementOption(requirementOptionJson: RequirementOptionJson, allComponents: Map<string, Component>): RequirementOption {
         return new RequirementOption({
-            name,
-            catalysts: Combination.fromRecord(ingredientOptionJson.catalysts, allComponents),
-            ingredients: Combination.fromRecord(ingredientOptionJson.ingredients, allComponents)
+            name: requirementOptionJson.name,
+            catalysts: Combination.fromRecord(requirementOptionJson.catalysts, allComponents),
+            ingredients: Combination.fromRecord(requirementOptionJson.ingredients, allComponents)
         });
     }
 
-    private buildResultOption(name: string, resultOptionJson: ResultOptionJson, allComponents: Map<string, Component>): ResultOption {
+    private buildResultOption(resultOptionJson: ResultOptionJson, allComponents: Map<string, Component>): ResultOption {
         return new ResultOption({
-            name,
-            results: Combination.fromRecord(resultOptionJson, allComponents)
+            name: resultOptionJson.name,
+            results: Combination.fromRecord(resultOptionJson.results, allComponents)
         });
     }
 

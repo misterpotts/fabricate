@@ -123,7 +123,7 @@ describe("When selecting ingredients", () => {
             id,
             disabled: false,
             itemData: NoFabricateItemData.INSTANCE(),
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
                     new RequirementOption({
                         name: "Option 1",
@@ -167,7 +167,7 @@ describe("When selecting ingredients", () => {
         const underTest = new Recipe({
             id,
             itemData: NoFabricateItemData.INSTANCE(),
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [optionOne, optionTwo]
             })
         });
@@ -221,7 +221,7 @@ describe("When selecting results", () => {
                     })
                 ]
             }),
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
                     new RequirementOption({
                         name: "Option 1",

@@ -29,14 +29,7 @@ import {
 } from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {testCraftingSystem} from "./test_data/TestCrafingSystem";
-import {
-    Recipe,
-    RequirementOption,
-    RequirementOptionJson,
-    ResultOption,
-    ResultOptionJson
-} from "../src/scripts/crafting/recipe/Recipe";
-import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
+import { Recipe } from "../src/scripts/crafting/recipe/Recipe";
 import {DefaultEntityValidationResult} from "../src/scripts/api/EntityValidator";
 
 const identityFactory = new StubIdentityFactory();
@@ -236,13 +229,9 @@ describe("Create", () => {
             id: identityFactory.make(),
             craftingSystemId: "notAValidCraftingSystemId",
             itemData: testRecipeOne.itemData,
-            resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                options: testRecipeOne.resultOptions
-            }),
             essences: testRecipeOne.essences,
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                options: testRecipeOne.ingredientOptions
-            }),
+            resultOptions: testRecipeOne.resultOptions.clone(),
+            requirementOptions: testRecipeOne.requirementOptions.clone(),
             disabled: testRecipeOne.isDisabled
         });
 
@@ -466,8 +455,8 @@ describe("Edit", () => {
         expect(result).not.toBeNull();
         expect(result.id.length).toBeGreaterThan(1);
         expect(result.id).not.toEqual(testRecipeOne.id);
-        expect(result.requirementOptions.length).toEqual(testRecipeOne.requirementOptions.length);
-        expect(result.resultOptions.length).toEqual(testRecipeOne.resultOptions.length);
+        expect(result.requirementOptions.size).toEqual(testRecipeOne.requirementOptions.size);
+        expect(result.resultOptions.size).toEqual(testRecipeOne.resultOptions.size);
         expect(result.essences.size).toEqual(testRecipeOne.essences.size);
 
     });
@@ -660,12 +649,15 @@ describe("Delete", () => {
         return recipes
             .map(recipe => {
                 const amountInIngredients = recipe.requirementOptions
+                    .options
                     .map(requirementOption => requirementOption.ingredients.amountFor(componentId))
                     .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
                 const amountInCatalysts = recipe.requirementOptions
+                    .options
                     .map(requirementOption => requirementOption.catalysts.amountFor(componentId))
                     .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
                 const amountInResults = recipe.resultOptions
+                    .options
                     .map(resultOption => resultOption.results.amountFor(componentId))
                     .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
                 const amount = amountInIngredients + amountInCatalysts + amountInResults;

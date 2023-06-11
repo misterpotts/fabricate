@@ -148,7 +148,7 @@ export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
             id,
             itemData,
             disabled: sourceRecord.disabled,
-            ingredientOptions: this.buildIngredientOptions(sourceRecord.requirementOptions, this._componentDictionary.getAll()),
+            requirementOptions: this.buildIngredientOptions(sourceRecord.requirementOptions, this._componentDictionary.getAll()),
             resultOptions: this.buildResultOptions(sourceRecord.resultOptions, this._componentDictionary.getAll()),
             essences: Combination.fromRecord(sourceRecord.essences, this._essenceDictionary.getAll())
         });

@@ -66,6 +66,7 @@ class RecipeValidator implements EntityValidator<Recipe> {
         }
 
         candidate.requirementOptions
+            .options
             .map(ingredientOption => ingredientOption.name)
             .map((ingredientOptionName, index, allIngredientOptionNames) => {
                 if (allIngredientOptionNames.indexOf(ingredientOptionName) !== index) {
@@ -74,6 +75,7 @@ class RecipeValidator implements EntityValidator<Recipe> {
             });
 
         candidate.resultOptions
+            .options
             .map(resultOption => resultOption.name)
             .map((resultOptionName, index, allResultOptionNames) => {
                 if (allResultOptionNames.indexOf(resultOptionName) !== index) {

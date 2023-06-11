@@ -23,7 +23,7 @@ const testRecipeOne: Recipe = new Recipe({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: {}
     }),
-    ingredientOptions: new SelectableOptions({
+    requirementOptions: new SelectableOptions({
         options: [
             new RequirementOption({
                 name: "Option 1",
@@ -60,7 +60,7 @@ const testRecipeTwo: Recipe = new Recipe({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: {}
     }),
-    ingredientOptions: new SelectableOptions({
+    requirementOptions: new SelectableOptions({
         options: [
             new RequirementOption({
                 name: "Option 1",
@@ -127,7 +127,7 @@ const testRecipeFour: Recipe = new Recipe({
         new Unit(elementalEarth, 1),
         new Unit(elementalWater, 2)
     ]),
-    ingredientOptions: new SelectableOptions({
+    requirementOptions: new SelectableOptions({
         options: [
             new RequirementOption({
                 name: "Option 1",
@@ -165,7 +165,7 @@ const testRecipeFive: Recipe = new Recipe({
         new Unit(elementalFire, 1),
         new Unit(elementalWater, 1)
     ]),
-    ingredientOptions: new SelectableOptions({
+    requirementOptions: new SelectableOptions({
         options: [
             new RequirementOption({
                 name: "Option 1",
@@ -202,7 +202,7 @@ const testRecipeSix: Recipe = new Recipe({
         new Unit(elementalEarth, 3),
         new Unit(elementalWater, 1)
     ]),
-    ingredientOptions: new SelectableOptions({
+    requirementOptions: new SelectableOptions({
         options: [
             new RequirementOption({
                 name: "Option 1",
@@ -246,7 +246,7 @@ const testRecipeSeven: Recipe = new Recipe({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: {}
     }),
-    ingredientOptions: new SelectableOptions({
+    requirementOptions: new SelectableOptions({
         options: [
             new RequirementOption({
                 name: "Option 1",

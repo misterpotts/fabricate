@@ -239,7 +239,7 @@ describe("Create", () => {
                 options: testRecipeOne.resultOptions
             }),
             essences: testRecipeOne.essences,
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: testRecipeOne.ingredientOptions
             }),
             disabled: testRecipeOne.isDisabled

@@ -5,6 +5,23 @@ import {testCraftingSystem} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import {allTestEssences} from "./test_data/TestEssences";
 import {allTestComponents} from "./test_data/TestCraftingComponents";
+import {StubDocumentManager} from "./stubs/StubDocumentManager";
+import {RecipeFactory} from "../src/scripts/crafting/recipe/RecipeFactory";
+
+const stubDocumentManager = new StubDocumentManager({
+    itemDataByUuid: new Map([
+        [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
+        [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ],
+        [ testRecipeThree.itemUuid, testRecipeThree.itemData ],
+        [ testRecipeFour.itemUuid, testRecipeFour.itemData ]
+    ])
+});
+
+const recipeFactory = new RecipeFactory({
+    documentManager: stubDocumentManager,
+    essences: allTestEssences,
+    components: allTestComponents
+});
 
 describe('Deserialization', () => {
 
@@ -13,42 +30,24 @@ describe('Deserialization', () => {
         expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             "{}",
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            allTestEssences,
-            allTestComponents
+            recipeFactory
         )).toThrow("The data source for the Recipe store is missing the required property \"entities\"");
 
         expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             `{ "entities": [] }`,
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            allTestEssences,
-            allTestComponents
+            recipeFactory
         )).toThrow("The data source for the Recipe store is missing the required property \"collections\"");
 
         expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             `NOT_VALID_JSON`,
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            allTestEssences,
-            allTestComponents
+            recipeFactory
         )).toThrow("The data source for the Recipe store is not valid JSON");
 
     });
 
-    test("should fail to deserialize when constructor function's requirements are not met", () => {
+    test("should initialise but not deserialize when recipe factory does not have required essences or components", () => {
 
         // Prepare the serialized data
         const serializedData: string = JSON.stringify({
@@ -60,17 +59,13 @@ describe('Deserialization', () => {
             }
         });
 
-        expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
+        const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             serializedData,
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            new Map(),
-            new Map()
-        )).toThrow();
+            new RecipeFactory()
+        );
+
+        expect(() => underTest.getEntity(testRecipeOne.id)).toThrow();
 
     });
 
@@ -90,13 +85,7 @@ describe('Deserialization', () => {
         const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             serializedData,
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            allTestEssences,
-            allTestComponents
+            recipeFactory
         );
 
         // Verify the entities are added correctly
@@ -142,13 +131,7 @@ describe('Deserialization', () => {
         const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             serializedData,
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            allTestEssences,
-            allTestComponents
+            recipeFactory
         );
 
         // Verify the entities are added correctly
@@ -192,13 +175,7 @@ describe('Deserialization', () => {
         const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
             "Recipe",
             serializedData,
-            Recipe.fromJson,
-            new Map([
-                [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-                [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ]
-            ]),
-            allTestEssences,
-            allTestComponents
+            recipeFactory
         );
 
         // Verify the entity is added correctly
@@ -233,7 +210,7 @@ describe("Serialization", () => {
         // @ts-ignore
         const expected = { entities: [], collections: {} };
 
-        const underTest = new EntityDataStore();
+        const underTest = new EntityDataStore({ entityFactory: recipeFactory });
 
         const result = underTest.toJson();
 
@@ -250,7 +227,8 @@ describe("Serialization", () => {
             collections: new Map<string, Set<string>>([
                 [ "A", new Set() ],
                 [ "B", new Set() ]
-            ])
+            ]),
+            entityFactory: recipeFactory
         });
 
         const result = underTest.toJson();
@@ -261,24 +239,31 @@ describe("Serialization", () => {
 
     test("should correctly serialise an Entity Data Store with entities not in collections", () => {
 
-        // @ts-ignore
-        const expected = { entities: [ testRecipeOne.toJson(), testRecipeTwo.toJson(), testRecipeThree.toJson() ], collections: {} };
-
         const underTest = new EntityDataStore({
-            entities: new Map([
-                [ testRecipeOne.id, testRecipeOne ],
-                [ testRecipeTwo.id, testRecipeTwo ],
-                [ testRecipeThree.id, testRecipeThree ]
-            ])
+            entitiesJsonById: new Map([
+                [ testRecipeOne.id, testRecipeOne.toJson() ],
+                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
+                [ testRecipeThree.id, testRecipeThree.toJson() ]
+            ]),
+            entityFactory: recipeFactory
         });
 
         const result = underTest.toJson();
 
-        expect(JSON.parse(result)).toMatchSnapshot(expected);
+        const deserializedResult = JSON.parse(result);
+        expect(recipeJsonInArray(testRecipeOne.toJson(), deserializedResult.entities)).toEqual(true);
+        expect(recipeJsonInArray(testRecipeTwo.toJson(), deserializedResult.entities)).toEqual(true);
+        expect(recipeJsonInArray(testRecipeThree.toJson(), deserializedResult.entities)).toEqual(true);
+        expect(Object.keys(deserializedResult.collections).length).toEqual(0);
 
     });
 
     test("should correctly serialise an Entity Data Store with entities in collections", () => {
+
+        const craftingSystemCollectionKey = `CraftingSystem.${testCraftingSystem.id}`;
+        const itemOneCollectionKey = `Item.${testRecipeOne.itemUuid}`;
+        const itemTwoCollectionKey = `Item.${testRecipeTwo.itemUuid}`;
+        const itemThreeCollectionKey = `Item.${testRecipeThree.itemUuid}`;
 
         const expected = {
             entities: [
@@ -287,34 +272,43 @@ describe("Serialization", () => {
                 testRecipeThree.toJson()
             ],
             collections: {
-                [ `CraftingSystem.${testCraftingSystem.id}` ]: [
+                [ craftingSystemCollectionKey ]: [
                     testRecipeOne.id,
                     testRecipeTwo.id,
                     testRecipeThree.id
                 ],
-                [ `Item.${testRecipeOne.itemUuid}` ] : [ testRecipeOne.id ],
-                [ `Item.${testRecipeTwo.itemUuid}` ] : [ testRecipeTwo.id ],
-                [ `Item.${testRecipeThree.itemUuid}` ] : [ testRecipeThree.id ],
+                [ itemOneCollectionKey ] : [ testRecipeOne.id ],
+                [ itemTwoCollectionKey ] : [ testRecipeTwo.id ],
+                [ itemThreeCollectionKey ] : [ testRecipeThree.id ],
             }
         };
 
         const underTest = new EntityDataStore({
-            entities: new Map([
-                [ testRecipeOne.id, testRecipeOne ],
-                [ testRecipeTwo.id, testRecipeTwo ],
-                [ testRecipeThree.id, testRecipeThree ]
+            entitiesJsonById: new Map([
+                [ testRecipeOne.id, testRecipeOne.toJson() ],
+                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
+                [ testRecipeThree.id, testRecipeThree.toJson() ]
             ]),
+            entityFactory: recipeFactory,
             collections: new Map([
-                [`CraftingSystem.${testCraftingSystem.id}`, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
-                [ `Item.${testRecipeOne.itemUuid}`, new Set([ testRecipeOne.id ]) ],
-                [ `Item.${testRecipeTwo.itemUuid}`, new Set([ testRecipeTwo.id ]) ],
-                [ `Item.${testRecipeThree.itemUuid}`, new Set([ testRecipeThree.id ]) ]
+                [craftingSystemCollectionKey, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
+                [ itemOneCollectionKey, new Set([ testRecipeOne.id ]) ],
+                [ itemTwoCollectionKey, new Set([ testRecipeTwo.id ]) ],
+                [ itemThreeCollectionKey, new Set([ testRecipeThree.id ]) ]
             ])
         });
 
         const result = underTest.toJson();
 
-        expect(JSON.parse(result)).toMatchSnapshot(expected);
+        const deserializedResult = JSON.parse(result);
+        expect(recipeJsonInArray(testRecipeOne.toJson(), deserializedResult.entities)).toEqual(true);
+        expect(recipeJsonInArray(testRecipeTwo.toJson(), deserializedResult.entities)).toEqual(true);
+        expect(recipeJsonInArray(testRecipeThree.toJson(), deserializedResult.entities)).toEqual(true);
+        expect(Object.keys(deserializedResult.collections).length).toEqual(4);
+        expect(deserializedResult.collections[craftingSystemCollectionKey]).toEqual(expected.collections[craftingSystemCollectionKey]);
+        expect(deserializedResult.collections[itemOneCollectionKey]).toEqual(expected.collections[itemOneCollectionKey]);
+        expect(deserializedResult.collections[itemTwoCollectionKey]).toEqual(expected.collections[itemTwoCollectionKey]);
+        expect(deserializedResult.collections[itemThreeCollectionKey]).toEqual(expected.collections[itemThreeCollectionKey]);
 
     });
 
@@ -324,7 +318,7 @@ describe("Addition", () => {
 
     test("should add entities", () => {
 
-        const underTest = new EntityDataStore<RecipeJson, Recipe>();
+        const underTest = new EntityDataStore<RecipeJson, Recipe>({ entityFactory: recipeFactory });
 
         underTest.insertEntity(testRecipeOne);
         underTest.insertEntity(testRecipeTwo);
@@ -342,11 +336,12 @@ describe("Addition", () => {
     test("should add entities to collections", () => {
 
         const underTest = new EntityDataStore({
-            entities: new Map([
-                [ testRecipeOne.id, testRecipeOne ],
-                [ testRecipeTwo.id, testRecipeTwo ],
-                [ testRecipeThree.id, testRecipeThree ]
-            ])
+            entitiesJsonById: new Map([
+                [ testRecipeOne.id, testRecipeOne.toJson() ],
+                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
+                [ testRecipeThree.id, testRecipeThree.toJson() ]
+            ]),
+            entityFactory: recipeFactory
         });
 
         const collectionPrefix = `CraftingSystem.`;
@@ -370,7 +365,7 @@ describe("Deletion", () => {
 
     test("should return false when deleting non-existent collections", () => {
 
-        const underTest = new EntityDataStore();
+        const underTest = new EntityDataStore({ entityFactory: recipeFactory });
 
         const craftingSystemCollectionPrefix = "CraftingSystem.";
 
@@ -382,7 +377,7 @@ describe("Deletion", () => {
 
     test("should return false when removing non-existent entries in collections", () => {
 
-        const underTest = new EntityDataStore();
+        const underTest = new EntityDataStore({ entityFactory: recipeFactory });
 
         const craftingSystemCollectionPrefix = "CraftingSystem.";
 
@@ -395,11 +390,12 @@ describe("Deletion", () => {
     test("should delete linked entities when deleting collections", () => {
 
         const underTest = new EntityDataStore({
-            entities: new Map([
-                [ testRecipeOne.id, testRecipeOne ],
-                [ testRecipeTwo.id, testRecipeTwo ],
-                [ testRecipeThree.id, testRecipeThree ]
+            entitiesJsonById: new Map([
+                [ testRecipeOne.id, testRecipeOne.toJson() ],
+                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
+                [ testRecipeThree.id, testRecipeThree.toJson() ]
             ]),
+            entityFactory: recipeFactory,
             collections: new Map([
                 [`CraftingSystem.${testCraftingSystem.id}`, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
                 [ `Item.${testRecipeOne.itemUuid}`, new Set([ testRecipeOne.id ]) ],
@@ -439,11 +435,12 @@ describe("Deletion", () => {
     test("should remove entities from collections without deleting them", () => {
 
         const underTest = new EntityDataStore({
-            entities: new Map([
-                [ testRecipeOne.id, testRecipeOne ],
-                [ testRecipeTwo.id, testRecipeTwo ],
-                [ testRecipeThree.id, testRecipeThree ]
+            entitiesJsonById: new Map([
+                [ testRecipeOne.id, testRecipeOne.toJson() ],
+                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
+                [ testRecipeThree.id, testRecipeThree.toJson() ]
             ]),
+            entityFactory: recipeFactory,
             collections: new Map([
                 [`CraftingSystem.${testCraftingSystem.id}`, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
                 [ `Item.${testRecipeOne.itemUuid}`, new Set([ testRecipeOne.id ]) ],
@@ -493,5 +490,12 @@ function recipeInArray(expected: Recipe, known: Recipe[]): boolean {
     if (!known || known.length === 0) {
         return false;
     }
-    return !!known.find(candidate => expected.equals(candidate));
+    return !!known.find(candidate => expected.equalsNotLoaded(candidate));
+}
+
+function recipeJsonInArray(expected: RecipeJson, known: RecipeJson[]): boolean {
+    if (!known || known.length === 0) {
+        return false;
+    }
+    return !!known.find(candidate => expected.id === candidate.id);
 }

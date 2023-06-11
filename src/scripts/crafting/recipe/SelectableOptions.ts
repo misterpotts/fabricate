@@ -8,7 +8,7 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
 
     constructor({
         options = [],
-        selectedOptionId
+        selectedOptionId = ""
     }: {
         options?: T[],
         selectedOptionId?: string
