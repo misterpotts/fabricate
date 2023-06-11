@@ -3,11 +3,7 @@ import {Identifiable} from "../../common/Identifiable";
 import {Component} from "../component/Component";
 import {Essence} from "../essence/Essence";
 import {SelectableOptions} from "./SelectableOptions";
-import {
-    FabricateItemData,
-    ItemLoadingError,
-    NoFabricateItemData
-} from "../../foundry/DocumentManager";
+import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
 import {Unit} from "../../common/Unit";
 import {Serializable} from "../../common/Serializable";
 
@@ -300,10 +296,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     public get hasOptions(): boolean {
-        return this.hasIngredientOptions || this.hasResultOptions;
+        return this.hasRequirementOptions || this.hasResultOptions;
     }
 
-    public get hasIngredientOptions(): boolean {
+    public get hasRequirementOptions(): boolean {
         return this._requirementOptions.requiresUserChoice;
     }
 
@@ -356,12 +352,12 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._requirementOptions.selectedOptionId;
     }
 
-    public selectNextIngredientOption(): string {
+    public selectNextRequirementOption(): string {
         this._requirementOptions.selectNext();
         return this.selectedRequirementOptionName;
     }
 
-    public selectPreviousIngredientOption(): string {
+    public selectPreviousRequirementOption(): string {
         this._requirementOptions.selectPrevious();
         return this.selectedRequirementOptionName;
     }
@@ -385,11 +381,11 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions.selectFirst();
     }
 
-    public editIngredientOption(ingredientOption: RequirementOption) {
-        if (!this._requirementOptions.has(ingredientOption.id)) {
-            throw new Error(`Cannot edit Ingredient Option "${ingredientOption.id}". It does not exist in this Recipe.`);
+    public editRequirementOption(requirementOption: RequirementOption) {
+        if (!this._requirementOptions.has(requirementOption.id)) {
+            throw new Error(`Cannot edit Ingredient Option "${requirementOption.id}". It does not exist in this Recipe.`);
         }
-        this._requirementOptions.set(ingredientOption);
+        this._requirementOptions.set(requirementOption);
     }
 
     set resultOptions(value: SelectableOptions<ResultOptionJson, ResultOption>) {
@@ -516,6 +512,53 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             return true;
         }
         return this._id === other.id;
+    }
+
+    hasComponent(componentId: string): boolean {
+        const inRequirements = this.requirementOptions.options
+            .map(option => option.ingredients.has(componentId) || option.catalysts.has(componentId))
+            .reduce((previousValue, currentValue) => {
+                return previousValue || currentValue;
+            }, false);
+
+        if (inRequirements) {
+            return true;
+        }
+
+        return this.resultOptions.options
+            .map(option => option.results.has(componentId))
+            .reduce((previousValue, currentValue) => {
+                return previousValue || currentValue;
+            }, false);
+    }
+
+    removeComponent(componentId: string) {
+        const modifiedRequirementOptions = this.requirementOptions.options.map(option => {
+            const ingredients = option.ingredients.without(componentId);
+            const catalysts = option.catalysts.without(componentId);
+            return new RequirementOption({
+                name: option.name,
+                catalysts,
+                ingredients
+            });
+        });
+        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({ options: modifiedRequirementOptions });
+        const modifiedResultOptions = this.resultOptions.options.map(option => {
+            const results = option.results.without(componentId);
+            return new ResultOption({
+                name: option.name,
+                results
+            });
+        });
+        this._resultOptions = new SelectableOptions<ResultOptionJson, ResultOption>({ options: modifiedResultOptions });
+    }
+
+    hasEssence(essenceId: string) {
+        return this.essences.has(essenceId);
+    }
+
+    removeEssence(essenceId: string) {
+        this._essences = this.essences.without(essenceId);
     }
 
 }

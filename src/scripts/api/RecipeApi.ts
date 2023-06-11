@@ -1,33 +1,9 @@
-import {
-    Recipe,
-    RecipeJson,
-    RequirementOption,
-    RequirementOptionJson,
-    ResultOption,
-    ResultOptionJson
-} from "../crafting/recipe/Recipe";
+import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
 import {LocalizationService} from "../../applications/common/LocalizationService";
-import {SettingManager} from "./SettingManager";
 import Properties from "../Properties";
-import {IdentityFactory} from "../foundry/IdentityFactory";
-import {DocumentManager} from "../foundry/DocumentManager";
-import {Component} from "../crafting/component/Component";
-import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
-import {ComponentApi} from "./ComponentApi";
-import {EssenceApi} from "./EssenceApi";
-import {Essence} from "../crafting/essence/Essence";
 import {EntityValidationResult, EntityValidator} from "./EntityValidator";
-import {Combination} from "../common/Combination";
-
-interface RecipeData {
-
-    recipeIdsByItemUuid: Record<string, string[]>;
-    recipeIdsByCraftingSystemId: Record<string, string[]>;
-    recipesById: Record<string, RecipeJson>;
-
-}
-
-export { RecipeData }
+import {EntityDataStore} from "./EntityDataStore";
+import {IdentityFactory} from "../foundry/IdentityFactory";
 
 /**
  * Options for creating a new recipe.
@@ -245,42 +221,30 @@ class DefaultRecipeApi implements RecipeApi {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
-    private readonly identityFactory: IdentityFactory;
-    private readonly settingManager: SettingManager<RecipeData>;
     private readonly recipeValidator: EntityValidator<Recipe>;
-    private readonly essenceApi: EssenceApi;
-    private readonly componentApi: ComponentApi;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
-    private readonly documentManager: DocumentManager;
+    private readonly recipeDataStore: EntityDataStore<RecipeJson, Recipe>;
+    private readonly identityFactory: IdentityFactory;
 
     constructor({
-        componentApi,
-        essenceApi,
-        identityFactory,
         notificationService,
         localizationService,
-        settingManager,
-        documentManager,
-        recipeValidator
+        recipeValidator,
+        recipeDataStore,
+        identityFactory
     }: {
-        essenceApi: EssenceApi;
-        componentApi: ComponentApi;
-        identityFactory: IdentityFactory;
         notificationService: NotificationService;
         localizationService: LocalizationService;
-        settingManager: SettingManager<RecipeData>;
-        documentManager: DocumentManager;
         recipeValidator: EntityValidator<Recipe>;
+        recipeDataStore: EntityDataStore<RecipeJson, Recipe>;
+        identityFactory: IdentityFactory;
     }) {
-        this.essenceApi = essenceApi;
-        this.componentApi = componentApi;
-        this.identityFactory = identityFactory;
         this.notificationService = notificationService;
         this.localizationService = localizationService;
-        this.settingManager = settingManager;
-        this.documentManager = documentManager;
         this.recipeValidator = recipeValidator;
+        this.recipeDataStore = recipeDataStore;
+        this.identityFactory = identityFactory;
     }
 
     get notifications() {
@@ -288,8 +252,8 @@ class DefaultRecipeApi implements RecipeApi {
     }
 
     async deleteById(id: string): Promise<Recipe | undefined> {
-        const settingValue = await this.settingManager.read();
-        if (!settingValue.recipesById[id]) {
+        const deletedRecipe= await this.recipeDataStore.getById(id);
+        if (!deletedRecipe) {
             const message = this.localizationService.format(
                 `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.doesNotExist`,
                 { recipeId: id }
@@ -297,37 +261,25 @@ class DefaultRecipeApi implements RecipeApi {
             this.notificationService.error(message);
             return undefined;
         }
-        const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(settingValue.recipesById[id].craftingSystemId);
-        const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(settingValue.recipesById[id].craftingSystemId);
-        const deletedRecipe = await this.buildRecipe(settingValue.recipesById[id], componentsForSystem, essencesForSystem);
-        delete settingValue.recipesById[id];
-        settingValue.recipeIdsByCraftingSystemId[deletedRecipe.craftingSystemId] = settingValue.recipeIdsByCraftingSystemId[deletedRecipe.craftingSystemId]
-            .filter(id => id !== deletedRecipe.id);
-        settingValue.recipeIdsByItemUuid[deletedRecipe.itemUuid] = settingValue.recipeIdsByItemUuid[deletedRecipe.itemUuid]
-            .filter(id => id !== deletedRecipe.id);
-        await this.settingManager.write(settingValue);
+        await this.recipeDataStore.deleteById(id);
         return deletedRecipe;
     }
 
+
     async save(recipe: Recipe): Promise<Recipe> {
         await this.rejectSavingInvalidRecipe(recipe);
-        const recipeData = await this.settingManager.read();
 
-        let localizationActivity = !!recipeData.recipesById[recipe.id] ? "updated" : "created";
+        const updated = await this.recipeDataStore.has(recipe.id);
+        await this.recipeDataStore.insert(recipe);
+
+        let activityName = updated ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultRecipeApi._LOCALIZATION_PATH}.settings.recipe.${localizationActivity}`,
+            `${DefaultRecipeApi._LOCALIZATION_PATH}.settings.recipe.${activityName}`,
             { recipeId: recipe.name }
         );
 
-        if (!recipeData.recipesById[recipe.id]) {
-            recipeData.recipeIdsByCraftingSystemId = this.addRecipeIdToCollectionDictionary(recipe.id, recipe.itemUuid, recipeData.recipeIdsByCraftingSystemId);
-            recipeData.recipeIdsByItemUuid = this.addRecipeIdToCollectionDictionary(recipe.id, recipe.itemUuid, recipeData.recipeIdsByItemUuid);
-        }
-
-        recipeData.recipesById[recipe.id] = recipe.toJson();
-
-        await this.settingManager.write(recipeData);
         this.notificationService.info(message);
+
         return recipe;
     }
 
@@ -339,12 +291,9 @@ class DefaultRecipeApi implements RecipeApi {
         requirementOptions = [],
         resultOptions = [],
     }: RecipeOptions): Promise<Recipe> {
-        const settingValue = this.settingManager.read();
-        const assignedIds = Object.keys(settingValue);
+        const assignedIds = await this.recipeDataStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
-        const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(craftingSystemId);
-        const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(craftingSystemId);
-        const created = await this.buildRecipe(
+        return this.recipeDataStore.create(
             {
                 id,
                 itemUuid,
@@ -353,17 +302,13 @@ class DefaultRecipeApi implements RecipeApi {
                 essences,
                 requirementOptions,
                 resultOptions
-            },
-            componentsForSystem,
-            essencesForSystem
+            }
         );
-        return this.save(created);
     }
 
     async getById(recipeId: string): Promise<Recipe | undefined> {
-        const settingValue = await this.settingManager.read();
-        const recipeJson = settingValue.recipesById[recipeId];
-        if (!recipeJson) {
+        const recipe = await this.recipeDataStore.getById(recipeId);
+        if (!recipe) {
             const message = this.localizationService.format(
                 `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.doesNotExist`,
                 { recipeId }
@@ -371,218 +316,76 @@ class DefaultRecipeApi implements RecipeApi {
             this.notificationService.error(message);
             return undefined;
         }
-        const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(recipeJson.craftingSystemId);
-        const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(recipeJson.craftingSystemId);
-        return this.buildRecipe(recipeJson, componentsForSystem, essencesForSystem);
+        return recipe;
     }
 
     async getAllById(recipeIds: string[]): Promise<Map<string, Recipe | undefined>> {
-        const recipes = await Promise.all(recipeIds.map(async id => {
-            return {
-                id,
-                recipe: await this.getById(id)
-            }
-        }));
-        return new Map(recipes.map(recipeData => [ recipeData.id, recipeData.recipe ]));
+        const recipes = await this.recipeDataStore.getAllById(recipeIds);
+        const result = new Map(recipes.map(recipe => [ recipe.id, recipe ]));
+        const missingValues = recipeIds.filter(id => !result.has(id));
+        if (missingValues.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.missingRecipes`,
+                { recipeIds: missingValues.join(", ") }
+            );
+            this.notificationService.error(message);
+            missingValues.forEach(id => result.set(id, undefined));
+        }
+        return result;
     }
 
     async cloneById(recipeId: string): Promise<Recipe> {
         const source = await this.getById(recipeId);
-        const settingValue = await this.settingManager.read();
-        const assignedIds = Object.keys(settingValue.recipesById);
-        const cloneId = this.identityFactory.make(assignedIds);
-        const clone = source.clone(cloneId);
-        return this.save(clone);
+        return this.create(source.toJson());
     }
 
     async deleteByItemUuid(itemUuid: string): Promise<Recipe[]> {
-        const recipesToDeleteByRecipeId = await this.getAllByItemUuid(itemUuid);
-        const settingValue = await this.settingManager.read();
-        delete settingValue.recipeIdsByItemUuid[itemUuid];
-        const recipesToDelete = Array.from(recipesToDeleteByRecipeId.values());
-        recipesToDelete
-            .forEach(recipe => {
-                delete settingValue.recipesById[recipe.id];
-                settingValue.recipeIdsByCraftingSystemId[recipe.craftingSystemId] = settingValue.recipeIdsByCraftingSystemId[recipe.craftingSystemId]
-                    .filter(id => id !== recipe.id);
-            });
-        await this.settingManager.write(settingValue);
-        return recipesToDelete;
+        const recipes = await this.recipeDataStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
+        await this.recipeDataStore.deleteCollection(itemUuid, Properties.settings.collectionNames.item);
+        return recipes;
     }
 
     async deleteByCraftingSystemId(craftingSystemId: string): Promise<Recipe[]> {
-        const recipesToDeleteByRecipeId = await this.getAllByCraftingSystemId(craftingSystemId);
-        const settingValue = await this.settingManager.read();
-        delete settingValue.recipeIdsByCraftingSystemId[craftingSystemId];
-        const recipesToDelete = Array.from(recipesToDeleteByRecipeId.values());
-        recipesToDelete
-            .forEach(recipe => {
-                delete settingValue.recipesById[recipe.id];
-                settingValue.recipeIdsByItemUuid[recipe.itemUuid] = settingValue.recipeIdsByItemUuid[recipe.itemUuid]
-                    .filter(id => id !== recipe.id);
-            });
-        await this.settingManager.write(settingValue);
-        return recipesToDelete;
+        const recipes = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        await this.recipeDataStore.deleteCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        return recipes;
     }
 
-    private async _getAll(craftingSystemId?: string): Promise<Map<string, Recipe>> {
-        const settingValue = await this.settingManager.read();
-
-        const craftingSystemsData = await Promise.all(Object.keys(settingValue.recipeIdsByCraftingSystemId)
-            .filter(id => !craftingSystemId || id === craftingSystemId)
-            .map(async systemId => {
-                const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(systemId);
-                const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(systemId);
-                return {
-                    craftingSystemId: systemId,
-                    componentsForSystem,
-                    essencesForSystem,
-                    recipeIds: settingValue.recipeIdsByCraftingSystemId[systemId]
-                }
-            }));
-
-        const recipeData = await Promise.all(craftingSystemsData.flatMap(systemData =>
-            systemData.recipeIds
-                .map(recipeId => this.buildRecipe(
-                    settingValue.recipesById[recipeId],
-                    systemData.componentsForSystem,
-                    systemData.essencesForSystem)
-                )
-        ));
-
-        return new Map(recipeData.map(recipe => [recipe.id, recipe]));
+    async getAll(): Promise<Map<string, Recipe>> {
+        const recipes = await this.recipeDataStore.getAllEntities();
+        return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
     }
 
-    getAll(): Promise<Map<string, Recipe>> {
-        return this._getAll();
-    }
-
-    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Recipe>> {
-        return this._getAll(craftingSystemId);
+    async getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Recipe>> {
+        const recipes = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
     }
 
     async getAllByItemUuid(itemUuid: string): Promise<Map<string, Recipe>> {
-        const settingValue = await this.settingManager.read();
-
-        const recipeIdsByItemUuid = settingValue.recipeIdsByItemUuid[itemUuid];
-        const recipeData = await Promise.all(recipeIdsByItemUuid
-            .map(async recipeId => {
-                const recipeJson = settingValue.recipesById[recipeId];
-                const componentsForSystem = await this.componentApi.getAllByCraftingSystemId(recipeJson.craftingSystemId);
-                const essencesForSystem = await this.essenceApi.getAllByCraftingSystemId(recipeJson.craftingSystemId);
-                return this.buildRecipe(recipeJson, componentsForSystem, essencesForSystem);
-            }));
-
-        return new Map(recipeData.map(recipe => [recipe.id, recipe]));
+        const recipes = await this.recipeDataStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
+        return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
     }
 
     async removeComponentReferences(componentIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
-        const settingValue = await this.settingManager.read();
-        const recipeIdsForCraftingSystem = settingValue.recipeIdsByCraftingSystemId[craftingSystemId];
-        if (!recipeIdsForCraftingSystem) {
-            throw new Error(`No Recipes exist for the crafting system ID "${craftingSystemId}". `);
-        }
-        const modifiedRecipeIds: string[] = [];
-        recipeIdsForCraftingSystem
-            .map(recipeId => settingValue.recipesById[recipeId])
-            .forEach(recipeJson => {
-                let modified = false;
-                Object.values(recipeJson.requirementOptions)
-                    .forEach(ingredientOption => {
-                        if (ingredientOption.ingredients[componentIdToDelete] || ingredientOption.catalysts[componentIdToDelete]) {
-                            modified = true;
-                            delete ingredientOption.ingredients[componentIdToDelete];
-                            delete ingredientOption.catalysts[componentIdToDelete];
-                        }
-                    });
-                Object.values(recipeJson.resultOptions)
-                    .forEach(resultOption => {
-                        if (resultOption.results[componentIdToDelete]) {
-                            modified = true;
-                            delete resultOption.results[componentIdToDelete];
-                        }
-                    });
-                if (modified) {
-                    modifiedRecipeIds.push(recipeJson.id);
-                }
-            });
-        await this.settingManager.write(settingValue);
-        const allRecipesForCraftingSystem = await this.getAllByCraftingSystemId(craftingSystemId);
-        return Array.from(allRecipesForCraftingSystem.values()).filter(recipe => modifiedRecipeIds.includes(recipe.id));
+        const recipesForCraftingSystem = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const recipesWithComponent = recipesForCraftingSystem.filter(recipe => recipe.hasComponent(componentIdToDelete));
+        const modifiedRecipes = recipesWithComponent.map(recipe => {
+            recipe.removeComponent(componentIdToDelete);
+            return recipe;
+        });
+        await this.recipeDataStore.updateAll(modifiedRecipes);
+        return modifiedRecipes;
     }
 
     async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
-        const settingValue = await this.settingManager.read();
-        const recipeIdsForCraftingSystem = settingValue.recipeIdsByCraftingSystemId[craftingSystemId];
-        if (!recipeIdsForCraftingSystem) {
-            throw new Error(`No Recipes exist for the crafting system ID "${craftingSystemId}". `);
-        }
-        const modifiedRecipeIds: string[] = [];
-        recipeIdsForCraftingSystem
-            .map(recipeId => settingValue.recipesById[recipeId])
-            .forEach(recipeJson => {
-                if (recipeJson.essences[essenceIdToDelete]) {
-                    delete recipeJson.essences[essenceIdToDelete];
-                    modifiedRecipeIds.push(recipeJson.id);
-                }
-            });
-        await this.settingManager.write(settingValue);
-        const allRecipesForCraftingSystem = await this.getAllByCraftingSystemId(craftingSystemId);
-        return Array.from(allRecipesForCraftingSystem.values()).filter(recipe => modifiedRecipeIds.includes(recipe.id));
-    }
-
-    private async buildRecipe(recipeJson: RecipeJson, componentsForSystem: Map<string, Component>, essencesForSystem: Map<string, Essence>): Promise<Recipe> {
-        const itemData = await this.documentManager.prepareItemDataByDocumentUuid(recipeJson.itemUuid);
-        const { id, craftingSystemId, disabled } = recipeJson;
-        return new Recipe({
-            id,
-            craftingSystemId,
-            itemData,
-            disabled,
-            requirementOptions: this.buildIngredientOptions(recipeJson.requirementOptions, componentsForSystem),
-            resultOptions: this.buildResultOptions(recipeJson.resultOptions, componentsForSystem),
-            essences: Combination.fromRecord(recipeJson.essences, essencesForSystem)
+        const recipesForCraftingSystem = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const recipesWithEssence = recipesForCraftingSystem.filter(recipe => recipe.hasEssence(essenceIdToDelete));
+        const modifiedRecipes = recipesWithEssence.map(recipe => {
+            recipe.removeEssence(essenceIdToDelete);
+            return recipe;
         });
-    }
-
-    private buildIngredientOptions(requirementOptionsJson: RequirementOptionJson[], allComponents: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
-        const options = requirementOptionsJson
-            .map(requirementOptionJson => this.buildRequirementOption(requirementOptionJson, allComponents));
-        return new SelectableOptions<RequirementOptionJson, RequirementOption>({
-            options
-        });
-    }
-
-    private buildResultOptions(resultOptionsJson: ResultOptionJson[], allComponents: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
-        const options = resultOptionsJson
-            .map(resultOptionJson => this.buildResultOption(resultOptionJson, allComponents));
-        return new SelectableOptions<ResultOptionJson, ResultOption>({
-            options
-        });
-    }
-
-    private buildRequirementOption(requirementOptionJson: RequirementOptionJson, allComponents: Map<string, Component>): RequirementOption {
-        return new RequirementOption({
-            name: requirementOptionJson.name,
-            catalysts: Combination.fromRecord(requirementOptionJson.catalysts, allComponents),
-            ingredients: Combination.fromRecord(requirementOptionJson.ingredients, allComponents)
-        });
-    }
-
-    private buildResultOption(resultOptionJson: ResultOptionJson, allComponents: Map<string, Component>): ResultOption {
-        return new ResultOption({
-            name: resultOptionJson.name,
-            results: Combination.fromRecord(resultOptionJson.results, allComponents)
-        });
-    }
-
-    private addRecipeIdToCollectionDictionary(recipeId: string, collectionKey: string, collectionDictionary: Record<string, string[]>) {
-        if (collectionDictionary[collectionKey]) {
-            collectionDictionary[collectionKey].push(recipeId);
-            return collectionDictionary;
-        }
-        collectionDictionary[collectionKey] = [recipeId];
-        return collectionDictionary;
+        await this.recipeDataStore.updateAll(modifiedRecipes);
+        return modifiedRecipes;
     }
 
     private async rejectSavingInvalidRecipe(recipe: Recipe): Promise<EntityValidationResult<Recipe>> {

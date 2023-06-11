@@ -12,6 +12,15 @@ interface EssenceApi {
     getById(id: string): Promise<Essence | undefined>;
 
     /**
+     * Returns all essences.
+     *
+     * @async
+     * @returns {Promise<Map<string, Essence>>} A Promise that resolves to a Map of all essences, where the keys are
+     *   the essence IDs, or rejects with an Error if the settings cannot be read.
+     */
+    getAll(): Promise<Map<string, Essence>>;
+
+    /**
      * Returns all essences for a given crafting system ID.
      *
      * @async

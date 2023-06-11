@@ -41,7 +41,7 @@ describe("When creating a recipe", () => {
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences).toEqual(true);
         expect(underTest.hasRequirements).toEqual(false);
-        expect(underTest.hasIngredientOptions).toEqual(false);
+        expect(underTest.hasRequirementOptions).toEqual(false);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultOptions).toEqual(false);
     });
@@ -57,7 +57,7 @@ describe("When creating a recipe", () => {
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.hasIngredientOptions).toEqual(false);
+        expect(underTest.hasRequirementOptions).toEqual(false);
         expect(underTest.ingredientOptions.length).toEqual(1);
         expect(underTest.ingredientOptions[0].requiresCatalysts).toEqual(true);
         expect(underTest.ingredientOptions[0].requiresIngredients).toEqual(false);
@@ -74,7 +74,7 @@ describe("When creating a recipe", () => {
         expect(underTest.ready()).toEqual(true);
         expect(underTest.requiresEssences).toEqual(false);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.hasIngredientOptions).toEqual(false);
+        expect(underTest.hasRequirementOptions).toEqual(false);
         expect(underTest.ingredientOptions.length).toEqual(1);
         expect(underTest.ingredientOptions[0].requiresCatalysts).toEqual(true);
         expect(underTest.ingredientOptions[0].requiresIngredients).toEqual(true);
@@ -94,7 +94,7 @@ describe("When creating a recipe", () => {
         expect(underTest.ready()).toEqual(false);
         expect(underTest.requiresEssences).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.hasIngredientOptions).toEqual(true);
+        expect(underTest.hasRequirementOptions).toEqual(true);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultOptions).toEqual(true);
         expect(underTest.ingredientOptions.length).toEqual(2);

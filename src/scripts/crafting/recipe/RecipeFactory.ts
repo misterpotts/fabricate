@@ -1,51 +1,48 @@
 import {EntityFactory} from "../../api/EntityFactory";
 import {Recipe, RecipeJson, RequirementOption, RequirementOptionJson, ResultOption, ResultOptionJson} from "./Recipe";
 import {DefaultDocumentManager, DocumentManager} from "../../foundry/DocumentManager";
-import {Essence} from "../essence/Essence";
 import {Component} from "../component/Component";
 import {Combination} from "../../common/Combination";
 import {SelectableOptions} from "./SelectableOptions";
+import {EssenceApi} from "../../api/EssenceApi";
+import {ComponentApi} from "../../api/ComponentApi";
+import {IdentityFactory} from "../../foundry/IdentityFactory";
 
 class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
 
     private readonly documentManager: DocumentManager;
-    private readonly essences: Map<string, Essence>;
-    private readonly components: Map<string, Component>;
+    private readonly essenceApi: EssenceApi;
+    private readonly componentApi: ComponentApi;
 
     constructor({
         documentManager = new DefaultDocumentManager(),
-        essences = new Map(),
-        components = new Map(),
+        essenceApi,
+        componentApi
     }: {
         documentManager?: DocumentManager;
-        essences?: Map<string, Essence>;
-        components?: Map<string, Component>;
-    } = {}) {
+        essenceApi: EssenceApi;
+        componentApi: ComponentApi;
+        identityFactory: IdentityFactory;
+    }) {
         this.documentManager = documentManager;
-        this.essences = essences;
-        this.components = components;
+        this.essenceApi = essenceApi;
+        this.componentApi = componentApi;
     }
 
-    addEssence(essence: Essence): void {
-        this.essences.set(essence.id, essence);
-    }
-
-    addComponent(component: Component): void {
-        this.components.set(component.id, component);
-    }
-
-    make(recipeJson: RecipeJson): Recipe {
+    async make(recipeJson: RecipeJson): Promise<Recipe> {
         const { id, craftingSystemId, disabled, itemUuid } = recipeJson;
         const itemData = this.documentManager.prepareItemDataByDocumentUuid(itemUuid);
+        const essences = await this.essenceApi.getAllByCraftingSystemId(craftingSystemId);
+        const components = await this.componentApi.getAllByCraftingSystemId(craftingSystemId);
         try {
             return new Recipe({
                 id,
                 craftingSystemId,
                 itemData,
                 disabled,
-                requirementOptions: this.buildIngredientOptions(recipeJson.requirementOptions, this.components),
-                resultOptions: this.buildResultOptions(recipeJson.resultOptions, this.components),
-                essences: Combination.fromRecord(recipeJson.essences, this.essences)
+                requirementOptions: this.buildRequirementOptions(recipeJson.requirementOptions, components),
+                resultOptions: this.buildResultOptions(recipeJson.resultOptions, components),
+                essences: Combination.fromRecord(recipeJson.essences, essences)
             });
         } catch (e: any) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) :new Error("An unknown error occurred");
@@ -53,7 +50,7 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
         }
     }
 
-    private buildIngredientOptions(ingredientOptionsJson: RequirementOptionJson[], components: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
+    private buildRequirementOptions(ingredientOptionsJson: RequirementOptionJson[], components: Map<string, Component>): SelectableOptions<RequirementOptionJson, RequirementOption> {
         const options = ingredientOptionsJson
             .map(json => RequirementOption.fromJson(json, components));
         return new SelectableOptions<RequirementOptionJson, RequirementOption>({ options });

@@ -172,13 +172,20 @@ class Combination<T extends Identifiable> {
     }
 
     /**
-     * Determines whether the Combination contains the specified member.
+     * Determines whether the Combination contains the specified member with an optional minimum quantity.
      *
      * @param {T} member - The member to check for in the Combination.
-     * @returns {boolean} True if the Combination contains the specified member, otherwise false.
+     * @param quantity - The minimum quantity of the member required. The default value is 1.
+     * @returns {boolean} True if the Combination contains the specified member with the required quantity, otherwise
+     *   false.
      */
-    public has(member: T): boolean {
-        return this.amounts.has(member.id);
+    public has(member: T | string, quantity = 1): boolean {
+        const memberId = typeof member === "string" ? member : member.id;
+        if (!this.amounts.has(memberId)) {
+            return false;
+        }
+        const unit = this._amounts.get(memberId);
+        return unit.quantity >= quantity;
     }
 
     /**
@@ -423,9 +430,10 @@ class Combination<T extends Identifiable> {
      * @param {T} member - The member to remove from the original Combination.
      * @returns {Combination<T>} A new Combination with the specified member removed.
      */
-    without(member: T) {
+    without(member: T | string) {
+        const memberId = typeof member === "string" ? member : member.id;
         const combination: Map<string, Unit<T>> = new Map(this._amounts);
-        combination.delete(member.id);
+        combination.delete(memberId);
         return new Combination<T>(combination);
     }
 
@@ -490,21 +498,6 @@ class Combination<T extends Identifiable> {
             return false;
         }
         return other.isIn(this) && this.isIn(other);
-    }
-
-    /**
-     * Checks if the Combination has a specific member, identified by its ID, with a minimum required quantity.
-     *
-     * @param {string} memberId - The ID of the member to check for in the Combination.
-     * @param {number} [quantity=1] - The minimum required quantity of the member in the Combination (default is 1).
-     * @returns {boolean} True if the Combination has the specified member with the required minimum quantity, otherwise false.
-     */
-    hasMember(memberId: string, quantity: number = 1) {
-        if (!this._amounts.has(memberId)) {
-            return false;
-        }
-        const unit = this._amounts.get(memberId);
-        return quantity >= unit.quantity;
     }
 
     /**

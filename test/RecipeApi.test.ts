@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
-import {DefaultRecipeApi, RecipeData} from "../src/scripts/api/RecipeApi"
+import {DefaultRecipeApi} from "../src/scripts/api/RecipeApi"
 import {StubCraftingSystemApi} from "./stubs/api/StubCraftingSystemApi";
 import {StubEssenceApi} from "./stubs/api/StubEssenceApi";
 import {StubComponentApi} from "./stubs/api/StubComponentApi";
@@ -10,6 +10,7 @@ import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
 import {RecipeValidator} from "../src/scripts/crafting/recipe/RecipeValidator";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import {
+    allTestRecipes, resetAllTestRecipes,
     testRecipeFive,
     testRecipeFour,
     testRecipeOne,
@@ -29,8 +30,17 @@ import {
 } from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {testCraftingSystem} from "./test_data/TestCrafingSystem";
-import { Recipe } from "../src/scripts/crafting/recipe/Recipe";
+import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import {DefaultEntityValidationResult} from "../src/scripts/api/EntityValidator";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
+import {RecipeCollectionManager} from "../src/scripts/api/CollectionManager";
+import {StubEntityFactory} from "./stubs/StubEntityFactory";
+import {
+    BrokenFabricateItemData,
+    PendingFabricateItemData
+} from "../src/scripts/foundry/DocumentManager";
+import Properties from "../src/scripts/Properties";
+import {RecipeFactory} from "../src/scripts/crafting/recipe/RecipeFactory";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
@@ -82,7 +92,7 @@ const recipeValidator = new RecipeValidator({
 });
 const defaultSettingValue = () => {
    return {
-        recipesById: {
+        entities: {
             [ testRecipeOne.id ]: testRecipeOne.toJson(),
             [ testRecipeTwo.id ]: testRecipeTwo.toJson(),
             [ testRecipeThree.id ]: testRecipeThree.toJson(),
@@ -91,17 +101,15 @@ const defaultSettingValue = () => {
             [ testRecipeSix.id ]: testRecipeSix.toJson(),
             [ testRecipeSeven.id ]: testRecipeSeven.toJson()
         },
-        recipeIdsByItemUuid: {
-            [ testRecipeOne.itemUuid ]: [ testRecipeOne.id ],
-            [ testRecipeTwo.itemUuid ]: [ testRecipeTwo.id ],
-            [ testRecipeThree.itemUuid ]: [ testRecipeThree.id ],
-            [ testRecipeFour.itemUuid ]: [ testRecipeFour.id ],
-            [ testRecipeFive.itemUuid ]: [ testRecipeFive.id ],
-            [ testRecipeSix.itemUuid ]: [ testRecipeSix.id ],
-            [ testRecipeSeven.itemUuid ]: [ testRecipeSeven.id ]
-        },
-        recipeIdsByCraftingSystemId: {
-            [ testCraftingSystem.id ]:
+       collections: {
+            [ `${Properties.settings.collectionNames.item}.${testRecipeOne.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.item}.${testRecipeTwo.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.item}.${testRecipeThree.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.item}.${testRecipeFour.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.item}.${testRecipeFive.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.item}.${testRecipeSix.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.item}.${testRecipeSeven.itemUuid}` ]: [ testRecipeOne.id ],
+            [ `${Properties.settings.collectionNames.craftingSystem}.${testCraftingSystem.id}` ]:
                 [
                     testRecipeOne.id,
                     testRecipeTwo.id,
@@ -111,14 +119,15 @@ const defaultSettingValue = () => {
                     testRecipeSix.id,
                     testRecipeSeven.id
                 ]
-        }
+       }
     };
 };
-const settingManager = new StubSettingManager<RecipeData>(defaultSettingValue());
+const settingManager = new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue());
 
 beforeEach(() => {
     settingManager.reset(defaultSettingValue());
     documentManager.reset();
+    resetAllTestRecipes();
 });
 
 describe("Create", () => {
@@ -126,25 +135,33 @@ describe("Create", () => {
 
     test("should create a new recipe for valid item UUID and crafting system ID", async () => {
 
-        const craftingSystemId = testCraftingSystem.id
-        const recipeId = "3456abcd";
         const itemUuid = "1234abcd";
+        const craftingSystemId = testCraftingSystem.id;
+        const createdRecipe = new Recipe({
+            id: "3456abcd",
+            itemData: new PendingFabricateItemData(itemUuid, () => Promise.resolve(new BrokenFabricateItemData({itemUuid, errors: [] }))),
+            craftingSystemId: craftingSystemId
+        });
         documentManager.setAllowUnknownIds(true);
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory: new StubIdentityFactory(recipeId),
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: new Map([[ "3456abcd", createdRecipe ]]) }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory("3456abcd")
         });
 
         const result = await underTest.create({ itemUuid, craftingSystemId });
 
-        expect(result.id).toEqual(recipeId);
+        expect(result.id).toEqual("3456abcd");
         expect(result.craftingSystemId).toEqual(craftingSystemId);
         expect(result.itemUuid).toEqual(itemUuid);
 
@@ -152,15 +169,19 @@ describe("Create", () => {
 
     test("should not create a recipe when the crafting system does not exist", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const itemUuid = "1234abcd";
@@ -175,15 +196,19 @@ describe("Create", () => {
     test("should not create a recipe when the item does not exist", async () => {
         const craftingSystemId = testCraftingSystem.id;
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const itemUuid = "1234abcd";
@@ -195,15 +220,19 @@ describe("Create", () => {
 
     test("should save a valid recipe when the crafting system and item document exist", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.save(testRecipeOne);
@@ -214,15 +243,19 @@ describe("Create", () => {
 
     test("should not save a recipe when the crafting system doesn't exist", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const modified = new Recipe({
@@ -242,21 +275,25 @@ describe("Create", () => {
 
     test("should not save a recipe when the recipe is invalid", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
             recipeValidator: {
                 validate: async (recipe: Recipe) => new DefaultEntityValidationResult({
                     entity: recipe,
                     isSuccessful: false,
                     errors: ["Test Error"]
                 })
-            }
+            },
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         expect.assertions(1);
@@ -270,24 +307,22 @@ describe("Access", () => {
 
     test("Should return undefined for recipe that does not exist", async () => {
 
-        await settingManager.write({
-            recipesById: {},
-            recipeIdsByItemUuid: {},
-            recipeIdsByCraftingSystemId: {}
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
+            settingManager,
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
         });
 
         const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
             notificationService,
-            settingManager,
-            documentManager,
-            recipeValidator
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.getById(testRecipeOne.id);
+        const result = await underTest.getById("notAValidId");
 
         expect(result).toBeUndefined();
 
@@ -295,15 +330,19 @@ describe("Access", () => {
 
     test("Should get a recipe by ID with pending item data ready to load", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.getById(testRecipeOne.id);
@@ -327,15 +366,19 @@ describe("Access", () => {
 
     test("Should get many recipes by ID with pending item data ready to load and undefined for missing values", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.getAllById([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id, "notAValidId" ]);
@@ -357,15 +400,19 @@ describe("Access", () => {
 
     test("Should get all recipes without loading", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.getAll();
@@ -385,15 +432,19 @@ describe("Access", () => {
 
     test("Should get all recipes by crafting system ID without loading", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.getAllByCraftingSystemId(testCraftingSystem.id);
@@ -413,15 +464,19 @@ describe("Access", () => {
 
     test("Should get all recipes by item UUID without loading", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.getAllByItemUuid(testRecipeOne.itemUuid);
@@ -439,15 +494,29 @@ describe("Edit", () => {
 
     test("should clone a recipe by ID", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        let clonedRecipeJson: RecipeJson;
+        const factoryFunction = (recipeJson: RecipeJson) => {
+            clonedRecipeJson = recipeJson;
+            return Promise.resolve(
+                new Recipe({
+                    id: recipeJson.id,
+                    craftingSystemId: recipeJson.craftingSystemId
+                })
+            );
+        };
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes, factoryFunction }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.cloneById(testRecipeOne.id);
@@ -455,23 +524,27 @@ describe("Edit", () => {
         expect(result).not.toBeNull();
         expect(result.id.length).toBeGreaterThan(1);
         expect(result.id).not.toEqual(testRecipeOne.id);
-        expect(result.requirementOptions.size).toEqual(testRecipeOne.requirementOptions.size);
-        expect(result.resultOptions.size).toEqual(testRecipeOne.resultOptions.size);
-        expect(result.essences.size).toEqual(testRecipeOne.essences.size);
+        expect(clonedRecipeJson.requirementOptions.length).toEqual(testRecipeOne.requirementOptions.size);
+        expect(clonedRecipeJson.resultOptions.length).toEqual(testRecipeOne.resultOptions.size);
+        expect(Object.keys(clonedRecipeJson.essences).length).toEqual(testRecipeOne.essences.size);
 
     });
 
     test("should modify a recipe", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const recipeToEdit = await underTest.getById(testRecipeOne.id);
@@ -497,15 +570,19 @@ describe("Delete", () => {
 
     test("should delete a recipe by ID", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -526,19 +603,23 @@ describe("Delete", () => {
     test("should delete a recipe by ID even if the crafting system does not exist", async () => {
 
         const emptyCraftingSystemApi = new StubCraftingSystemApi();
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
             recipeValidator: new RecipeValidator({
                 craftingSystemApi: emptyCraftingSystemApi,
                 componentApi,
                 essenceApi
-            })
+            }),
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -558,15 +639,19 @@ describe("Delete", () => {
 
     test("should delete recipes by crafting system ID", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -587,19 +672,24 @@ describe("Delete", () => {
     test("should delete recipes by crafting system ID even if the crafting system does not exist", async () => {
 
         const emptyCraftingSystemApi = new StubCraftingSystemApi();
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
             recipeValidator: new RecipeValidator({
                 craftingSystemApi: emptyCraftingSystemApi,
                 componentApi,
                 essenceApi
-            })
+            }),
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -619,15 +709,19 @@ describe("Delete", () => {
 
     test("should delete recipes by item UUID", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -645,63 +739,21 @@ describe("Delete", () => {
 
     });
 
-    function countComponentReferences(recipes: Recipe[], componentId: string) {
-        return recipes
-            .map(recipe => {
-                const amountInIngredients = recipe.requirementOptions
-                    .options
-                    .map(requirementOption => requirementOption.ingredients.amountFor(componentId))
-                    .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-                const amountInCatalysts = recipe.requirementOptions
-                    .options
-                    .map(requirementOption => requirementOption.catalysts.amountFor(componentId))
-                    .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-                const amountInResults = recipe.resultOptions
-                    .options
-                    .map(resultOption => resultOption.results.amountFor(componentId))
-                    .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
-                const amount = amountInIngredients + amountInCatalysts + amountInResults;
-                return {
-                    amount,
-                    matches: amount > 0 ? [recipe.id] : []
-                };
-            })
-            .reduce((previousValue, currentValue) => {
-                return {
-                    amount: previousValue.amount + currentValue.amount,
-                    matches: previousValue.matches.concat(currentValue.matches)
-                }
-            }, { amount: 0, matches: [] });
-    }
-
-    function countEssenceReferences(recipes: Recipe[], essenceId: string) {
-        return recipes
-            .map(recipe => {
-                const amount = recipe.essences.amountFor(essenceId);
-                return {
-                    amount,
-                    matches: amount > 0 ? [recipe.id] : []
-                };
-            })
-            .reduce((previousValue, currentValue) => {
-                return {
-                    amount: previousValue.amount + currentValue.amount,
-                    matches: previousValue.matches.concat(currentValue.matches)
-                }
-            }, { amount: 0, matches: [] });
-    }
-
     test("should remove all component references from all recipes", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const componentIdToDelete = testComponentThree.id;
@@ -716,6 +768,7 @@ describe("Delete", () => {
         modified.forEach(recipe => expect(countBefore.matches.includes(recipe.id)).toEqual(true));
 
         const allAfter = await underTest.getAllByCraftingSystemId(craftingSystemId);
+        expect(allAfter.size).toEqual(allBefore.size);
         const countAfter = countComponentReferences(Array.from(allAfter.values()), componentIdToDelete);
         expect(countAfter.matches.length).toEqual(0);
         expect(countAfter.amount).toEqual(0);
@@ -724,15 +777,19 @@ describe("Delete", () => {
 
     test("should remove all essence references from all recipes", async () => {
 
-        const underTest = new DefaultRecipeApi({
-            essenceApi,
-            componentApi,
-            identityFactory,
-            localizationService,
-            notificationService,
+        const recipeDataStore = new EntityDataStore({
+            entityName: "recipe",
             settingManager,
-            documentManager,
-            recipeValidator
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
+            collectionManager: new RecipeCollectionManager()
+        });
+
+        const underTest = new DefaultRecipeApi({
+            notificationService,
+            localizationService,
+            recipeValidator,
+            recipeDataStore,
+            identityFactory: new StubIdentityFactory()
         });
 
         const essenceIdToDelete = elementalFire.id;
@@ -754,3 +811,49 @@ describe("Delete", () => {
     });
 
 });
+
+function countComponentReferences(recipes: Recipe[], componentId: string) {
+    return recipes
+        .map(recipe => {
+            const amountInIngredients = recipe.requirementOptions
+                .options
+                .map(requirementOption => requirementOption.ingredients.amountFor(componentId))
+                .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+            const amountInCatalysts = recipe.requirementOptions
+                .options
+                .map(requirementOption => requirementOption.catalysts.amountFor(componentId))
+                .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+            const amountInResults = recipe.resultOptions
+                .options
+                .map(resultOption => resultOption.results.amountFor(componentId))
+                .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+            const amount = amountInIngredients + amountInCatalysts + amountInResults;
+            return {
+                amount,
+                matches: amount > 0 ? [recipe.id] : []
+            };
+        })
+        .reduce((previousValue, currentValue) => {
+            return {
+                amount: previousValue.amount + currentValue.amount,
+                matches: previousValue.matches.concat(currentValue.matches)
+            }
+        }, { amount: 0, matches: [] });
+}
+
+function countEssenceReferences(recipes: Recipe[], essenceId: string) {
+    return recipes
+        .map(recipe => {
+            const amount = recipe.essences.amountFor(essenceId);
+            return {
+                amount,
+                matches: amount > 0 ? [recipe.id] : []
+            };
+        })
+        .reduce((previousValue, currentValue) => {
+            return {
+                amount: previousValue.amount + currentValue.amount,
+                matches: previousValue.matches.concat(currentValue.matches)
+            }
+        }, { amount: 0, matches: [] });
+}

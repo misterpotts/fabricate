@@ -320,10 +320,10 @@ describe("Addition", () => {
 
         const underTest = new EntityDataStore<RecipeJson, Recipe>({ entityFactory: recipeFactory });
 
-        underTest.insertEntity(testRecipeOne);
-        underTest.insertEntity(testRecipeTwo);
-        underTest.insertEntity(testRecipeThree);
-        underTest.insertEntity(testRecipeFour);
+        underTest.insert(testRecipeOne);
+        underTest.insert(testRecipeTwo);
+        underTest.insert(testRecipeThree);
+        underTest.insert(testRecipeFour);
 
         const allAfter = underTest.getAllEntities();
 
@@ -369,7 +369,7 @@ describe("Deletion", () => {
 
         const craftingSystemCollectionPrefix = "CraftingSystem.";
 
-        const result = underTest.deleteCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
+        const result = underTest.removeCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
 
         expect(result).toEqual(false);
 
@@ -407,7 +407,7 @@ describe("Deletion", () => {
         const craftingSystemCollectionPrefix = "CraftingSystem.";
         const itemCollectionPrefix = "Item.";
 
-        const result = underTest.deleteCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
+        const result = underTest.removeCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
 
         expect(result).toEqual(true);
 

@@ -60,6 +60,11 @@
         },
         "document": {
           "notFound": "The document with UUID {documentUuid} could not be found. "
+        },
+        "recipe": {
+          "doesNotExist": "The recipe {recipeId} does not exist. ",
+          "invalid": "The recipe entity is not valid. Errors: {errors}. ",
+          "missingRecipes": "The recipes with the IDs {recipeIds} could not be found. "
         }
       }
     },

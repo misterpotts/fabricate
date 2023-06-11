@@ -53,6 +53,10 @@ const Properties = {
         craftingSystems: {
             key: "craftingSystems",
             targetVersion: "2"
+        },
+        collectionNames: {
+            craftingSystem: "CraftingSystem",
+            item: "Item"
         }
     }
 };

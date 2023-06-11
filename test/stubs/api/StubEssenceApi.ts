@@ -33,6 +33,10 @@ class StubEssenceApi implements EssenceApi {
         return this.valuesById.get(id);
     }
 
+    async getAll(): Promise<Map<string, Essence>> {
+        return this.valuesById;
+    }
+
 }
 
 export { StubEssenceApi }
