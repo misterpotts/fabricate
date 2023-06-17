@@ -7,6 +7,8 @@ import {Unit} from "../../common/Unit";
 import {Serializable} from "../../common/Serializable";
 
 interface ComponentJson {
+    id: string;
+    embedded: boolean;
     itemUuid: string;
     disabled: boolean;
     essences: Record<string, number>;

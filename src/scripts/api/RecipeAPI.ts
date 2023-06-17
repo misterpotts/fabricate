@@ -69,7 +69,7 @@ export { RecipeOptions }
  *
  * @interface
  */
-interface RecipeApi {
+interface RecipeAPI {
 
     /**
      * Creates a new recipe with the given options.
@@ -105,7 +105,7 @@ interface RecipeApi {
      * Retrieves all recipes with the specified IDs.
      *
      * @async
-     * @param {string} recipeIds - An array of recipe IDs to retrieve.
+     * @param {string[]} recipeIds - An array of recipe IDs to retrieve.
      * @returns {Promise<Recipe | undefined>} A Promise that resolves to a Map of `Recipe` instances, where the keys are
      * the recipe IDs. Values are undefined if the recipe with the corresponding ID does not exist
      */
@@ -215,16 +215,16 @@ interface RecipeApi {
 
 }
 
-export { RecipeApi };
+export { RecipeAPI };
 
-class DefaultRecipeApi implements RecipeApi {
+class DefaultRecipeAPI implements RecipeAPI {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
     private readonly recipeValidator: EntityValidator<Recipe>;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
-    private readonly recipeDataStore: EntityDataStore<RecipeJson, Recipe>;
+    private readonly recipeStore: EntityDataStore<RecipeJson, Recipe>;
     private readonly identityFactory: IdentityFactory;
 
     constructor({
@@ -243,7 +243,7 @@ class DefaultRecipeApi implements RecipeApi {
         this.notificationService = notificationService;
         this.localizationService = localizationService;
         this.recipeValidator = recipeValidator;
-        this.recipeDataStore = recipeDataStore;
+        this.recipeStore = recipeDataStore;
         this.identityFactory = identityFactory;
     }
 
@@ -252,29 +252,32 @@ class DefaultRecipeApi implements RecipeApi {
     }
 
     async deleteById(id: string): Promise<Recipe | undefined> {
-        const deletedRecipe= await this.recipeDataStore.getById(id);
+        const deletedRecipe= await this.recipeStore.getById(id);
+        this.rejectDeletingEmbeddedRecipe(deletedRecipe);
         if (!deletedRecipe) {
             const message = this.localizationService.format(
-                `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.doesNotExist`,
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.doesNotExist`,
                 { recipeId: id }
             );
             this.notificationService.error(message);
             return undefined;
         }
-        await this.recipeDataStore.deleteById(id);
+        await this.recipeStore.deleteById(id);
         return deletedRecipe;
     }
 
 
     async save(recipe: Recipe): Promise<Recipe> {
+        const existing = await this.recipeStore.getById(recipe.id);
+
+        this.rejectModifyingEmbeddedRecipe(existing);
         await this.rejectSavingInvalidRecipe(recipe);
 
-        const updated = await this.recipeDataStore.has(recipe.id);
-        await this.recipeDataStore.insert(recipe);
+        await this.recipeStore.insert(recipe);
 
-        let activityName = updated ? "updated" : "created";
+        let activityName = existing ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultRecipeApi._LOCALIZATION_PATH}.settings.recipe.${activityName}`,
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.settings.recipe.${activityName}`,
             { recipeId: recipe.name }
         );
 
@@ -291,26 +294,27 @@ class DefaultRecipeApi implements RecipeApi {
         requirementOptions = [],
         resultOptions = [],
     }: RecipeOptions): Promise<Recipe> {
-        const assignedIds = await this.recipeDataStore.listAllEntityIds();
+        const assignedIds = await this.recipeStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
-        return this.recipeDataStore.create(
+        return this.recipeStore.create(
             {
                 id,
-                itemUuid,
-                craftingSystemId,
-                disabled,
                 essences,
-                requirementOptions,
-                resultOptions
+                itemUuid,
+                disabled,
+                resultOptions,
+                embedded: false,
+                craftingSystemId,
+                requirementOptions
             }
         );
     }
 
     async getById(recipeId: string): Promise<Recipe | undefined> {
-        const recipe = await this.recipeDataStore.getById(recipeId);
+        const recipe = await this.recipeStore.getById(recipeId);
         if (!recipe) {
             const message = this.localizationService.format(
-                `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.doesNotExist`,
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.doesNotExist`,
                 { recipeId }
             );
             this.notificationService.error(message);
@@ -320,12 +324,12 @@ class DefaultRecipeApi implements RecipeApi {
     }
 
     async getAllById(recipeIds: string[]): Promise<Map<string, Recipe | undefined>> {
-        const recipes = await this.recipeDataStore.getAllById(recipeIds);
+        const recipes = await this.recipeStore.getAllById(recipeIds);
         const result = new Map(recipes.map(recipe => [ recipe.id, recipe ]));
         const missingValues = recipeIds.filter(id => !result.has(id));
         if (missingValues.length > 0) {
             const message = this.localizationService.format(
-                `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.missingRecipes`,
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.missingRecipes`,
                 { recipeIds: missingValues.join(", ") }
             );
             this.notificationService.error(message);
@@ -340,51 +344,53 @@ class DefaultRecipeApi implements RecipeApi {
     }
 
     async deleteByItemUuid(itemUuid: string): Promise<Recipe[]> {
-        const recipes = await this.recipeDataStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
-        await this.recipeDataStore.deleteCollection(itemUuid, Properties.settings.collectionNames.item);
+        const recipes = await this.recipeStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
+        recipes.forEach(recipe => this.rejectDeletingEmbeddedRecipe(recipe));
+        await this.recipeStore.deleteCollection(itemUuid, Properties.settings.collectionNames.item);
         return recipes;
     }
 
     async deleteByCraftingSystemId(craftingSystemId: string): Promise<Recipe[]> {
-        const recipes = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
-        await this.recipeDataStore.deleteCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const recipes = await this.recipeStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        recipes.forEach(recipe => this.rejectDeletingEmbeddedRecipe(recipe));
+        await this.recipeStore.deleteCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         return recipes;
     }
 
     async getAll(): Promise<Map<string, Recipe>> {
-        const recipes = await this.recipeDataStore.getAllEntities();
+        const recipes = await this.recipeStore.getAllEntities();
         return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
     }
 
     async getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Recipe>> {
-        const recipes = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const recipes = await this.recipeStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
     }
 
     async getAllByItemUuid(itemUuid: string): Promise<Map<string, Recipe>> {
-        const recipes = await this.recipeDataStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
+        const recipes = await this.recipeStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
         return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
     }
 
     async removeComponentReferences(componentIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
-        const recipesForCraftingSystem = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const recipesForCraftingSystem = await this.recipeStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         const recipesWithComponent = recipesForCraftingSystem.filter(recipe => recipe.hasComponent(componentIdToDelete));
         const modifiedRecipes = recipesWithComponent.map(recipe => {
             recipe.removeComponent(componentIdToDelete);
             return recipe;
         });
-        await this.recipeDataStore.updateAll(modifiedRecipes);
+        await this.recipeStore.updateAll(modifiedRecipes);
         return modifiedRecipes;
     }
 
     async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
-        const recipesForCraftingSystem = await this.recipeDataStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const recipesForCraftingSystem = await this.recipeStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         const recipesWithEssence = recipesForCraftingSystem.filter(recipe => recipe.hasEssence(essenceIdToDelete));
         const modifiedRecipes = recipesWithEssence.map(recipe => {
             recipe.removeEssence(essenceIdToDelete);
             return recipe;
         });
-        await this.recipeDataStore.updateAll(modifiedRecipes);
+        await this.recipeStore.updateAll(modifiedRecipes);
         return modifiedRecipes;
     }
 
@@ -394,13 +400,37 @@ class DefaultRecipeApi implements RecipeApi {
             return validationResult;
         }
         const message = this.localizationService.format(
-            `${DefaultRecipeApi._LOCALIZATION_PATH}.errors.recipe.notValid`,
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.notValid`,
             { errors: validationResult.errors.join(", ") }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
+    }
+
+    private rejectModifyingEmbeddedRecipe(recipe: Recipe): void {
+        if (!recipe?.embedded) {
+            return;
+        }
+        const message = this.localizationService.format(
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.cannotModifyEmbedded`,
+            { recipeName: recipe.name }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
+    }
+
+    private rejectDeletingEmbeddedRecipe(recipeToDelete: Recipe): void {
+        if (!recipeToDelete?.embedded) {
+            return;
+        }
+        const message = this.localizationService.format(
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.cannotDeleteEmbedded`,
+            { recipeName: recipeToDelete.name }
         );
         this.notificationService.error(message);
         throw new Error(message);
     }
 }
 
-export { DefaultRecipeApi };
+export { DefaultRecipeAPI };
 

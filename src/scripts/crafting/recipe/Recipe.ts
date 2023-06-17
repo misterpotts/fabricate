@@ -8,10 +8,11 @@ import {Unit} from "../../common/Unit";
 import {Serializable} from "../../common/Serializable";
 
 interface RecipeJson {
-    itemUuid: string;
     id: string;
-    craftingSystemId: string;
+    embedded: boolean;
+    itemUuid: string;
     disabled: boolean;
+    craftingSystemId: string;
     essences: Record<string, number>,
     resultOptions: ResultOptionJson[];
     requirementOptions: RequirementOptionJson[];
@@ -203,6 +204,8 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     private readonly _id: string;
     private readonly _craftingSystemId: string;
+    private readonly _embedded: boolean;
+
     private _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
     private _requirementOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
@@ -215,6 +218,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     constructor({
         id,
+        embedded = false,
         craftingSystemId,
         disabled = false,
         essences = Combination.EMPTY(),
@@ -223,6 +227,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         requirementOptions = new SelectableOptions({})
     }: {
         id: string;
+        embedded?: boolean;
         craftingSystemId: string;
         itemData?: FabricateItemData;
         disabled?: boolean;
@@ -231,6 +236,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         requirementOptions?: SelectableOptions<RequirementOptionJson, RequirementOption>;
     }) {
         this._id = id;
+        this._embedded = embedded;
         this._craftingSystemId = craftingSystemId;
         this._itemData = itemData;
         this.disabled = disabled;
@@ -245,6 +251,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     get id(): string {
         return this._id;
+    }
+
+    get embedded(): boolean {
+        return this._embedded;
     }
 
     get craftingSystemId(): string {
@@ -449,6 +459,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     clone(cloneId: string) {
         return new Recipe({
             id: cloneId,
+            embedded: false,
             craftingSystemId: this._craftingSystemId,
             itemData: NoFabricateItemData.INSTANCE(),
             disabled: this.disabled,
@@ -486,6 +497,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             itemUuid: this._itemData.uuid,
             craftingSystemId: this._craftingSystemId,
             disabled: this.disabled,
+            embedded: this._embedded,
             essences: this._essences.toJson(),
             resultOptions: this._resultOptions.toJson(),
             requirementOptions: this._requirementOptions.toJson()

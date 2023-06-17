@@ -11,7 +11,10 @@ const Properties = {
     },
     ui: {
         defaults: {
-            essenceIconCode: "fa-solid fa-mortar-pestle",
+            essence: {
+                iconCode: "fa-solid fa-mortar-pestle",
+                "description": "A magical essence that can be used to craft items",
+            },
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
             noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",
             erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",

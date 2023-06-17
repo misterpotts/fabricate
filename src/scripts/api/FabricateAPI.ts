@@ -1,55 +1,109 @@
-import {CraftingSystemApi, DefaultCraftingSystemApi} from "./CraftingSystemApi";
-import {EssenceApi} from "./EssenceApi";
-import {ComponentApi} from "./ComponentApi";
-import {RecipeApi} from "./RecipeApi";
+import {CraftingSystemAPI, DefaultCraftingSystemAPI} from "./CraftingSystemAPI";
+import {DefaultEssenceAPI, EssenceAPI} from "./EssenceAPI";
+import {ComponentAPI, DefaultComponentAPI} from "./ComponentAPI";
+import {DefaultRecipeAPI, RecipeAPI} from "./RecipeAPI";
 import {DefaultIdentityFactory} from "../foundry/IdentityFactory";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
 import {DefaultGameProvider} from "../foundry/GameProvider";
 import {DefaultSettingManager} from "./SettingManager";
 import Properties from "../Properties";
-import {CraftingSystemSettingValidator} from "./CraftingSystemSettingValidator";
+import {CraftingSystem, CraftingSystemJson, CraftingSystemValidator} from "../system/CraftingSystem";
+import {EntityDataStore} from "./EntityDataStore";
+import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
+import {CraftingSystemCollectionManager} from "./CollectionManager";
 
-interface FabricateApiFactory {
+interface FabricateAPIFactory {
 
-    make(): FabricateApi;
+    make(): FabricateAPI;
 
 }
 
-export { FabricateApiFactory }
+export { FabricateAPIFactory }
 
-class DefaultFabricateApiFactory implements FabricateApiFactory {
+class DefaultFabricateApiFactory implements FabricateAPIFactory {
 
     private readonly gameSystem: string;
+    private readonly user: string;
+    private readonly clientSettings: ClientSettings;
 
+    constructor({
+        gameSystem,
+        user,
+        clientSettings
+    }: {
+        gameSystem: string;
+        user: string;
+        clientSettings: ClientSettings;
+    }) {
+        this.gameSystem = gameSystem;
+        this.user = user;
+        this.clientSettings = clientSettings;
+    }
 
-    make(): FabricateApi {
+    make(): FabricateAPI {
 
         const notificationService = new DefaultNotificationService();
         const identityFactory = new DefaultIdentityFactory();
         const gameProvider = new DefaultGameProvider();
         const localizationService = new DefaultLocalizationService(gameProvider);
 
-        const craftingSystemApi = new DefaultCraftingSystemApi({
+        const craftingSystemApi = this.makeCraftingSystemApi(notificationService, identityFactory, localizationService);
+        const essenceApi = this.makeEssenceAPI(notificationService, identityFactory, localizationService);
+        const componentApi = this.makeComponentAPI(notificationService, identityFactory, localizationService, essenceApi);
+        const recipeApi = this.makeRecipeAPI(notificationService, identityFactory, localizationService, essenceApi, componentApi);
+
+        return new DefaultFabricateApi({
+            craftingSystemApi,
+            essenceApi,
+            componentApi,
+            recipeApi
+        });
+
+    }
+
+    private makeCraftingSystemApi(notificationService: DefaultNotificationService,
+                                  identityFactory: DefaultIdentityFactory,
+                                  localizationService: DefaultLocalizationService) {
+        return new DefaultCraftingSystemAPI({
             gameSystem: this.gameSystem,
+            user: this.user,
             notificationService,
             identityFactory,
             localizationService,
-            settingManager: new DefaultSettingManager({
-                moduleId: Properties.module.id,
-                settingKey: "craftingSystems",
-                notificationService,
-                localizationService,
-                settingValidator: new CraftingSystemSettingValidator(),
-                clientSettings: gameProvider.get().settings
+            craftingSystemValidator: new CraftingSystemValidator(),
+            craftingSystemStore: new EntityDataStore<CraftingSystemJson, CraftingSystem>({
+                entityName: "Crafting System",
+                entityFactory: new CraftingSystemFactory(),
+                collectionManager: new CraftingSystemCollectionManager(),
+                settingManager: new DefaultSettingManager({
+                    moduleId: Properties.module.id,
+                    settingKey: "craftingSystems",
+                    clientSettings: this.clientSettings
+
+                })
             })
         });
-        return new DefaultFabricateApi({
-            craftingSystemApi,
-            essenceApi: undefined,
-            componentApi: undefined,
-            recipeApi: undefined
-        });
+    }
 
+    private makeEssenceAPI(notificationService: DefaultNotificationService,
+                           identityFactory: DefaultIdentityFactory,
+                           localizationService: DefaultLocalizationService): EssenceAPI {
+        return new DefaultEssenceAPI();
+    }
+
+    private makeComponentAPI(notificationService: DefaultNotificationService,
+                             identityFactory: DefaultIdentityFactory,
+                             localizationService: DefaultLocalizationService,
+                             essenceAPI: EssenceAPI): ComponentAPI {
+        return new DefaultComponentAPI();
+    }
+
+    private makeRecipeAPI(notificationService: DefaultNotificationService,
+                          identityFactory: DefaultIdentityFactory,
+                          localizationService: DefaultLocalizationService,
+                          essenceAPI: EssenceAPI,
+                          componentAPI: ComponentAPI): RecipeAPI {
+        return new DefaultRecipeAPI();
     }
 
 }
@@ -61,27 +115,27 @@ export { DefaultFabricateApiFactory }
  *
  * @interface
  */
-interface FabricateApi {
+interface FabricateAPI {
 
     /**
      * Gets the API for managing crafting systems.
      */
-    readonly craftingSystems: CraftingSystemApi;
+    readonly craftingSystems: CraftingSystemAPI;
 
     /**
      * Gets the API for managing essences.
      */
-    readonly essences: EssenceApi;
+    readonly essences: EssenceAPI;
 
     /**
      * Gets the API for managing components.
      */
-    readonly components: ComponentApi;
+    readonly components: ComponentAPI;
 
     /**
      * Gets the API for managing recipes.
      */
-    readonly recipes: RecipeApi;
+    readonly recipes: RecipeAPI;
 
     /**
      * Migrates Fabricate's stored data from older model versions to the most recent
@@ -97,14 +151,14 @@ interface FabricateApi {
     readonly dataModelVersion: string;
 
 }
-export { FabricateApi }
+export { FabricateAPI }
 
-class DefaultFabricateApi implements FabricateApi {
+class DefaultFabricateApi implements FabricateAPI {
 
-    private readonly recipeApi: RecipeApi;
-    private readonly componentApi: ComponentApi;
-    private readonly essenceApi: EssenceApi;
-    private readonly craftingSystemApi: CraftingSystemApi;
+    private readonly recipeApi: RecipeAPI;
+    private readonly componentApi: ComponentAPI;
+    private readonly essenceApi: EssenceAPI;
+    private readonly craftingSystemApi: CraftingSystemAPI;
 
     constructor({
         recipeApi,
@@ -112,10 +166,10 @@ class DefaultFabricateApi implements FabricateApi {
         essenceApi,
         craftingSystemApi,
     }: {
-        recipeApi: RecipeApi;
-        componentApi: ComponentApi;
-        essenceApi: EssenceApi;
-        craftingSystemApi: CraftingSystemApi;
+        recipeApi: RecipeAPI;
+        componentApi: ComponentAPI;
+        essenceApi: EssenceAPI;
+        craftingSystemApi: CraftingSystemAPI;
     }) {
         this.recipeApi = recipeApi;
         this.componentApi = componentApi;
@@ -123,20 +177,26 @@ class DefaultFabricateApi implements FabricateApi {
         this.craftingSystemApi = craftingSystemApi;
     }
 
-    get craftingSystems(): CraftingSystemApi {
+    get craftingSystems(): CraftingSystemAPI {
         return this.craftingSystemApi;
     }
 
-    get essences(): EssenceApi {
+    get essences(): EssenceAPI {
         return this.essenceApi;
     }
 
-    get components(): ComponentApi {
+    get components(): ComponentAPI {
         return this.componentApi;
     }
 
-    get recipes(): RecipeApi {
+    get recipes(): RecipeAPI {
         return this.recipeApi;
+    }
+
+    readonly dataModelVersion: string;
+
+    migrateData(): Promise<void> {
+        return Promise.resolve(undefined);
     }
 
 }

@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
-import {DefaultRecipeApi} from "../src/scripts/api/RecipeApi"
+import {DefaultRecipeAPI} from "../src/scripts/api/RecipeAPI"
 import {StubCraftingSystemApi} from "./stubs/api/StubCraftingSystemApi";
 import {StubEssenceApi} from "./stubs/api/StubEssenceApi";
 import {StubComponentApi} from "./stubs/api/StubComponentApi";
@@ -151,7 +151,7 @@ describe("Create", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -176,7 +176,7 @@ describe("Create", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -203,7 +203,7 @@ describe("Create", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -227,7 +227,7 @@ describe("Create", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -250,7 +250,7 @@ describe("Create", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -282,7 +282,7 @@ describe("Create", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator: {
@@ -314,7 +314,7 @@ describe("Access", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -337,7 +337,7 @@ describe("Access", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -373,7 +373,7 @@ describe("Access", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -407,7 +407,7 @@ describe("Access", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -439,7 +439,7 @@ describe("Access", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -471,7 +471,7 @@ describe("Access", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -511,7 +511,7 @@ describe("Edit", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -539,7 +539,7 @@ describe("Edit", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -577,7 +577,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -610,7 +610,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator: new RecipeValidator({
@@ -646,7 +646,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -680,7 +680,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator: new RecipeValidator({
@@ -716,7 +716,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -748,7 +748,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,
@@ -784,7 +784,7 @@ describe("Delete", () => {
             collectionManager: new RecipeCollectionManager()
         });
 
-        const underTest = new DefaultRecipeApi({
+        const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
             recipeValidator,

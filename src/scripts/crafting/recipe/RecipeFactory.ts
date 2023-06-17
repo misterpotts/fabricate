@@ -4,15 +4,15 @@ import {DefaultDocumentManager, DocumentManager} from "../../foundry/DocumentMan
 import {Component} from "../component/Component";
 import {Combination} from "../../common/Combination";
 import {SelectableOptions} from "./SelectableOptions";
-import {EssenceApi} from "../../api/EssenceApi";
-import {ComponentApi} from "../../api/ComponentApi";
+import {EssenceAPI} from "../../api/EssenceAPI";
+import {ComponentAPI} from "../../api/ComponentAPI";
 import {IdentityFactory} from "../../foundry/IdentityFactory";
 
 class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
 
     private readonly documentManager: DocumentManager;
-    private readonly essenceApi: EssenceApi;
-    private readonly componentApi: ComponentApi;
+    private readonly essenceApi: EssenceAPI;
+    private readonly componentApi: ComponentAPI;
 
     constructor({
         documentManager = new DefaultDocumentManager(),
@@ -20,8 +20,8 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
         componentApi
     }: {
         documentManager?: DocumentManager;
-        essenceApi: EssenceApi;
-        componentApi: ComponentApi;
+        essenceApi: EssenceAPI;
+        componentApi: ComponentAPI;
         identityFactory: IdentityFactory;
     }) {
         this.documentManager = documentManager;

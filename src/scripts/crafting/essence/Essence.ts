@@ -1,20 +1,24 @@
-import Properties from "../../Properties";
 import {Identifiable} from "../../common/Identifiable";
 import {FabricateItemData, ItemLoadingError} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
 
 interface EssenceJson {
-    activeEffectSourceItemUuid: string;
+    id: string;
     name: string;
-    description: string;
     tooltip: string;
     iconCode: string;
+    embedded: boolean;
+    description: string;
+    craftingSystemId: string;
+    activeEffectSourceItemUuid: string;
 }
 
 class Essence implements Identifiable, Serializable<EssenceJson> {
 
     private readonly _id: string;
     private readonly _craftingSystemId: string;
+    private readonly _embedded: boolean;
+
     private _name: string;
     private _activeEffectSource: FabricateItemData;
     private _description: string;
@@ -28,13 +32,13 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         tooltip,
         description,
         activeEffectSource,
-        iconCode = Properties.ui.defaults.essenceIconCode
+        iconCode
     }: {
         id: string;
         craftingSystemId: string;
         name: string;
         tooltip: string;
-        iconCode?: string;
+        iconCode: string;
         description: string;
         activeEffectSource?: FabricateItemData;
     }) {
@@ -49,16 +53,23 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     toJson(): EssenceJson {
         return {
+            id: this._id,
             name: this._name,
             tooltip: this._tooltip,
+            embedded: this._embedded,
             iconCode: this._iconCode,
             description: this._description,
+            craftingSystemId: this._craftingSystemId,
             activeEffectSourceItemUuid: this._activeEffectSource?.uuid
         }
     }
 
     get id(): string {
         return this._id;
+    }
+
+    get embedded(): boolean {
+        return this._embedded;
     }
 
     get craftingSystemId(): string {

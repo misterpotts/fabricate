@@ -1,24 +1,24 @@
 import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../../api/EntityValidator";
 import {Recipe} from "./Recipe";
-import {CraftingSystemApi} from "../../api/CraftingSystemApi";
-import {EssenceApi} from "../../api/EssenceApi";
-import {ComponentApi} from "../../api/ComponentApi";
+import {CraftingSystemAPI} from "../../api/CraftingSystemAPI";
+import {EssenceAPI} from "../../api/EssenceAPI";
+import {ComponentAPI} from "../../api/ComponentAPI";
 import {NoFabricateItemData} from "../../foundry/DocumentManager";
 
 class RecipeValidator implements EntityValidator<Recipe> {
 
-    private readonly craftingSystemApi: CraftingSystemApi;
-    private readonly componentApi: ComponentApi;
-    private readonly essenceApi: EssenceApi;
+    private readonly craftingSystemApi: CraftingSystemAPI;
+    private readonly componentApi: ComponentAPI;
+    private readonly essenceApi: EssenceAPI;
 
     constructor({
         craftingSystemApi,
         componentApi,
         essenceApi
     }: {
-        craftingSystemApi: CraftingSystemApi;
-        componentApi: ComponentApi;
-        essenceApi: EssenceApi;
+        craftingSystemApi: CraftingSystemAPI;
+        componentApi: ComponentAPI;
+        essenceApi: EssenceAPI;
     }) {
         this.craftingSystemApi = craftingSystemApi;
         this.componentApi = componentApi;

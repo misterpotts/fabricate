@@ -1,14 +1,9 @@
 import {Component, ComponentJson} from "../crafting/component/Component";
-
-interface ComponentData {
-
-    componentIdsByItemUuid: Record<string, string[]>;
-    componentIdsByCraftingSystemId: Record<string, string[]>;
-    componentsById: Record<string, ComponentJson>;
-
-}
-
-export { ComponentData }
+import Properties from "../Properties";
+import {EntityValidator} from "./EntityValidator";
+import {LocalizationService} from "../../applications/common/LocalizationService";
+import {EntityDataStore} from "./EntityDataStore";
+import {IdentityFactory} from "../foundry/IdentityFactory";
 
 /**
  * Dictionary of the salvage amounts for a salvage option. The dictionary is keyed on the component ID and with
@@ -53,7 +48,7 @@ interface ComponentOptions {
 
 export { ComponentOptions }
 
-interface ComponentApi {
+interface ComponentAPI {
 
     /**
      * Creates a new component with the given options.
@@ -187,8 +182,36 @@ interface ComponentApi {
 
 }
 
-export { ComponentApi };
-class DefaultComponentApi implements ComponentApi {
+export { ComponentAPI };
+class DefaultComponentAPI implements ComponentAPI {
+
+    private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
+
+    private readonly componentValidator: EntityValidator<Component>;
+    private readonly notificationService: NotificationService;
+    private readonly localizationService: LocalizationService;
+    private readonly componentStore: EntityDataStore<ComponentJson, Component>;
+    private readonly identityFactory: IdentityFactory;
+
+    constructor({
+        componentValidator,
+        notificationService,
+        localizationService,
+        componentStore,
+        identityFactory
+    }: {
+        componentValidator: EntityValidator<Component>,
+        notificationService: NotificationService,
+        localizationService: LocalizationService,
+        componentStore: EntityDataStore<ComponentJson, Component>,
+        identityFactory: IdentityFactory;
+    }) {
+        this.componentValidator = componentValidator;
+        this.notificationService = notificationService;
+        this.localizationService = localizationService;
+        this.componentStore = componentStore;
+        this.identityFactory = identityFactory;
+    }
 
     get notifications(): NotificationService {
         return undefined;
@@ -244,4 +267,4 @@ class DefaultComponentApi implements ComponentApi {
 
 }
 
-export { DefaultComponentApi };
+export { DefaultComponentAPI };

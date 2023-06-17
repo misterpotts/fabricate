@@ -37,7 +37,7 @@ import {
 } from "../src/scripts/crafting/recipe/Recipe";
 import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
 import {DefaultEntityValidationResult} from "../src/scripts/api/EntityValidator";
-import {DefaultComponentApi} from "../src/scripts/api/ComponentApi";
+import {DefaultComponentAPI} from "../src/scripts/api/ComponentAPI";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
@@ -138,7 +138,7 @@ describe("Create", () => {
         const itemUuid = "1234abcd";
         documentManager.setAllowUnknownIds(true);
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             identityFactory: new StubIdentityFactory(recipeId),
             localizationService,
@@ -158,7 +158,7 @@ describe("Create", () => {
 
     test("should not create a recipe when the crafting system does not exist", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -181,7 +181,7 @@ describe("Create", () => {
     test("should not create a recipe when the item does not exist", async () => {
         const craftingSystemId = testCraftingSystemOne.id;
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -201,7 +201,7 @@ describe("Create", () => {
 
     test("should save a valid recipe when the crafting system and item document exist", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -220,7 +220,7 @@ describe("Create", () => {
 
     test("should not save a recipe when the crafting system doesn't exist", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -252,7 +252,7 @@ describe("Create", () => {
 
     test("should not save a recipe when the recipe is invalid", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -286,7 +286,7 @@ describe("Access", () => {
             recipeIdsByCraftingSystemId: {}
         });
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -305,7 +305,7 @@ describe("Access", () => {
 
     test("Should get a recipe by ID with pending item data ready to load", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -337,7 +337,7 @@ describe("Access", () => {
 
     test("Should get many recipes by ID with pending item data ready to load and undefined for missing values", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -367,7 +367,7 @@ describe("Access", () => {
 
     test("Should get all recipes without loading", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -395,7 +395,7 @@ describe("Access", () => {
 
     test("Should get all recipes by crafting system ID without loading", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -423,7 +423,7 @@ describe("Access", () => {
 
     test("Should get all recipes by item UUID without loading", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -449,7 +449,7 @@ describe("Edit", () => {
 
     test("should clone a recipe by ID", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -473,7 +473,7 @@ describe("Edit", () => {
 
     test("should modify a recipe", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -507,7 +507,7 @@ describe("Delete", () => {
 
     test("should delete a recipe by ID", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -536,7 +536,7 @@ describe("Delete", () => {
     test("should delete a recipe by ID even if the crafting system does not exist", async () => {
 
         const emptyCraftingSystemApi = new StubCraftingSystemApi();
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -568,7 +568,7 @@ describe("Delete", () => {
 
     test("should delete recipes by crafting system ID", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -597,7 +597,7 @@ describe("Delete", () => {
     test("should delete recipes by crafting system ID even if the crafting system does not exist", async () => {
 
         const emptyCraftingSystemApi = new StubCraftingSystemApi();
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -629,7 +629,7 @@ describe("Delete", () => {
 
     test("should delete recipes by item UUID", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -700,7 +700,7 @@ describe("Delete", () => {
 
     test("should remove all component references from all recipes", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,
@@ -731,7 +731,7 @@ describe("Delete", () => {
 
     test("should remove all essence references from all recipes", async () => {
 
-        const underTest = new DefaultComponentApi({
+        const underTest = new DefaultComponentAPI({
             essenceApi,
             componentApi,
             identityFactory,

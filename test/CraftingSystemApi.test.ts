@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
-import {DefaultCraftingSystemApi} from "../src/scripts/api/CraftingSystemApi";
+import {DefaultCraftingSystemAPI} from "../src/scripts/api/CraftingSystemAPI";
 import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
 import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
@@ -60,7 +60,7 @@ describe("Create", () => {
         const expectedDescription = "Expected description";
         const expectedAuthor = "Expected author";
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -96,7 +96,7 @@ describe("Create", () => {
         });
 
         const expectedAuthor = "User";
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -117,49 +117,6 @@ describe("Create", () => {
 
     });
 
-    test("should fail to save a new crafting system with the same ID as an embedded system", async () => {
-
-        const craftingSystemStore = new EntityDataStore({
-            entityName: "CraftingSystem",
-            settingManager,
-            entityFactory: stubCraftingSystemFactory,
-            collectionManager: new CraftingSystemCollectionManager()
-        });
-
-        const underTest = new DefaultCraftingSystemApi({
-            notificationService,
-            localizationService,
-            craftingSystemValidator,
-            gameSystem: "dnd5e",
-            user: "User",
-            craftingSystemStore,
-            identityFactory: new StubIdentityFactory()
-        });
-
-        await expect(underTest.save(
-            new CraftingSystem({
-                id: testCraftingSystemTwo.id,
-                craftingSystemDetails: new CraftingSystemDetails({
-                    name: "Any name",
-                    summary: "Any summary",
-                    description: "Any description",
-                    author: "Any author"
-                }),
-                gameSystem: "dnd5e",
-                embedded: false
-            })
-        ))
-            .rejects
-            .toThrowError();
-
-        await expect(craftingSystemStore.size()).resolves.toEqual(2);
-        const allEntities = await craftingSystemStore.getAllEntities();
-        await expect(allEntities.length).toEqual(2);
-
-        expect(notificationService.invocations.length).toEqual(1);
-        expect(notificationService.invocations[0].level).toEqual("error");
-    });
-
 });
 
 describe("Read", () => {
@@ -173,7 +130,7 @@ describe("Read", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -205,7 +162,7 @@ describe("Read", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -239,7 +196,7 @@ describe("Read", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -257,6 +214,49 @@ describe("Read", () => {
 
 describe("Update", () => {
 
+    test("should fail to save a new crafting system with the same ID as an embedded system", async () => {
+
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
+        });
+
+        const underTest = new DefaultCraftingSystemAPI({
+            notificationService,
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
+        });
+
+        await expect(underTest.save(
+            new CraftingSystem({
+                id: testCraftingSystemTwo.id,
+                craftingSystemDetails: new CraftingSystemDetails({
+                    name: "Any name",
+                    summary: "Any summary",
+                    description: "Any description",
+                    author: "Any author"
+                }),
+                gameSystem: "dnd5e",
+                embedded: false
+            })
+        ))
+            .rejects
+            .toThrowError();
+
+        await expect(craftingSystemStore.size()).resolves.toEqual(2);
+        const allEntities = await craftingSystemStore.getAllEntities();
+        await expect(allEntities.length).toEqual(2);
+
+        expect(notificationService.invocations.length).toEqual(1);
+        expect(notificationService.invocations[0].level).toEqual("error");
+    });
+
     test("should update system if exists and changes valid", async () => {
 
         const craftingSystemStore = new EntityDataStore({
@@ -266,7 +266,7 @@ describe("Update", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -302,7 +302,7 @@ describe("Update", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -341,7 +341,7 @@ describe("Delete", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -366,7 +366,7 @@ describe("Delete", () => {
             collectionManager: new CraftingSystemCollectionManager()
         });
 
-        const underTest = new DefaultCraftingSystemApi({
+        const underTest = new DefaultCraftingSystemAPI({
             notificationService,
             localizationService,
             craftingSystemValidator,
@@ -377,6 +377,34 @@ describe("Delete", () => {
         });
 
         await expect(underTest.deleteById("non-existent")).resolves.toBeUndefined();
+
+    });
+
+    test("should fail to delete an embedded crafting system", async () => {
+
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
+        });
+
+        const underTest = new DefaultCraftingSystemAPI({
+            notificationService,
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
+        });
+
+        await expect(underTest.deleteById(testCraftingSystemTwo.id))
+            .rejects
+            .toThrowError();
+
+        expect(notificationService.invocations.length).toEqual(1);
+        expect(notificationService.invocations[0].level).toEqual("error");
 
     });
 

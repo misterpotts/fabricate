@@ -7,7 +7,7 @@ import {IdentityFactory} from "../foundry/IdentityFactory";
 import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
-import {EntityValidator} from "./EntityValidator";
+import {EntityValidationResult, EntityValidator} from "./EntityValidator";
 import {EntityDataStore} from "./EntityDataStore";
 
 /**
@@ -15,7 +15,7 @@ import {EntityDataStore} from "./EntityDataStore";
  *
  * @interface
  */
-interface CraftingSystemApi {
+interface CraftingSystemAPI {
 
     /**
      * Creates a new crafting system with the given details.
@@ -76,9 +76,9 @@ interface CraftingSystemApi {
 
 }
 
-export { CraftingSystemApi };
+export { CraftingSystemAPI };
 
-class DefaultCraftingSystemApi implements CraftingSystemApi {
+class DefaultCraftingSystemAPI implements CraftingSystemAPI {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
@@ -123,11 +123,12 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
 
     async deleteById(id: string): Promise<CraftingSystem | undefined> {
         const craftingSystemToDelete = await this.craftingSystemStore.getById(id);
-        await this.rejectDeletingEmbeddedCraftingSystem(craftingSystemToDelete);
+
+        this.rejectDeletingEmbeddedCraftingSystem(craftingSystemToDelete);
 
         if (!craftingSystemToDelete) {
             const message = this.localizationService.format(
-                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.doesNotExist`,
+                `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.doesNotExist`,
                 { craftingSystemId: id }
             );
             this.notificationService.error(message);
@@ -149,7 +150,7 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
 
         if (!craftingSystem) {
             const message = this.localizationService.format(
-                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.doesNotExist`,
+                `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.doesNotExist`,
                 { craftingSystemId }
             );
             this.notificationService.warn(message);
@@ -167,49 +168,15 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
 
         await this.craftingSystemStore.insert(craftingSystem);
 
-        let localizationActivity = existing ? "updated" : "created";
+        const localizationActivity = existing ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.settings.craftingSystem.${localizationActivity}`,
+            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.settings.craftingSystem.${localizationActivity}`,
             { craftingSystemName: craftingSystem.details.name }
         );
 
         this.notificationService.info(message);
 
         return craftingSystem;
-    }
-
-    private async rejectSavingInvalidSystem(craftingSystem: CraftingSystem): Promise<void> {
-        const validationResult = await this.craftingSystemValidator.validate(craftingSystem);
-        if (!validationResult.isSuccessful) {
-            const message = this.localizationService.format(
-                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.notValid`,
-                { errors: validationResult.errors.join(", ") }
-            );
-            this.notificationService.error(message);
-            throw new Error(message);
-        }
-    }
-
-    private async rejectDeletingEmbeddedCraftingSystem(craftingSystem: CraftingSystem) {
-        if (craftingSystem?.embedded) {
-            const message = this.localizationService.format(
-                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.cannotDeleteEmbedded`,
-                { craftingSystemName: craftingSystem.details.name }
-            );
-            this.notificationService.error(message);
-            throw new Error(message);
-        }
-    }
-
-    private rejectModifyingEmbeddedSystem(craftingSystem: CraftingSystem): void {
-        if (craftingSystem?.embedded) {
-            const message = this.localizationService.format(
-                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.canNotModifyEmbedded`,
-                { craftingSystemName: craftingSystem.details.name }
-            );
-            this.notificationService.error(message);
-            throw new Error(message);
-        }
     }
 
     async create({
@@ -236,6 +203,45 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
         return this.save(created);
     }
 
+    private async rejectSavingInvalidSystem(craftingSystem: CraftingSystem): Promise<EntityValidationResult<CraftingSystem>> {
+        const validationResult = await this.craftingSystemValidator.validate(craftingSystem);
+        if (!validationResult.isSuccessful) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.notValid`,
+                { errors: validationResult.errors.join(", ") }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+        return validationResult;
+    }
+
+    private rejectDeletingEmbeddedCraftingSystem(craftingSystem: CraftingSystem): void {
+        if (!craftingSystem?.embedded) {
+            return;
+        }
+        const message = this.localizationService.format(
+            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.cannotDeleteEmbedded`,
+            { craftingSystemName: craftingSystem.details.name }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
+
+    }
+
+    private rejectModifyingEmbeddedSystem(craftingSystem: CraftingSystem): void {
+        if (!craftingSystem?.embedded) {
+            return;
+        }
+        const message = this.localizationService.format(
+            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.canNotModifyEmbedded`,
+            { craftingSystemName: craftingSystem.details.name }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
+
+    }
+
 }
 
-export { DefaultCraftingSystemApi };
+export { DefaultCraftingSystemAPI };

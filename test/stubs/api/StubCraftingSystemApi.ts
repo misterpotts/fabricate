@@ -1,10 +1,10 @@
-import {CraftingSystemApi} from "../../../src/scripts/api/CraftingSystemApi";
+import {CraftingSystemAPI} from "../../../src/scripts/api/CraftingSystemAPI";
 import {CraftingSystem, UserDefinedCraftingSystem} from "../../../src/scripts/system/CraftingSystem";
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
 import {CraftingSystemDetails} from "../../../src/scripts/system/CraftingSystemDetails";
 import {StubIdentityFactory} from "../foundry/StubIdentityFactory";
 
-class StubCraftingSystemApi implements CraftingSystemApi {
+class StubCraftingSystemApi implements CraftingSystemAPI {
 
     private readonly identityFactory: IdentityFactory;
 

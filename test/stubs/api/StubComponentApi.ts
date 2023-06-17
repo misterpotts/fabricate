@@ -1,10 +1,10 @@
 import {Component} from "../../../src/scripts/crafting/component/Component";
-import {ComponentApi, ComponentOptions} from "../../../src/scripts/api/ComponentApi";
+import {ComponentAPI, ComponentOptions} from "../../../src/scripts/api/ComponentAPI";
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
 import {StubIdentityFactory} from "../foundry/StubIdentityFactory";
 import {StubDocumentManager} from "../StubDocumentManager";
 
-class StubComponentApi implements ComponentApi {
+class StubComponentApi implements ComponentAPI {
 
     private readonly identityFactory: IdentityFactory;
     private readonly stubDocumentManager: StubDocumentManager;
