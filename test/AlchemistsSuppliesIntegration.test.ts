@@ -3,7 +3,7 @@ import {beforeEach, describe, expect, jest, test} from '@jest/globals';
 import {CraftingSystemFactory} from "../src/scripts/system/CraftingSystemFactory";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as AlchemistsSupplies} from "../src/scripts/system/bundled/AlchemistsSuppliesV16"
+import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as AlchemistsSupplies} from "../src/scripts/system/embedded/AlchemistsSuppliesV16"
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {Combination} from "../src/scripts/common/Combination";
 

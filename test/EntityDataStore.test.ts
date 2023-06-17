@@ -1,314 +1,141 @@
 import { describe, test, expect } from "@jest/globals";
-import { EntityDataStore } from "../src/scripts/api/EntityDataStore";
-import {testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
-import {testCraftingSystem} from "./test_data/TestCrafingSystem";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
+import {allTestRecipes, testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
+import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
-import {allTestEssences} from "./test_data/TestEssences";
-import {allTestComponents} from "./test_data/TestCraftingComponents";
-import {StubDocumentManager} from "./stubs/StubDocumentManager";
-import {RecipeFactory} from "../src/scripts/crafting/recipe/RecipeFactory";
+import {RecipeCollectionManager} from "../src/scripts/api/CollectionManager";
+import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
+import Properties from "../src/scripts/Properties";
+import {StubEntityFactory} from "./stubs/StubEntityFactory";
 
-const stubDocumentManager = new StubDocumentManager({
-    itemDataByUuid: new Map([
-        [ testRecipeOne.itemUuid, testRecipeOne.itemData ],
-        [ testRecipeTwo.itemUuid, testRecipeTwo.itemData ],
-        [ testRecipeThree.itemUuid, testRecipeThree.itemData ],
-        [ testRecipeFour.itemUuid, testRecipeFour.itemData ]
-    ])
-});
+const recipeFactory = new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes });
 
-const recipeFactory = new RecipeFactory({
-    documentManager: stubDocumentManager,
-    essences: allTestEssences,
-    components: allTestComponents
-});
+describe('Reading', () => {
 
-describe('Deserialization', () => {
-
-    test('should fail to deserialize from invalid json data', () => {
-
-        expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            "{}",
-            recipeFactory
-        )).toThrow("The data source for the Recipe store is missing the required property \"entities\"");
-
-        expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            `{ "entities": [] }`,
-            recipeFactory
-        )).toThrow("The data source for the Recipe store is missing the required property \"collections\"");
-
-        expect(() => EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            `NOT_VALID_JSON`,
-            recipeFactory
-        )).toThrow("The data source for the Recipe store is not valid JSON");
-
-    });
-
-    test("should initialise but not deserialize when recipe factory does not have required essences or components", () => {
-
-        // Prepare the serialized data
-        const serializedData: string = JSON.stringify({
-            entities: [ testRecipeOne.toJson(), testRecipeTwo.toJson() ],
-            collections: {
-                [ testCraftingSystem.id ]: [ testRecipeOne.id, testRecipeTwo.id ],
-                [ testRecipeOne.itemUuid ]: [ testRecipeOne.id ],
-                [ testRecipeTwo.itemUuid ]: [ testRecipeTwo.id ]
-            }
-        });
-
-        const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            serializedData,
-            new RecipeFactory()
-        );
-
-        expect(() => underTest.getEntity(testRecipeOne.id)).toThrow();
-
-    });
-
-    test('should successfully deserialize from valid json data without collection name prefixes', () => {
-
-        // Prepare the serialized data
-        const serializedData: string = JSON.stringify({
-            entities: [ testRecipeOne.toJson(), testRecipeTwo.toJson() ],
-            collections: {
-                [ testCraftingSystem.id ]: [ testRecipeOne.id, testRecipeTwo.id ],
-                [ testRecipeOne.itemUuid ]: [ testRecipeOne.id ],
-                [ testRecipeTwo.itemUuid ]: [ testRecipeTwo.id ]
-            }
-        });
-
-        // Use fromJson to create a new EntityDataStore
-        const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            serializedData,
-            recipeFactory
-        );
-
-        // Verify the entities are added correctly
-        const allEntities = underTest.getAllEntities();
-        expect(allEntities.length).toEqual(2);
-        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
-        expect(recipeInArray(testRecipeTwo, allEntities)).toEqual(true);
-
-        // Verify the crafting system collection is added correctly
-        const craftingSystemCollection = underTest.getCollection(testCraftingSystem.id);
-        expect(craftingSystemCollection.length).toEqual(2);
-        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
-        expect(recipeInArray(testRecipeTwo, craftingSystemCollection)).toEqual(true);
-
-        // Verify the item UUID collections are added correctly
-        const itemOneCollection = underTest.getCollection(testRecipeOne.itemUuid);
-        expect(itemOneCollection.length).toEqual(1);
-        expect(recipeInArray(testRecipeOne, itemOneCollection)).toEqual(true);
-        const itemTwoCollection = underTest.getCollection(testRecipeTwo.itemUuid);
-        expect(itemTwoCollection.length).toEqual(1);
-        expect(recipeInArray(testRecipeTwo, itemTwoCollection)).toEqual(true);
-
-    });
-
-    test('should successfully deserialize from valid json data with collection name prefixes', () => {
-
-        // Prepare the serialized data
-        const craftingSystemCollectionPrefix = `CraftingSystem.`;
-        const craftingSystemCollectionKey = `${craftingSystemCollectionPrefix}${testCraftingSystem.id}`;
-        const itemCollectionPrefix = `Item.`;
-        const itemOneCollectionKey = `${itemCollectionPrefix}${testRecipeOne.itemUuid}`;
-        const itemTwoCollectionKey = `${itemCollectionPrefix}${testRecipeTwo.itemUuid}`;
-        const serializedData: string = JSON.stringify({
-            entities: [ testRecipeOne.toJson(), testRecipeTwo.toJson() ],
-            collections: {
-                [ craftingSystemCollectionKey ]: [ testRecipeOne.id, testRecipeTwo.id ],
-                [ itemOneCollectionKey ]: [ testRecipeOne.id ],
-                [ itemTwoCollectionKey ]: [ testRecipeTwo.id ]
-            }
-        })
-
-        // Use fromJson to create a new EntityDataStore
-        const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            serializedData,
-            recipeFactory
-        );
-
-        // Verify the entities are added correctly
-        const allEntities = underTest.getAllEntities();
-        expect(allEntities.length).toEqual(2);
-        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
-        expect(recipeInArray(testRecipeTwo, allEntities)).toEqual(true);
-
-        // Verify the crafting system collection is added correctly
-        const craftingSystemCollection = underTest.getCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
-        expect(craftingSystemCollection.length).toEqual(2);
-        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
-        expect(recipeInArray(testRecipeTwo, craftingSystemCollection)).toEqual(true);
-
-        // Verify the item UUID collections are added correctly
-        const itemOneCollection = underTest.getCollection(testRecipeOne.itemUuid, itemCollectionPrefix);
-        expect(itemOneCollection.length).toEqual(1);
-        expect(recipeInArray(testRecipeOne, itemOneCollection)).toEqual(true);
-        const itemTwoCollection = underTest.getCollection(testRecipeTwo.itemUuid, itemCollectionPrefix);
-        expect(itemTwoCollection.length).toEqual(1);
-        expect(recipeInArray(testRecipeTwo, itemTwoCollection)).toEqual(true);
-
-    });
-
-    test('should successfully deserialize from valid but inaccurate json data', () => {
-
-        // Prepare the serialized data
-        const craftingSystemCollectionPrefix = `CraftingSystem.`;
-        const craftingSystemCollectionKey = `${craftingSystemCollectionPrefix}${testCraftingSystem.id}`;
-        const itemCollectionPrefix = `Item.`;
-        const itemTwoCollectionKey = `${itemCollectionPrefix}${testRecipeTwo.itemUuid}`;
-        const serializedData: string = JSON.stringify({
-            entities: [ testRecipeOne.toJson() ],
-            collections: {
-                [ craftingSystemCollectionKey ]: [ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ],
-                [ itemTwoCollectionKey ]: [ testRecipeTwo.id ]
-            }
-        });
-
-        // Use fromJson to create a new EntityDataStore
-        const underTest = EntityDataStore.fromJson<RecipeJson, Recipe>(
-            "Recipe",
-            serializedData,
-            recipeFactory
-        );
-
-        // Verify the entity is added correctly
-        const allEntities = underTest.getAllEntities();
-        expect(allEntities.length).toEqual(1);
-        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
-
-        // Verify the crafting system collection is added as expected
-        const craftingSystemCollection = underTest.getCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
-        expect(craftingSystemCollection.length).toEqual(3);
-        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
-        expect(craftingSystemCollection.find(recipe => recipe?.id === testRecipeTwo.id)).toBeUndefined()
-        expect(craftingSystemCollection.find(recipe => recipe?.id === testRecipeThree.id)).toBeUndefined()
-
-        // Verify the item UUID collections are added as expected
-        const itemOneCollection = underTest.getCollection(testRecipeOne.itemUuid, itemCollectionPrefix);
-        expect(itemOneCollection.length).toEqual(0);
-        const itemTwoCollection = underTest.getCollection(testRecipeTwo.itemUuid, itemCollectionPrefix);
-        expect(itemTwoCollection.length).toEqual(1);
-        expect(itemTwoCollection.find(recipe => recipe?.id === testRecipeTwo.id)).toBeUndefined();
-        const itemThreeCollection = underTest.getCollection(testRecipeThree.itemUuid, itemCollectionPrefix);
-        expect(itemThreeCollection.length).toEqual(0);
-
-    });
-
-});
-
-describe("Serialization", () => {
-
-    test("should serialise an empty Entity Data Store with all required properties", () => {
-
-        // @ts-ignore
-        const expected = { entities: [], collections: {} };
-
-        const underTest = new EntityDataStore({ entityFactory: recipeFactory });
-
-        const result = underTest.toJson();
-
-        expect(JSON.parse(result)).toMatchSnapshot(expected);
-
-    });
-
-    test("should not serialise empty collections", () => {
-
-        // @ts-ignore
-        const expected = { entities: [], collections: {} };
+    test("should fail to read from invalid setting data without entities or collections", async () => {
 
         const underTest = new EntityDataStore({
-            collections: new Map<string, Set<string>>([
-                [ "A", new Set() ],
-                [ "B", new Set() ]
-            ]),
-            entityFactory: recipeFactory
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: new RecipeCollectionManager(),
+            // @ts-ignore
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>({})
         });
 
-        const result = underTest.toJson();
-
-        expect(JSON.parse(result)).toMatchSnapshot(expected);
+        await expect(underTest.getById("anyId")).rejects
+            .toThrow("The settings value at \"stub.setting.path\" for the Recipe data store is missing both of the required \"entities\" and \"collections\" properties");
+        await expect(underTest.getCollection("anyCollection", "anyPrefix")).rejects
+            .toThrow("The settings value at \"stub.setting.path\" for the Recipe data store is missing both of the required \"entities\" and \"collections\" properties");
 
     });
 
-    test("should correctly serialise an Entity Data Store with entities not in collections", () => {
+    test("should fail to read from invalid setting data without entities", async () => {
 
         const underTest = new EntityDataStore({
-            entitiesJsonById: new Map([
-                [ testRecipeOne.id, testRecipeOne.toJson() ],
-                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
-                [ testRecipeThree.id, testRecipeThree.toJson() ]
-            ]),
-            entityFactory: recipeFactory
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: new RecipeCollectionManager(),
+            // @ts-ignore
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>({ collections: {} })
         });
 
-        const result = underTest.toJson();
-
-        const deserializedResult = JSON.parse(result);
-        expect(recipeJsonInArray(testRecipeOne.toJson(), deserializedResult.entities)).toEqual(true);
-        expect(recipeJsonInArray(testRecipeTwo.toJson(), deserializedResult.entities)).toEqual(true);
-        expect(recipeJsonInArray(testRecipeThree.toJson(), deserializedResult.entities)).toEqual(true);
-        expect(Object.keys(deserializedResult.collections).length).toEqual(0);
+        await expect(underTest.getById("anyId")).rejects
+            .toThrow("The settings value at \"stub.setting.path\" for the Recipe data store is missing the required \"entities\" property");
+        await expect(underTest.getCollection("anyCollection", "anyPrefix")).rejects
+            .toThrow("The settings value at \"stub.setting.path\" for the Recipe data store is missing the required \"entities\" property");
 
     });
 
-    test("should correctly serialise an Entity Data Store with entities in collections", () => {
+    test("should fail to read from invalid setting data without collections", async () => {
 
-        const craftingSystemCollectionKey = `CraftingSystem.${testCraftingSystem.id}`;
-        const itemOneCollectionKey = `Item.${testRecipeOne.itemUuid}`;
-        const itemTwoCollectionKey = `Item.${testRecipeTwo.itemUuid}`;
-        const itemThreeCollectionKey = `Item.${testRecipeThree.itemUuid}`;
+        const underTest = new EntityDataStore({
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: new RecipeCollectionManager(),
+            // @ts-ignore
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>({ entities: {} })
+        });
 
-        const expected = {
-            entities: [
-                testRecipeOne.toJson(),
-                testRecipeTwo.toJson(),
-                testRecipeThree.toJson()
-            ],
+        await expect(underTest.getById("anyId")).rejects
+            .toThrow("The settings value at \"stub.setting.path\" for the Recipe data store is missing the required \"collections\" property");
+        await expect(underTest.getCollection("anyCollection", "anyPrefix")).rejects
+            .toThrow("The settings value at \"stub.setting.path\" for the Recipe data store is missing the required \"collections\" property");
+
+    });
+
+
+    test("should fail to get entities when the entity factory returns undefined", async () => {
+
+        // Prepare the serialized data
+        const serializedData: SerialisedEntityData<RecipeJson> = {
+            entities: {
+                [testRecipeOne.id]: testRecipeOne.toJson(),
+                [testRecipeTwo.id]: testRecipeTwo.toJson()
+            },
             collections: {
-                [ craftingSystemCollectionKey ]: [
-                    testRecipeOne.id,
-                    testRecipeTwo.id,
-                    testRecipeThree.id
-                ],
-                [ itemOneCollectionKey ] : [ testRecipeOne.id ],
-                [ itemTwoCollectionKey ] : [ testRecipeTwo.id ],
-                [ itemThreeCollectionKey ] : [ testRecipeThree.id ],
+                [ `${Properties.settings.collectionNames.craftingSystem}.${testCraftingSystemOne.id}` ]: [ testRecipeOne.id, testRecipeTwo.id ],
+                [ `${Properties.settings.collectionNames.item}.${testRecipeOne.itemUuid}` ]: [ testRecipeOne.id ],
+                [ `${Properties.settings.collectionNames.item}.${testRecipeTwo.itemUuid}` ]: [ testRecipeTwo.id ]
             }
         };
 
         const underTest = new EntityDataStore({
-            entitiesJsonById: new Map([
-                [ testRecipeOne.id, testRecipeOne.toJson() ],
-                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
-                [ testRecipeThree.id, testRecipeThree.toJson() ]
-            ]),
-            entityFactory: recipeFactory,
-            collections: new Map([
-                [craftingSystemCollectionKey, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
-                [ itemOneCollectionKey, new Set([ testRecipeOne.id ]) ],
-                [ itemTwoCollectionKey, new Set([ testRecipeTwo.id ]) ],
-                [ itemThreeCollectionKey, new Set([ testRecipeThree.id ]) ]
-            ])
+            entityName: "Recipe",
+            entityFactory: { make: () => undefined },
+            collectionManager: new RecipeCollectionManager(),
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(serializedData)
         });
 
-        const result = underTest.toJson();
+        await expect(() => underTest.getById(testRecipeOne.id)).rejects.toThrow("Failed to create Recipe from JSON:");
+        await expect(underTest.getCollection(testCraftingSystemOne.id, Properties.settings.collectionNames.craftingSystem)).rejects.toThrow("Failed to create Recipe from JSON:");
 
-        const deserializedResult = JSON.parse(result);
-        expect(recipeJsonInArray(testRecipeOne.toJson(), deserializedResult.entities)).toEqual(true);
-        expect(recipeJsonInArray(testRecipeTwo.toJson(), deserializedResult.entities)).toEqual(true);
-        expect(recipeJsonInArray(testRecipeThree.toJson(), deserializedResult.entities)).toEqual(true);
-        expect(Object.keys(deserializedResult.collections).length).toEqual(4);
-        expect(deserializedResult.collections[craftingSystemCollectionKey]).toEqual(expected.collections[craftingSystemCollectionKey]);
-        expect(deserializedResult.collections[itemOneCollectionKey]).toEqual(expected.collections[itemOneCollectionKey]);
-        expect(deserializedResult.collections[itemTwoCollectionKey]).toEqual(expected.collections[itemTwoCollectionKey]);
-        expect(deserializedResult.collections[itemThreeCollectionKey]).toEqual(expected.collections[itemThreeCollectionKey]);
+    });
+
+    test('should successfully get entities from collection data without collection name prefixes', async () => {
+
+        // Prepare the serialized data
+        const serializedData: SerialisedEntityData<RecipeJson> = {
+            entities: {
+                [testRecipeOne.id]: testRecipeOne.toJson(),
+                [testRecipeTwo.id]: testRecipeTwo.toJson()
+            },
+            collections: {
+                [ testCraftingSystemOne.id ]: [ testRecipeOne.id, testRecipeTwo.id ],
+                [ testRecipeOne.itemUuid ]: [ testRecipeOne.id ],
+                [ testRecipeTwo.itemUuid ]: [ testRecipeTwo.id ]
+            }
+        };
+
+        const underTest = new EntityDataStore({
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: {
+                listCollectionMemberships() {
+                    return []
+                }
+            },
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(serializedData)
+        });
+
+        // Verify the entities are added correctly
+        const allEntities = await underTest.getAllEntities();
+        expect(allEntities.length).toEqual(2);
+        expect(recipeInArray(testRecipeOne, allEntities)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, allEntities)).toEqual(true);
+
+        // Verify the crafting system collection is added correctly
+        const craftingSystemCollection = await underTest.getCollection(testCraftingSystemOne.id);
+        expect(craftingSystemCollection.length).toEqual(2);
+        expect(recipeInArray(testRecipeOne, craftingSystemCollection)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, craftingSystemCollection)).toEqual(true);
+
+        // Verify the item UUID collections are added correctly
+        const itemOneCollection = await underTest.getCollection(testRecipeOne.itemUuid);
+        expect(itemOneCollection.length).toEqual(1);
+        expect(recipeInArray(testRecipeOne, itemOneCollection)).toEqual(true);
+        const itemTwoCollection = await underTest.getCollection(testRecipeTwo.itemUuid);
+        expect(itemTwoCollection.length).toEqual(1);
+        expect(recipeInArray(testRecipeTwo, itemTwoCollection)).toEqual(true);
 
     });
 
@@ -316,46 +143,52 @@ describe("Serialization", () => {
 
 describe("Addition", () => {
 
-    test("should add entities", () => {
+    test("should add entities", async () => {
 
-        const underTest = new EntityDataStore<RecipeJson, Recipe>({ entityFactory: recipeFactory });
+        const underTest = new EntityDataStore({
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: {
+                listCollectionMemberships() {
+                    return []
+                }
+            },
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>({ entities: {}, collections: {} })
+        });
 
-        underTest.insert(testRecipeOne);
-        underTest.insert(testRecipeTwo);
-        underTest.insert(testRecipeThree);
-        underTest.insert(testRecipeFour);
+        await underTest.insert(testRecipeOne);
+        await underTest.insert(testRecipeTwo);
+        await underTest.insert(testRecipeThree);
+        await underTest.insert(testRecipeFour);
 
-        const allAfter = underTest.getAllEntities();
+        const allAfter = await underTest.getAllEntities();
 
-        expect(underTest.size).toEqual(4);
+        await expect(underTest.size()).resolves.toEqual(4);
         expect(allAfter.length).toEqual(4);
-        expect(underTest.collectionCount).toEqual(0);
+        await expect(underTest.collectionCount()).resolves.toEqual(0);
 
     });
 
-    test("should add entities to collections", () => {
+    test("should add entities to collections", async () => {
 
         const underTest = new EntityDataStore({
-            entitiesJsonById: new Map([
-                [ testRecipeOne.id, testRecipeOne.toJson() ],
-                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
-                [ testRecipeThree.id, testRecipeThree.toJson() ]
-            ]),
-            entityFactory: recipeFactory
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: new RecipeCollectionManager(),
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>({ entities: {}, collections: {} })
         });
 
-        const collectionPrefix = `CraftingSystem.`;
-        const collectionName = testCraftingSystem.id;
+        await underTest.insert(testRecipeOne);
+        await underTest.insert(testRecipeTwo);
+        await underTest.insert(testRecipeThree);
 
-        underTest.addToCollection(testRecipeOne.id, collectionName, collectionPrefix);
-        underTest.addToCollection(testRecipeTwo.id, collectionName, collectionPrefix);
-
-        const collectionAfter = underTest.getCollection(collectionName, collectionPrefix);
+        const collectionAfter = await underTest.getCollection(testCraftingSystemOne.id, Properties.settings.collectionNames.craftingSystem);
 
         expect(collectionAfter).not.toBeNull();
-        expect(collectionAfter.length).toEqual(2);
+        expect(collectionAfter.length).toEqual(3);
         expect(recipeInArray(testRecipeOne, collectionAfter)).toEqual(true);
         expect(recipeInArray(testRecipeTwo, collectionAfter)).toEqual(true);
+        expect(recipeInArray(testRecipeThree, collectionAfter)).toEqual(true);
 
     });
 
@@ -363,124 +196,112 @@ describe("Addition", () => {
 
 describe("Deletion", () => {
 
-    test("should return false when deleting non-existent collections", () => {
+    test("should delete and clean up member entities when deleting collections", async () => {
 
-        const underTest = new EntityDataStore({ entityFactory: recipeFactory });
-
-        const craftingSystemCollectionPrefix = "CraftingSystem.";
-
-        const result = underTest.removeCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
-
-        expect(result).toEqual(false);
-
-    });
-
-    test("should return false when removing non-existent entries in collections", () => {
-
-        const underTest = new EntityDataStore({ entityFactory: recipeFactory });
-
-        const craftingSystemCollectionPrefix = "CraftingSystem.";
-
-        const result = underTest.removeFromCollection(testRecipeOne.id, testCraftingSystem.id, craftingSystemCollectionPrefix);
-
-        expect(result).toEqual(false);
-
-    });
-
-    test("should delete linked entities when deleting collections", () => {
+        const serializedData: SerialisedEntityData<RecipeJson> = {
+            entities: {
+                [testRecipeOne.id]: testRecipeOne.toJson(),
+                [testRecipeTwo.id]: testRecipeTwo.toJson()
+            },
+            collections: {
+                [ `${Properties.settings.collectionNames.craftingSystem}.${testCraftingSystemOne.id}` ]: [ testRecipeOne.id, testRecipeTwo.id ],
+                [ `${Properties.settings.collectionNames.item}.${testRecipeOne.itemUuid}` ]: [ testRecipeOne.id ],
+                [ `${Properties.settings.collectionNames.item}.${testRecipeTwo.itemUuid}` ]: [ testRecipeTwo.id ]
+            }
+        };
 
         const underTest = new EntityDataStore({
-            entitiesJsonById: new Map([
-                [ testRecipeOne.id, testRecipeOne.toJson() ],
-                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
-                [ testRecipeThree.id, testRecipeThree.toJson() ]
-            ]),
+            entityName: "Recipe",
             entityFactory: recipeFactory,
-            collections: new Map([
-                [`CraftingSystem.${testCraftingSystem.id}`, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
-                [ `Item.${testRecipeOne.itemUuid}`, new Set([ testRecipeOne.id ]) ],
-                [ `Item.${testRecipeTwo.itemUuid}`, new Set([ testRecipeTwo.id ]) ],
-                [ `Item.${testRecipeThree.itemUuid}`, new Set([ testRecipeThree.id ]) ]
-            ])
+            collectionManager: new RecipeCollectionManager(),
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(serializedData)
         });
 
-        const craftingSystemCollectionPrefix = "CraftingSystem.";
-        const itemCollectionPrefix = "Item.";
+        const itemOneCollectionBefore = await underTest.getCollection(testRecipeOne.itemUuid, Properties.settings.collectionNames.item);
+        expect(itemOneCollectionBefore).not.toBeNull();
+        expect(itemOneCollectionBefore.length).toEqual(1);
+        expect(recipeInArray(testRecipeOne, itemOneCollectionBefore)).toEqual(true);
 
-        const result = underTest.removeCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
+        const deletedItemOneCollection = await underTest.deleteCollection(testRecipeOne.itemUuid, Properties.settings.collectionNames.item);
 
-        expect(result).toEqual(true);
+        expect(deletedItemOneCollection).toEqual(true);
 
-        const craftingSystemCollectionAfter = underTest.getCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
+        const itemOneCollectionAfter = await underTest.getCollection(testRecipeOne.itemUuid, Properties.settings.collectionNames.item);
 
-        expect(craftingSystemCollectionAfter).not.toBeNull();
-        expect(craftingSystemCollectionAfter.length).toEqual(0);
+        expect(itemOneCollectionAfter).not.toBeNull();
+        expect(itemOneCollectionAfter.length).toEqual(0);
 
-        const allAfter = underTest.getAllEntities();
+        const allAfter = await underTest.getAllEntities();
 
         expect(allAfter).not.toBeNull();
-        expect(allAfter.length).toEqual(0);
+        expect(allAfter.length).toEqual(1);
 
-        const itemOneCollection = underTest.getCollection(testRecipeOne.itemUuid, itemCollectionPrefix);
-        expect(itemOneCollection.length).toEqual(0);
-
-        const itemTwoCollection = underTest.getCollection(testRecipeTwo.itemUuid, itemCollectionPrefix);
-        expect(itemTwoCollection.length).toEqual(0);
-
-        const itemThreeCollection = underTest.getCollection(testRecipeThree.itemUuid, itemCollectionPrefix);
-        expect(itemThreeCollection.length).toEqual(0);
-
-    });
-
-    test("should remove entities from collections without deleting them", () => {
-
-        const underTest = new EntityDataStore({
-            entitiesJsonById: new Map([
-                [ testRecipeOne.id, testRecipeOne.toJson() ],
-                [ testRecipeTwo.id, testRecipeTwo.toJson() ],
-                [ testRecipeThree.id, testRecipeThree.toJson() ]
-            ]),
-            entityFactory: recipeFactory,
-            collections: new Map([
-                [`CraftingSystem.${testCraftingSystem.id}`, new Set([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id ]) ],
-                [ `Item.${testRecipeOne.itemUuid}`, new Set([ testRecipeOne.id ]) ],
-                [ `Item.${testRecipeTwo.itemUuid}`, new Set([ testRecipeTwo.id ]) ],
-                [ `Item.${testRecipeThree.itemUuid}`, new Set([ testRecipeThree.id ]) ]
-            ])
-        });
-
-        const craftingSystemCollectionPrefix = "CraftingSystem.";
-        const itemCollectionPrefix = "Item.";
-
-        const removeFromSystemResult = underTest.removeFromCollection(testRecipeOne.id, testCraftingSystem.id, craftingSystemCollectionPrefix);
-        expect(removeFromSystemResult).toEqual(true);
-
-        const removeFromItemOneResult = underTest.removeFromCollection(testRecipeOne.id, testRecipeOne.itemUuid, itemCollectionPrefix);
-        expect(removeFromItemOneResult).toEqual(true);
-
-        const craftingSystemCollectionAfter = underTest.getCollection(testCraftingSystem.id, craftingSystemCollectionPrefix);
-
+        const craftingSystemCollectionAfter = await underTest.getCollection(testCraftingSystemOne.id, Properties.settings.collectionNames.craftingSystem);
         expect(craftingSystemCollectionAfter).not.toBeNull();
-        expect(craftingSystemCollectionAfter.length).toEqual(2);
-        expect(recipeInArray(testRecipeOne, craftingSystemCollectionAfter)).toEqual(false);
+        expect(craftingSystemCollectionAfter.length).toEqual(1);
         expect(recipeInArray(testRecipeTwo, craftingSystemCollectionAfter)).toEqual(true);
-        expect(recipeInArray(testRecipeThree, craftingSystemCollectionAfter)).toEqual(true);
 
-        const allAfter = underTest.getAllEntities();
-
-        expect(allAfter).not.toBeNull();
-        expect(allAfter.length).toEqual(3);
-
-        const itemOneCollection = underTest.getCollection(testRecipeOne.itemUuid, itemCollectionPrefix);
-        expect(itemOneCollection.length).toEqual(0);
-
-        const itemTwoCollection = underTest.getCollection(testRecipeTwo.itemUuid, itemCollectionPrefix);
+        const itemTwoCollection = await underTest.getCollection(testRecipeTwo.itemUuid, Properties.settings.collectionNames.item);
+        expect(itemTwoCollection).not.toBeNull();
         expect(itemTwoCollection.length).toEqual(1);
         expect(recipeInArray(testRecipeTwo, itemTwoCollection)).toEqual(true);
 
-        const itemThreeCollection = underTest.getCollection(testRecipeThree.itemUuid, itemCollectionPrefix);
-        expect(itemThreeCollection.length).toEqual(1);
-        expect(recipeInArray(testRecipeThree, itemThreeCollection)).toEqual(true);
+    });
+
+    test("should remove entities from collections when they are deleted", async () => {
+
+        const serializedData: SerialisedEntityData<RecipeJson> = {
+            entities: {
+                [testRecipeOne.id]: testRecipeOne.toJson(),
+                [testRecipeTwo.id]: testRecipeTwo.toJson()
+            },
+            collections: {
+                [ `${Properties.settings.collectionNames.craftingSystem}.${testCraftingSystemOne.id}` ]: [ testRecipeOne.id, testRecipeTwo.id ],
+                [ `${Properties.settings.collectionNames.item}.${testRecipeOne.itemUuid}` ]: [ testRecipeOne.id ],
+                [ `${Properties.settings.collectionNames.item}.${testRecipeTwo.itemUuid}` ]: [ testRecipeTwo.id ]
+            }
+        };
+
+        const underTest = new EntityDataStore({
+            entityName: "Recipe",
+            entityFactory: recipeFactory,
+            collectionManager: new RecipeCollectionManager(),
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(serializedData)
+        });
+
+        const allBefore = await underTest.getAllEntities();
+        expect(allBefore.length).toEqual(2);
+        expect(recipeInArray(testRecipeOne, allBefore)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, allBefore)).toEqual(true);
+
+        const craftingSystemCollectionBefore = await underTest.getCollection(testCraftingSystemOne.id, Properties.settings.collectionNames.craftingSystem);
+        expect(craftingSystemCollectionBefore.length).toEqual(2);
+        expect(recipeInArray(testRecipeOne, craftingSystemCollectionBefore)).toEqual(true);
+        expect(recipeInArray(testRecipeTwo, craftingSystemCollectionBefore)).toEqual(true);
+
+        const itemOneCollectionBefore = await underTest.getCollection(testRecipeOne.itemUuid, Properties.settings.collectionNames.item);
+        expect(recipeInArray(testRecipeOne, itemOneCollectionBefore)).toEqual(true);
+
+        const itemTwoCollectionBefore = await underTest.getCollection(testRecipeTwo.itemUuid, Properties.settings.collectionNames.item);
+        expect(recipeInArray(testRecipeTwo, itemTwoCollectionBefore)).toEqual(true);
+
+        const deleted = await underTest.deleteById(testRecipeOne.id);
+        expect(deleted).toEqual(true);
+
+        const allAfter = await underTest.getAllEntities();
+        expect(allAfter.length).toEqual(1);
+        expect(recipeInArray(testRecipeTwo, allAfter)).toEqual(true);
+
+        const craftingSystemCollectionAfter = await underTest.getCollection(testCraftingSystemOne.id, Properties.settings.collectionNames.craftingSystem);
+        expect(craftingSystemCollectionAfter.length).toEqual(1);
+        expect(recipeInArray(testRecipeTwo, craftingSystemCollectionAfter)).toEqual(true);
+
+        const itemOneCollectionAfter = await underTest.getCollection(testRecipeOne.itemUuid, Properties.settings.collectionNames.item);
+        expect(itemOneCollectionAfter.length).toEqual(0);
+
+        const itemTwoCollectionAfter = await underTest.getCollection(testRecipeTwo.itemUuid, Properties.settings.collectionNames.item);
+        expect(itemTwoCollectionAfter.length).toEqual(1);
+        expect(recipeInArray(testRecipeTwo, itemTwoCollectionAfter)).toEqual(true);
 
     });
 
@@ -491,11 +312,4 @@ function recipeInArray(expected: Recipe, known: Recipe[]): boolean {
         return false;
     }
     return !!known.find(candidate => expected.equalsNotLoaded(candidate));
-}
-
-function recipeJsonInArray(expected: RecipeJson, known: RecipeJson[]): boolean {
-    if (!known || known.length === 0) {
-        return false;
-    }
-    return !!known.find(candidate => expected.id === candidate.id);
 }

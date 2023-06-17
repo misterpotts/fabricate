@@ -1,64 +1,74 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
-import {CraftingSystemData, DefaultCraftingSystemApi} from "../src/scripts/api/CraftingSystemApi";
+import {DefaultCraftingSystemApi} from "../src/scripts/api/CraftingSystemApi";
 import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
 import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
-import {DefaultSettingManager} from "../src/scripts/api/SettingManager";
 import Properties from "../src/scripts/Properties";
-import {CraftingSystemSettingValidator} from "../src/scripts/api/CraftingSystemSettingValidator";
-import * as Sinon from "sinon";
-import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/bundled/AlchemistsSuppliesV16";
-import {UserDefinedCraftingSystem} from "../src/scripts/system/CraftingSystem";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
+import {CraftingSystem, CraftingSystemJson, CraftingSystemValidator} from "../src/scripts/system/CraftingSystem";
+import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
+import {testCraftingSystemOne, testCraftingSystemTwo} from "./test_data/TestCrafingSystem";
+import {StubEntityFactory} from "./stubs/StubEntityFactory";
+import {CraftingSystemCollectionManager} from "../src/scripts/api/CollectionManager";
 
-const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
+
+const defaultSettingValue = (): SerialisedEntityData<CraftingSystemJson> => {
+    return {
+        entities: {
+            [ testCraftingSystemOne.id ]: testCraftingSystemOne.toJson(),
+            [ testCraftingSystemTwo.id ]: testCraftingSystemTwo.toJson()
+        },
+        collections: {
+            [ `${Properties.settings.collectionNames.gameSystem}.${testCraftingSystemOne.gameSystem}` ]: [ testCraftingSystemOne.id, testCraftingSystemTwo.id ]
+        }
+    }
+}
+
+const settingManager = new StubSettingManager<SerialisedEntityData<CraftingSystemJson>>(defaultSettingValue());
+
+const craftingSystemValidator = new CraftingSystemValidator();
+const localizationService = new StubLocalizationService();
+const notificationService = new StubNotificationService();
+const stubCraftingSystemFactory = new StubEntityFactory<CraftingSystemJson, CraftingSystem>(
+    {
+        valuesById: new Map([
+            [testCraftingSystemOne.id, testCraftingSystemOne],
+            [testCraftingSystemTwo.id, testCraftingSystemTwo]
+        ])
+    });
 
 beforeEach(() => {
-    Sandbox.reset();
+    settingManager.reset(defaultSettingValue());
+    notificationService.reset();
 });
-
-const clientSettings: ClientSettings = <ClientSettings><unknown>{
-    storage: {
-        get: () => {}
-    },
-    get: () => {},
-    set: () => {}
-};
-const stubClientSettingsGet = Sandbox.stub(clientSettings, "get");
-const stubClientSettingsSet = Sandbox.stub(clientSettings, "set");
-stubClientSettingsSet.returnsArg(0);
 
 describe("Create", () => {
 
-
     test("should create a new crafting system with details", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        stubClientSettingsGet.returns({systemsById: {}});
-
-        const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
             settingManager,
-            localizationService,
-            notificationService,
-            gameSystem: "DnD5e"
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
+        const expectedIdentity = "expected-identity";
         const expectedName = "Expected name";
         const expectedSummary = "Expected summary";
         const expectedDescription = "Expected description";
         const expectedAuthor = "Expected author";
+
+        const underTest = new DefaultCraftingSystemApi({
+            notificationService,
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "Game Master",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory(expectedIdentity)
+        });
 
         const result = await underTest.create({
             name: expectedName,
@@ -68,7 +78,7 @@ describe("Create", () => {
         });
 
         expect(result).not.toBeUndefined();
-        expect(typeof result.id).toEqual("string");
+        expect(result.id).toEqual(expectedIdentity);
         expect(result.details.name).toEqual(expectedName);
         expect(result.details.summary).toEqual(expectedSummary);
         expect(result.details.description).toEqual(expectedDescription);
@@ -76,74 +86,75 @@ describe("Create", () => {
 
     });
 
-    test("should fail to create a new crafting system without details", async () => {
+    test("should create a new crafting system with default details", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        stubClientSettingsGet.returns({systemsById: {}});
-
-        const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
             settingManager,
-            localizationService,
-            notificationService,
-            gameSystem: "DnD5e"
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
-        await expect(underTest.create())
-            .rejects
-            .toThrowError();
+        const expectedAuthor = "User";
+        const underTest = new DefaultCraftingSystemApi({
+            notificationService,
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: expectedAuthor,
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
+        });
 
-        expect(notificationService.invocations.length).toEqual(1);
-        expect(notificationService.invocations[0].level).toEqual("error");
+        const result = await underTest.create();
+
+        expect(result).not.toBeUndefined();
+        expect(typeof result.id).toEqual("string");
+        expect(result.details.name).toEqual(Properties.ui.defaults.craftingSystem.name);
+        expect(result.details.summary).toEqual(Properties.ui.defaults.craftingSystem.summary);
+        expect(result.details.description).toEqual(Properties.ui.defaults.craftingSystem.description);
+        expect(result.details.author).toEqual(expectedAuthor);
+
     });
 
-    test("should fail to create a new crafting system with the same ID as an embedded system", async () => {
+    test("should fail to save a new crafting system with the same ID as an embedded system", async () => {
 
-        const identityFactory = new StubIdentityFactory(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.id);
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
-
-        stubClientSettingsGet.returns({systemsById: {}});
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: ALCHEMISTS_SUPPLIES_SYSTEM_DATA.gameSystem
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
-        const expectedName = "Expected name";
-        const expectedSummary = "Expected summary";
-        const expectedDescription = "Expected description";
-        const expectedAuthor = "Expected author";
 
-        await expect(underTest.create({
-            name: expectedName,
-            summary: expectedSummary,
-            description: expectedDescription,
-            author: expectedAuthor
-        }))
+        await expect(underTest.save(
+            new CraftingSystem({
+                id: testCraftingSystemTwo.id,
+                craftingSystemDetails: new CraftingSystemDetails({
+                    name: "Any name",
+                    summary: "Any summary",
+                    description: "Any description",
+                    author: "Any author"
+                }),
+                gameSystem: "dnd5e",
+                embedded: false
+            })
+        ))
             .rejects
             .toThrowError();
+
+        await expect(craftingSystemStore.size()).resolves.toEqual(2);
+        const allEntities = await craftingSystemStore.getAllEntities();
+        await expect(allEntities.length).toEqual(2);
 
         expect(notificationService.invocations.length).toEqual(1);
         expect(notificationService.invocations[0].level).toEqual("error");
@@ -155,206 +166,90 @@ describe("Read", () => {
 
     test("should return crafting system if exists", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        const craftingSystemId = identityFactory.make();
-        const expectedName = "Crafting system name";
-        const expectedSummary = "Crafting system summary";
-        const expectedDescription = "Crafting system description";
-        const expectedAuthor = "Crafting system author";
-        const expectedLocked = false;
-        const expectedEnabled = true;
-        stubClientSettingsGet.returns({
-            systemsById: {
-                [craftingSystemId]: {
-                    details: {
-                        name: expectedName,
-                        summary: expectedSummary,
-                        description: expectedDescription,
-                        author: expectedAuthor
-                    },
-                    locked: expectedLocked,
-                    enabled: expectedEnabled
-                }
-            }
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: "DnD5e"
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.getById(craftingSystemId);
+        const result = await underTest.getById(testCraftingSystemOne.id);
 
         expect(result).not.toBeUndefined();
-        expect(result.id).toEqual(craftingSystemId);
-        expect(result.details.name).toEqual(expectedName);
-        expect(result.details.summary).toEqual(expectedSummary);
-        expect(result.details.description).toEqual(expectedDescription);
-        expect(result.details.author).toEqual(expectedAuthor);
-        expect(result.isLocked).toEqual(expectedLocked);
-        expect(result.isEnabled).toEqual(expectedEnabled);
-
-    });
-
-    test("should return user defined and embedded crafting systems", async () => {
-
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        const expectedUserDefinedSystemOne = new UserDefinedCraftingSystem({
-            id: identityFactory.make(),
-            enabled: true,
-            craftingSystemDetails: new CraftingSystemDetails({
-                name: "User defined name one",
-                summary: "User defined summary one",
-                description: "User defined description one",
-                author: "User defined author one"
-            })
-        });
-        const expectedUserDefinedSystemTwo = new UserDefinedCraftingSystem({
-            id: identityFactory.make(),
-            enabled: true,
-            craftingSystemDetails: new CraftingSystemDetails({
-                name: "User defined name two",
-                summary: "User defined summary two",
-                description: "User defined description two",
-                author: "User defined author two"
-            })
-        });
-        stubClientSettingsGet.returns({
-            systemsById: {
-                [expectedUserDefinedSystemOne.id]: {
-                    details: {
-                        name: expectedUserDefinedSystemOne.details.name,
-                        summary: expectedUserDefinedSystemOne.details.summary,
-                        description: expectedUserDefinedSystemOne.details.description,
-                        author: expectedUserDefinedSystemOne.details.author
-                    },
-                    locked: expectedUserDefinedSystemOne.isLocked,
-                    enabled: expectedUserDefinedSystemOne.isEnabled
-                },
-                [expectedUserDefinedSystemTwo.id]: {
-                    details: {
-                        name: expectedUserDefinedSystemTwo.details.name,
-                        summary: expectedUserDefinedSystemTwo.details.summary,
-                        description: expectedUserDefinedSystemTwo.details.description,
-                        author: expectedUserDefinedSystemTwo.details.author
-                    },
-                    locked: expectedUserDefinedSystemTwo.isLocked,
-                    enabled: expectedUserDefinedSystemTwo.isEnabled
-                }
-            }
-        });
-
-        const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
-            notificationService,
-            gameSystem: ALCHEMISTS_SUPPLIES_SYSTEM_DATA.gameSystem
-        });
-
-        const result = await underTest.getAll();
-
-        expect(result).not.toBeUndefined();
-        expect(result.size).toEqual(3);
-        expect(result.has(expectedUserDefinedSystemOne.id)).toEqual(true);
-        expect(result.has(expectedUserDefinedSystemTwo.id)).toEqual(true);
-        expect(result.has(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.id)).toEqual(true);
+        expect(result.id).toEqual(testCraftingSystemOne.id);
+        expect(result.details.name).toEqual(testCraftingSystemOne.details.name);
+        expect(result.details.summary).toEqual(testCraftingSystemOne.details.summary);
+        expect(result.details.description).toEqual(testCraftingSystemOne.details.description);
+        expect(result.details.author).toEqual(testCraftingSystemOne.details.author);
+        expect(result.embedded).toEqual(testCraftingSystemOne.embedded);
+        expect(result.enabled).toEqual(testCraftingSystemOne.enabled);
 
     });
 
     test("should return embedded crafting system if exists", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        stubClientSettingsGet.returns({
-            systemsById: {}
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: ALCHEMISTS_SUPPLIES_SYSTEM_DATA.gameSystem
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.getById(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.id);
+        const result = await underTest.getById(testCraftingSystemTwo.id);
 
         expect(result).not.toBeUndefined();
-        expect(result.id).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.id);
-        expect(result.details.name).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.definition.details.name);
-        expect(result.details.summary).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.definition.details.summary);
-        expect(result.details.description).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.definition.details.description);
-        expect(result.details.author).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.definition.details.author);
-        expect(result.isEnabled).toEqual(ALCHEMISTS_SUPPLIES_SYSTEM_DATA.definition.enabled);
-        expect(result.isLocked).toEqual(true);
+        expect(result.id).toEqual(testCraftingSystemTwo.id);
+        expect(result.details.name).toEqual(testCraftingSystemTwo.details.name);
+        expect(result.details.summary).toEqual(testCraftingSystemTwo.details.summary);
+        expect(result.details.description).toEqual(testCraftingSystemTwo.details.description);
+        expect(result.details.author).toEqual(testCraftingSystemTwo.details.author);
+        expect(result.embedded).toEqual(testCraftingSystemTwo.embedded);
+        expect(result.enabled).toEqual(testCraftingSystemTwo.enabled);
+
+        await expect(craftingSystemStore.size()).resolves.toEqual(2);
 
     });
 
     test("should return undefined if system does not exist", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        stubClientSettingsGet.returns({
-            systemsById: {}
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: "DnD5e"
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.getById(identityFactory.make());
-
-        expect(result).toBeUndefined();
+        await expect(underTest.getById("non-existent")).resolves.toBeUndefined();
 
     });
 
@@ -364,113 +259,67 @@ describe("Update", () => {
 
     test("should update system if exists and changes valid", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        const craftingSystemId = identityFactory.make();
-        stubClientSettingsGet.returns({
-            systemsById: {
-                [craftingSystemId]: {
-                    details: {
-                        name: "Crafting system name",
-                        summary: "Crafting system summary",
-                        description: "Crafting system description",
-                        author: "Crafting system author"
-                    },
-                    locked: false,
-                    enabled: true
-                }
-            }
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: "DnD5e"
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const craftingSystemToModify = await underTest.getById(craftingSystemId);
-
-        craftingSystemToModify.isEnabled = false;
         const expectedName = "New name";
-        const expectedSummary = "New summary";
-        const expectedDescription = "New description";
-        const expectedAuthor = "New author";
-        craftingSystemToModify.details.name = expectedName;
-        craftingSystemToModify.details.summary = expectedSummary;
-        craftingSystemToModify.details.description = expectedDescription;
-        craftingSystemToModify.details.author = expectedAuthor;
+        const update = testCraftingSystemOne.clone({
+            id: testCraftingSystemOne.id,
+            name: expectedName,
+            embedded: false
+        });
 
-        const result = await underTest.save(craftingSystemToModify);
-
-        expect(result.id).toEqual(craftingSystemId);
-        expect(result.isLocked).toEqual(craftingSystemToModify.isLocked);
-        expect(result.isEnabled).toEqual(craftingSystemToModify.isEnabled);
-        expect(result.details.name).toEqual(expectedName);
-        expect(result.details.summary).toEqual(expectedSummary);
-        expect(result.details.description).toEqual(expectedDescription);
-        expect(result.details.author).toEqual(expectedAuthor);
+        const updated = await underTest.save(update);
+        expect(updated).not.toBeUndefined();
+        expect(updated.id).toEqual(testCraftingSystemOne.id);
+        expect(updated.details.name).toEqual(expectedName);
+        expect(updated.details.summary).toEqual(testCraftingSystemOne.details.summary);
+        expect(updated.details.description).toEqual(testCraftingSystemOne.details.description);
+        expect(updated.details.author).toEqual(testCraftingSystemOne.details.author);
 
     });
 
     test("should reject update if system changes are not valid", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        const craftingSystemId = identityFactory.make();
-        stubClientSettingsGet.returns({
-            systemsById: {
-                [craftingSystemId]: {
-                    details: {
-                        name: "Crafting system name",
-                        summary: "Crafting system summary",
-                        description: "Crafting system description",
-                        author: "Crafting system author"
-                    },
-                    locked: false,
-                    enabled: true
-                }
-            }
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: "DnD5e"
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const craftingSystemToModify = await underTest.getById(craftingSystemId);
+        const expectedName = "";
+        const update = testCraftingSystemOne.clone({
+            id: testCraftingSystemOne.id,
+            name: expectedName,
+            embedded: false
+        });
 
-        craftingSystemToModify.isEnabled = false;
-        craftingSystemToModify.details.name = "";
-        craftingSystemToModify.details.summary = "";
-        craftingSystemToModify.details.description = "";
-        craftingSystemToModify.details.author = "";
-
-       await expect(underTest.save(craftingSystemToModify))
+       await expect(underTest.save(update))
            .rejects
            .toThrowError();
 
@@ -485,90 +334,49 @@ describe("Delete", () => {
 
     test("should delete system if exists", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        const craftingSystemId = identityFactory.make();
-        const expectedName = "Crafting system name";
-        const expectedSummary = "Crafting system summary";
-        const expectedDescription = "Crafting system description";
-        const expectedAuthor = "Crafting system author";
-        const expectedLocked = false;
-        const expectedEnabled = true;
-        stubClientSettingsGet.returns({
-            systemsById: {
-                [craftingSystemId]: {
-                    details: {
-                        name: expectedName,
-                        summary: expectedSummary,
-                        description: expectedDescription,
-                        author: expectedAuthor
-                    },
-                    locked: expectedLocked,
-                    enabled: expectedEnabled
-                }
-            }
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: "DnD5e"
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.deleteById(craftingSystemId);
-
-        expect(result).not.toBeUndefined();
-        expect(result.id).toEqual(craftingSystemId);
-        expect(result.details.name).toEqual(expectedName);
-        expect(result.details.summary).toEqual(expectedSummary);
-        expect(result.details.description).toEqual(expectedDescription);
-        expect(result.details.author).toEqual(expectedAuthor);
-        expect(result.isLocked).toEqual(expectedLocked);
-        expect(result.isEnabled).toEqual(expectedEnabled);
+        const deleted = await underTest.deleteById(testCraftingSystemOne.id);
+        expect(deleted).not.toBeUndefined();
+        expect(deleted.id).toEqual(testCraftingSystemOne.id);
 
     });
 
     test("should return undefined if system does not exist", async () => {
 
-        const identityFactory = new StubIdentityFactory();
-        const localizationService = new StubLocalizationService();
-        const notificationService = new StubNotificationService();
-        const settingManager = new DefaultSettingManager<CraftingSystemData>({
-            clientSettings,
-            moduleId: Properties.module.id,
-            settingKey: "craftingSystems",
-            settingValidator: new CraftingSystemSettingValidator(),
-            localizationService,
-            notificationService
-        });
-
-        stubClientSettingsGet.returns({
-            systemsById: {}
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
         });
 
         const underTest = new DefaultCraftingSystemApi({
-            identityFactory,
-            settingManager,
-            localizationService,
             notificationService,
-            gameSystem: "DnD5e"
+            localizationService,
+            craftingSystemValidator,
+            gameSystem: "dnd5e",
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.deleteById(identityFactory.make());
-
-        expect(result).toBeUndefined();
+        await expect(underTest.deleteById("non-existent")).resolves.toBeUndefined();
 
     });
 

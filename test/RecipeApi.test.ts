@@ -10,7 +10,8 @@ import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
 import {RecipeValidator} from "../src/scripts/crafting/recipe/RecipeValidator";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import {
-    allTestRecipes, resetAllTestRecipes,
+    allTestRecipes,
+    resetAllTestRecipes,
     testRecipeFive,
     testRecipeFour,
     testRecipeOne,
@@ -29,7 +30,7 @@ import {
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
-import {testCraftingSystem} from "./test_data/TestCrafingSystem";
+import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import {DefaultEntityValidationResult} from "../src/scripts/api/EntityValidator";
 import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
@@ -45,7 +46,7 @@ const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
 const notificationService = new StubNotificationService();
 const craftingSystemApi = new StubCraftingSystemApi({
-    valuesById: new Map([[testCraftingSystem.id, testCraftingSystem]])
+    valuesById: new Map([[testCraftingSystemOne.id, testCraftingSystemOne]])
 });
 const componentApi = new StubComponentApi({
     valuesById: new Map([
@@ -108,7 +109,7 @@ const defaultSettingValue = () => {
             [ `${Properties.settings.collectionNames.item}.${testRecipeFive.itemUuid}` ]: [ testRecipeOne.id ],
             [ `${Properties.settings.collectionNames.item}.${testRecipeSix.itemUuid}` ]: [ testRecipeOne.id ],
             [ `${Properties.settings.collectionNames.item}.${testRecipeSeven.itemUuid}` ]: [ testRecipeOne.id ],
-            [ `${Properties.settings.collectionNames.craftingSystem}.${testCraftingSystem.id}` ]:
+            [ `${Properties.settings.collectionNames.craftingSystem}.${testCraftingSystemOne.id}` ]:
                 [
                     testRecipeOne.id,
                     testRecipeTwo.id,
@@ -135,7 +136,7 @@ describe("Create", () => {
     test("should create a new recipe for valid item UUID and crafting system ID", async () => {
 
         const itemUuid = "1234abcd";
-        const craftingSystemId = testCraftingSystem.id;
+        const craftingSystemId = testCraftingSystemOne.id;
         const createdRecipe = new Recipe({
             id: "3456abcd",
             itemData: new PendingFabricateItemData(itemUuid, () => Promise.resolve(new BrokenFabricateItemData({itemUuid, errors: [] }))),
@@ -193,7 +194,7 @@ describe("Create", () => {
     });
 
     test("should not create a recipe when the item does not exist", async () => {
-        const craftingSystemId = testCraftingSystem.id;
+        const craftingSystemId = testCraftingSystemOne.id;
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
@@ -446,7 +447,7 @@ describe("Access", () => {
             identityFactory: new StubIdentityFactory()
         });
 
-        const result = await underTest.getAllByCraftingSystemId(testCraftingSystem.id);
+        const result = await underTest.getAllByCraftingSystemId(testCraftingSystemOne.id);
 
         expect(result).not.toBeUndefined();
         expect(result.size).toEqual(7);
@@ -656,7 +657,7 @@ describe("Delete", () => {
         const before = await underTest.getById(testRecipeOne.id);
         const allBefore = await underTest.getAll();
 
-        await underTest.deleteByCraftingSystemId(testCraftingSystem.id);
+        await underTest.deleteByCraftingSystemId(testCraftingSystemOne.id);
 
         const after = await underTest.getById(testRecipeOne.id);
         const allAfter = await underTest.getAll();
@@ -694,7 +695,7 @@ describe("Delete", () => {
         const before = await underTest.getById(testRecipeOne.id);
         const allBefore = await underTest.getAll();
 
-        await underTest.deleteByCraftingSystemId(testCraftingSystem.id);
+        await underTest.deleteByCraftingSystemId(testCraftingSystemOne.id);
 
         const after = await underTest.getById(testRecipeOne.id);
         const allAfter = await underTest.getAll();
@@ -756,7 +757,7 @@ describe("Delete", () => {
         });
 
         const componentIdToDelete = testComponentThree.id;
-        const craftingSystemId = testCraftingSystem.id;
+        const craftingSystemId = testCraftingSystemOne.id;
         const allBefore = await underTest.getAllByCraftingSystemId(craftingSystemId);
         const countBefore = countComponentReferences(Array.from(allBefore.values()), componentIdToDelete);
         expect(countBefore.matches.length).toBeGreaterThan(0);
@@ -792,7 +793,7 @@ describe("Delete", () => {
         });
 
         const essenceIdToDelete = elementalFire.id;
-        const craftingSystemId = testCraftingSystem.id;
+        const craftingSystemId = testCraftingSystemOne.id;
         const allBefore = await underTest.getAllByCraftingSystemId(craftingSystemId);
         const countBefore = countEssenceReferences(Array.from(allBefore.values()), essenceIdToDelete);
         expect(countBefore.matches.length).toBeGreaterThan(0);

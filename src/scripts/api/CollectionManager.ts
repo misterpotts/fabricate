@@ -1,6 +1,7 @@
 import {Identifiable} from "../common/Identifiable";
 import {RecipeJson} from "../crafting/recipe/Recipe";
 import Properties from "../Properties";
+import {CraftingSystemJson} from "../system/CraftingSystem";
 
 /**
  * The CollectionManager is responsible for determining which collections an entity belongs to.
@@ -47,3 +48,15 @@ class RecipeCollectionManager implements CollectionManager<RecipeJson> {
 }
 
 export { RecipeCollectionManager };
+
+class CraftingSystemCollectionManager implements CollectionManager<CraftingSystemJson> {
+
+    listCollectionMemberships(craftingSystemJson: CraftingSystemJson): { prefix: string; name: string }[] {
+        return [
+            { prefix: Properties.settings.collectionNames.gameSystem, name: craftingSystemJson.gameSystem }
+        ];
+    }
+
+}
+
+export { CraftingSystemCollectionManager };

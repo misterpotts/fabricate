@@ -5,7 +5,7 @@ import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import {SelectableOptions} from "../../src/scripts/crafting/recipe/SelectableOptions";
 import {LoadedFabricateItemData, PendingFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 import Properties from "../../src/scripts/Properties";
-import {testCraftingSystem} from "./TestCrafingSystem";
+import {testCraftingSystemOne} from "./TestCrafingSystem";
 import {Unit} from "../../src/scripts/common/Unit";
 
 function buildPendingItemData(name: string, itemUuid: string) {
@@ -26,7 +26,7 @@ function buildPendingItemData(name: string, itemUuid: string) {
 * */
 const testRecipeOne: Recipe = new Recipe({
     id: "z2ixo2m312l",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe One", "Compendium.module.compendium-name.z2ixo2m312l"),
     requirementOptions: new SelectableOptions({
         options: [
@@ -58,7 +58,7 @@ const testRecipeOne: Recipe = new Recipe({
 * */
 const testRecipeTwo: Recipe = new Recipe({
     id: "fzv66f90sd",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Two", "Compendium.module.compendium-name.fzv66f90sd"),
     requirementOptions: new SelectableOptions({
         options: [
@@ -87,7 +87,7 @@ const testRecipeTwo: Recipe = new Recipe({
 * */
 const testRecipeThree: Recipe = new Recipe({
     id: "5pux8ghlct",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Three", "Compendium.module.compendium-name.5pux8ghlct"),
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 3),
@@ -111,7 +111,7 @@ const testRecipeThree: Recipe = new Recipe({
 * */
 const testRecipeFour: Recipe = new Recipe({
     id: "3lieym2gjef",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Four", "Compendium.module.compendium-name.3lieym2gjef"),
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 1),
@@ -144,7 +144,7 @@ const testRecipeFour: Recipe = new Recipe({
 * */
 const testRecipeFive: Recipe = new Recipe({
     id: "fequ5qvoqh",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Five", "Compendium.module.compendium-name.fequ5qvoqh"),
     essences: Combination.ofUnits([
         new Unit(elementalFire, 1),
@@ -176,7 +176,7 @@ const testRecipeFive: Recipe = new Recipe({
 * */
 const testRecipeSix: Recipe = new Recipe({
     id: "bx8luu4cpd",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Six", "Compendium.module.compendium-name.bx8luu4cpd"),
     essences: Combination.ofUnits([
         new Unit(elementalEarth, 3),
@@ -219,7 +219,7 @@ const testRecipeSix: Recipe = new Recipe({
 * */
 const testRecipeSeven: Recipe = new Recipe({
     id: "8kimdf8z83",
-    craftingSystemId: testCraftingSystem.id,
+    craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Seven", "Compendium.module.compendium-name.8kimdf8z83"),
     requirementOptions: new SelectableOptions({
         options: [

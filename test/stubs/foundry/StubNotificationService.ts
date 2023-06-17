@@ -31,6 +31,10 @@ class StubNotificationService implements NotificationService {
         return Array.from(this._invocations);
     }
 
+    reset() {
+        this._invocations = [];
+        this._suppressed = false;
+    }
 }
 
 export  { StubNotificationService }

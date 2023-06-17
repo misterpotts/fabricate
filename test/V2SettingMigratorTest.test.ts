@@ -6,7 +6,7 @@ import {V2CraftingSystemSettingMigrator} from "../src/scripts/settings/migrators
 import {ComponentJson} from "../src/scripts/crafting/component/Component";
 import {RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import { V1_ALCHEMISTS_SUPPLIES_SYSTEM_DEFINITION } from "./resources/V1AlchemistsSuppliesSystemSpec";
-import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/bundled/AlchemistsSuppliesV16";
+import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA} from "../src/scripts/system/embedded/AlchemistsSuppliesV16";
 
 function expectEssenceMigrationSuccess(before: V1EssenceJson, allAfter: Record<string, EssenceJson>) {
     expect(allAfter[before.id]).not.toBeNull();

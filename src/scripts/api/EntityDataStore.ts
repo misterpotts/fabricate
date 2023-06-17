@@ -43,23 +43,23 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
     }
 
     async size(): Promise<number> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         return Object.keys(storedData.entities).length;
     }
 
     async collectionCount(): Promise<number> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         return Object.keys(storedData.collections).length;
     }
 
     async create(entityJson: J): Promise<T> {
-        const entity = await this.entityFactory.make(entityJson);
+        const entity = await this.buildEntity(entityJson);
         await this.insert(entity);
         return entity;
     }
 
     async insert(entity: T): Promise<void> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         storedData.entities[entity.id] = entity.toJson();
         const collectionMemberships = this.collectionManager.listCollectionMemberships(entity.toJson());
         collectionMemberships.forEach(({ name, prefix }) => {
@@ -69,21 +69,29 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
     }
 
     async getById(id: string): Promise<T | undefined> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         const entityJson = storedData.entities[id];
         if (!entityJson) {
             return undefined;
         }
-        return this.entityFactory.make(entityJson);
+        return await this.buildEntity(entityJson);
+    }
+
+    private async buildEntity(entityJson: Record<string, J>[string]): Promise<T> {
+        const entity = await this.entityFactory.make(entityJson);
+        if (!entity) {
+            throw new Error(`Failed to create ${this.entityName} from JSON: ${JSON.stringify(entityJson)}. `);
+        }
+        return entity;
     }
 
     async has(id: string): Promise<boolean> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         return !!storedData.entities[id];
     }
 
     async deleteById(id: string): Promise<boolean> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         const entityJson = storedData.entities[id];
         if (!entityJson) {
             return false;
@@ -101,14 +109,17 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
     }
 
     async getAllEntities(): Promise<T[]> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         return Promise.all(
             Object.values(storedData.entities)
-                .map(entityJson => this.entityFactory.make(entityJson))
+                .map(entityJson => this.buildEntity(entityJson))
         );
     }
 
-    private getCollectionName(prefix: string, name: string) {
+    private getCollectionName(name: string, prefix: string = "") {
+        if (!prefix || prefix === "") {
+            return name;
+        }
         return `${prefix}.${name}`;
     }
 
@@ -116,7 +127,7 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
         if (!storedData.entities[entityId]) {
             throw new Error(`Entity with ID ${entityId} does not exist. You must save an entity before adding it to a collection.`);
         }
-        const fullCollectionName = this.getCollectionName(collectionNamePrefix, collectionName);
+        const fullCollectionName = this.getCollectionName(collectionName, collectionNamePrefix);
         if (!storedData.collections[fullCollectionName]) {
             storedData.collections[fullCollectionName] = [];
         }
@@ -124,7 +135,7 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
     }
 
     private removeFromCollection(entityId: string, collectionName: string, collectionNamePrefix: string = "", storedData: SerialisedEntityData<J>): boolean {
-        const fullCollectionName = this.getCollectionName(collectionNamePrefix, collectionName);
+        const fullCollectionName = this.getCollectionName(collectionName, collectionNamePrefix);
         const collection = storedData.collections[fullCollectionName];
         if (!collection) {
             return false;
@@ -137,19 +148,19 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
     }
 
     async getCollection(collectionName: string, collectionNamePrefix: string = ""): Promise<T[]> {
-        const storedData = await this.settingManager.read();
-        const fullCollectionName = this.getCollectionName(collectionNamePrefix, collectionName);
+        const storedData = await this.getStoredData();
+        const fullCollectionName = this.getCollectionName(collectionName, collectionNamePrefix);
         const collection = storedData.collections[fullCollectionName];
         if (!collection) {
             return [];
         }
         return Promise.all(
-            collection.map(entityId => this.entityFactory.make(storedData.entities[entityId]))
+            collection.map(entityId => this.buildEntity(storedData.entities[entityId]))
         );
     }
 
     async listAllEntityIds(): Promise<string[]> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         return Object.keys(storedData.entities);
     }
 
@@ -159,49 +170,65 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
      * @async
      * @param collectionName The name of the collection to delete
      * @param collectionNamePrefix The prefix of the collection to delete
-     * @returns A promise that resolves when the collection has been deleted
+     * @returns A promise that resolves to true if the collection and its members were deleted, or false if it did not
+     *   exist
      * */
-    async deleteCollection(collectionName: string, collectionNamePrefix: string = ""): Promise<void> {
-        const storedData = await this.settingManager.read();
-        const fullCollectionName = this.getCollectionName(collectionNamePrefix, collectionName);
+    async deleteCollection(collectionName: string, collectionNamePrefix: string = ""): Promise<boolean> {
+        const storedData = await this.getStoredData();
+        const fullCollectionName = this.getCollectionName(collectionName, collectionNamePrefix);
         const idsToDelete = storedData.collections[fullCollectionName];
         if (!idsToDelete || idsToDelete.length === 0) {
-            return;
+            return false;
         }
-
-        // Remove the ids from other collections
-        Object.keys(storedData.collections).forEach(collectionName => {
-            const collection = storedData.collections[collectionName];
-            if (!collection) {
-                return;
-            }
-            storedData.collections[collectionName] = collection.filter(id => idsToDelete.indexOf(id) !== -1);
-        });
 
         // remove the collection
         delete storedData.collections[fullCollectionName];
+
+        // Remove the ids from other collections
+        Object.keys(storedData.collections)
+            .forEach(collectionName => {
+                storedData.collections[collectionName] = storedData.collections[collectionName]
+                    .filter(id => !idsToDelete.includes(id));
+            });
 
         // remove the entities
         idsToDelete.forEach(id => {
             delete storedData.entities[id];
         });
 
+        await this.settingManager.write(storedData);
+        return true;
     }
 
     async getAllById(ids: string[]): Promise<T[]> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         return Promise.all(
             ids.filter(id => !!storedData.entities[id])
-                .map(id => this.entityFactory.make(storedData.entities[id]))
+                .map(id => this.buildEntity(storedData.entities[id]))
         );
     }
 
     async updateAll(entities: T[]): Promise<void> {
-        const storedData = await this.settingManager.read();
+        const storedData = await this.getStoredData();
         entities.forEach(entity => {
             storedData.entities[entity.id] = entity.toJson();
         });
         await this.settingManager.write(storedData);
+    }
+
+    private async getStoredData(): Promise<SerialisedEntityData<J>> {
+        // call settingManager.read() and assert it has the properties `entities` and `collections` before returning
+        const storedData = await this.settingManager.read();
+        if (!storedData.entities && !storedData.collections) {
+            throw new Error(`The settings value at "${this.settingManager.settingPath}" for the ${this.entityName} data store is missing both of the required "entities" and "collections" properties`);
+        }
+        if (!storedData.entities) {
+            throw new Error(`The settings value at "${this.settingManager.settingPath}" for the ${this.entityName} data store is missing the required "entities" property`);
+        }
+        if (!storedData.collections) {
+            throw new Error(`The settings value at "${this.settingManager.settingPath}" for the ${this.entityName} data store is missing the required "collections" property`);
+        }
+        return storedData;
     }
 
 }

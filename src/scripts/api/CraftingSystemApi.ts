@@ -1,22 +1,14 @@
 import {
     CraftingSystem,
     CraftingSystemJson,
-    CraftingSystemValidator, EmbeddedCraftingSystem,
-    UserDefinedCraftingSystem
+    CraftingSystemValidator
 } from "../system/CraftingSystem";
 import {IdentityFactory} from "../foundry/IdentityFactory";
-import {SettingManager} from "./SettingManager";
 import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
-import {ALCHEMISTS_SUPPLIES_SYSTEM_DATA as ALCHEMISTS_SUPPLIES} from "../system/bundled/AlchemistsSuppliesV16";
-
-interface CraftingSystemData {
-    systemsById: Record<string, CraftingSystemJson>;
-
-}
-
-export { CraftingSystemData }
+import {EntityValidator} from "./EntityValidator";
+import {EntityDataStore} from "./EntityDataStore";
 
 /**
  * An API for managing crafting systems.
@@ -40,12 +32,12 @@ interface CraftingSystemApi {
     create({ name, summary, description, author }: { name: string, summary: string, description?: string, author: string }): Promise<CraftingSystem>;
 
     /**
-     * Returns all crafting systems.
+     * Returns all crafting systems for the current game system.
      *
      * @returns {Promise<Map<string, CraftingSystem>>} A promise that resolves to a Map of CraftingSystem instances,
      * where the keys are the crafting system IDs, or rejects with an Error is the settings cannot be read.
      */
-    getAll(): Promise<Map<string, CraftingSystem>>;
+    getAllForGameSystem(): Promise<Map<string, CraftingSystem>>;
 
     /**
      * Retrieves the crafting system with the specified ID.
@@ -91,33 +83,38 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
     private readonly identityFactory: IdentityFactory;
-    private readonly settingManager: SettingManager<CraftingSystemData>;
+    private readonly craftingSystemStore: EntityDataStore<CraftingSystemJson, CraftingSystem>;
     private readonly localizationService: LocalizationService;
     private readonly notificationService: NotificationService;
-    private readonly craftingSystemValidator: CraftingSystemValidator;
+    private readonly craftingSystemValidator: EntityValidator<CraftingSystem>;
+
     private readonly gameSystem: string;
+    private readonly user: string;
 
     constructor({
         identityFactory,
-        settingManager,
+        craftingSystemStore,
         localizationService,
         notificationService,
         craftingSystemValidator = new CraftingSystemValidator(),
-        gameSystem
+        gameSystem,
+        user
     }: {
         identityFactory: IdentityFactory;
-        settingManager: SettingManager<CraftingSystemData>;
+        craftingSystemStore: EntityDataStore<CraftingSystemJson, CraftingSystem>;
         localizationService: LocalizationService;
         notificationService: NotificationService;
         craftingSystemValidator?: CraftingSystemValidator;
         gameSystem: string;
+        user: string;
     }) {
         this.identityFactory = identityFactory;
-        this.settingManager = settingManager;
+        this.craftingSystemStore = craftingSystemStore;
         this.localizationService = localizationService;
         this.notificationService = notificationService;
         this.craftingSystemValidator = craftingSystemValidator;
         this.gameSystem = gameSystem;
+        this.user = user;
     }
 
     get notifications(): NotificationService {
@@ -125,8 +122,10 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
     }
 
     async deleteById(id: string): Promise<CraftingSystem | undefined> {
-        const settingValue = await this.settingManager.read();
-        if (!settingValue.systemsById[id]) {
+        const craftingSystemToDelete = await this.craftingSystemStore.getById(id);
+        await this.rejectDeletingEmbeddedCraftingSystem(craftingSystemToDelete);
+
+        if (!craftingSystemToDelete) {
             const message = this.localizationService.format(
                 `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.doesNotExist`,
                 { craftingSystemId: id }
@@ -134,35 +133,21 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
             this.notificationService.error(message);
             return undefined;
         }
-        const {details, enabled} = settingValue.systemsById[id];
-        const craftingSystemDetails = new CraftingSystemDetails(details);
-        const deletedCraftingSystem = new UserDefinedCraftingSystem({
-            id,
-            enabled,
-            craftingSystemDetails: craftingSystemDetails
-        });
-        delete settingValue.systemsById[id];
-        await this.settingManager.write(settingValue);
-        return deletedCraftingSystem;
+
+        await this.craftingSystemStore.deleteById(id);
+
+        return craftingSystemToDelete;
     }
 
-    async getAll(): Promise<Map<string, CraftingSystem>> {
-        const settingValue = await this.settingManager.read();
-        const systemIds = Object.keys(settingValue.systemsById);
-        const allSystems = Array.from(systemIds)
-            .map(id => this.buildCraftingSystem(id, settingValue.systemsById[id]))
-            .concat(this.getEmbeddedCraftingSystems());
-        return new Map(allSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
+    async getAllForGameSystem(): Promise<Map<string, CraftingSystem>> {
+        const storedSystems = await this.craftingSystemStore.getCollection(this.gameSystem, Properties.settings.collectionNames.gameSystem)
+        return new Map(storedSystems.map((storedSystem) => [ storedSystem.id, storedSystem]));
     }
 
     async getById(craftingSystemId: string): Promise<CraftingSystem | undefined> {
-        const embeddedSystem = this.getEmbeddedCraftingSystems().find(embeddedSystem => embeddedSystem.id === craftingSystemId);
-        if (embeddedSystem) {
-            return embeddedSystem;
-        }
-        const settingValue = await this.settingManager.read();
-        const craftingSystemJson = settingValue.systemsById[craftingSystemId];
-        if (!craftingSystemJson) {
+        const craftingSystem = await this.craftingSystemStore.getById(craftingSystemId);
+
+        if (!craftingSystem) {
             const message = this.localizationService.format(
                 `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.doesNotExist`,
                 { craftingSystemId }
@@ -170,42 +155,30 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
             this.notificationService.warn(message);
             return undefined;
         }
-        return this.buildCraftingSystem(craftingSystemId, craftingSystemJson);
-    }
 
-    private buildCraftingSystem(id: string, craftingSystemJson: CraftingSystemJson, embedded = false): CraftingSystem {
-        const {details, enabled} = craftingSystemJson;
-        const craftingSystemDetails = new CraftingSystemDetails(details);
-        if (!embedded) {
-            return new UserDefinedCraftingSystem({
-                id,
-                enabled,
-                craftingSystemDetails
-            });
-        }
-        return new EmbeddedCraftingSystem({
-            id,
-            enabled,
-            craftingSystemDetails
-        });
+        return craftingSystem;
     }
 
     async save(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
-        this.rejectSavingEmbeddedSystem(craftingSystem);
+        const existing = await this.craftingSystemStore.getById(craftingSystem.id);
+
+        this.rejectModifyingEmbeddedSystem(existing);
         await this.rejectSavingInvalidSystem(craftingSystem);
-        const craftingSystemData = await this.settingManager.read();
-        let localizationActivity = !!craftingSystemData.systemsById[craftingSystem.id] ? "updated" : "created";
+
+        await this.craftingSystemStore.insert(craftingSystem);
+
+        let localizationActivity = existing ? "updated" : "created";
         const message = this.localizationService.format(
             `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.settings.craftingSystem.${localizationActivity}`,
             { craftingSystemName: craftingSystem.details.name }
         );
-        craftingSystemData.systemsById[craftingSystem.id] = craftingSystem.toJson();
-        await this.settingManager.write(craftingSystemData);
+
         this.notificationService.info(message);
+
         return craftingSystem;
     }
 
-    private async rejectSavingInvalidSystem(craftingSystem: CraftingSystem) {
+    private async rejectSavingInvalidSystem(craftingSystem: CraftingSystem): Promise<void> {
         const validationResult = await this.craftingSystemValidator.validate(craftingSystem);
         if (!validationResult.isSuccessful) {
             const message = this.localizationService.format(
@@ -217,35 +190,50 @@ class DefaultCraftingSystemApi implements CraftingSystemApi {
         }
     }
 
-    private rejectSavingEmbeddedSystem(craftingSystem: CraftingSystem) {
-        const embeddedSystemIds = this.getEmbeddedCraftingSystems().map(embedded => embedded.id);
-        if (embeddedSystemIds.includes(craftingSystem.id)) {
+    private async rejectDeletingEmbeddedCraftingSystem(craftingSystem: CraftingSystem) {
+        if (craftingSystem?.embedded) {
             const message = this.localizationService.format(
-                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.reservedId`,
-                {craftingSystemId: craftingSystem.id}
+                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.cannotDeleteEmbedded`,
+                { craftingSystemName: craftingSystem.details.name }
             );
             this.notificationService.error(message);
             throw new Error(message);
         }
     }
 
-    async create({ name, summary, description, author }: { name?: string, summary?: string, description?: string, author?: string } = {}): Promise<CraftingSystem> {
-        const settingValue = this.settingManager.read();
-        const assignedIds = Object.keys(settingValue);
-        const id = this.identityFactory.make(assignedIds);
-        const craftingSystemDetails = new CraftingSystemDetails({name, summary, description, author});
-        const created = new UserDefinedCraftingSystem({
-            id,
-            enabled: true,
-            craftingSystemDetails
-        });
-        return this.save(created);
+    private rejectModifyingEmbeddedSystem(craftingSystem: CraftingSystem): void {
+        if (craftingSystem?.embedded) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingSystemApi._LOCALIZATION_PATH}.errors.craftingSystem.canNotModifyEmbedded`,
+                { craftingSystemName: craftingSystem.details.name }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
     }
 
-    private getEmbeddedCraftingSystems(): CraftingSystem[] {
-        const bundledSystems = [ALCHEMISTS_SUPPLIES];
-        return bundledSystems.filter(bundledSystem => !bundledSystem.gameSystem || bundledSystem.gameSystem === this.gameSystem)
-            .map(bundledSystem => this.buildCraftingSystem(bundledSystem.id, bundledSystem.definition, true));
+    async create({
+         name = Properties.ui.defaults.craftingSystem.name,
+         summary = Properties.ui.defaults.craftingSystem.summary,
+         description = Properties.ui.defaults.craftingSystem.description,
+         author  = Properties.ui.defaults.craftingSystem.author(this.user)
+    }: {
+        name?: string;
+        summary?: string;
+        description?: string;
+        author?: string;
+    } = {}): Promise<CraftingSystem> {
+        const assignedIds = await this.craftingSystemStore.listAllEntityIds();
+        const id = this.identityFactory.make(assignedIds);
+        const craftingSystemDetails = new CraftingSystemDetails({name, summary, description, author});
+        const created = new CraftingSystem({
+            id,
+            enabled: true,
+            craftingSystemDetails,
+            embedded: false,
+            gameSystem: this.gameSystem
+        });
+        return this.save(created);
     }
 
 }

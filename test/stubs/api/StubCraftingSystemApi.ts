@@ -44,7 +44,7 @@ class StubCraftingSystemApi implements CraftingSystemApi {
         return value;
     }
 
-    async getAll(): Promise<Map<string, CraftingSystem>> {
+    async getAllForGameSystem(): Promise<Map<string, CraftingSystem>> {
         return new Map(this.valuesById);
     }
 

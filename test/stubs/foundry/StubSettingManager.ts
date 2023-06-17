@@ -29,6 +29,10 @@ class StubSettingManager<T> implements SettingManager<T>{
         this.value = value ?? this.initialValue;
     }
 
+    get settingPath(): string {
+        return "stub.setting.path";
+    }
+
 }
 
 export { StubSettingManager }

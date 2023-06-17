@@ -70,6 +70,15 @@ class CraftingSystemDetails {
         }
     }
 
+    clone(name?: string): CraftingSystemDetails {
+        return new CraftingSystemDetails({
+            name: name ?? this._name,
+            summary: this._summary,
+            description: this._description,
+            author: this._author
+        });
+    }
+
 }
 
 export { CraftingSystemDetails, CraftingSystemDetailsJson }

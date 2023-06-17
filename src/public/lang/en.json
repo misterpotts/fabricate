@@ -56,7 +56,8 @@
         "craftingSystem": {
           "doesNotExist": "The crafting system {craftingSystemId} does not exist. ",
           "invalid": "The crafting system entity is not valid. Errors: {errors}. ",
-          "reservedId": "The crafting system ID {craftingSystemId} is reserved. "
+          "cannotModifyEmbedded": "The crafting system {craftingSystemName} is an embedded system and cannot be modified. ",
+          "cannotDeleteEmbedded": "The crafting system {craftingSystemName} is an embedded system and cannot be deleted. "
         },
         "document": {
           "notFound": "The document with UUID {documentUuid} could not be found. "

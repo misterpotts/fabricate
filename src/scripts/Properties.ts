@@ -15,7 +15,18 @@ const Properties = {
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
             noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",
             erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",
-            recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp"
+            recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp",
+            craftingSystem: {
+                name: "My New Crafting System",
+                description: "This crafting system is a collection of recipes and components that can be used to craft items.",
+                author: (user?: string) => {
+                    if (!user) {
+                        return "Author";
+                    }
+                    return user
+                },
+                summary: "Summary"
+            }
         },
         banners: {
             componentEditor: "modules/fabricate/assets/components-hero-banner.webp",
@@ -56,7 +67,8 @@ const Properties = {
         },
         collectionNames: {
             craftingSystem: "CraftingSystem",
-            item: "Item"
+            item: "Item",
+            gameSystem: "GameSystem"
         }
     }
 };

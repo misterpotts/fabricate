@@ -3,25 +3,13 @@ import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} 
 
 interface CraftingSystemJson {
     id: string;
+    embedded: boolean;
+    gameSystem: string;
     details: CraftingSystemDetailsJson;
-    locked: boolean;
     enabled: boolean;
 }
 
 export { CraftingSystemJson }
-
-interface CraftingSystem {
-
-    readonly id: string;
-    readonly isLocked: boolean;
-    isEnabled: boolean;
-    details: CraftingSystemDetails;
-    clone({id, name}: { name: string; id: string; locked: boolean }): CraftingSystem;
-    toJson(): CraftingSystemJson;
-
-}
-
-export { CraftingSystem }
 
 class CraftingSystemValidator implements EntityValidator<CraftingSystem> {
 
@@ -31,10 +19,6 @@ class CraftingSystemValidator implements EntityValidator<CraftingSystem> {
 
         if (!entity) {
             throw new Error(`Cannot validate crafting system. Candidate is ${typeof entity} `);
-        }
-
-        if (entity.isLocked) {
-            errors.push("Locked systems cannot be modified");
         }
 
         if (!entity.details?.name) {
@@ -57,53 +41,66 @@ class CraftingSystemValidator implements EntityValidator<CraftingSystem> {
 
 export { CraftingSystemValidator }
 
-class UserDefinedCraftingSystem implements CraftingSystem{
+class CraftingSystem {
 
     private readonly _id: string;
-    private craftingSystemDetails: CraftingSystemDetails;
-    private enabled: boolean;
-    private static readonly IS_LOCKED: boolean = false;
+    private readonly _embedded: boolean;
+    private readonly _gameSystem: string;
+
+    private _details: CraftingSystemDetails;
+    private _enabled: boolean;
 
     constructor({
         id,
+        embedded = false,
+        gameSystem,
         craftingSystemDetails,
-        enabled = true
+        enabled = true,
     }: {
         id: string;
+        embedded?: boolean;
+        gameSystem: string;
         craftingSystemDetails: CraftingSystemDetails,
         enabled?: boolean;
     }) {
         this._id = id;
-        this.craftingSystemDetails = craftingSystemDetails;
-        this.enabled = enabled;
+        this._embedded = embedded;
+        this._gameSystem = gameSystem;
+        this._details = craftingSystemDetails;
+        this._enabled = enabled;
     }
 
-    get isLocked(): boolean {
-        return UserDefinedCraftingSystem.IS_LOCKED;
+    get embedded(): boolean {
+        return this._embedded;
     }
 
-    get isEnabled(): boolean {
-        return this.enabled;
+    get enabled(): boolean {
+        return this._enabled;
     }
 
-    set isEnabled(value: boolean) {
-        this.enabled = value;
+    set enabled(value: boolean) {
+        this._enabled = value;
     }
 
     get details(): CraftingSystemDetails {
-        return this.craftingSystemDetails;
+        return this._details;
     }
 
     set details(value: CraftingSystemDetails) {
-        this.craftingSystemDetails = value;
+        this._details = value;
+    }
+
+    get gameSystem(): string {
+        return this._gameSystem;
     }
 
     toJson(): CraftingSystemJson {
         return {
             id: this._id,
-            details: this.craftingSystemDetails.toJson(),
-            enabled: this.enabled,
-            locked: UserDefinedCraftingSystem.IS_LOCKED
+            details: this._details.toJson(),
+            enabled: this._enabled,
+            embedded: this._embedded,
+            gameSystem: this._gameSystem
         };
     }
 
@@ -111,85 +108,15 @@ class UserDefinedCraftingSystem implements CraftingSystem{
         return this._id;
     }
 
-    clone({id, name}: { name: string; id: string; locked: boolean }): CraftingSystem {
-        return new UserDefinedCraftingSystem({
+    clone({id, name, embedded = false}: { name?: string; id: string; embedded?: boolean }): CraftingSystem {
+        return new CraftingSystem({
             id,
-            craftingSystemDetails: new CraftingSystemDetails({
-                name,
-                summary: this.craftingSystemDetails.summary,
-                description: this.craftingSystemDetails.description,
-                author: this.craftingSystemDetails.author,
-            }),
-            enabled: this.enabled
+            embedded,
+            gameSystem: this._gameSystem,
+            craftingSystemDetails: this._details.clone(name),
+            enabled: this._enabled,
         });
     }
 }
 
-export { UserDefinedCraftingSystem }
-
-class EmbeddedCraftingSystem implements CraftingSystem{
-
-    private readonly _id: string;
-    private readonly craftingSystemDetails: CraftingSystemDetails;
-    private enabled: boolean;
-    private static readonly IS_LOCKED: boolean = true;
-
-    constructor({
-        id,
-        craftingSystemDetails,
-        enabled
-    }: {
-        id: string;
-        craftingSystemDetails: CraftingSystemDetails,
-        enabled: boolean;
-    }) {
-        this._id = id;
-        this.craftingSystemDetails = craftingSystemDetails;
-        this.enabled = enabled;
-    }
-
-    get isLocked(): boolean {
-        return EmbeddedCraftingSystem.IS_LOCKED;
-    }
-
-    get isEnabled(): boolean {
-        return this.enabled;
-    }
-
-    set isEnabled(value: boolean) {
-        this.enabled = value;
-    }
-
-    get details(): CraftingSystemDetails {
-        return this.craftingSystemDetails;
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
-    toJson(): CraftingSystemJson {
-        return {
-            id: this._id,
-            details: this.details.toJson(),
-            enabled: this.enabled,
-            locked: EmbeddedCraftingSystem.IS_LOCKED
-        };
-    }
-
-    clone({id, name}: { name: string; id: string; locked: boolean }): CraftingSystem {
-        return new UserDefinedCraftingSystem({
-            id,
-            craftingSystemDetails: new CraftingSystemDetails({
-                name,
-                summary: this.details.summary,
-                description: this.details.description,
-                author: this.details.author,
-            }),
-            enabled: this.enabled
-        });
-    }
-
-}
-
-export { EmbeddedCraftingSystem }
+export { CraftingSystem }
