@@ -1,15 +1,29 @@
 import {Component, ComponentJson} from "../crafting/component/Component";
 import Properties from "../Properties";
-import {EntityValidator} from "./EntityValidator";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import {EntityDataStore} from "./EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
+import {ComponentValidator} from "../crafting/component/ComponentValidator";
+import {EntityValidationResult} from "./EntityValidator";
 
 /**
- * Dictionary of the salvage amounts for a salvage option. The dictionary is keyed on the component ID and with
- * the values representing the quantities produced.
+ * A value object representing an option for salvaging a component
+ *
+ * @interface
  * */
-type SalvageOptionJson = Record<string, number>;
+interface SalvageOptionJson {
+
+    /**
+     * The name of the salvage option.
+     */
+    name: string;
+
+    /**
+     * The salvage that will be produced when the option is used to salvage the component.
+     */
+    salvage: Record<string, number>;
+
+}
 
 /**
  * Options for creating a new component.
@@ -40,14 +54,19 @@ interface ComponentOptions {
     disabled?: boolean;
 
     /**
-     * Optional dictionary of salvage options for the component, keyed on the option name.
+     * Optional array of salvage options for the component.
      * */
-    salvageOptions?: Record<string, SalvageOptionJson>;
+    salvageOptions?: SalvageOptionJson[];
 
 }
 
 export { ComponentOptions }
 
+/**
+ * A service for managing components.
+ *
+ * @interface
+ */
 interface ComponentAPI {
 
     /**
@@ -153,8 +172,8 @@ interface ComponentAPI {
     deleteByCraftingSystemId(craftingSystemId: string): Promise<Component[]>;
 
     /**
-     *
      * Removes all references to the specified essence from all components within the specified crafting system.
+     *
      * @async
      * @param {string} essenceId - The ID of the essence to remove references to.
      * @param {string} craftingSystemId - The ID of the crafting system containing the components to modify.
@@ -163,6 +182,17 @@ interface ComponentAPI {
      *  crafting system has no components, the Promise will reject with an Error.
      */
     removeEssenceReferences(essenceId: string, craftingSystemId: string): Promise<Component[]>;
+
+    /**
+     * Removes all references to the specified salvage from all components within the specified crafting system.
+     *
+     * @param {string} componentId
+     * @param {string} craftingSystemId
+     * @returns {Promise<Component[]>} A Promise that resolves with an array of all modified components that contain
+     *   references to the removed salvage, or an empty array if no modifications were made. If the specified
+     *   crafting system has no components, the Promise will reject with an Error.
+     */
+    removeSalvageReferences(componentId: string, craftingSystemId: string): Promise<Component[]>;
 
     /**
      * Clones a component by ID.
@@ -183,11 +213,12 @@ interface ComponentAPI {
 }
 
 export { ComponentAPI };
+
 class DefaultComponentAPI implements ComponentAPI {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
-    private readonly componentValidator: EntityValidator<Component>;
+    private readonly componentValidator: ComponentValidator;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
     private readonly componentStore: EntityDataStore<ComponentJson, Component>;
@@ -200,10 +231,10 @@ class DefaultComponentAPI implements ComponentAPI {
         componentStore,
         identityFactory
     }: {
-        componentValidator: EntityValidator<Component>,
-        notificationService: NotificationService,
-        localizationService: LocalizationService,
-        componentStore: EntityDataStore<ComponentJson, Component>,
+        componentValidator: ComponentValidator;
+        notificationService: NotificationService;
+        localizationService: LocalizationService;
+        componentStore: EntityDataStore<ComponentJson, Component>;
         identityFactory: IdentityFactory;
     }) {
         this.componentValidator = componentValidator;
@@ -214,55 +245,177 @@ class DefaultComponentAPI implements ComponentAPI {
     }
 
     get notifications(): NotificationService {
-        return undefined;
+        return this.notificationService;
     }
 
-    cloneById(componentId: string): Promise<Component> {
+    async cloneById(componentId: string): Promise<Component> {
+        const source = await this.componentStore.getById(componentId);
+        if (!source) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.cloneTargetNotFound`,
+                { componentId }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+        return this.create(source.toJson());
+    }
+
+    async create({
+        essences = {},
+        itemUuid,
+        disabled = false,
+        craftingSystemId,
+        salvageOptions = []
+     }: ComponentOptions): Promise<Component> {
+
+        const assignedIds = await this.componentStore.listAllEntityIds();
+        const id = this.identityFactory.make(assignedIds);
+        const entityJson: ComponentJson = {
+            id,
+            embedded: false,
+            craftingSystemId,
+            itemUuid,
+            essences,
+            disabled,
+            salvageOptions
+        };
+
+        const componentsForSystem = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const componentIdsForSystem = componentsForSystem.map(component => component.id);
+        const validationResult = await this.componentValidator.validateJson(entityJson, componentIdsForSystem);
+        if (!validationResult.successful) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.invalid`,
+                { componentId: id, errors: validationResult.errors }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        return this.componentStore.create(entityJson);
+    }
+
+    async deleteByCraftingSystemId(craftingSystemId: string): Promise<Component[]> {
+        const components = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        components.forEach(component => this.rejectDeletingEmbeddedComponent(component));
+        await this.componentStore.deleteCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        return components;
+    }
+
+    async deleteById(componentId: string): Promise<Component | undefined> {
+        const deletedComponent = await this.componentStore.getById(componentId);
+        this.rejectDeletingEmbeddedComponent(deletedComponent);
+        if (!deletedComponent) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.doesNotExist`,
+                { componentId }
+            );
+            this.notificationService.error(message);
+            return undefined;
+        }
+        await this.componentStore.deleteById(componentId);
+        return deletedComponent;
+    }
+
+    async deleteByItemUuid(itemUuid: string): Promise<Component[]> {
+        const components = await this.componentStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
+        components.forEach(component => this.rejectDeletingEmbeddedComponent(component));
+        await this.componentStore.deleteCollection(itemUuid, Properties.settings.collectionNames.item);
+        return components;
+    }
+
+    async getAll(): Promise<Map<string, Component>> {
         return Promise.resolve(undefined);
     }
 
-    create(componentOptions: ComponentOptions): Promise<Component> {
-        return Promise.resolve(undefined);
+    async getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Component>> {
+        const components = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        components.forEach(component => this.rejectDeletingEmbeddedComponent(component));
+        await this.componentStore.deleteCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        return new Map(components.map(component => [component.id, component]));
     }
 
-    deleteByCraftingSystemId(craftingSystemId: string): Promise<Component[]> {
+    async getAllById(componentIds: string[]): Promise<Map<string, Component | undefined>> {
+        const components = await this.componentStore.getAllById(componentIds);
+        const result = new Map(components.map(component => [ component.id, component ]));
+        const missingValues = componentIds.filter(id => !result.has(id));
+        if (missingValues.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.missingComponents`,
+                { componentsIds: missingValues.join(", ") }
+            );
+            this.notificationService.error(message);
+            missingValues.forEach(id => result.set(id, undefined));
+        }
+        return result;
+    }
+
+    async getAllByItemUuid(itemUuid: string): Promise<Map<string, Component>> {
+        const components = await this.componentStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
+        return new Map<string, Component>(components.map(component => [component.id, component]));
+    }
+
+    async getById(id: string): Promise<Component | undefined> {
+        const component = await this.componentStore.getById(id);
+        if (!component) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.doesNotExist`,
+                { componentId: id }
+            );
+            this.notificationService.error(message);
+            return undefined;
+        }
+        return component;
+    }
+
+    async removeEssenceReferences(essenceId: string, craftingSystemId: string): Promise<Component[]> {
         return Promise.resolve([]);
     }
 
-    deleteById(componentId: string): Promise<Component | undefined> {
-        return Promise.resolve(undefined);
-    }
-
-    deleteByItemUuid(componentId: string): Promise<Component[]> {
+    async removeSalvageReferences(componentId: string, craftingSystemId: string): Promise<Component[]> {
         return Promise.resolve([]);
     }
 
-    getAll(): Promise<Map<string, Component>> {
+    async save(component: Component): Promise<Component> {
         return Promise.resolve(undefined);
     }
 
-    getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Component>> {
-        return Promise.resolve(undefined);
+    private async rejectSavingInvalidComponent(component: Component): Promise<EntityValidationResult<Component>> {
+        const validationResult = await this.componentValidator.validate(component);
+        if (validationResult.successful) {
+            return validationResult;
+        }
+        const message = this.localizationService.format(
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.notValid`,
+            { errors: validationResult.errors.join(", ") }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
     }
 
-    getAllById(componentIds: string[]): Promise<Map<string, Component | undefined>> {
-        return Promise.resolve(undefined);
+    private rejectModifyingEmbeddedComponent(component: Component): void {
+        if (!component?.embedded) {
+            return;
+        }
+        const message = this.localizationService.format(
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.cannotModifyEmbedded`,
+            { componentName: component.name }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
     }
 
-    getAllByItemUuid(itemUuid: string): Promise<Map<string, Component>> {
-        return Promise.resolve(undefined);
-    }
-
-    getById(id: string): Promise<Component | undefined> {
-        return Promise.resolve(undefined);
-    }
-
-    removeEssenceReferences(essenceId: string, craftingSystemId: string): Promise<Component[]> {
-        return Promise.resolve([]);
-    }
-
-    save(component: Component): Promise<Component> {
-        return Promise.resolve(undefined);
+    private rejectDeletingEmbeddedComponent(componentToDelete: Component): void {
+        if (!componentToDelete?.embedded) {
+            return;
+        }
+        const message = this.localizationService.format(
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.cannotDeleteEmbedded`,
+            { componentName: componentToDelete.name }
+        );
+        this.notificationService.error(message);
+        throw new Error(message);
     }
 
 }

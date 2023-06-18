@@ -12,14 +12,56 @@ interface ComponentJson {
     itemUuid: string;
     disabled: boolean;
     essences: Record<string, number>;
-    salvageOptions: Record<string, SalvageOptionJson>;
+    salvageOptions: SalvageOptionJson[];
+    craftingSystemId: string;
 }
 
-type SalvageOptionJson = Record<string, number>;
+interface SalvageOptionJson {
+    name: string;
+    salvage: Record<string, number>;
+}
+
+interface ComponentReferenceJson {
+    id: string;
+    craftingSystemId: string;
+}
+
+class ComponentReference implements Identifiable, Serializable<ComponentReferenceJson> {
+
+    private readonly _id: string;
+    private readonly _craftingSystemId: string;
+
+    constructor({
+        id,
+        craftingSystemId
+    }: {
+        id: string;
+        craftingSystemId: string;
+    }) {
+        this._id = id;
+        this._craftingSystemId = craftingSystemId;
+    }
+
+    get id(): string {
+        return this._id;
+    }
+
+    get craftingSystemId() {
+        return this._craftingSystemId;
+    }
+
+    toJson(): ComponentReferenceJson {
+        return {
+            id: this._id,
+            craftingSystemId: this._craftingSystemId
+        };
+    }
+
+}
 
 class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
-    private _salvage: Combination<Component>;
+    private _salvage: Combination<ComponentReference>;
     private _name: string;
 
     constructor({
@@ -27,17 +69,17 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         salvage
     }: {
         name: string;
-        salvage: Combination<Component>;
+        salvage: Combination<ComponentReference>;
     }) {
         this._name = name;
         this._salvage = salvage;
     }
 
-    get salvage(): Combination<Component> {
+    get salvage(): Combination<ComponentReference> {
         return this._salvage;
     }
 
-    set salvage(value: Combination<Component>) {
+    set salvage(value: Combination<ComponentReference>) {
         this._salvage = value;
     }
 
@@ -57,16 +99,34 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         return this._name;
     }
 
-    public add(component: Component, quantity = 1) {
+    public add(component: ComponentReference, quantity = 1) {
         this._salvage = this._salvage.addUnit(new Unit(component, quantity));
     }
 
-    public subtract(component: Component, quantity = 1) {
+    public subtract(component: ComponentReference, quantity = 1) {
         this._salvage = this._salvage.subtractUnit(new Unit(component, quantity));
     }
 
     toJson(): SalvageOptionJson {
-        return this._salvage.toJson();
+        return {
+            name: this._name,
+            salvage: this._salvage.toJson()
+        };
+    }
+
+    static fromJson(salvageOptionJson: SalvageOptionJson, craftingSystemId: string): SalvageOption {
+        const salvage = Object.keys(salvageOptionJson.salvage)
+            .map(componentId => {
+                const reference = new ComponentReference({
+                    id: componentId,
+                    craftingSystemId
+                });
+                return new Unit(reference, salvageOptionJson.salvage[componentId]);
+            });
+        return new SalvageOption({
+            name: salvageOptionJson.name,
+            salvage: Combination.ofUnits(salvage)
+        });
     }
 
 }
@@ -83,33 +143,38 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     });
 
     private readonly _id: string;
+    private readonly _embedded: boolean;
+
     private _itemData: FabricateItemData;
     private _essences: Combination<Essence>;
     private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
-    private _isDisabled: boolean;
+    private _disabled: boolean;
     private _craftingSystemId: string;
 
     constructor({
         id,
         craftingSystemId,
-        itemData = NoFabricateItemData.INSTANCE(),
         disabled = false,
+        embedded = false,
+        itemData = NoFabricateItemData.INSTANCE(),
         essences = Combination.EMPTY<Essence>(),
         salvageOptions = new SelectableOptions({})
     }: {
         id: string;
+        disabled?: boolean;
+        embedded?: boolean;
         craftingSystemId: string;
         itemData?: FabricateItemData;
-        disabled?: boolean;
         essences?: Combination<Essence>;
         salvageOptions?: SelectableOptions<SalvageOptionJson, SalvageOption>;
     }) {
         this._id = id;
-        this._craftingSystemId = craftingSystemId;
+        this._embedded = embedded;
         this._itemData = itemData;
-        this._isDisabled = disabled;
+        this._disabled = disabled;
         this._essences = essences;
         this._salvageOptions = salvageOptions;
+        this._craftingSystemId = craftingSystemId;
     }
 
     set itemData(itemData: FabricateItemData) {
@@ -122,6 +187,10 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     get id(): string {
         return this._id;
+    }
+
+    get embedded(): boolean {
+        return this._embedded;
     }
 
     get craftingSystemId(): string {
@@ -148,7 +217,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this._essences;
     }
 
-    get selectedSalvage(): Combination<Component> {
+    get selectedSalvage(): Combination<ComponentReference> {
         return this._salvageOptions.selectedOption.salvage;
     }
 
@@ -168,8 +237,8 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._salvageOptions.selectPrevious();
     }
 
-    get isDisabled(): boolean {
-        return this._isDisabled;
+    get disabled(): boolean {
+        return this._disabled;
     }
 
     get isSalvageable(): boolean {
@@ -187,11 +256,21 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     public toJson(): ComponentJson {
         return {
-            disabled: this._isDisabled,
-            itemUuid: this._itemData.toJson().uuid,
+            id: this._id,
+            embedded: false,
+            disabled: this._disabled,
             essences: this._essences.toJson(),
+            itemUuid: this._itemData.toJson().uuid,
+            craftingSystemId: this._craftingSystemId,
             salvageOptions: this._salvageOptions.toJson()
         }
+    }
+
+    public toReference(): ComponentReference {
+        return new ComponentReference({
+            id: this._id,
+            craftingSystemId: this._craftingSystemId
+        });
     }
 
     public clone(cloneId: string): Component {
@@ -200,13 +279,13 @@ class Component implements Identifiable, Serializable<ComponentJson> {
             craftingSystemId: this._craftingSystemId,
             itemData: NoFabricateItemData.INSTANCE(),
             salvageOptions: this._salvageOptions.clone(),
-            disabled: this._isDisabled,
+            disabled: this._disabled,
             essences: this._essences.clone()
         });
     }
 
-    set isDisabled(value: boolean) {
-        this._isDisabled = value;
+    set disabled(value: boolean) {
+        this._disabled = value;
     }
 
     set essences(value: Combination<Essence>) {

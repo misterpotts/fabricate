@@ -1,89 +1,74 @@
 import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../../api/EntityValidator";
-import {Recipe} from "./Recipe";
+import {Recipe, RecipeJson} from "./Recipe";
 import {CraftingSystemAPI} from "../../api/CraftingSystemAPI";
 import {EssenceAPI} from "../../api/EssenceAPI";
 import {ComponentAPI} from "../../api/ComponentAPI";
-import {NoFabricateItemData} from "../../foundry/DocumentManager";
+import {DocumentManager} from "../../foundry/DocumentManager";
 
-class RecipeValidator implements EntityValidator<Recipe> {
+class RecipeValidator implements EntityValidator<RecipeJson, Recipe> {
 
     private readonly craftingSystemApi: CraftingSystemAPI;
     private readonly componentApi: ComponentAPI;
     private readonly essenceApi: EssenceAPI;
+    private readonly documentManager: DocumentManager;
 
     constructor({
         craftingSystemApi,
         componentApi,
-        essenceApi
+        essenceApi,
+        documentManager
     }: {
         craftingSystemApi: CraftingSystemAPI;
         componentApi: ComponentAPI;
         essenceApi: EssenceAPI;
+        documentManager: DocumentManager;
     }) {
         this.craftingSystemApi = craftingSystemApi;
         this.componentApi = componentApi;
         this.essenceApi = essenceApi;
+        this.documentManager = documentManager;
     }
 
     async validate(candidate: Recipe): Promise<EntityValidationResult<Recipe>> {
+        const validationResult = await this.validateJson(candidate.toJson());
+        return new DefaultEntityValidationResult({ entity: candidate, errors: validationResult.errors });
+    }
+
+    async validateJson(candidate: RecipeJson): Promise<EntityValidationResult<RecipeJson>> {
+
         const errors: string[] = [];
 
-        if (!candidate.itemData.isLoaded && !(candidate.itemData instanceof NoFabricateItemData)) {
-            await candidate.load();
-            if (candidate.itemData.hasErrors) {
-                errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. 
-                    Caused by: ${candidate.errors.map(error => error.message).join(", ")} `)
-            }
+        const itemData = await this.documentManager.loadItemDataByDocumentUuid(candidate.itemUuid);
+        if (itemData.hasErrors) {
+            const itemDataErrorMessages = itemData.errors.map(error => error.message);
+            errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. Caused by: ${itemDataErrorMessages.join(", ")} `);
         }
 
         const craftingSystem = await this.craftingSystemApi.getById(candidate.craftingSystemId);
         if (!craftingSystem) {
-            errors.push(`The crafting system with ID ${candidate.craftingSystemId} does not exist`);
+            errors.push(`The crafting system with ID ${candidate.craftingSystemId} does not exist. `);
         }
 
-        const essenceLoadingResults = await Promise.all(
-            candidate.essences.members.map(async essence => {
-                return {
-                    id: essence.id,
-                    essence: await this.essenceApi.getById(essence.id)
-                };
-            }));
-        const undefinedEssences = essenceLoadingResults.filter(essenceLoadingResult => !essenceLoadingResult.essence);
-        if (undefinedEssences.length > 0) {
-            errors.push(`The essences with the following IDs do not exist: ${undefinedEssences.map(undefinedEssence => undefinedEssence.id).join(", ")}`)
+        const essenceIds = Object.keys(candidate.essences);
+        const essenceLoadingResults = await this.essenceApi.getAllById(essenceIds);
+        const undefinedEssenceIds = essenceIds.filter(essenceId => !essenceLoadingResults.get(essenceId));
+        if (undefinedEssenceIds.length > 0) {
+            errors.push(`The essences with the following IDs do not exist: ${undefinedEssenceIds.join(", ")}`)
         }
 
-        const componentLoadingResults = await Promise.all(
-            candidate.getIncludedComponents().map(async component => {
-                return {
-                    id: component.id,
-                    component: await this.componentApi.getById(component.id)
-                };
-            }));
-        const undefinedComponents = componentLoadingResults.filter(componentLoadingResult => !componentLoadingResult.component);
-        if (undefinedComponents.length > 0) {
-            errors.push(`The components with the following IDs do not exist: ${undefinedComponents.map(undefinedComponent => undefinedComponent.id).join(", ")}`)
+        const resultComponentIds = Object.values(candidate.resultOptions)
+            .flatMap(resultOption => Object.keys(resultOption.results));
+        const requirementComponentIds = Object.values(candidate.requirementOptions)
+            .flatMap(requirementOption => Object.keys(requirementOption.catalysts).concat(Object.keys(requirementOption.ingredients)));
+        const componentIds = resultComponentIds.concat(requirementComponentIds);
+        const componentLoadingResults = await this.componentApi.getAllById(componentIds);
+        const undefinedComponentIds = Array.from(componentLoadingResults.keys()).filter(componentId => !componentLoadingResults.get(componentId));
+        if (undefinedComponentIds.length > 0) {
+            errors.push(`The components with the following IDs do not exist: ${undefinedComponentIds.join(", ")}`)
         }
-
-        candidate.requirementOptions
-            .options
-            .map(ingredientOption => ingredientOption.name)
-            .map((ingredientOptionName, index, allIngredientOptionNames) => {
-                if (allIngredientOptionNames.indexOf(ingredientOptionName) !== index) {
-                    errors.push(`The ingredient option name ${ingredientOptionName} is not unique`);
-                }
-            });
-
-        candidate.resultOptions
-            .options
-            .map(resultOption => resultOption.name)
-            .map((resultOptionName, index, allResultOptionNames) => {
-                if (allResultOptionNames.indexOf(resultOptionName) !== index) {
-                    errors.push(`The result option name ${resultOptionName} is not unique`);
-                }
-            });
 
         return new DefaultEntityValidationResult({entity: candidate, errors});
+
     }
 
 }

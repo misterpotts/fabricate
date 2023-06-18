@@ -1,8 +1,8 @@
+import {SettingManager} from "./SettingManager";
+import {CollectionManager, NoCollectionManager} from "./CollectionManager";
 import {Identifiable} from "../common/Identifiable";
 import {Serializable} from "../common/Serializable";
 import {EntityFactory} from "./EntityFactory";
-import {SettingManager} from "./SettingManager";
-import {CollectionManager, NoCollectionManager} from "./CollectionManager";
 
 interface SerialisedEntityData<J> {
 

@@ -63,9 +63,19 @@
           "notFound": "The document with UUID {documentUuid} could not be found. "
         },
         "recipe": {
-          "doesNotExist": "The recipe {recipeId} does not exist. ",
-          "invalid": "The recipe entity is not valid. Errors: {errors}. ",
+          "doesNotExist": "The recipe with ID {recipeId} does not exist. ",
+          "invalid": "The recipe with ID {recipeId} is not valid. Errors: {errors}. ",
           "missingRecipes": "The recipes with the IDs {recipeIds} could not be found. "
+        },
+        "component": {
+          "doesNotExist": "The component with ID {componentId} does not exist. ",
+          "invalid": "The component with ID {componentId} is not valid. Errors: {errors}. ",
+          "missingComponents": "The components with the IDs {componentIds} could not be found. "
+        },
+        "essence": {
+          "doesNotExist": "The essence with ID {essenceId} does not exist. ",
+          "invalid": "The essence with ID {essenceId} is not valid. Errors: {errors}. ",
+          "missingEssences": "The essences with the IDs {essenceIds} could not be found. "
         }
       }
     },

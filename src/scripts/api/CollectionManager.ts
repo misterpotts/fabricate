@@ -2,6 +2,8 @@ import {Identifiable} from "../common/Identifiable";
 import {RecipeJson} from "../crafting/recipe/Recipe";
 import Properties from "../Properties";
 import {CraftingSystemJson} from "../system/CraftingSystem";
+import {EssenceJson} from "../crafting/essence/Essence";
+import {ComponentJson} from "../crafting/component/Component";
 
 /**
  * The CollectionManager is responsible for determining which collections an entity belongs to.
@@ -60,3 +62,29 @@ class CraftingSystemCollectionManager implements CollectionManager<CraftingSyste
 }
 
 export { CraftingSystemCollectionManager };
+
+class EssenceCollectionManager implements CollectionManager<EssenceJson> {
+
+    listCollectionMemberships(essenceJson: EssenceJson): { prefix: string; name: string }[] {
+        return [
+            { prefix: Properties.settings.collectionNames.craftingSystem, name: essenceJson.craftingSystemId },
+            { prefix: Properties.settings.collectionNames.item, name: essenceJson.activeEffectSourceItemUuid }
+        ];
+    }
+
+}
+
+export { EssenceCollectionManager };
+
+class ComponentCollectionManager implements CollectionManager<ComponentJson> {
+
+    listCollectionMemberships(entityJson: ComponentJson): { prefix: string; name: string }[] {
+        return [
+            { prefix: Properties.settings.collectionNames.craftingSystem, name: entityJson.craftingSystemId },
+            { prefix: Properties.settings.collectionNames.item, name: entityJson.itemUuid }
+        ];
+    }
+
+}
+
+export { ComponentCollectionManager };

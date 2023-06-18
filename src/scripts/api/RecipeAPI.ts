@@ -6,6 +6,50 @@ import {EntityDataStore} from "./EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 
 /**
+ * A value object representing a Requirement option
+ *
+ * @interface
+ */
+interface RequirementOptionValue {
+
+    /**
+     * The name of the requirement option.
+     */
+    name: string;
+
+    /**
+     * The catalysts necessary for this requirement option. The object is a dictionary keyed on the component ID with
+     * the values representing the required quantities.
+     */
+    catalysts: Record<string, number>;
+
+    /**
+     * The ingredients necessary for this requirement option. The object is a dictionary keyed on the component ID with
+     * the values representing the required quantities.
+     */
+    ingredients: Record<string, number>;
+
+}
+
+/**
+ * A value object representing a Result option
+ */
+interface ResultOptionValue {
+
+    /**
+     * The name of the result option.
+     */
+    name: string;
+
+    /**
+     * The results of this result option. The object is a dictionary keyed on the component ID with the values
+     * representing the created quantities.
+     */
+    results: Record<string, number>;
+
+}
+
+/**
  * Options for creating a new recipe.
  *
  * @interface
@@ -14,7 +58,7 @@ interface RecipeOptions {
 
     /**
      * The UUID of the item associated with the recipe.
-     * */
+     */
     itemUuid: string;
 
     /**
@@ -25,40 +69,23 @@ interface RecipeOptions {
     /**
      * Optional dictionary of the essences required for the recipe. The dictionary is keyed on the essence ID and with
      * the values representing the required quantities.
-     * */
+     */
     essences?: Record<string, number>;
 
     /**
      * Whether the recipe is disabled. Defaults to false.
-     * */
+     */
     disabled?: boolean;
 
     /**
-     * Optional dictionary of requirement options for the recipe, keyed on the option name.
-     * */
-    requirementOptions?: {
-        
-        name: string;
-
-        /**
-         * The catalysts necessary for this requirement option. The object is a dictionary keyed on the component ID with
-         * the values representing the required quantities.
-         */
-        catalysts: Record<string, number>;
-
-        /**
-         * The ingredients necessary for this requirement option. The object is a dictionary keyed on the component ID with
-         * the values representing the required quantities.
-         */
-        ingredients: Record<string, number>;
-
-    }[];
+     * Optional array of requirement options for the recipe.
+     */
+    requirementOptions?: RequirementOptionValue[];
 
     /**
-     * Optional dictionary of result options for the recipe, keyed on the option name. Each option is a dictionary keyed
-     * on the component ID with the values representing the created quantities.
+     * Optional array of result options for the recipe.
      * */
-    resultOptions?: { name: string, results: Record<string, number>}[];
+    resultOptions?: ResultOptionValue[];
 
 }
 
@@ -221,7 +248,7 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
-    private readonly recipeValidator: EntityValidator<Recipe>;
+    private readonly recipeValidator: EntityValidator<RecipeJson, Recipe>;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
     private readonly recipeStore: EntityDataStore<RecipeJson, Recipe>;
@@ -236,7 +263,7 @@ class DefaultRecipeAPI implements RecipeAPI {
     }: {
         notificationService: NotificationService;
         localizationService: LocalizationService;
-        recipeValidator: EntityValidator<Recipe>;
+        recipeValidator: EntityValidator<RecipeJson, Recipe>;
         recipeDataStore: EntityDataStore<RecipeJson, Recipe>;
         identityFactory: IdentityFactory;
     }) {
@@ -265,7 +292,6 @@ class DefaultRecipeAPI implements RecipeAPI {
         await this.recipeStore.deleteById(id);
         return deletedRecipe;
     }
-
 
     async save(recipe: Recipe): Promise<Recipe> {
         const existing = await this.recipeStore.getById(recipe.id);
@@ -340,6 +366,14 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     async cloneById(recipeId: string): Promise<Recipe> {
         const source = await this.getById(recipeId);
+        if (!source) {
+            const message = this.localizationService.format(
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.cloneTargetNotFound`,
+                { recipeId }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
         return this.create(source.toJson());
     }
 
@@ -396,7 +430,7 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     private async rejectSavingInvalidRecipe(recipe: Recipe): Promise<EntityValidationResult<Recipe>> {
         const validationResult = await this.recipeValidator.validate(recipe);
-        if (validationResult.isSuccessful) {
+        if (validationResult.successful) {
             return validationResult;
         }
         const message = this.localizationService.format(
@@ -430,6 +464,7 @@ class DefaultRecipeAPI implements RecipeAPI {
         this.notificationService.error(message);
         throw new Error(message);
     }
+
 }
 
 export { DefaultRecipeAPI };

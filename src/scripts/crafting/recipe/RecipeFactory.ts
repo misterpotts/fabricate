@@ -1,4 +1,3 @@
-import {EntityFactory} from "../../api/EntityFactory";
 import {Recipe, RecipeJson, RequirementOption, RequirementOptionJson, ResultOption, ResultOptionJson} from "./Recipe";
 import {DefaultDocumentManager, DocumentManager} from "../../foundry/DocumentManager";
 import {Component} from "../component/Component";
@@ -7,6 +6,7 @@ import {SelectableOptions} from "./SelectableOptions";
 import {EssenceAPI} from "../../api/EssenceAPI";
 import {ComponentAPI} from "../../api/ComponentAPI";
 import {IdentityFactory} from "../../foundry/IdentityFactory";
+import {EntityFactory} from "../../api/EntityFactory";
 
 class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
 
@@ -56,7 +56,7 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
         return new SelectableOptions<RequirementOptionJson, RequirementOption>({ options });
     }
 
-    private buildResultOptions(resultOptionsJson: ResultOptionJson[], components: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
+    private buildResultOptions(resultOptionsJson:ResultOptionJson[], components: Map<string, Component>): SelectableOptions<ResultOptionJson, ResultOption> {
         const options = resultOptionsJson
             .map(json => ResultOption.fromJson(json, components));
         return new SelectableOptions<ResultOptionJson, ResultOption>({ options });

@@ -7,11 +7,11 @@ class StubNotificationService implements NotificationService {
         this._suppressed = suppressed;
     }
 
-    get isSuppressed(): boolean {
+    get suppressed(): boolean {
         return this._suppressed;
     }
 
-    set isSuppressed(value: boolean) {
+    set suppressed(value: boolean) {
         this._suppressed = value;
     }
 

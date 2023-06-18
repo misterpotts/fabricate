@@ -1,8 +1,11 @@
+import {Identifiable} from "../common/Identifiable";
+import {Serializable} from "../common/Serializable";
+
 interface EntityValidationResult<T> {
 
     readonly entity: T;
 
-    readonly isSuccessful: boolean;
+    readonly successful: boolean;
 
     readonly errors: string[];
 
@@ -14,12 +17,12 @@ class DefaultEntityValidationResult<T> implements EntityValidationResult<T> {
 
     private readonly _entity: T;
     private readonly _errors: string[];
-    private readonly _isSuccessful: boolean;
+    private readonly _successful: boolean;
 
     constructor({entity, errors = [], isSuccessful}: { entity: T, errors?: string[], isSuccessful?: boolean }) {
         this._entity = entity;
         this._errors = errors;
-        this._isSuccessful = typeof isSuccessful !== "undefined" ? isSuccessful : errors.length === 0;
+        this._successful = typeof isSuccessful !== "undefined" ? isSuccessful : errors.length === 0;
     }
 
     get entity(): T {
@@ -30,17 +33,19 @@ class DefaultEntityValidationResult<T> implements EntityValidationResult<T> {
         return this._errors;
     }
 
-    get isSuccessful(): boolean {
-        return this._isSuccessful;
+    get successful(): boolean {
+        return this._successful;
     }
 
 }
 
 export { DefaultEntityValidationResult };
 
-interface EntityValidator<T> {
+interface EntityValidator<J, T extends Identifiable & Serializable<J>, A extends any[] = []> {
 
-    validate(candidate: T): Promise<EntityValidationResult<T>>;
+    validate(candidate: T, ...additionalArgs: A): Promise<EntityValidationResult<T>>;
+
+    validateJson(candidate: J, ...additionalArgs: A): Promise<EntityValidationResult<J>>;
 
 }
 

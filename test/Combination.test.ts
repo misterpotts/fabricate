@@ -40,7 +40,7 @@ test('Should create a Combination from a single Unit',() => {
         id: testComponentOne.id,
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({options: testComponentOne.salvageOptions}),
         essences: testComponentOne.essences,
-        disabled: testComponentOne.isDisabled,
+        disabled: testComponentOne.disabled,
         itemData: testComponentOne.itemData
     });
     expect(underTest.has(equivalentComponent))
@@ -77,7 +77,7 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.has(new Component({
         id: testComponentOne.id,
         itemData: testComponentOne.itemData,
-        disabled: testComponentOne.isDisabled,
+        disabled: testComponentOne.disabled,
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({options: testComponentOne.salvageOptions}),
         essences: testComponentOne.essences
     }))).toBe(true);

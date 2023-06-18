@@ -4,6 +4,7 @@ import {IdentityFactory} from "../foundry/IdentityFactory";
 import {EntityDataStore} from "./EntityDataStore";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import {EntityValidationResult, EntityValidator} from "./EntityValidator";
+import {CraftingSystemAPI} from "./CraftingSystemAPI";
 
 /**
  * Represents a set of options for creating an essence.
@@ -138,6 +139,12 @@ interface EssenceAPI {
      */
     save(essence: Essence): Promise<Essence>;
 
+    /**
+     * The Notification service used by this API. If `notifications.suppressed` is true, all notification messages
+     * will print only to the console. If false, notification messages will be displayed in both the console and the UI.
+     * */
+    readonly notifications: NotificationService;
+
 }
 
 export { EssenceAPI };
@@ -150,7 +157,7 @@ class DefaultEssenceAPI implements EssenceAPI {
     private readonly essenceStore: EntityDataStore<EssenceJson, Essence>;
     private readonly localizationService: LocalizationService;
     private readonly notificationService: NotificationService;
-    private readonly essenceValidator: EntityValidator<Essence>;
+    private readonly essenceValidator: EntityValidator<EssenceJson, Essence>;
 
     constructor({
         identityFactory,
@@ -159,17 +166,22 @@ class DefaultEssenceAPI implements EssenceAPI {
         notificationService,
         essenceValidator
     }: {
-        identityFactory: IdentityFactory,
-        essenceStore: EntityDataStore<EssenceJson, Essence>,
-        localizationService: LocalizationService,
-        notificationService: NotificationService,
-        essenceValidator: EntityValidator<Essence>
+        identityFactory: IdentityFactory;
+        essenceStore: EntityDataStore<EssenceJson, Essence>;
+        localizationService: LocalizationService;
+        notificationService: NotificationService;
+        essenceValidator: EntityValidator<EssenceJson, Essence>;
+        craftingSystemAPI: CraftingSystemAPI;
     }) {
         this.identityFactory = identityFactory;
         this.essenceStore = essenceStore;
         this.localizationService = localizationService;
         this.notificationService = notificationService;
         this.essenceValidator = essenceValidator;
+    }
+
+    get notifications(): NotificationService {
+        return this.notificationService;
     }
 
     async getById(id: string): Promise<Essence | undefined> {
@@ -291,7 +303,7 @@ class DefaultEssenceAPI implements EssenceAPI {
 
     private async rejectSavingInvalidEssence(essence: Essence): Promise<EntityValidationResult<Essence>> {
         const validationResult = await this.essenceValidator.validate(essence);
-        if (validationResult.isSuccessful) {
+        if (validationResult.successful) {
             return validationResult;
         }
         const message = this.localizationService.format(

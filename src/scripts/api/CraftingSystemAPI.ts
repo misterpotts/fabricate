@@ -205,7 +205,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
 
     private async rejectSavingInvalidSystem(craftingSystem: CraftingSystem): Promise<EntityValidationResult<CraftingSystem>> {
         const validationResult = await this.craftingSystemValidator.validate(craftingSystem);
-        if (!validationResult.isSuccessful) {
+        if (!validationResult.successful) {
             const message = this.localizationService.format(
                 `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.notValid`,
                 { errors: validationResult.errors.join(", ") }

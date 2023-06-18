@@ -27,27 +27,30 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
     constructor({
         id,
-        craftingSystemId,
         name,
         tooltip,
+        iconCode,
+        embedded,
         description,
-        activeEffectSource,
-        iconCode
+        craftingSystemId,
+        activeEffectSource
     }: {
         id: string;
-        craftingSystemId: string;
         name: string;
         tooltip: string;
         iconCode: string;
+        embedded: boolean;
         description: string;
+        craftingSystemId: string;
         activeEffectSource?: FabricateItemData;
     }) {
         this._id = id;
-        this._craftingSystemId = craftingSystemId;
         this._name = name;
         this._tooltip = tooltip;
         this._iconCode = iconCode;
+        this._embedded = embedded;
         this._description = description;
+        this._craftingSystemId = craftingSystemId;
         this._activeEffectSource = activeEffectSource;
     }
 

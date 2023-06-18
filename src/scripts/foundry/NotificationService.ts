@@ -1,29 +1,51 @@
+/**
+ * A notification service that can be used to display messages to the user.
+ */
 interface NotificationService {
 
+    /**
+     * Displays an informational message to the user.
+     * @param message
+     */
     info(message: string): void;
+
+    /**
+     * Displays a warning message to the user.
+     * @param message
+     */
     warn(message: string): void;
+
+    /**
+     * Displays an error message to the user.
+     * @param message
+     */
     error(message: string): void;
-    isSuppressed: boolean;
+
+    /**
+     * If true, all notification messages will print only to the console. If false, notification messages will be
+     *   displayed in both the console and the UI.
+     */
+    suppressed: boolean;
 
 }
 
 class DefaultNotificationService implements NotificationService {
 
-    private suppressed: boolean;
+    private _suppressed: boolean;
 
     constructor(suppressed: boolean = false) {
-        this.suppressed = suppressed;
+        this._suppressed = suppressed;
     }
 
-    get isSuppressed(): boolean {
-        return this.suppressed;
+    get suppressed(): boolean {
+        return this._suppressed;
     }
-    set isSuppressed(value: boolean) {
-        this.suppressed = value;
+    set suppressed(value: boolean) {
+        this._suppressed = value;
     }
 
     error(message: string): void {
-        if (this.isSuppressed) {
+        if (this._suppressed) {
             console.error(message);
             return;
         }
@@ -31,7 +53,7 @@ class DefaultNotificationService implements NotificationService {
     }
 
     info(message: string): void {
-        if (this.isSuppressed) {
+        if (this._suppressed) {
             console.info(message);
             return;
         }
@@ -39,7 +61,7 @@ class DefaultNotificationService implements NotificationService {
     }
 
     warn(message: string): void {
-        if (this.isSuppressed) {
+        if (this._suppressed) {
             console.warn(message);
             return;
         }

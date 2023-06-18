@@ -87,11 +87,8 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         return !!this._selectedOptionId;
     }
 
-    toJson(): J[]{
-        return Array.from(this._options.values())
-            .reduce((previousValue, currentValue) => {
-                return [currentValue.toJson(), ...previousValue]
-            }, <J[]>[]);
+    toJson(): J[] {
+        return Array.from(this._options.values()).map(option => option.toJson());
     }
 
     add(value: T) {
