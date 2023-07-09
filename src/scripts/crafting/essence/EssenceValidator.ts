@@ -1,9 +1,19 @@
-import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../../api/EntityValidator";
+import {DefaultEntityValidationResult, EntityValidationResult} from "../../api/EntityValidator";
 import {Essence, EssenceJson} from "./Essence";
 import {CraftingSystemAPI} from "../../api/CraftingSystemAPI";
 import {DocumentManager} from "../../foundry/DocumentManager";
 
-class EssenceValidator implements EntityValidator<EssenceJson, Essence> {
+interface EssenceValidator {
+
+    validate(candidate: Essence): Promise<EntityValidationResult<Essence>>;
+
+    validateJson(candidate: EssenceJson): Promise<EntityValidationResult<EssenceJson>>;
+
+}
+
+export { EssenceValidator }
+
+class DefaultEssenceValidator implements EssenceValidator {
 
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly documentManager: DocumentManager;
@@ -50,4 +60,4 @@ class EssenceValidator implements EntityValidator<EssenceJson, Essence> {
 
 }
 
-export { EssenceValidator };
+export { DefaultEssenceValidator };

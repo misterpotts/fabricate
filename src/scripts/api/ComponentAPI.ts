@@ -3,15 +3,16 @@ import Properties from "../Properties";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import {EntityDataStore} from "./EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
-import {ComponentValidator} from "../crafting/component/ComponentValidator";
 import {EntityValidationResult} from "./EntityValidator";
+import {ComponentValidator} from "../crafting/component/ComponentValidator";
+import {NotificationService} from "../foundry/NotificationService";
 
 /**
  * A value object representing an option for salvaging a component
  *
  * @interface
  * */
-interface SalvageOptionJson {
+interface SalvageOptionValue {
 
     /**
      * The name of the salvage option.
@@ -21,7 +22,12 @@ interface SalvageOptionJson {
     /**
      * The salvage that will be produced when the option is used to salvage the component.
      */
-    salvage: Record<string, number>;
+    results: Record<string, number>;
+
+    /**
+     * The additional components that must be present to salvage this component
+     */
+    catalysts: Record<string, number>;
 
 }
 
@@ -56,7 +62,7 @@ interface ComponentOptions {
     /**
      * Optional array of salvage options for the component.
      * */
-    salvageOptions?: SalvageOptionJson[];
+    salvageOptions?: SalvageOptionValue[];
 
 }
 
@@ -281,19 +287,9 @@ class DefaultComponentAPI implements ComponentAPI {
             salvageOptions
         };
 
-        const componentsForSystem = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
-        const componentIdsForSystem = componentsForSystem.map(component => component.id);
-        const validationResult = await this.componentValidator.validateJson(entityJson, componentIdsForSystem);
-        if (!validationResult.successful) {
-            const message = this.localizationService.format(
-                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.invalid`,
-                { componentId: id, errors: validationResult.errors }
-            );
-            this.notificationService.error(message);
-            throw new Error(message);
-        }
+        const component = await this.componentStore.buildEntity(entityJson);
+        return this.save(component);
 
-        return this.componentStore.create(entityJson);
     }
 
     async deleteByCraftingSystemId(craftingSystemId: string): Promise<Component[]> {
@@ -326,13 +322,13 @@ class DefaultComponentAPI implements ComponentAPI {
     }
 
     async getAll(): Promise<Map<string, Component>> {
-        return Promise.resolve(undefined);
+        const components = await this.componentStore.getAllEntities();
+        return new Map(components.map(component => [component.id, component]));
     }
 
     async getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Component>> {
         const components = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         components.forEach(component => this.rejectDeletingEmbeddedComponent(component));
-        await this.componentStore.deleteCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         return new Map(components.map(component => [component.id, component]));
     }
 
@@ -363,26 +359,66 @@ class DefaultComponentAPI implements ComponentAPI {
                 `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.doesNotExist`,
                 { componentId: id }
             );
+
             this.notificationService.error(message);
             return undefined;
         }
         return component;
     }
 
-    async removeEssenceReferences(essenceId: string, craftingSystemId: string): Promise<Component[]> {
-        return Promise.resolve([]);
+    async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Component[]> {
+        const componentsForCraftingSystem = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const componentsWithEssence = componentsForCraftingSystem.filter(component => component.essences.has(essenceIdToDelete));
+        const componentsWithEssenceRemoved = componentsWithEssence.map(component => {
+                component.removeEssence(essenceIdToDelete);
+                return component;
+            });
+        await this.componentStore.updateAll(componentsWithEssenceRemoved);
+        return componentsWithEssenceRemoved;
     }
 
     async removeSalvageReferences(componentId: string, craftingSystemId: string): Promise<Component[]> {
-        return Promise.resolve([]);
+        const componentsForCraftingSystem = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
+        const componentsWithSalvage = componentsForCraftingSystem
+            .filter(component => {
+                if (!component.isSalvageable) {
+                    return false;
+                }
+                const firstMatchingSalvage = component.salvageOptions.options
+                    .map(salvageOption => salvageOption.results)
+                    .find(salvage => salvage.has(componentId));
+                return !!firstMatchingSalvage;
+            });
+        const componentsWithSalvageRemoved = componentsWithSalvage.map(component => {
+                component.removeComponentFromSalvageOptions(componentId);
+                return component;
+            });
+        await this.componentStore.updateAll(componentsWithSalvageRemoved);
+        return componentsWithSalvageRemoved;
     }
 
     async save(component: Component): Promise<Component> {
-        return Promise.resolve(undefined);
+        const existing = await this.componentStore.getById(component.id);
+        this.rejectModifyingEmbeddedComponent(existing);
+
+        await this.rejectSavingInvalidComponent(component);
+
+        await this.componentStore.insert(component);
+
+        const activityName = existing ? "updated" : "created";
+        const message = this.localizationService.format(
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.messages.component.${activityName}`,
+            { componentName: component.name }
+        );
+        this.notificationService.info(message);
+
+        return component;
     }
 
     private async rejectSavingInvalidComponent(component: Component): Promise<EntityValidationResult<Component>> {
-        const validationResult = await this.componentValidator.validate(component);
+        const existingComponentIds = await this.componentStore.listAllEntityIds();
+        const existingComponentsIdsForItem = await this.componentStore.listCollectionEntityIds(component.itemUuid, Properties.settings.collectionNames.item);
+        const validationResult = await this.componentValidator.validate(component, existingComponentIds, existingComponentsIdsForItem);
         if (validationResult.successful) {
             return validationResult;
         }

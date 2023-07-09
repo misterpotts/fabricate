@@ -71,20 +71,25 @@ class Combination<T extends Identifiable> {
      *
      * @template T - A type extending Identifiable, representing the member type.
      * @param {Record<string, number>} amounts - A record object containing identifier-amount pairs.
-     * @param {Map<string, T>} candidatesById - A map object containing identifier-candidate pairs.
+     * @param {(key: string) => T} memberProvider - A function that takes the record key and returns the corresponding
+     *   combination member.
      * @returns {Combination<T>} A Combination instance containing the Units mapped from the amounts and candidates.
-     * @throws {Error} If an identifier from the amounts record cannot be resolved in the candidatesById map.
+     * @throws {Error} If the memberProvider throws an error when called with a record key.
      */
-    public static fromRecord<T extends Identifiable>(amounts: Record<string, number>, candidatesById: Map<string, T>): Combination<T> {
+    public static fromRecord<T extends Identifiable>(amounts: Record<string, number>, memberProvider: (key: string) => T): Combination<T> {
         if (!amounts) {
             return Combination.EMPTY();
         }
         return Object.keys(amounts)
-            .map(id => {
-                if (!candidatesById.has(id)) {
-                    throw new Error(`Unable to resolve ID ${id}. `);
+            .map(key => {
+                let member: T;
+                try {
+                    member = memberProvider(key);
+                } catch (e: any) {
+                    const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
+                    throw new Error(`Unable to construct combination member from Record key "${key}". Caused by ${cause.message}`);
                 }
-                return Combination.of(candidatesById.get(id), amounts[id]);
+                return Combination.of(member, amounts[key]);
             })
             .reduce((left, right) => left.combineWith(right), Combination.EMPTY());
     }
@@ -186,28 +191,6 @@ class Combination<T extends Identifiable> {
         }
         const unit = this._amounts.get(memberId);
         return unit.quantity >= quantity;
-    }
-
-    /**
-     * Determines whether the Combination contains the specified member with at least the specified quantity.
-     *
-     * @param {T} member - The member to check for in the Combination.
-     * @param {number} quantity - The minimum quantity of the member required.
-     * @returns {boolean} True if the Combination contains the specified member with at least the specified quantity,
-     *  otherwise false.
-     */
-    public containsAll(member: T, quantity: number): boolean {
-        return this.amountFor(member) >= quantity;
-    }
-
-    /**
-     * Determines whether the Combination contains at least the specified quantity of the Unit's member.
-     *
-     * @param {Unit<T>} unit - The Unit containing the member and quantity to check for in the Combination.
-     * @returns {boolean} True if the Combination contains the Unit's member with at least the specified quantity, otherwise false.
-     */
-    public containsUnit(unit: Unit<T>): boolean {
-        return this.amounts.get(unit.element.id).quantity >= unit.quantity;
     }
 
     /**

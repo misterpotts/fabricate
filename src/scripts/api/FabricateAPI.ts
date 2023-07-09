@@ -2,26 +2,32 @@ import {CraftingSystemAPI, DefaultCraftingSystemAPI} from "./CraftingSystemAPI";
 import {DefaultEssenceAPI, EssenceAPI} from "./EssenceAPI";
 import {ComponentAPI, DefaultComponentAPI} from "./ComponentAPI";
 import {DefaultRecipeAPI, RecipeAPI} from "./RecipeAPI";
-import {DefaultIdentityFactory} from "../foundry/IdentityFactory";
+import {DefaultIdentityFactory, IdentityFactory} from "../foundry/IdentityFactory";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
-import {DefaultGameProvider} from "../foundry/GameProvider";
+import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 import {DefaultSettingManager} from "./SettingManager";
 import Properties from "../Properties";
-import {CraftingSystem, CraftingSystemJson, CraftingSystemValidator} from "../system/CraftingSystem";
+import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
 import {EntityDataStore} from "./EntityDataStore";
 import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
 import {
     ComponentCollectionManager,
     CraftingSystemCollectionManager,
-    EssenceCollectionManager
+    EssenceCollectionManager, RecipeCollectionManager
 } from "./CollectionManager";
-import {EssenceValidator} from "../crafting/essence/EssenceValidator";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {Essence, EssenceJson} from "../crafting/essence/Essence";
 import {EssenceFactory} from "../crafting/essence/EssenceFactory";
-import {ComponentValidator} from "../crafting/component/ComponentValidator";
 import {Component, ComponentJson} from "../crafting/component/Component";
 import {ComponentFactory} from "../crafting/component/ComponentFactory";
+import {RecipeFactory} from "../crafting/recipe/RecipeFactory";
+import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
+import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
+import {DefaultEssenceValidator} from "../crafting/essence/EssenceValidator";
+import {DefaultComponentValidator} from "../crafting/component/ComponentValidator";
+import {DefaultRecipeValidator} from "../crafting/recipe/RecipeValidator";
+import {DefaultNotificationService} from "../foundry/NotificationService";
+import {DefaultUIProvider, UIProvider} from "../foundry/UIProvider";
 
 interface FabricateAPIFactory {
 
@@ -36,32 +42,45 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
     private readonly gameSystem: string;
     private readonly user: string;
     private readonly clientSettings: ClientSettings;
+    private readonly gameProvider: GameProvider;
+    private readonly uiProvider: UIProvider;
+    private readonly documentManager: DocumentManager;
+    private readonly identityFactory: IdentityFactory;
 
     constructor({
         gameSystem,
         user,
-        clientSettings
+        clientSettings,
+        gameProvider = new DefaultGameProvider(),
+        documentManager = new DefaultDocumentManager(),
+        identityFactory = new DefaultIdentityFactory(),
+        uiProvider = new DefaultUIProvider()
     }: {
         gameSystem: string;
         user: string;
         clientSettings: ClientSettings;
+        gameProvider?: GameProvider;
+        documentManager?: DocumentManager;
+        identityFactory?: IdentityFactory;
+        uiProvider?: UIProvider;
     }) {
         this.gameSystem = gameSystem;
         this.user = user;
         this.clientSettings = clientSettings;
+        this.gameProvider = gameProvider;
+        this.documentManager = documentManager;
+        this.identityFactory = identityFactory;
+        this.uiProvider = uiProvider;
     }
 
     make(): FabricateAPI {
 
-        const identityFactory = new DefaultIdentityFactory();
-        const gameProvider = new DefaultGameProvider();
-        const localizationService = new DefaultLocalizationService(gameProvider);
-        const documentManager = new DefaultDocumentManager();
+        const localizationService = new DefaultLocalizationService(this.gameProvider);
 
-        const craftingSystemAPI = this.makeCraftingSystemAPI(identityFactory, localizationService);
-        const essenceAPI = this.makeEssenceAPI(identityFactory, localizationService, craftingSystemAPI, documentManager);
-        const componentAPI = this.makeComponentAPI(identityFactory, localizationService, craftingSystemAPI, essenceAPI);
-        const recipeAPI = this.makeRecipeAPI(identityFactory, localizationService, essenceAPI, componentAPI);
+        const craftingSystemAPI = this.makeCraftingSystemAPI(this.identityFactory, localizationService);
+        const essenceAPI = this.makeEssenceAPI(this.identityFactory, localizationService, craftingSystemAPI, this.documentManager);
+        const componentAPI = this.makeComponentAPI(this.identityFactory, localizationService, craftingSystemAPI, essenceAPI, this.documentManager);
+        const recipeAPI = this.makeRecipeAPI(this.identityFactory, localizationService, craftingSystemAPI, essenceAPI, componentAPI, this.documentManager);
 
         return new DefaultFabricateAPI({
             craftingSystemAPI: craftingSystemAPI,
@@ -77,7 +96,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
         return new DefaultCraftingSystemAPI({
             gameSystem: this.gameSystem,
             user: this.user,
-            notificationService: new DefaultNotificationService(),
+            notificationService: new DefaultNotificationService(this.uiProvider),
             identityFactory,
             localizationService,
             craftingSystemValidator: new CraftingSystemValidator(),
@@ -87,7 +106,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                 collectionManager: new CraftingSystemCollectionManager(),
                 settingManager: new DefaultSettingManager({
                     moduleId: Properties.module.id,
-                    settingKey: "craftingSystems",
+                    settingKey: Properties.settings.craftingSystems.key,
                     clientSettings: this.clientSettings
 
                 })
@@ -99,19 +118,19 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                            localizationService: DefaultLocalizationService,
                            craftingSystemAPI: CraftingSystemAPI,
                            documentManager: DocumentManager): EssenceAPI {
-        const essenceValidator = new EssenceValidator({ craftingSystemAPI, documentManager });
+        const essenceValidator = new DefaultEssenceValidator({ craftingSystemAPI, documentManager });
         const essenceStore = new EntityDataStore<EssenceJson, Essence>({
             entityName: "Essence",
             collectionManager: new EssenceCollectionManager(),
             settingManager: new DefaultSettingManager({
                 moduleId: Properties.module.id,
-                settingKey: "essences",
+                settingKey: Properties.settings.essences.key,
                 clientSettings: this.clientSettings
             }),
             entityFactory: new EssenceFactory(documentManager),
         });
         return new DefaultEssenceAPI({
-            notificationService: new DefaultNotificationService(),
+            notificationService: new DefaultNotificationService(this.uiProvider),
             localizationService,
             identityFactory,
             craftingSystemAPI,
@@ -127,29 +146,46 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                              documentManager: DocumentManager): ComponentAPI {
         const componentStore = new EntityDataStore<ComponentJson, Component>({
             entityName: "Component",
-            entityFactory: new ComponentFactory({ essenceAPI, documentManager }),
+            entityFactory: new ComponentFactory({ documentManager }),
             collectionManager: new ComponentCollectionManager(),
             settingManager: new DefaultSettingManager({
                 moduleId: Properties.module.id,
-                settingKey: "components",
+                settingKey: Properties.settings.components.key,
                 clientSettings: this.clientSettings
             })
         });
         return new DefaultComponentAPI({
-            notificationService: new DefaultNotificationService(),
+            notificationService: new DefaultNotificationService(this.uiProvider),
             localizationService,
             identityFactory,
-            componentValidator: new ComponentValidator({ craftingSystemAPI, essenceAPI, documentManager }),
+            componentValidator: new DefaultComponentValidator({ craftingSystemAPI, essenceAPI }),
             componentStore
         });
     }
 
-    private makeRecipeAPI(notificationService: DefaultNotificationService,
-                          identityFactory: DefaultIdentityFactory,
+    private makeRecipeAPI(identityFactory: DefaultIdentityFactory,
                           localizationService: DefaultLocalizationService,
+                          craftingSystemAPI: CraftingSystemAPI,
                           essenceAPI: EssenceAPI,
-                          componentAPI: ComponentAPI): RecipeAPI {
-        return new DefaultRecipeAPI();
+                          componentAPI: ComponentAPI,
+                          documentManager: DocumentManager): RecipeAPI {
+        const recipeStore = new EntityDataStore<RecipeJson, Recipe>({
+            entityName: "Recipe",
+            entityFactory: new RecipeFactory({ essenceAPI, componentAPI, documentManager }),
+            collectionManager: new RecipeCollectionManager(),
+            settingManager: new DefaultSettingManager({
+                moduleId: Properties.module.id,
+                settingKey: Properties.settings.recipes.key,
+                clientSettings: this.clientSettings
+            })
+        });
+        return new DefaultRecipeAPI({
+            notificationService: new DefaultNotificationService(this.uiProvider),
+            identityFactory,
+            localizationService,
+            recipeValidator: new DefaultRecipeValidator({ essenceAPI, componentAPI, craftingSystemAPI, documentManager }),
+            recipeStore
+        });
     }
 
 }

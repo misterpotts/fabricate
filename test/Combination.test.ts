@@ -1,12 +1,13 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
 
 import {Combination} from "../src/scripts/common/Combination";
-import {Component, SalvageOption, SalvageOptionJson} from "../src/scripts/crafting/component/Component";
+import {Component} from "../src/scripts/crafting/component/Component";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
 import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
 import {Unit} from "../src/scripts/common/Unit";
+import {SalvageOption, SalvageOptionJson} from "../src/scripts/crafting/component/SalvageOption";
 
 beforeEach(() => {
     jest.resetAllMocks();

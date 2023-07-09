@@ -262,7 +262,7 @@ export {
 
 function resetAllTestRecipes() {
     allTestRecipes.forEach(recipe => {
-        if (recipe.isLoaded) {
+        if (recipe.loaded) {
             recipe.itemData = buildPendingItemData(recipe.itemData.name, recipe.itemData.uuid);
         }
     });

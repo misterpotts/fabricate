@@ -2,8 +2,9 @@ import {FabricateSettingMigrator} from "../FabricateSetting";
 import {CraftingSystemJson} from "../../system/CraftingSystem";
 import {V1ComponentJson, V1EssenceJson, V1RecipeJson, V1SystemJson} from "../../system/setting_versions/V1Json";
 import {EssenceJson} from "../../crafting/essence/Essence";
-import {ComponentJson, SalvageOptionJson} from "../../crafting/component/Component";
+import {ComponentJson} from "../../crafting/component/Component";
 import {RequirementOptionJson, RecipeJson, ResultOptionJson} from "../../crafting/recipe/Recipe";
+import {SalvageOptionJson} from "../../crafting/component/SalvageOption";
 
 class V2CraftingSystemSettingMigrator implements FabricateSettingMigrator<Record<string, V1SystemJson>, Record<string, CraftingSystemJson>> {
 

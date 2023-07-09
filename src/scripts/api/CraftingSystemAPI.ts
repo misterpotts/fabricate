@@ -1,14 +1,15 @@
 import {
     CraftingSystem,
-    CraftingSystemJson,
-    CraftingSystemValidator
+    CraftingSystemJson
 } from "../system/CraftingSystem";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
-import {EntityValidationResult, EntityValidator} from "./EntityValidator";
+import {EntityValidationResult} from "./EntityValidator";
 import {EntityDataStore} from "./EntityDataStore";
+import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
+import {NotificationService} from "../foundry/NotificationService";
 
 /**
  * An API for managing crafting systems.
@@ -29,7 +30,7 @@ interface CraftingSystemAPI {
      * @returns {Promise<CraftingSystem>} A Promise that resolves with the newly created `CraftingSystem` instance, or
      *  rejects with an Error if the crafting system is not valid.
      */
-    create({ name, summary, description, author }: { name: string, summary: string, description?: string, author: string }): Promise<CraftingSystem>;
+    create({ name, summary, description, author }: { name?: string, summary?: string, description?: string, author?: string }): Promise<CraftingSystem>;
 
     /**
      * Returns all crafting systems for the current game system.
@@ -86,7 +87,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
     private readonly craftingSystemStore: EntityDataStore<CraftingSystemJson, CraftingSystem>;
     private readonly localizationService: LocalizationService;
     private readonly notificationService: NotificationService;
-    private readonly craftingSystemValidator: EntityValidator<CraftingSystem>;
+    private readonly craftingSystemValidator: CraftingSystemValidator;
 
     private readonly gameSystem: string;
     private readonly user: string;

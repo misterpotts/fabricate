@@ -1,5 +1,4 @@
 import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystemDetails";
-import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../api/EntityValidator";
 
 interface CraftingSystemJson {
     id: string;
@@ -10,36 +9,6 @@ interface CraftingSystemJson {
 }
 
 export { CraftingSystemJson }
-
-class CraftingSystemValidator implements EntityValidator<CraftingSystem> {
-
-    async validate(entity: CraftingSystem): Promise<EntityValidationResult<CraftingSystem>> {
-
-        const errors: string[] = [];
-
-        if (!entity) {
-            throw new Error(`Cannot validate crafting system. Candidate is ${typeof entity} `);
-        }
-
-        if (!entity.details?.name) {
-            errors.push("Crafting system name is required");
-        }
-
-        if (!entity.details?.summary) {
-            errors.push("Crafting system summary is required");
-        }
-
-        if (!entity.details?.author) {
-            errors.push("Crafting system author is required");
-        }
-
-        return new DefaultEntityValidationResult({ entity, errors });
-
-    }
-
-}
-
-export { CraftingSystemValidator }
 
 class CraftingSystem {
 

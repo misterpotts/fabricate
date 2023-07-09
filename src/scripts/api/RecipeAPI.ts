@@ -1,9 +1,11 @@
 import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
-import {EntityValidationResult, EntityValidator} from "./EntityValidator";
+import {EntityValidationResult} from "./EntityValidator";
 import {EntityDataStore} from "./EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
+import {RecipeValidator} from "../crafting/recipe/RecipeValidator";
+import {NotificationService} from "../foundry/NotificationService";
 
 /**
  * A value object representing a Requirement option
@@ -248,7 +250,7 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     private static readonly _LOCALIZATION_PATH: string = `${Properties.module.id}.settings`
 
-    private readonly recipeValidator: EntityValidator<RecipeJson, Recipe>;
+    private readonly recipeValidator: RecipeValidator;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
     private readonly recipeStore: EntityDataStore<RecipeJson, Recipe>;
@@ -258,19 +260,19 @@ class DefaultRecipeAPI implements RecipeAPI {
         notificationService,
         localizationService,
         recipeValidator,
-        recipeDataStore,
+        recipeStore,
         identityFactory
     }: {
         notificationService: NotificationService;
         localizationService: LocalizationService;
-        recipeValidator: EntityValidator<RecipeJson, Recipe>;
-        recipeDataStore: EntityDataStore<RecipeJson, Recipe>;
+        recipeValidator: RecipeValidator;
+        recipeStore: EntityDataStore<RecipeJson, Recipe>;
         identityFactory: IdentityFactory;
     }) {
         this.notificationService = notificationService;
         this.localizationService = localizationService;
         this.recipeValidator = recipeValidator;
-        this.recipeStore = recipeDataStore;
+        this.recipeStore = recipeStore;
         this.identityFactory = identityFactory;
     }
 
@@ -295,18 +297,17 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     async save(recipe: Recipe): Promise<Recipe> {
         const existing = await this.recipeStore.getById(recipe.id);
-
         this.rejectModifyingEmbeddedRecipe(existing);
+
         await this.rejectSavingInvalidRecipe(recipe);
 
         await this.recipeStore.insert(recipe);
 
-        let activityName = existing ? "updated" : "created";
+        const activityName = existing ? "updated" : "created";
         const message = this.localizationService.format(
             `${DefaultRecipeAPI._LOCALIZATION_PATH}.settings.recipe.${activityName}`,
             { recipeId: recipe.name }
         );
-
         this.notificationService.info(message);
 
         return recipe;
@@ -322,18 +323,19 @@ class DefaultRecipeAPI implements RecipeAPI {
     }: RecipeOptions): Promise<Recipe> {
         const assignedIds = await this.recipeStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
-        return this.recipeStore.create(
-            {
-                id,
-                essences,
-                itemUuid,
-                disabled,
-                resultOptions,
-                embedded: false,
-                craftingSystemId,
-                requirementOptions
-            }
-        );
+        const entityJson = {
+            id,
+            essences,
+            itemUuid,
+            disabled,
+            resultOptions,
+            embedded: false,
+            craftingSystemId,
+            requirementOptions
+        };
+
+        const recipe = await this.recipeStore.buildEntity(entityJson);
+        return this.save(recipe);
     }
 
     async getById(recipeId: string): Promise<Recipe | undefined> {
@@ -420,16 +422,17 @@ class DefaultRecipeAPI implements RecipeAPI {
     async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {
         const recipesForCraftingSystem = await this.recipeStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         const recipesWithEssence = recipesForCraftingSystem.filter(recipe => recipe.hasEssence(essenceIdToDelete));
-        const modifiedRecipes = recipesWithEssence.map(recipe => {
+        const recipesWithEssenceRemoved = recipesWithEssence.map(recipe => {
             recipe.removeEssence(essenceIdToDelete);
             return recipe;
         });
-        await this.recipeStore.updateAll(modifiedRecipes);
-        return modifiedRecipes;
+        await this.recipeStore.updateAll(recipesWithEssenceRemoved);
+        return recipesWithEssenceRemoved;
     }
 
     private async rejectSavingInvalidRecipe(recipe: Recipe): Promise<EntityValidationResult<Recipe>> {
-        const validationResult = await this.recipeValidator.validate(recipe);
+        const existingRecipeIdsForItem = await this.recipeStore.listCollectionEntityIds(recipe.itemUuid, Properties.settings.collectionNames.item);
+        const validationResult = await this.recipeValidator.validate(recipe, existingRecipeIdsForItem);
         if (validationResult.successful) {
             return validationResult;
         }

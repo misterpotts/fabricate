@@ -1,10 +1,12 @@
 import {Combination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
-import {Essence} from "../essence/Essence";
 import {SelectableOptions} from "../recipe/SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
-import {Unit} from "../../common/Unit";
 import {Serializable} from "../../common/Serializable";
+import {ComponentReference} from "./ComponentReference";
+import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
+import {EssenceReference} from "../essence/EssenceReference";
+import {Unit} from "../../common/Unit";
 
 interface ComponentJson {
     id: string;
@@ -14,121 +16,6 @@ interface ComponentJson {
     essences: Record<string, number>;
     salvageOptions: SalvageOptionJson[];
     craftingSystemId: string;
-}
-
-interface SalvageOptionJson {
-    name: string;
-    salvage: Record<string, number>;
-}
-
-interface ComponentReferenceJson {
-    id: string;
-    craftingSystemId: string;
-}
-
-class ComponentReference implements Identifiable, Serializable<ComponentReferenceJson> {
-
-    private readonly _id: string;
-    private readonly _craftingSystemId: string;
-
-    constructor({
-        id,
-        craftingSystemId
-    }: {
-        id: string;
-        craftingSystemId: string;
-    }) {
-        this._id = id;
-        this._craftingSystemId = craftingSystemId;
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
-    get craftingSystemId() {
-        return this._craftingSystemId;
-    }
-
-    toJson(): ComponentReferenceJson {
-        return {
-            id: this._id,
-            craftingSystemId: this._craftingSystemId
-        };
-    }
-
-}
-
-class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
-
-    private _salvage: Combination<ComponentReference>;
-    private _name: string;
-
-    constructor({
-        name,
-        salvage
-    }: {
-        name: string;
-        salvage: Combination<ComponentReference>;
-    }) {
-        this._name = name;
-        this._salvage = salvage;
-    }
-
-    get salvage(): Combination<ComponentReference> {
-        return this._salvage;
-    }
-
-    set salvage(value: Combination<ComponentReference>) {
-        this._salvage = value;
-    }
-
-    set name(value: string) {
-        this._name = value;
-    }
-
-    get isEmpty(): boolean {
-        return this._salvage.isEmpty();
-    }
-
-    get name(): string {
-        return this._name;
-    }
-
-    get id(): string {
-        return this._name;
-    }
-
-    public add(component: ComponentReference, quantity = 1) {
-        this._salvage = this._salvage.addUnit(new Unit(component, quantity));
-    }
-
-    public subtract(component: ComponentReference, quantity = 1) {
-        this._salvage = this._salvage.subtractUnit(new Unit(component, quantity));
-    }
-
-    toJson(): SalvageOptionJson {
-        return {
-            name: this._name,
-            salvage: this._salvage.toJson()
-        };
-    }
-
-    static fromJson(salvageOptionJson: SalvageOptionJson, craftingSystemId: string): SalvageOption {
-        const salvage = Object.keys(salvageOptionJson.salvage)
-            .map(componentId => {
-                const reference = new ComponentReference({
-                    id: componentId,
-                    craftingSystemId
-                });
-                return new Unit(reference, salvageOptionJson.salvage[componentId]);
-            });
-        return new SalvageOption({
-            name: salvageOptionJson.name,
-            salvage: Combination.ofUnits(salvage)
-        });
-    }
-
 }
 
 class Component implements Identifiable, Serializable<ComponentJson> {
@@ -144,12 +31,12 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     private readonly _id: string;
     private readonly _embedded: boolean;
+    private readonly _craftingSystemId: string;
 
     private _itemData: FabricateItemData;
-    private _essences: Combination<Essence>;
+    private _essences: Combination<EssenceReference>;
     private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
     private _disabled: boolean;
-    private _craftingSystemId: string;
 
     constructor({
         id,
@@ -157,7 +44,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         disabled = false,
         embedded = false,
         itemData = NoFabricateItemData.INSTANCE(),
-        essences = Combination.EMPTY<Essence>(),
+        essences = Combination.EMPTY<EssenceReference>(),
         salvageOptions = new SelectableOptions({})
     }: {
         id: string;
@@ -165,7 +52,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         embedded?: boolean;
         craftingSystemId: string;
         itemData?: FabricateItemData;
-        essences?: Combination<Essence>;
+        essences?: Combination<EssenceReference>;
         salvageOptions?: SelectableOptions<SalvageOptionJson, SalvageOption>;
     }) {
         this._id = id;
@@ -213,12 +100,12 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this._itemData.imageUrl;
     }
 
-    get essences(): Combination<Essence> {
+    get essences(): Combination<EssenceReference> {
         return this._essences;
     }
 
     get selectedSalvage(): Combination<ComponentReference> {
-        return this._salvageOptions.selectedOption.salvage;
+        return this._salvageOptions.selectedOption.results;
     }
 
     get selectedSalvageOptionName(): string {
@@ -246,7 +133,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
             return false;
         }
         return this._salvageOptions.options
-            .map(option => !option.salvage.isEmpty())
+            .map(option => !option.results.isEmpty())
             .reduce((left, right) => left || right, false);
     }
 
@@ -267,10 +154,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     }
 
     public toReference(): ComponentReference {
-        return new ComponentReference({
-            id: this._id,
-            craftingSystemId: this._craftingSystemId
-        });
+        return new ComponentReference(this._id);
     }
 
     public clone(cloneId: string): Component {
@@ -288,7 +172,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._disabled = value;
     }
 
-    set essences(value: Combination<Essence>) {
+    set essences(value: Combination<EssenceReference>) {
         this._essences = value;
     }
 
@@ -299,31 +183,20 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._salvageOptions.add(value);
     }
 
-    set salvageOptions(options: SalvageOption[]) {
-        this._salvageOptions = new SelectableOptions<SalvageOptionJson, SalvageOption>({ options });
+    set salvageOptions(options: SelectableOptions<SalvageOptionJson, SalvageOption>) {
+        this._salvageOptions = options
     }
 
-    get salvageOptions(): SalvageOption[] {
-        return this._salvageOptions.options.filter(option => !option.isEmpty);
-    }
-
-    get firstOptionName(): string {
-        if (this._salvageOptions.isEmpty) {
-            return "";
-        }
-        return this.salvageOptions[0].name;
+    get salvageOptions(): SelectableOptions<SalvageOptionJson, SalvageOption> {
+        return this._salvageOptions;
     }
 
     public selectFirstOption(): void {
-        this.selectSalvageOption(this.firstOptionName);
+        this._salvageOptions.selectFirst()
     }
 
     get salvageOptionsById(): Map<string, SalvageOption> {
-        return this._salvageOptions.optionsByName;
-    }
-
-    public setSalvageOption(value: SalvageOption) {
-        this._salvageOptions.set(value);
+        return this._salvageOptions.byName;
     }
 
     public deleteSalvageOptionByName(id: string) {
@@ -346,6 +219,48 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._salvageOptions.deselect();
     }
 
+    removeEssence(essenceIdToDelete: string) {
+        this._essences = this._essences.without(essenceIdToDelete);
+    }
+
+    removeComponentFromSalvageOptions(componentId: string) {
+        const options = this._salvageOptions.options
+            .map(option => option.without(componentId));
+        this._salvageOptions = new SelectableOptions({ options });
+    }
+
+    async load() {
+        this.itemData = await this.itemData.load();
+    }
+
+    get loaded(): boolean {
+        return this.itemData.loaded;
+    }
+
+    public setSalvageOption(value: SalvageOptionJson) {
+        const salvageOption = SalvageOption.fromJson(value);
+        this._salvageOptions.set(salvageOption);
+    }
+
+    addEssence(essenceId: string, quantity: number = 1) {
+        this._essences = this._essences.addUnit(new Unit(new EssenceReference(essenceId), quantity));
+    }
+
+    subtractEssence(essenceId: string, quantity: number = 1) {
+        this._essences = this._essences.subtractUnit(new Unit(new EssenceReference(essenceId), quantity));
+    }
+
+    getUniqueReferencedComponents(): ComponentReference[] {
+        return this._salvageOptions.all
+            .map(salvageOption => salvageOption.results.combineWith(salvageOption.catalysts))
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY<ComponentReference>())
+            .members;
+    }
+
+    getUniqueReferencedEssences(): EssenceReference[] {
+        return this._essences.members;
+    }
+
 }
 
-export { Component, ComponentJson, SalvageOptionJson, SalvageOption }
+export { Component, ComponentJson }

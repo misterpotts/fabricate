@@ -84,6 +84,10 @@ class StubComponentApi implements ComponentAPI {
         throw new Error("Not implemented by this stub");
     }
 
+    removeSalvageReferences(_componentId: string, _craftingSystemId: string): Promise<Component[]> {
+        return Promise.resolve([]);
+    }
+
 }
 
 export { StubComponentApi }

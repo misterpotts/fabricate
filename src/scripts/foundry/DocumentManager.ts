@@ -116,7 +116,7 @@ interface FabricateItemData {
      *
      * @type {boolean}
      */
-    isLoaded: boolean;
+    loaded: boolean;
 
     /**
      * Converts the item data to its JSON representation.
@@ -159,7 +159,7 @@ class NoFabricateItemData implements FabricateItemData {
         return NoFabricateItemData._UUID;
     }
 
-    get isLoaded(): boolean {
+    get loaded(): boolean {
         return false;
     }
 
@@ -224,7 +224,7 @@ class PendingFabricateItemData implements FabricateItemData {
             "Call the part's `load()` method before accessing this field. ");
     }
 
-    get isLoaded(): boolean {
+    get loaded(): boolean {
         return false;
     }
 
@@ -287,7 +287,7 @@ class LoadedFabricateItemData implements FabricateItemData {
         this._sourceDocument = sourceDocument;
     }
 
-    get isLoaded(): boolean {
+    get loaded(): boolean {
         return !this.hasErrors && !!this.sourceDocument;
     }
 
@@ -331,7 +331,7 @@ class LoadedFabricateItemData implements FabricateItemData {
             return true;
         }
         return this.uuid === other.uuid
-            && this.isLoaded === other.isLoaded
+            && this.loaded === other.loaded
             && this.hasErrors === other.hasErrors
             && this.sourceDocument?.id === other.sourceDocument?.id
             && this.errors.length === other.errors.length
@@ -358,7 +358,7 @@ class BrokenFabricateItemData implements FabricateItemData {
         this._itemUuid = itemUuid;
     }
 
-    get isLoaded(): boolean {
+    get loaded(): boolean {
         return false;
     }
 

@@ -1,3 +1,5 @@
+import {UI, UIProvider} from "./UIProvider";
+
 /**
  * A notification service that can be used to display messages to the user.
  */
@@ -29,11 +31,16 @@ interface NotificationService {
 
 }
 
+export { NotificationService };
+
 class DefaultNotificationService implements NotificationService {
 
     private _suppressed: boolean;
+    private readonly ui: UI;
 
-    constructor(suppressed: boolean = false) {
+
+    constructor(uiProvider: UIProvider, suppressed: boolean = false) {
+        this.ui = uiProvider.get();
         this._suppressed = suppressed;
     }
 
@@ -49,7 +56,7 @@ class DefaultNotificationService implements NotificationService {
             console.error(message);
             return;
         }
-        ui.notifications.error(message);
+        this.ui.notifications.error(message);
     }
 
     info(message: string): void {
@@ -57,7 +64,7 @@ class DefaultNotificationService implements NotificationService {
             console.info(message);
             return;
         }
-        ui.notifications.info(message);
+        this.ui.notifications.info(message);
     }
 
     warn(message: string): void {
@@ -65,7 +72,9 @@ class DefaultNotificationService implements NotificationService {
             console.warn(message);
             return;
         }
-        ui.notifications.warn(message);
+        this.ui.notifications.warn(message);
     }
 
 }
+
+export { DefaultNotificationService };

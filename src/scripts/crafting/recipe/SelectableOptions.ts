@@ -49,8 +49,12 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         }
     }
 
-    get optionsByName(): Map<string, T> {
+    get byName(): Map<string, T> {
         return new Map(this._options);
+    }
+
+    get all(): T[] {
+        return Array.from(this._options.values());
     }
 
     get options(): T[] {
@@ -207,6 +211,7 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         }
         this._selectedOptionId = Array.from(this._options.values())[0].id;
     }
+
 }
 
 export { SelectableOptions }

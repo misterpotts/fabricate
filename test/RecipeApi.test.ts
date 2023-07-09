@@ -7,7 +7,7 @@ import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
-import {RecipeValidator} from "../src/scripts/crafting/recipe/RecipeValidator";
+import {DefaultRecipeValidator} from "../src/scripts/crafting/recipe/RecipeValidator";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import {
     allTestRecipes,
@@ -32,7 +32,6 @@ import {
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
-import {DefaultEntityValidationResult} from "../src/scripts/api/EntityValidator";
 import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
 import {RecipeCollectionManager} from "../src/scripts/api/CollectionManager";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";
@@ -41,14 +40,15 @@ import {
     PendingFabricateItemData
 } from "../src/scripts/foundry/DocumentManager";
 import Properties from "../src/scripts/Properties";
+import {StubRecipeValidator} from "./stubs/StubRecipeValidator";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
 const notificationService = new StubNotificationService();
-const craftingSystemApi = new StubCraftingSystemApi({
+const craftingSystemAPI = new StubCraftingSystemApi({
     valuesById: new Map([[testCraftingSystemOne.id, testCraftingSystemOne]])
 });
-const componentApi = new StubComponentApi({
+const componentAPI = new StubComponentApi({
     valuesById: new Map([
         [testComponentOne.id, testComponentOne],
         [testComponentTwo.id, testComponentTwo],
@@ -59,7 +59,7 @@ const componentApi = new StubComponentApi({
         [testComponentSeven.id, testComponentSeven]
     ])
 });
-const essenceApi = new StubEssenceApi({
+const essenceAPI = new StubEssenceApi({
     valuesById: new Map([
         [elementalEarth.id, elementalEarth],
         [elementalFire.id, elementalFire],
@@ -85,10 +85,11 @@ const documentManager = new StubDocumentManager({
         [testRecipeSeven.itemUuid, testRecipeSeven.itemData]
     ])
 });
-const recipeValidator = new RecipeValidator({
-    craftingSystemApi,
-    componentApi,
-    essenceApi
+const recipeValidator = new DefaultRecipeValidator({
+    craftingSystemAPI,
+    componentAPI,
+    essenceAPI,
+    documentManager
 });
 const defaultSettingValue = () => {
    return {
@@ -155,7 +156,7 @@ describe("Create", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory("3456abcd")
         });
 
@@ -180,7 +181,7 @@ describe("Create", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -207,7 +208,7 @@ describe("Create", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -231,7 +232,7 @@ describe("Create", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -254,7 +255,7 @@ describe("Create", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -285,14 +286,8 @@ describe("Create", () => {
         const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
-            recipeValidator: {
-                validate: async (recipe: Recipe) => new DefaultEntityValidationResult({
-                    entity: recipe,
-                    isSuccessful: false,
-                    errors: ["Test Error"]
-                })
-            },
-            recipeDataStore,
+            recipeValidator: new StubRecipeValidator(false),
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -318,7 +313,7 @@ describe("Access", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -341,14 +336,14 @@ describe("Access", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
         const result = await underTest.getById(testRecipeOne.id);
 
         expect(result).not.toBeUndefined();
-        expect(result.isLoaded).toEqual(false);
+        expect(result.loaded).toEqual(false);
         expect(result.itemUuid).toEqual(testRecipeOne.itemUuid);
         expect(() => result.name).toThrow();
         expect(() => result.imageUrl).toThrow();
@@ -356,7 +351,7 @@ describe("Access", () => {
 
         await result.load();
 
-        expect(result.isLoaded).toEqual(true);
+        expect(result.loaded).toEqual(true);
         expect(result.itemUuid).toEqual(testRecipeOne.itemUuid);
         expect(result.name).toEqual(testRecipeOne.name);
         expect(result.imageUrl).toEqual(testRecipeOne.imageUrl);
@@ -377,7 +372,7 @@ describe("Access", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -387,14 +382,14 @@ describe("Access", () => {
         expect(result.size).toEqual(4);
         const recipes = Array.from(result.values()).filter(recipe => typeof recipe !== 'undefined');
         expect(recipes.length).toEqual(3);
-        expect(recipes.filter(recipe => recipe.isLoaded).length).toEqual(0);
+        expect(recipes.filter(recipe => recipe.loaded).length).toEqual(0);
 
         const loaded = await Promise.all(recipes.map(async recipe => {
             await recipe.load();
             return recipe;
         }));
 
-        expect(loaded.filter(recipe => recipe.isLoaded).length).toEqual(3);
+        expect(loaded.filter(recipe => recipe.loaded).length).toEqual(3);
 
     });
 
@@ -411,7 +406,7 @@ describe("Access", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -426,7 +421,7 @@ describe("Access", () => {
         expect(result.has(testRecipeFive.id)).toEqual(true);
         expect(result.has(testRecipeSix.id)).toEqual(true);
         expect(result.has(testRecipeSeven.id)).toEqual(true);
-        expect(Array.from(result.values()).filter(recipe => recipe.isLoaded).length).toEqual(0);
+        expect(Array.from(result.values()).filter(recipe => recipe.loaded).length).toEqual(0);
 
     });
 
@@ -443,7 +438,7 @@ describe("Access", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -458,7 +453,7 @@ describe("Access", () => {
         expect(result.has(testRecipeFive.id)).toEqual(true);
         expect(result.has(testRecipeSix.id)).toEqual(true);
         expect(result.has(testRecipeSeven.id)).toEqual(true);
-        expect(Array.from(result.values()).filter(recipe => recipe.isLoaded).length).toEqual(0);
+        expect(Array.from(result.values()).filter(recipe => recipe.loaded).length).toEqual(0);
 
     });
 
@@ -475,7 +470,7 @@ describe("Access", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -484,7 +479,7 @@ describe("Access", () => {
         expect(result).not.toBeUndefined();
         expect(result.size).toEqual(1);
         expect(result.has(testRecipeOne.id)).toEqual(true);
-        expect(result.get(testRecipeOne.id).isLoaded).toEqual(false);
+        expect(result.get(testRecipeOne.id).loaded).toEqual(false);
 
     });
 
@@ -515,7 +510,7 @@ describe("Edit", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -543,7 +538,7 @@ describe("Edit", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -581,7 +576,7 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -613,12 +608,13 @@ describe("Delete", () => {
         const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
-            recipeValidator: new RecipeValidator({
-                craftingSystemApi: emptyCraftingSystemApi,
-                componentApi,
-                essenceApi
+            recipeValidator: new DefaultRecipeValidator({
+                craftingSystemAPI: emptyCraftingSystemApi,
+                componentAPI: componentAPI,
+                essenceAPI: essenceAPI,
+                documentManager
             }),
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -650,7 +646,7 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -683,12 +679,13 @@ describe("Delete", () => {
         const underTest = new DefaultRecipeAPI({
             notificationService,
             localizationService,
-            recipeValidator: new RecipeValidator({
-                craftingSystemApi: emptyCraftingSystemApi,
-                componentApi,
-                essenceApi
+            recipeValidator: new DefaultRecipeValidator({
+                craftingSystemAPI: emptyCraftingSystemApi,
+                componentAPI: componentAPI,
+                essenceAPI: essenceAPI,
+                documentManager
             }),
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -720,7 +717,7 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -752,7 +749,7 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 
@@ -788,7 +785,7 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             recipeValidator,
-            recipeDataStore,
+            recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
         });
 

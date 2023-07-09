@@ -3,8 +3,10 @@ import Properties from "../Properties";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {EntityDataStore} from "./EntityDataStore";
 import {LocalizationService} from "../../applications/common/LocalizationService";
-import {EntityValidationResult, EntityValidator} from "./EntityValidator";
+import {EntityValidationResult} from "./EntityValidator";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";
+import {EssenceValidator} from "../crafting/essence/EssenceValidator";
+import {NotificationService} from "../foundry/NotificationService";
 
 /**
  * Represents a set of options for creating an essence.
@@ -157,7 +159,7 @@ class DefaultEssenceAPI implements EssenceAPI {
     private readonly essenceStore: EntityDataStore<EssenceJson, Essence>;
     private readonly localizationService: LocalizationService;
     private readonly notificationService: NotificationService;
-    private readonly essenceValidator: EntityValidator<EssenceJson, Essence>;
+    private readonly essenceValidator: EssenceValidator;
 
     constructor({
         identityFactory,
@@ -170,7 +172,7 @@ class DefaultEssenceAPI implements EssenceAPI {
         essenceStore: EntityDataStore<EssenceJson, Essence>;
         localizationService: LocalizationService;
         notificationService: NotificationService;
-        essenceValidator: EntityValidator<EssenceJson, Essence>;
+        essenceValidator: EssenceValidator;
         craftingSystemAPI: CraftingSystemAPI;
     }) {
         this.identityFactory = identityFactory;

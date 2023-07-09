@@ -5,7 +5,6 @@
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import {Combination} from "../../../scripts/common/Combination";
     import truncate from "../../common/Truncate";
-    import {SalvageOption} from "../../../scripts/crafting/component/Component";
     import {Tab, Tabs} from "../../common/FabricateTabs.js";
     import TabList from "../../common/TabList.svelte";
     import TabPanel from "../../common/TabPanel.svelte";
@@ -14,6 +13,7 @@
     import {SalvageSearchStore} from "../../stores/SalvageSearchStore";
     import {ComponentEssenceStore} from "../../stores/ComponentEssenceStore";
     import {Unit} from "../../../scripts/common/Unit";
+    import {SalvageOption} from "../../../scripts/crafting/component/SalvageOption";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectPreviousTab;

@@ -58,7 +58,7 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
         return entity;
     }
 
-    async insert(entity: T): Promise<void> {
+    async insert(entity: T): Promise<T> {
         const storedData = await this.getStoredData();
         storedData.entities[entity.id] = entity.toJson();
         const collectionMemberships = this.collectionManager.listCollectionMemberships(entity.toJson());
@@ -66,6 +66,7 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
             this.addToCollection(entity.id, name, prefix, storedData);
         });
         await this.settingManager.write(storedData);
+        return entity;
     }
 
     async getById(id: string): Promise<T | undefined> {
@@ -77,7 +78,7 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
         return await this.buildEntity(entityJson);
     }
 
-    private async buildEntity(entityJson: Record<string, J>[string]): Promise<T> {
+    public async buildEntity(entityJson: Record<string, J>[string]): Promise<T> {
         const entity = await this.entityFactory.make(entityJson);
         if (!entity) {
             throw new Error(`Failed to create ${this.entityName} from JSON: ${JSON.stringify(entityJson)}. `);
@@ -162,6 +163,15 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
     async listAllEntityIds(): Promise<string[]> {
         const storedData = await this.getStoredData();
         return Object.keys(storedData.entities);
+    }
+
+    async listCollectionEntityIds(collectionName: string, collectionNamePrefix: string = ""): Promise<string[]> {
+        const storedData = await this.getStoredData();
+        const fullCollectionName = this.getCollectionName(collectionName, collectionNamePrefix);
+        if (!storedData.collections[fullCollectionName]) {
+            return [];
+        }
+        return Object.keys(storedData.collections[fullCollectionName]);
     }
 
     /**

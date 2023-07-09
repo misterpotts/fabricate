@@ -66,12 +66,24 @@ const Properties = {
     settings: {
         craftingSystems: {
             key: "craftingSystems",
-            targetVersion: "2"
+            targetVersion: "3"
         },
         collectionNames: {
             craftingSystem: "CraftingSystem",
             item: "Item",
             gameSystem: "GameSystem"
+        },
+        essences: {
+            key: "essences",
+            targetVersion: "3"
+        },
+        components: {
+            key: "components",
+            targetVersion: "3"
+        },
+        recipes: {
+            key: "recipes",
+            targetVersion: "3"
         }
     }
 };
