@@ -171,7 +171,7 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
         if (!storedData.collections[fullCollectionName]) {
             return [];
         }
-        return Object.keys(storedData.collections[fullCollectionName]);
+        return storedData.collections[fullCollectionName];
     }
 
     /**

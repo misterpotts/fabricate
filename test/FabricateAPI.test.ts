@@ -152,11 +152,6 @@ describe("FabricateAPI component integration", () => {
 
         expect(componentOne).not.toBeUndefined();
         expect(componentOne.itemUuid).toEqual(testItemOneId);
-        expect(componentOne.loaded).toEqual(false);
-
-        // Assert item data is loaded correctly
-
-        expect(() => componentOne.name).toThrowError("Cannot get the item name before the item has been loaded");
 
         await componentOne.load();
 
@@ -235,12 +230,6 @@ describe("FabricateAPI component integration", () => {
         expect(recipeOne.craftingSystemId).toEqual(craftingSystem.id);
         expect(recipeOne.hasResults).toEqual(false);
         expect(recipeOne.hasRequirements).toEqual(false);
-
-        // Assert item data is loaded correctly
-
-        expect(recipeOne.loaded).toEqual(false);
-
-        expect(() => recipeOne.name).toThrowError("Cannot get the item name before the item has been loaded");
 
         await recipeOne.load();
 

@@ -47,7 +47,7 @@ class DefaultComponentValidator implements ComponentValidator {
 
         // Check that the item exists and can be loaded
         if (!candidate.itemData.loaded) {
-            await candidate.itemData.load();
+            await candidate.load();
         }
         if (candidate.itemData.hasErrors) {
             const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);

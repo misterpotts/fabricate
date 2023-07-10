@@ -171,7 +171,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                           documentManager: DocumentManager): RecipeAPI {
         const recipeStore = new EntityDataStore<RecipeJson, Recipe>({
             entityName: "Recipe",
-            entityFactory: new RecipeFactory({ essenceAPI, componentAPI, documentManager }),
+            entityFactory: new RecipeFactory({ documentManager }),
             collectionManager: new RecipeCollectionManager(),
             settingManager: new DefaultSettingManager({
                 moduleId: Properties.module.id,
@@ -183,7 +183,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             notificationService: new DefaultNotificationService(this.uiProvider),
             identityFactory,
             localizationService,
-            recipeValidator: new DefaultRecipeValidator({ essenceAPI, componentAPI, craftingSystemAPI, documentManager }),
+            recipeValidator: new DefaultRecipeValidator({ essenceAPI, componentAPI, craftingSystemAPI }),
             recipeStore
         });
     }

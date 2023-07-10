@@ -44,15 +44,14 @@ class DefaultRecipeValidator implements RecipeValidator  {
         }
 
         // Check that this item is not already a component for this crafting system
-        for (const existingRecipeId of existingRecipeIdsForItem) {
-            if (existingRecipeId !== candidate.id && existingRecipeIdsForItem.includes(existingRecipeId)) {
-                errors.push(`The item with UUID ${candidate.itemUuid} is already a recipe in the system "${candidate.craftingSystemId}" with the ID "${existingRecipeId}". `);
-            }
+        const existingRecipeId = existingRecipeIdsForItem.find(existingRecipeId => existingRecipeId !== candidate.id);
+        if (existingRecipeId) {
+            errors.push(`The item with UUID ${candidate.itemUuid} is already a recipe in the system "${candidate.craftingSystemId}" with the ID "${existingRecipeId}". `);
         }
 
         // Check that the item exists and can be loaded
         if (!candidate.itemData.loaded) {
-            await candidate.itemData.load();
+            await candidate.load();
         }
         if (candidate.itemData.hasErrors) {
             const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);
