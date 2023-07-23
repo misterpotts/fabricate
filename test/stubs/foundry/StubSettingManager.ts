@@ -33,6 +33,10 @@ class StubSettingManager<T> implements SettingManager<T>{
         return "stub.setting.path";
     }
 
+    get settingKey(): string {
+        return "stubKey";
+    }
+
 }
 
 export { StubSettingManager }
