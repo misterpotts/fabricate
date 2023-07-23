@@ -1,3 +1,5 @@
+import {SettingVersion} from "./repository/migration/SettingVersion";
+
 const Properties = {
     module: {
         id: "fabricate",
@@ -50,41 +52,30 @@ const Properties = {
         }
     },
     flags: {
-        keys: {
-            actor: {
-                hopperForSystem: (systemId: string) => `craftingSystems.${systemId}.hopper`,
-                knownRecipesForSystem: (systemId: string) => `craftingSystems.${systemId}.knownRecipes`,
-            },
-            item: {
-                id: "id",
-                type: (systemId: string) => `craftingSystemData.${systemId}.type`,
-                recipe: (systemId: string) => `craftingSystemData.${systemId}.recipeData`,
-                componentData: (systemId: string) => `craftingSystemData.${systemId}.componentData`,
-            }
-        }
+
     },
     settings: {
-        craftingSystems: {
-            key: "craftingSystems",
-            targetVersion: "3"
-        },
         collectionNames: {
             craftingSystem: "CraftingSystem",
             item: "Item",
-            gameSystem: "GameSystem"
+            gameSystem: "Game System"
+        },
+        craftingSystems: {
+            key: "craftingSystems",
         },
         essences: {
             key: "essences",
-            targetVersion: "3"
         },
         components: {
             key: "components",
-            targetVersion: "3"
         },
         recipes: {
             key: "recipes",
-            targetVersion: "3"
-        }
+        },
+        modelVersion: {
+            key: "modelVersion",
+            targetValue: SettingVersion.V3
+        },
     }
 };
 

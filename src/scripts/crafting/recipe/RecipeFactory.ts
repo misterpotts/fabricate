@@ -1,9 +1,9 @@
-import {Recipe, RecipeJson, RequirementOption, RequirementOptionJson, ResultOption, ResultOptionJson} from "./Recipe";
+import {Recipe, RecipeJson} from "./Recipe";
 import {DefaultDocumentManager, DocumentManager} from "../../foundry/DocumentManager";
-import {Combination} from "../../common/Combination";
-import {SelectableOptions} from "./SelectableOptions";
-import {EntityFactory} from "../../api/EntityFactory";
-import {EssenceReference} from "../essence/EssenceReference";
+import {SelectableOptions} from "../selection/SelectableOptions";
+import {EntityFactory} from "../../repository/EntityFactory";
+import {RequirementOption, RequirementOptionJson} from "./RequirementOption";
+import {ResultOption, ResultOptionJson} from "./ResultOption";
 
 class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
 
@@ -27,8 +27,7 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
                 itemData,
                 disabled,
                 requirementOptions: this.buildRequirementOptions(recipeJson.requirementOptions),
-                resultOptions: this.buildResultOptions(recipeJson.resultOptions),
-                essences: Combination.fromRecord(recipeJson.essences, EssenceReference.fromEssenceId)
+                resultOptions: this.buildResultOptions(recipeJson.resultOptions)
             });
         } catch (e: any) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) :new Error("An unknown error occurred");
@@ -36,14 +35,14 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
         }
     }
 
-    private buildRequirementOptions(ingredientOptionsJson: RequirementOptionJson[]): SelectableOptions<RequirementOptionJson, RequirementOption> {
-        const options = ingredientOptionsJson
+    private buildRequirementOptions(requirementOptionsJson: Record<string, RequirementOptionJson>): SelectableOptions<RequirementOptionJson, RequirementOption> {
+        const options = Object.values(requirementOptionsJson)
             .map(json => RequirementOption.fromJson(json));
         return new SelectableOptions<RequirementOptionJson, RequirementOption>({ options });
     }
 
-    private buildResultOptions(resultOptionsJson:ResultOptionJson[]): SelectableOptions<ResultOptionJson, ResultOption> {
-        const options = resultOptionsJson
+    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>): SelectableOptions<ResultOptionJson, ResultOption> {
+        const options = Object.values(resultOptionsJson)
             .map(json => ResultOption.fromJson(json));
         return new SelectableOptions<ResultOptionJson, ResultOption>({ options });
     }

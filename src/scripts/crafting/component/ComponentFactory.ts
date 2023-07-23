@@ -1,8 +1,8 @@
 import {Component, ComponentJson} from "./Component";
 import {DocumentManager} from "../../foundry/DocumentManager";
 import {Combination} from "../../common/Combination";
-import {SelectableOptions} from "../recipe/SelectableOptions";
-import {EntityFactory} from "../../api/EntityFactory";
+import {SelectableOptions} from "../selection/SelectableOptions";
+import {EntityFactory} from "../../repository/EntityFactory";
 import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
 import {EssenceReference} from "../essence/EssenceReference";
 
@@ -34,8 +34,8 @@ class ComponentFactory implements EntityFactory<ComponentJson, Component> {
 
     }
 
-    private buildSalvageOptions(salvageOptionsJson: SalvageOptionJson[]): SelectableOptions<SalvageOptionJson, SalvageOption> {
-        const options = salvageOptionsJson
+    private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>): SelectableOptions<SalvageOptionJson, SalvageOption> {
+        const options = Object.values(salvageOptionsJson)
             .map(json => SalvageOption.fromJson(json));
         return new SelectableOptions<SalvageOptionJson, SalvageOption>({ options });
     }

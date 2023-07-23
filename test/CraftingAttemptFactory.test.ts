@@ -77,8 +77,8 @@ describe("Create a Crafting Attempt", () => {
             const availableComponents = testRecipeFour.getSelectedIngredients().ingredients
                 .combineWith(testRecipeFour.getSelectedIngredients().catalysts)
                 .combineWith(Combination.ofUnits([
-                    new Unit(testComponentOne, 1),
-                    new Unit(testComponentSix, 2)
+                    new Unit(testComponentOne.toReference(), 1),
+                    new Unit(testComponentSix.toReference(), 2)
                 ]));
 
             const result = underTest.make(testRecipeFour, availableComponents);

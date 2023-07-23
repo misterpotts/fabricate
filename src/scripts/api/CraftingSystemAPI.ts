@@ -7,7 +7,7 @@ import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
 import {EntityValidationResult} from "./EntityValidator";
-import {EntityDataStore} from "./EntityDataStore";
+import {EntityDataStore} from "../repository/EntityDataStore";
 import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
 import {NotificationService} from "../foundry/NotificationService";
 
@@ -31,14 +31,6 @@ interface CraftingSystemAPI {
      *  rejects with an Error if the crafting system is not valid.
      */
     create({ name, summary, description, author }: { name?: string, summary?: string, description?: string, author?: string }): Promise<CraftingSystem>;
-
-    /**
-     * Returns all crafting systems for the current game system.
-     *
-     * @returns {Promise<Map<string, CraftingSystem>>} A promise that resolves to a Map of CraftingSystem instances,
-     * where the keys are the crafting system IDs, or rejects with an Error is the settings cannot be read.
-     */
-    getAllForGameSystem(): Promise<Map<string, CraftingSystem>>;
 
     /**
      * Retrieves the crafting system with the specified ID.
@@ -75,6 +67,14 @@ interface CraftingSystemAPI {
      * */
     notifications: NotificationService;
 
+    /**
+     * Retrieves all crafting systems.
+     *
+     * @async
+     * @returns {Promise<CraftingSystem[]>} A Promise that resolves with all crafting systems.
+     */
+    getAll(): Promise<Map<string, CraftingSystem>>;
+
 }
 
 export { CraftingSystemAPI };
@@ -89,7 +89,6 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
     private readonly notificationService: NotificationService;
     private readonly craftingSystemValidator: CraftingSystemValidator;
 
-    private readonly gameSystem: string;
     private readonly user: string;
 
     constructor({
@@ -98,7 +97,6 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         localizationService,
         notificationService,
         craftingSystemValidator = new CraftingSystemValidator(),
-        gameSystem,
         user
     }: {
         identityFactory: IdentityFactory;
@@ -106,7 +104,6 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         localizationService: LocalizationService;
         notificationService: NotificationService;
         craftingSystemValidator?: CraftingSystemValidator;
-        gameSystem: string;
         user: string;
     }) {
         this.identityFactory = identityFactory;
@@ -114,7 +111,6 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         this.localizationService = localizationService;
         this.notificationService = notificationService;
         this.craftingSystemValidator = craftingSystemValidator;
-        this.gameSystem = gameSystem;
         this.user = user;
     }
 
@@ -141,11 +137,6 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         return craftingSystemToDelete;
     }
 
-    async getAllForGameSystem(): Promise<Map<string, CraftingSystem>> {
-        const storedSystems = await this.craftingSystemStore.getCollection(this.gameSystem, Properties.settings.collectionNames.gameSystem)
-        return new Map(storedSystems.map((storedSystem) => [ storedSystem.id, storedSystem]));
-    }
-
     async getById(craftingSystemId: string): Promise<CraftingSystem | undefined> {
         const craftingSystem = await this.craftingSystemStore.getById(craftingSystemId);
 
@@ -159,6 +150,11 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         }
 
         return craftingSystem;
+    }
+
+    async getAll(): Promise<Map<string, CraftingSystem>> {
+        const allCraftingSystems = await this.craftingSystemStore.getAllEntities();
+        return new Map(allCraftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
     }
 
     async save(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
@@ -198,8 +194,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
             id,
             enabled: true,
             craftingSystemDetails,
-            embedded: false,
-            gameSystem: this.gameSystem
+            embedded: false
         });
         return this.save(created);
     }

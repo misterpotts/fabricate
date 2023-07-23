@@ -6,12 +6,12 @@ import {
     FabricateSetting,
     SettingManager,
     SettingState
-} from "./settings/FabricateSetting";
+} from "./repository/FabricateSetting";
 import {DefaultSystemRegistry} from "./registries/SystemRegistry";
 import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
 import {CraftingSystemJson} from "./system/CraftingSystem";
 import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManagerAppFactory";
-import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
+import {V2CraftingSystemSettingMigrator} from "./repository/migrators/V2CraftingSystemSettingMigrator";
 import {DefaultComponentSalvageAppCatalog} from "../applications/componentSalvageApp/ComponentSalvageAppCatalog";
 import {DefaultComponentSalvageAppFactory} from "../applications/componentSalvageApp/ComponentSalvageAppFactory";
 import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
@@ -164,7 +164,12 @@ async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSy
     return craftingSystemSettingManager;
 }
 
+let fabricateApplication: FabricateApplication;
+
 Hooks.once('ready', async () => {
+
+    const fabricateApplicationFactory = new FabricateApplicationFactory();
+    fabricateApplication = fabricateApplicationFactory.make();
 
     const gameProvider = new DefaultGameProvider();
     const gameObject = gameProvider.get();

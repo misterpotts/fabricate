@@ -69,6 +69,19 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
         return entity;
     }
 
+    async insertAll(entities: T[]): Promise<T[]> {
+        const storedData = await this.getStoredData();
+        entities.forEach(entity => {
+            storedData.entities[entity.id] = entity.toJson();
+            const collectionMemberships = this.collectionManager.listCollectionMemberships(entity.toJson());
+            collectionMemberships.forEach(({ name, prefix }) => {
+                this.addToCollection(entity.id, name, prefix, storedData);
+            });
+        });
+        await this.settingManager.write(storedData);
+        return entities;
+    }
+
     async getById(id: string): Promise<T | undefined> {
         const storedData = await this.getStoredData();
         const entityJson = storedData.entities[id];

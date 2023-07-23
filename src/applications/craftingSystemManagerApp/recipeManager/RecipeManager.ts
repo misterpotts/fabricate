@@ -4,8 +4,10 @@ import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
-import {RequirementOption, Recipe, ResultOption} from "../../../scripts/crafting/recipe/Recipe";
+import {Recipe} from "../../../scripts/crafting/recipe/Recipe";
 import {Combination} from "../../../scripts/common/Combination";
+import {RequirementOption} from "../../../scripts/crafting/recipe/RequirementOption";
+import {ResultOption} from "../../../scripts/crafting/recipe/ResultOption";
 
 class RecipeManager {
 

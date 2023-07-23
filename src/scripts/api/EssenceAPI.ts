@@ -1,7 +1,7 @@
 import {Essence, EssenceJson} from "../crafting/essence/Essence";
 import Properties from "../Properties";
 import {IdentityFactory} from "../foundry/IdentityFactory";
-import {EntityDataStore} from "./EntityDataStore";
+import {EntityDataStore} from "../repository/EntityDataStore";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import {EntityValidationResult} from "./EntityValidator";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";

@@ -4,7 +4,16 @@ import {Combination} from "../../common/Combination";
 import {ComponentReference} from "./ComponentReference";
 import {Unit} from "../../common/Unit";
 
+interface SalvageOptionConfig {
+    name: string;
+    results: Record<string, number>;
+    catalysts: Record<string, number>;
+}
+
+export { SalvageOptionConfig };
+
 interface SalvageOptionJson {
+    id: string;
     name: string;
     results: Record<string, number>;
     catalysts: Record<string, number>;
@@ -14,19 +23,23 @@ export { SalvageOptionJson };
 
 class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
+    private readonly _id: string;
     private _name: string;
     private _results: Combination<ComponentReference>;
     private _catalysts: Combination<ComponentReference>;
 
     constructor({
-                    name,
-                    salvage,
-                    catalysts
-                }: {
+        id,
+        name,
+        salvage,
+        catalysts
+    }: {
+        id: string;
         name: string;
         salvage: Combination<ComponentReference>;
         catalysts: Combination<ComponentReference>;
     }) {
+        this._id = id;
         this._name = name;
         this._results = salvage;
         this._catalysts = catalysts;
@@ -61,7 +74,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
     }
 
     get id(): string {
-        return this._name;
+        return this._id;
     }
 
     public add(component: ComponentReference, quantity = 1) {
@@ -74,6 +87,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
     toJson(): SalvageOptionJson {
         return {
+            id: this._id,
             name: this._name,
             results: this._results.toJson(),
             catalysts: this._catalysts.toJson()
@@ -92,6 +106,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
                 return new Unit(reference, salvageOptionJson.catalysts[componentId]);
             });
         return new SalvageOption({
+            id: salvageOptionJson.id,
             name: salvageOptionJson.name,
             salvage: Combination.ofUnits(salvage),
             catalysts: Combination.ofUnits(catalysts)
@@ -100,6 +115,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
     without(componentId: string): SalvageOption {
         return new SalvageOption({
+            id: this._id,
             name: this._name,
             salvage: this._results.without(componentId),
             catalysts: this._catalysts.without(componentId)

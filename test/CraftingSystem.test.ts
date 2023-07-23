@@ -1,7 +1,6 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {testPartDictionary} from "./test_data/TestPartDictionary";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
@@ -18,7 +17,7 @@ describe('Create and configure', () => {
         const testSystemId = `fabricate-test-system`;
 
         const underTest = new CraftingSystem({
-            details: new CraftingSystemDetails({
+            craftingSystemDetails: new CraftingSystemDetails({
                 name: "Test System",
                 author: "",
                 summary: "",
@@ -26,8 +25,8 @@ describe('Create and configure', () => {
             }),
             id: testSystemId,
             enabled: true,
-            locked: false,
-            partDictionary: testPartDictionary
+            embedded: false,
+            gameSystem: "dnd5e"
         });
 
         expect(underTest).not.toBeNull();
@@ -40,7 +39,7 @@ describe('Create and configure', () => {
 
         const testSystemId = `fabricate-test-system`;
         const underTest = new CraftingSystem({
-            details: new CraftingSystemDetails({
+            craftingSystemDetails: new CraftingSystemDetails({
                 name: "Test System",
                 author: "",
                 summary: "",
@@ -48,8 +47,8 @@ describe('Create and configure', () => {
             }),
             id: testSystemId,
             enabled: true,
-            locked: false,
-            partDictionary: testPartDictionary
+            embedded: false,
+            gameSystem: "dnd5e"
         });
 
         expect(underTest).not.toBeNull();

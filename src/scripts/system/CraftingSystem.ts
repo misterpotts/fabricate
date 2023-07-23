@@ -3,7 +3,6 @@ import {CraftingSystemDetails, CraftingSystemDetailsJson} from "./CraftingSystem
 interface CraftingSystemJson {
     id: string;
     embedded: boolean;
-    gameSystem: string;
     details: CraftingSystemDetailsJson;
     enabled: boolean;
 }
@@ -14,7 +13,6 @@ class CraftingSystem {
 
     private readonly _id: string;
     private readonly _embedded: boolean;
-    private readonly _gameSystem: string;
 
     private _details: CraftingSystemDetails;
     private _enabled: boolean;
@@ -22,19 +20,16 @@ class CraftingSystem {
     constructor({
         id,
         embedded = false,
-        gameSystem,
         craftingSystemDetails,
         enabled = true,
     }: {
         id: string;
         embedded?: boolean;
-        gameSystem: string;
         craftingSystemDetails: CraftingSystemDetails,
         enabled?: boolean;
     }) {
         this._id = id;
         this._embedded = embedded;
-        this._gameSystem = gameSystem;
         this._details = craftingSystemDetails;
         this._enabled = enabled;
     }
@@ -59,17 +54,12 @@ class CraftingSystem {
         this._details = value;
     }
 
-    get gameSystem(): string {
-        return this._gameSystem;
-    }
-
     toJson(): CraftingSystemJson {
         return {
             id: this._id,
             details: this._details.toJson(),
             enabled: this._enabled,
-            embedded: this._embedded,
-            gameSystem: this._gameSystem
+            embedded: this._embedded
         };
     }
 
@@ -81,7 +71,6 @@ class CraftingSystem {
         return new CraftingSystem({
             id,
             embedded,
-            gameSystem: this._gameSystem,
             craftingSystemDetails: this._details.clone(name),
             enabled: this._enabled,
         });

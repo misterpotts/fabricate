@@ -1,10 +1,10 @@
 import {Combination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
-import {SelectableOptions} from "../recipe/SelectableOptions";
+import {SelectableOptions} from "../selection/SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
 import {ComponentReference} from "./ComponentReference";
-import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
+import {SalvageOption, SalvageOptionConfig, SalvageOptionJson} from "./SalvageOption";
 import {EssenceReference} from "../essence/EssenceReference";
 import {Unit} from "../../common/Unit";
 
@@ -14,7 +14,7 @@ interface ComponentJson {
     itemUuid: string;
     disabled: boolean;
     essences: Record<string, number>;
-    salvageOptions: SalvageOptionJson[];
+    salvageOptions: Record<string, SalvageOptionJson>;
     craftingSystemId: string;
 }
 
@@ -237,8 +237,12 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this.itemData.loaded;
     }
 
-    public setSalvageOption(value: SalvageOptionJson) {
-        const salvageOption = SalvageOption.fromJson(value);
+    public setSalvageOption(value: SalvageOptionConfig) {
+        const optionId = this._salvageOptions.nextId();
+        const salvageOption = SalvageOption.fromJson({
+            id: optionId,
+            ...value
+        });
         this._salvageOptions.set(salvageOption);
     }
 

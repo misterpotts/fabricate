@@ -1,7 +1,7 @@
 import {Identifiable} from "../../common/Identifiable";
 import {Serializable} from "../../common/Serializable";
 
-class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements Serializable<J[]> {
+class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements Serializable<Record<string, J>> {
 
     private _options: Map<string, T>;
     private _selectedOptionId?: string;
@@ -49,7 +49,7 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         }
     }
 
-    get byName(): Map<string, T> {
+    get byId(): Map<string, T> {
         return new Map(this._options);
     }
 
@@ -91,8 +91,11 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         return !!this._selectedOptionId;
     }
 
-    toJson(): J[] {
-        return Array.from(this._options.values()).map(option => option.toJson());
+    toJson(): Record<string, J> {
+        return Array.from(this._options.values()).reduce((result, option) => {
+            result[option.id] = option.toJson();
+            return result;
+        }, <Record<string, J>>{});
     }
 
     add(value: T) {
@@ -210,6 +213,16 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
             this._selectedOptionId = "";
         }
         this._selectedOptionId = Array.from(this._options.values())[0].id;
+    }
+
+    nextId(): string {
+        let generationAttempts = 1;
+        let nextId;
+        do {
+            nextId = `option-${this._options.size + generationAttempts}`;
+            generationAttempts++;
+        } while (this._options.has(nextId));
+        return nextId;
     }
 
 }

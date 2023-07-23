@@ -2,6 +2,7 @@ import {DefaultEntityValidationResult, EntityValidationResult} from "../../api/E
 import {Component} from "./Component";
 import {CraftingSystemAPI} from "../../api/CraftingSystemAPI";
 import {EssenceAPI} from "../../api/EssenceAPI";
+import {NoFabricateItemData} from "../../foundry/DocumentManager";
 
 interface ComponentValidator {
 
@@ -46,12 +47,13 @@ class DefaultComponentValidator implements ComponentValidator {
         }
 
         // Check that the item exists and can be loaded
-        if (!candidate.itemData.loaded) {
+        if (!candidate.itemData.loaded && !(candidate.itemData instanceof NoFabricateItemData)) {
             await candidate.load();
         }
         if (candidate.itemData.hasErrors) {
             const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);
-            errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. Caused by: ${itemDataErrorMessages.join(", ")} `);
+            const cause = itemDataErrorMessages.length > 0 ? `Caused by: ${itemDataErrorMessages.join(", ")}. ` : "";
+            errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. ${cause} `);
         }
 
         // Check that the salvage and catalysts referenced by this component all exist

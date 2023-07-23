@@ -3,7 +3,7 @@ import {Combination} from "../../src/scripts/common/Combination";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import Properties from "../../src/scripts/Properties";
-import {SelectableOptions} from "../../src/scripts/crafting/recipe/SelectableOptions";
+import {SelectableOptions} from "../../src/scripts/crafting/selection/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 import {testCraftingSystemOne} from "./TestCrafingSystem";
 import {Unit} from "../../src/scripts/common/Unit";

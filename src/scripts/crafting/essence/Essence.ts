@@ -1,6 +1,7 @@
 import {Identifiable} from "../../common/Identifiable";
 import {FabricateItemData, ItemLoadingError} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
+import {EssenceReference} from "./EssenceReference";
 
 interface EssenceJson {
     id: string;
@@ -8,6 +9,7 @@ interface EssenceJson {
     tooltip: string;
     iconCode: string;
     embedded: boolean;
+    disabled: boolean;
     description: string;
     craftingSystemId: string;
     activeEffectSourceItemUuid: string;
@@ -20,10 +22,11 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
     private readonly _embedded: boolean;
 
     private _name: string;
-    private _activeEffectSource: FabricateItemData;
-    private _description: string;
     private _tooltip: string;
     private _iconCode: string;
+    private _disabled: boolean;
+    private _description: string;
+    private _activeEffectSource: FabricateItemData;
 
     constructor({
         id,
@@ -31,6 +34,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         tooltip,
         iconCode,
         embedded,
+        disabled,
         description,
         craftingSystemId,
         activeEffectSource
@@ -40,6 +44,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         tooltip: string;
         iconCode: string;
         embedded: boolean;
+        disabled: boolean;
         description: string;
         craftingSystemId: string;
         activeEffectSource?: FabricateItemData;
@@ -49,6 +54,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         this._tooltip = tooltip;
         this._iconCode = iconCode;
         this._embedded = embedded;
+        this._disabled = disabled;
         this._description = description;
         this._craftingSystemId = craftingSystemId;
         this._activeEffectSource = activeEffectSource;
@@ -60,6 +66,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
             name: this._name,
             tooltip: this._tooltip,
             embedded: this._embedded,
+            disabled: this._disabled,
             iconCode: this._iconCode,
             description: this._description,
             craftingSystemId: this._craftingSystemId,
@@ -115,6 +122,14 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._activeEffectSource.errors;
     }
 
+    get disabled(): boolean {
+        return this._disabled;
+    }
+
+    set disabled(value: boolean) {
+        this._disabled = value;
+    }
+
     set activeEffectSource(value: FabricateItemData) {
         this._activeEffectSource = value;
     }
@@ -135,6 +150,9 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         this._iconCode = value;
     }
 
+    toReference(): EssenceReference {
+        return new EssenceReference(this._id);
+    }
 }
 
 export { EssenceJson, Essence }

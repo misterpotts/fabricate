@@ -2,10 +2,12 @@ import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
 import {EntityValidationResult} from "./EntityValidator";
-import {EntityDataStore} from "./EntityDataStore";
+import {EntityDataStore} from "../repository/EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {RecipeValidator} from "../crafting/recipe/RecipeValidator";
 import {NotificationService} from "../foundry/NotificationService";
+import {RequirementOptionJson} from "../crafting/recipe/RequirementOption";
+import {ResultOptionJson} from "../crafting/recipe/ResultOption";
 
 /**
  * A value object representing a Requirement option
@@ -30,6 +32,12 @@ interface RequirementOptionValue {
      * the values representing the required quantities.
      */
     ingredients: Record<string, number>;
+
+    /**
+     * The essences necessary for this requirement option. The object is a dictionary keyed on the essence ID with the
+     *   values representing the required quantities.
+     */
+    essences: Record<string, number>;
 
 }
 
@@ -323,15 +331,34 @@ class DefaultRecipeAPI implements RecipeAPI {
     }: RecipeOptions): Promise<Recipe> {
         const assignedIds = await this.recipeStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
+
+        const mappedRequirementOptions = requirementOptions.reduce((result, option) => {
+            const optionId = this.identityFactory.make();
+            result[optionId] = {
+                id: optionId,
+                ...option
+            };
+            return result;
+        }, <Record<string, RequirementOptionJson>>{});
+
+        const mappedResultOptions = resultOptions.reduce((result, option) => {
+            const optionId = this.identityFactory.make();
+            result[optionId] = {
+                id: optionId,
+                ...option
+            };
+            return result;
+        }, <Record<string, ResultOptionJson>>{});
+
         const entityJson = {
             id,
             essences,
             itemUuid,
             disabled,
-            resultOptions,
             embedded: false,
             craftingSystemId,
-            requirementOptions
+            resultOptions: mappedResultOptions,
+            requirementOptions: mappedRequirementOptions,
         };
 
         const recipe = await this.recipeStore.buildEntity(entityJson);
@@ -376,7 +403,9 @@ class DefaultRecipeAPI implements RecipeAPI {
             this.notificationService.error(message);
             throw new Error(message);
         }
-        return this.create(source.toJson());
+        const assignedIds = await this.recipeStore.listAllEntityIds();
+        const clone = source.clone(this.identityFactory.make(assignedIds));
+        return this.save(clone);
     }
 
     async deleteByItemUuid(itemUuid: string): Promise<Recipe[]> {

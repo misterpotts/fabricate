@@ -1,9 +1,9 @@
 import { describe, test, expect } from "@jest/globals";
-import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
 import {allTestRecipes, testRecipeFour, testRecipeOne, testRecipeThree, testRecipeTwo} from "./test_data/TestRecipes";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
-import {RecipeCollectionManager} from "../src/scripts/api/CollectionManager";
+import {RecipeCollectionManager} from "../src/scripts/repository/CollectionManager";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import Properties from "../src/scripts/Properties";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";

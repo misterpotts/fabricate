@@ -53,10 +53,8 @@ export { RecipeCollectionManager };
 
 class CraftingSystemCollectionManager implements CollectionManager<CraftingSystemJson> {
 
-    listCollectionMemberships(craftingSystemJson: CraftingSystemJson): { prefix: string; name: string }[] {
-        return [
-            { prefix: Properties.settings.collectionNames.gameSystem, name: craftingSystemJson.gameSystem }
-        ];
+    listCollectionMemberships(_craftingSystemJson: CraftingSystemJson): { prefix: string; name: string }[] {
+        return [];
     }
 
 }

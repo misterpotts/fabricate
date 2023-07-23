@@ -2,7 +2,15 @@ import Properties from "../Properties";
 
 interface SettingManager<T> {
 
+    /**
+     * The full path to the setting, including the module ID.
+     */
     readonly settingPath: string;
+
+    /**
+     * The key of the setting, without the module ID.
+     */
+    readonly settingKey: string;
 
     read(): Promise<T>;
 
@@ -36,6 +44,10 @@ class DefaultSettingManager<T> implements SettingManager<T> {
 
     get settingPath(): string {
         return `${this.moduleId}.${this._settingKey}`;
+    }
+
+    get settingKey(): string {
+        return this._settingKey;
     }
 
     async delete(): Promise<T> {

@@ -1,7 +1,7 @@
 import {Component, ComponentJson} from "../crafting/component/Component";
 import Properties from "../Properties";
 import {LocalizationService} from "../../applications/common/LocalizationService";
-import {EntityDataStore} from "./EntityDataStore";
+import {EntityDataStore} from "../repository/EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {EntityValidationResult} from "./EntityValidator";
 import {ComponentValidator} from "../crafting/component/ComponentValidator";

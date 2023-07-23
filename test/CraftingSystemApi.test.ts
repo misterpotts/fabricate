@@ -5,12 +5,12 @@ import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
 import Properties from "../src/scripts/Properties";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
-import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
 import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import {testCraftingSystemOne, testCraftingSystemTwo} from "./test_data/TestCrafingSystem";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";
-import {CraftingSystemCollectionManager} from "../src/scripts/api/CollectionManager";
+import {CraftingSystemCollectionManager} from "../src/scripts/repository/CollectionManager";
 import {CraftingSystemValidator} from "../src/scripts/system/CraftingSystemValidator";
 
 

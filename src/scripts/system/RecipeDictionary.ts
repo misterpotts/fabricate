@@ -1,20 +1,18 @@
 import {Dictionary} from "./Dictionary";
 import {
-    RequirementOption,
-    RequirementOptionJson,
     Recipe,
-    RecipeJson,
-    ResultOption,
-    ResultOptionJson
+    RecipeJson
 } from "../crafting/recipe/Recipe";
 import {DocumentManager, FabricateItemData, NoFabricateItemData} from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
 import {ComponentDictionary} from "./ComponentDictionary";
 import {Component} from "../crafting/component/Component";
-import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
+import {SelectableOptions} from "../crafting/selection/SelectableOptions";
 import {Essence} from "../crafting/essence/Essence";
 import Properties from "../Properties";
 import {Combination} from "../common/Combination";
+import {RequirementOption, RequirementOptionJson} from "../crafting/recipe/RequirementOption";
+import {ResultOption, ResultOptionJson} from "../crafting/recipe/ResultOption";
 
 export class RecipeDictionary implements Dictionary<RecipeJson, Recipe> {
     private _sourceData: Record<string, RecipeJson>;

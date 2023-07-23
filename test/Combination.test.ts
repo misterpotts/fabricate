@@ -5,7 +5,7 @@ import {Component} from "../src/scripts/crafting/component/Component";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
-import {SelectableOptions} from "../src/scripts/crafting/recipe/SelectableOptions";
+import {SelectableOptions} from "../src/scripts/crafting/selection/SelectableOptions";
 import {Unit} from "../src/scripts/common/Unit";
 import {SalvageOption, SalvageOptionJson} from "../src/scripts/crafting/component/SalvageOption";
 
@@ -21,6 +21,7 @@ test('Should create an empty Combination',() => {
     expect(underTest.has(testComponentOne)).toBe(false);
     expect(underTest.has(new Component({
         id: 'XYZ345',
+        craftingSystemId: "ABC123",
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
         essences: Combination.EMPTY(),
         disabled: true,
@@ -39,7 +40,8 @@ test('Should create a Combination from a single Unit',() => {
     expect(underTest.has(testComponentOne)).toBe(true);
     let equivalentComponent = new Component({
         id: testComponentOne.id,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({options: testComponentOne.salvageOptions}),
+        craftingSystemId: testComponentOne.craftingSystemId,
+        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.options }),
         essences: testComponentOne.essences,
         disabled: testComponentOne.disabled,
         itemData: testComponentOne.itemData
@@ -48,6 +50,7 @@ test('Should create a Combination from a single Unit',() => {
         .toBe(true);
     let nonEquivalentComponent = new Component({
         id: 'XYZ345',
+        craftingSystemId: "ABC123",
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
         essences: Combination.EMPTY(),
         disabled: true,
@@ -77,13 +80,15 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.has(testComponentThree)).toBe(true);
     expect(underTest.has(new Component({
         id: testComponentOne.id,
+        craftingSystemId: testComponentOne.craftingSystemId,
         itemData: testComponentOne.itemData,
         disabled: testComponentOne.disabled,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({options: testComponentOne.salvageOptions}),
+        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.options }),
         essences: testComponentOne.essences
     }))).toBe(true);
     expect(underTest.has(new Component({
         id: 'XYZ345',
+        craftingSystemId: "ABC123",
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
         essences: Combination.EMPTY(),
         disabled: true,

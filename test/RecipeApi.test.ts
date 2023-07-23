@@ -32,11 +32,11 @@ import {
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
-import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
-import {RecipeCollectionManager} from "../src/scripts/api/CollectionManager";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
+import {RecipeCollectionManager} from "../src/scripts/repository/CollectionManager";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";
 import {
-    BrokenFabricateItemData,
+    LoadedFabricateItemData,
     PendingFabricateItemData
 } from "../src/scripts/foundry/DocumentManager";
 import Properties from "../src/scripts/Properties";
@@ -88,8 +88,7 @@ const documentManager = new StubDocumentManager({
 const recipeValidator = new DefaultRecipeValidator({
     craftingSystemAPI,
     componentAPI,
-    essenceAPI,
-    documentManager
+    essenceAPI
 });
 const defaultSettingValue = () => {
    return {
@@ -138,9 +137,16 @@ describe("Create", () => {
 
         const itemUuid = "1234abcd";
         const craftingSystemId = testCraftingSystemOne.id;
+        const loadedFabricateItemData = new LoadedFabricateItemData({
+            itemUuid,
+            sourceDocument: {},
+            errors: [],
+            imageUrl: "path/to/image",
+            name: "Test Item",
+        });
         const createdRecipe = new Recipe({
             id: "3456abcd",
-            itemData: new PendingFabricateItemData(itemUuid, () => Promise.resolve(new BrokenFabricateItemData({itemUuid, errors: [] }))),
+            itemData: new PendingFabricateItemData(itemUuid, () => Promise.resolve(loadedFabricateItemData)),
             craftingSystemId: craftingSystemId
         });
         documentManager.setAllowUnknownIds(true);
@@ -548,14 +554,14 @@ describe("Edit", () => {
             size: recipeToEdit.essences.size,
             fireCount: recipeToEdit.essences.amountFor(elementalFire.id)
         };
-        recipeToEdit.essences = recipeToEdit.essences.increment(elementalFire);
+        recipeToEdit.essences = recipeToEdit.essences.increment(elementalFire.id);
 
         await underTest.save(recipeToEdit);
 
         const editedRecipe = await underTest.getById(testRecipeOne.id);
 
         expect(editedRecipe.essences.size).toEqual(essencesBefore.size + 1);
-        expect(editedRecipe.essences.amountFor(elementalFire)).toEqual(essencesBefore.fireCount + 1);
+        expect(editedRecipe.essences.amountFor(elementalFire.id)).toEqual(essencesBefore.fireCount + 1);
 
     });
 
@@ -611,8 +617,7 @@ describe("Delete", () => {
             recipeValidator: new DefaultRecipeValidator({
                 craftingSystemAPI: emptyCraftingSystemApi,
                 componentAPI: componentAPI,
-                essenceAPI: essenceAPI,
-                documentManager
+                essenceAPI: essenceAPI
             }),
             recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()
@@ -682,8 +687,7 @@ describe("Delete", () => {
             recipeValidator: new DefaultRecipeValidator({
                 craftingSystemAPI: emptyCraftingSystemApi,
                 componentAPI: componentAPI,
-                essenceAPI: essenceAPI,
-                documentManager
+                essenceAPI: essenceAPI
             }),
             recipeStore: recipeDataStore,
             identityFactory: new StubIdentityFactory()

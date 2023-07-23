@@ -1,4 +1,4 @@
-import {SettingManager} from "../../../src/scripts/api/SettingManager";
+import {SettingManager} from "../../../src/scripts/repository/SettingManager";
 import {cloneDeep} from "lodash";
 
 class StubSettingManager<T> implements SettingManager<T>{

@@ -1,196 +1,40 @@
-import {CraftingSystemAPI, DefaultCraftingSystemAPI} from "./CraftingSystemAPI";
-import {DefaultEssenceAPI, EssenceAPI} from "./EssenceAPI";
-import {ComponentAPI, DefaultComponentAPI} from "./ComponentAPI";
-import {DefaultRecipeAPI, RecipeAPI} from "./RecipeAPI";
-import {DefaultIdentityFactory, IdentityFactory} from "../foundry/IdentityFactory";
-import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
-import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
-import {DefaultSettingManager} from "./SettingManager";
-import Properties from "../Properties";
-import {CraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
-import {EntityDataStore} from "./EntityDataStore";
-import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
-import {
-    ComponentCollectionManager,
-    CraftingSystemCollectionManager,
-    EssenceCollectionManager, RecipeCollectionManager
-} from "./CollectionManager";
-import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
-import {Essence, EssenceJson} from "../crafting/essence/Essence";
-import {EssenceFactory} from "../crafting/essence/EssenceFactory";
-import {Component, ComponentJson} from "../crafting/component/Component";
-import {ComponentFactory} from "../crafting/component/ComponentFactory";
-import {RecipeFactory} from "../crafting/recipe/RecipeFactory";
-import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
-import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
-import {DefaultEssenceValidator} from "../crafting/essence/EssenceValidator";
-import {DefaultComponentValidator} from "../crafting/component/ComponentValidator";
-import {DefaultRecipeValidator} from "../crafting/recipe/RecipeValidator";
-import {DefaultNotificationService} from "../foundry/NotificationService";
-import {DefaultUIProvider, UIProvider} from "../foundry/UIProvider";
+import {CraftingSystemAPI} from "./CraftingSystemAPI";
+import {EssenceAPI} from "./EssenceAPI";
+import {ComponentAPI} from "./ComponentAPI";
+import {RecipeAPI} from "./RecipeAPI";
+import {SettingMigrationAPI} from "./SettingMigrationAPI";
 
-interface FabricateAPIFactory {
+interface EntityCountStatistics {
 
-    make(): FabricateAPI;
+    count: number;
+
+    ids: string[];
 
 }
 
-export { FabricateAPIFactory }
+export { EntityCountStatistics }
 
-class DefaultFabricateAPIFactory implements FabricateAPIFactory {
+interface EntityCountStatisticsByCraftingSystem extends EntityCountStatistics {
 
-    private readonly gameSystem: string;
-    private readonly user: string;
-    private readonly clientSettings: ClientSettings;
-    private readonly gameProvider: GameProvider;
-    private readonly uiProvider: UIProvider;
-    private readonly documentManager: DocumentManager;
-    private readonly identityFactory: IdentityFactory;
-
-    constructor({
-        gameSystem,
-        user,
-        clientSettings,
-        gameProvider = new DefaultGameProvider(),
-        documentManager = new DefaultDocumentManager(),
-        identityFactory = new DefaultIdentityFactory(),
-        uiProvider = new DefaultUIProvider()
-    }: {
-        gameSystem: string;
-        user: string;
-        clientSettings: ClientSettings;
-        gameProvider?: GameProvider;
-        documentManager?: DocumentManager;
-        identityFactory?: IdentityFactory;
-        uiProvider?: UIProvider;
-    }) {
-        this.gameSystem = gameSystem;
-        this.user = user;
-        this.clientSettings = clientSettings;
-        this.gameProvider = gameProvider;
-        this.documentManager = documentManager;
-        this.identityFactory = identityFactory;
-        this.uiProvider = uiProvider;
-    }
-
-    make(): FabricateAPI {
-
-        const localizationService = new DefaultLocalizationService(this.gameProvider);
-
-        const craftingSystemAPI = this.makeCraftingSystemAPI(this.identityFactory, localizationService);
-        const essenceAPI = this.makeEssenceAPI(this.identityFactory, localizationService, craftingSystemAPI, this.documentManager);
-        const componentAPI = this.makeComponentAPI(this.identityFactory, localizationService, craftingSystemAPI, essenceAPI, this.documentManager);
-        const recipeAPI = this.makeRecipeAPI(this.identityFactory, localizationService, craftingSystemAPI, essenceAPI, componentAPI, this.documentManager);
-
-        return new DefaultFabricateAPI({
-            craftingSystemAPI: craftingSystemAPI,
-            essenceAPI: essenceAPI,
-            componentAPI: componentAPI,
-            recipeAPI: recipeAPI
-        });
-
-    }
-
-    private makeCraftingSystemAPI(identityFactory: DefaultIdentityFactory,
-                                  localizationService: DefaultLocalizationService) {
-        return new DefaultCraftingSystemAPI({
-            gameSystem: this.gameSystem,
-            user: this.user,
-            notificationService: new DefaultNotificationService(this.uiProvider),
-            identityFactory,
-            localizationService,
-            craftingSystemValidator: new CraftingSystemValidator(),
-            craftingSystemStore: new EntityDataStore<CraftingSystemJson, CraftingSystem>({
-                entityName: "Crafting System",
-                entityFactory: new CraftingSystemFactory(),
-                collectionManager: new CraftingSystemCollectionManager(),
-                settingManager: new DefaultSettingManager({
-                    moduleId: Properties.module.id,
-                    settingKey: Properties.settings.craftingSystems.key,
-                    clientSettings: this.clientSettings
-
-                })
-            })
-        });
-    }
-
-    private makeEssenceAPI(identityFactory: DefaultIdentityFactory,
-                           localizationService: DefaultLocalizationService,
-                           craftingSystemAPI: CraftingSystemAPI,
-                           documentManager: DocumentManager): EssenceAPI {
-        const essenceValidator = new DefaultEssenceValidator({ craftingSystemAPI, documentManager });
-        const essenceStore = new EntityDataStore<EssenceJson, Essence>({
-            entityName: "Essence",
-            collectionManager: new EssenceCollectionManager(),
-            settingManager: new DefaultSettingManager({
-                moduleId: Properties.module.id,
-                settingKey: Properties.settings.essences.key,
-                clientSettings: this.clientSettings
-            }),
-            entityFactory: new EssenceFactory(documentManager),
-        });
-        return new DefaultEssenceAPI({
-            notificationService: new DefaultNotificationService(this.uiProvider),
-            localizationService,
-            identityFactory,
-            craftingSystemAPI,
-            essenceValidator,
-            essenceStore
-        });
-    }
-
-    private makeComponentAPI(identityFactory: DefaultIdentityFactory,
-                             localizationService: DefaultLocalizationService,
-                             craftingSystemAPI: CraftingSystemAPI,
-                             essenceAPI: EssenceAPI,
-                             documentManager: DocumentManager): ComponentAPI {
-        const componentStore = new EntityDataStore<ComponentJson, Component>({
-            entityName: "Component",
-            entityFactory: new ComponentFactory({ documentManager }),
-            collectionManager: new ComponentCollectionManager(),
-            settingManager: new DefaultSettingManager({
-                moduleId: Properties.module.id,
-                settingKey: Properties.settings.components.key,
-                clientSettings: this.clientSettings
-            })
-        });
-        return new DefaultComponentAPI({
-            notificationService: new DefaultNotificationService(this.uiProvider),
-            localizationService,
-            identityFactory,
-            componentValidator: new DefaultComponentValidator({ craftingSystemAPI, essenceAPI }),
-            componentStore
-        });
-    }
-
-    private makeRecipeAPI(identityFactory: DefaultIdentityFactory,
-                          localizationService: DefaultLocalizationService,
-                          craftingSystemAPI: CraftingSystemAPI,
-                          essenceAPI: EssenceAPI,
-                          componentAPI: ComponentAPI,
-                          documentManager: DocumentManager): RecipeAPI {
-        const recipeStore = new EntityDataStore<RecipeJson, Recipe>({
-            entityName: "Recipe",
-            entityFactory: new RecipeFactory({ documentManager }),
-            collectionManager: new RecipeCollectionManager(),
-            settingManager: new DefaultSettingManager({
-                moduleId: Properties.module.id,
-                settingKey: Properties.settings.recipes.key,
-                clientSettings: this.clientSettings
-            })
-        });
-        return new DefaultRecipeAPI({
-            notificationService: new DefaultNotificationService(this.uiProvider),
-            identityFactory,
-            localizationService,
-            recipeValidator: new DefaultRecipeValidator({ essenceAPI, componentAPI, craftingSystemAPI }),
-            recipeStore
-        });
-    }
+    byCraftingSystem: Record<string, EntityCountStatistics>;
 
 }
 
-export { DefaultFabricateAPIFactory }
+export { EntityCountStatisticsByCraftingSystem }
+
+interface FabricateStatistics {
+
+    craftingSystems: EntityCountStatistics;
+
+    essences: EntityCountStatisticsByCraftingSystem;
+
+    components: EntityCountStatisticsByCraftingSystem;
+
+    recipes: EntityCountStatisticsByCraftingSystem;
+
+}
+
+export { FabricateStatistics }
 
 /**
  * Represents an API for managing crafting systems, components, essences, and recipes.
@@ -220,12 +64,9 @@ interface FabricateAPI {
     readonly recipes: RecipeAPI;
 
     /**
-     * Migrates Fabricate's stored data from older model versions to the most recent
-     *
-     * @async
-     * @return { Promise<void> } a promise that resolves when the data migration has been completed
-     * */
-    migrateData(): Promise<void>;
+     * Gets the API for managing fabricate's data migrations.
+     */
+    readonly migration: SettingMigrationAPI;
 
     /**
      * Suppresses notifications from Fabricate for all operations. Use {@link FabricateAPI#activateNotifications} to
@@ -240,9 +81,12 @@ interface FabricateAPI {
     activateNotifications(): void;
 
     /**
-     * Gets the most recent Fabricate data model version
-     * */
-    readonly dataModelVersion: string;
+     * Gets summary statistics about the Crafting Systems, Essences, Components, and Recipes in the Fabricate database.
+     *
+     * @async
+     * @returns {Promise<FabricateStatistics>} A Promise that resolves with the Fabricate statistics.
+     */
+    getStatistics(): Promise<FabricateStatistics>;
 
 }
 export { FabricateAPI }
@@ -250,25 +94,29 @@ export { FabricateAPI }
 class DefaultFabricateAPI implements FabricateAPI {
 
     private readonly recipeAPI: RecipeAPI;
-    private readonly componentAPI: ComponentAPI;
     private readonly essenceAPI: EssenceAPI;
+    private readonly componentAPI: ComponentAPI;
     private readonly craftingSystemAPI: CraftingSystemAPI;
+    private readonly settingMigrationAPI: SettingMigrationAPI;
 
     constructor({
         recipeAPI,
-        componentAPI,
         essenceAPI,
+        componentAPI,
         craftingSystemAPI,
+        settingMigrationAPI,
     }: {
         recipeAPI: RecipeAPI;
-        componentAPI: ComponentAPI;
         essenceAPI: EssenceAPI;
+        componentAPI: ComponentAPI;
         craftingSystemAPI: CraftingSystemAPI;
+        settingMigrationAPI: SettingMigrationAPI;
     }) {
         this.recipeAPI = recipeAPI;
-        this.componentAPI = componentAPI;
         this.essenceAPI = essenceAPI;
+        this.componentAPI = componentAPI;
         this.craftingSystemAPI = craftingSystemAPI;
+        this.settingMigrationAPI = settingMigrationAPI;
     }
 
     activateNotifications(): void {
@@ -302,10 +150,74 @@ class DefaultFabricateAPI implements FabricateAPI {
         return this.recipeAPI;
     }
 
-    readonly dataModelVersion: string;
+    get migration(): SettingMigrationAPI {
+        return this.settingMigrationAPI;
+    }
 
-    migrateData(): Promise<void> {
-        return Promise.resolve(undefined);
+    async getStatistics(): Promise<FabricateStatistics> {
+        const craftingSystems = await this.craftingSystemAPI.getAll();
+        const craftingSystemIds = Array.from(craftingSystems.keys());
+
+        const essences = await this.essenceAPI.getAll();
+        const essenceStatsByCraftingSystem = Array.from(essences.values())
+            .reduce((statistics, essence) => {
+                const essenceStats = statistics[essence.craftingSystemId] ?? {
+                    count: 0,
+                    ids: [],
+                };
+                essenceStats.count++;
+                essenceStats.ids.push(essence.id);
+                statistics[essence.craftingSystemId] = essenceStats;
+                return statistics;
+            }, <Record<string, EntityCountStatistics>>{});
+
+        const components = await this.componentAPI.getAll();
+        const componentStatsByCraftingSystem = Array.from(components.values())
+            .reduce((statistics, component) => {
+                const componentStats = statistics[component.craftingSystemId] ?? {
+                    count: 0,
+                    ids: [],
+                };
+                componentStats.count++;
+                componentStats.ids.push(component.id);
+                statistics[component.craftingSystemId] = componentStats;
+                return statistics;
+            }, <Record<string, EntityCountStatistics>>{});
+
+        const recipes = await this.recipeAPI.getAll();
+        const recipeStatsByCraftingSystem = Array.from(recipes.values())
+            .reduce((statistics, recipe) => {
+                const recipeStats = statistics[recipe.craftingSystemId] ?? {
+                    count: 0,
+                    ids: [],
+                };
+                recipeStats.count++;
+                recipeStats.ids.push(recipe.id);
+                statistics[recipe.craftingSystemId] = recipeStats;
+                return statistics;
+            }, <Record<string, EntityCountStatistics>>{});
+
+        return {
+            craftingSystems: {
+                count: craftingSystems.size,
+                ids: craftingSystemIds,
+            },
+            essences: {
+                count: essences.size,
+                ids: Array.from(essences.keys()),
+                byCraftingSystem: essenceStatsByCraftingSystem,
+            },
+            components: {
+                count: components.size,
+                ids: Array.from(components.keys()),
+                byCraftingSystem: componentStatsByCraftingSystem,
+            },
+            recipes: {
+                count: recipes.size,
+                ids: Array.from(recipes.keys()),
+                byCraftingSystem: recipeStatsByCraftingSystem,
+            }
+        }
     }
 
 }

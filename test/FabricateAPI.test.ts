@@ -1,5 +1,4 @@
 import {describe, expect, test} from "@jest/globals";
-import {DefaultFabricateAPIFactory} from "../src/scripts/api/FabricateAPI";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
 import {StubGameProvider} from "./stubs/foundry/StubGameProvider";
 import {GameProvider} from "../src/scripts/foundry/GameProvider";
@@ -8,6 +7,11 @@ import Properties from "../src/scripts/Properties";
 import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
 import {StubUIProvider} from "./stubs/foundry/StubUIProvider";
 import {FabricateItemData, LoadedFabricateItemData} from "../src/scripts/foundry/DocumentManager";
+import {DefaultFabricateAPIFactory} from "../src/scripts/api/FabricateAPIFactory";
+import {SettingVersion} from "../src/scripts/repository/migration/SettingVersion";
+import {SettingMigrationStatus} from "../src/scripts/repository/migration/SettingMigrationStatus";
+import {buildV2SettingsValue, buildV3SettingsValue} from "./test_data/TestSettingMigrationData";
+import {FabricateStatistics} from "../src/scripts/api/FabricateAPI";
 
 function buildDefaultSettingsValue() {
     const defaultSettingsValues = new Map();
@@ -118,7 +122,6 @@ describe("FabricateAPI component integration", () => {
         expect(craftingSystem.details.summary).toEqual(craftingSystemOptions.summary);
         expect(craftingSystem.details.description).toEqual(craftingSystemOptions.description);
         expect(craftingSystem.details.author).toEqual(user);
-        expect(craftingSystem.gameSystem).toEqual(gameSystem);
 
         // Create essences
 
@@ -196,7 +199,7 @@ describe("FabricateAPI component integration", () => {
 
         componentOne.addEssence(essenceOne.id, 1);
 
-        componentOne.salvageOptions.byName.get("salvageOptionOne").addResult(componentTwo.id, 1);
+        componentOne.salvageOptions.all.find(option => option.name === "salvageOptionOne").addResult(componentTwo.id, 1);
 
         componentOne.setSalvageOption({
             name: "salvageOptionTwo",
@@ -212,11 +215,12 @@ describe("FabricateAPI component integration", () => {
 
         expect(updatedComponent.hasEssences).toEqual(true);
         expect(updatedComponent.isSalvageable).toEqual(true);
-        expect(updatedComponent.salvageOptions.byName.size).toEqual(2);
-        expect(updatedComponent.salvageOptions.byName.get("salvageOptionOne").catalysts.size).toEqual(1);
-        expect(updatedComponent.salvageOptions.byName.get("salvageOptionOne").catalysts.amountFor(componentThree.id)).toEqual(1);
-        expect(updatedComponent.salvageOptions.byName.get("salvageOptionOne").results.size).toEqual(2);
-        expect(updatedComponent.salvageOptions.byName.get("salvageOptionOne").results.amountFor(componentTwo.id)).toEqual(2);
+        expect(updatedComponent.salvageOptions.all.length).toEqual(2);
+        const updatedSalvageOption = updatedComponent.salvageOptions.all.find(option => option.name === "salvageOptionOne");
+        expect(updatedSalvageOption.catalysts.size).toEqual(1);
+        expect(updatedSalvageOption.catalysts.amountFor(componentThree.id)).toEqual(1);
+        expect(updatedSalvageOption.results.size).toEqual(2);
+        expect(updatedSalvageOption.results.amountFor(componentTwo.id)).toEqual(2);
 
         // Create the first recipe
 
@@ -240,6 +244,7 @@ describe("FabricateAPI component integration", () => {
 
         recipeOne.setRequirementOption({
             name: "requirementOptionOne",
+            essences: {},
             ingredients: {
                 [ componentOne.id ]: 1
             },
@@ -248,7 +253,7 @@ describe("FabricateAPI component integration", () => {
             }
         });
 
-        recipeOne.requirementOptions.byName.get("requirementOptionOne").addIngredient(componentOne.id, 1);
+        recipeOne.requirementOptions.all.find(option => option.name === "requirementOptionOne").addIngredient(componentOne.id, 1);
 
         recipeOne.setResultOption({
             name: "resultOptionOne",
@@ -257,7 +262,7 @@ describe("FabricateAPI component integration", () => {
             }
         });
 
-        recipeOne.resultOptions.byName.get("resultOptionOne").subtract(componentThree.id, 1);
+        recipeOne.resultOptions.all.find(option => option.name === "resultOptionOne").subtract(componentThree.id, 1);
 
         // Save the recipe
 
@@ -266,13 +271,13 @@ describe("FabricateAPI component integration", () => {
         expect(updatedRecipeOne.hasResults).toEqual(true);
         expect(updatedRecipeOne.hasRequirements).toEqual(true);
         expect(updatedRecipeOne.requirementOptions.size).toEqual(1);
-        const recipeOneRequirementOptionOne = updatedRecipeOne.requirementOptions.byName.get("requirementOptionOne");
+        const recipeOneRequirementOptionOne = updatedRecipeOne.requirementOptions.all.find(option => option.name === "requirementOptionOne");
         expect(recipeOneRequirementOptionOne.ingredients.size).toEqual(2);
         expect(recipeOneRequirementOptionOne.ingredients.amountFor(componentOne.id)).toEqual(2);
         expect(recipeOneRequirementOptionOne.catalysts.size).toEqual(1);
         expect(recipeOneRequirementOptionOne.catalysts.amountFor(componentTwo.id)).toEqual(1);
         expect(updatedRecipeOne.resultOptions.size).toEqual(1);
-        const recipeOneResultOptionOne = updatedRecipeOne.resultOptions.byName.get("resultOptionOne");
+        const recipeOneResultOptionOne = updatedRecipeOne.resultOptions.all.find(option => option.name === "resultOptionOne");
         expect(recipeOneResultOptionOne.results.size).toEqual(1);
         expect(recipeOneResultOptionOne.results.amountFor(componentThree.id)).toEqual(1);
 
@@ -285,8 +290,14 @@ describe("FabricateAPI component integration", () => {
 
         expect(recipeTwo).not.toBeUndefined();
 
-        recipeTwo.addEssence(essenceOne.id, 1);
-        recipeTwo.addEssence(essenceTwo.id, 2);
+        recipeTwo.setRequirementOption({
+            name: "requirementOptionOne",
+            essences: {
+                [ essenceOne.id ]: 1
+            }
+        });
+
+        recipeTwo.requirementOptions.all.find(option => option.name === "requirementOptionOne").addEssence(essenceTwo.id, 2);
 
         recipeTwo.setResultOption({
             name: "resultOptionOne",
@@ -298,15 +309,182 @@ describe("FabricateAPI component integration", () => {
         const updatedRecipeTwo = await underTest.recipes.save(recipeTwo);
 
         expect(updatedRecipeTwo.hasResults).toEqual(true);
-        expect(updatedRecipeTwo.hasRequirements).toEqual(false);
+        expect(updatedRecipeTwo.hasRequirements).toEqual(true);
         expect(updatedRecipeTwo.resultOptions.size).toEqual(1);
-        const recipeTwoResultOptionOne = updatedRecipeTwo.resultOptions.byName.get("resultOptionOne");
+        const recipeTwoResultOptionOne = updatedRecipeTwo.resultOptions.all.find(option => option.name === "resultOptionOne");
         expect(recipeTwoResultOptionOne.results.size).toEqual(1);
         expect(recipeTwoResultOptionOne.results.amountFor(componentOne.id)).toEqual(1);
-        expect(updatedRecipeTwo.requiresEssences).toEqual(true);
-        expect(updatedRecipeTwo.essences.size).toEqual(3);
-        expect(updatedRecipeTwo.essences.amountFor(essenceOne.id)).toEqual(1);
-        expect(updatedRecipeTwo.essences.amountFor(essenceTwo.id)).toEqual(2);
+
+    });
+
+});
+
+describe("FabricateAPI data migration", () => {
+
+    test("should use 'V2' when no global setting version is set", async () => {
+
+        const documentManager = new StubDocumentManager();
+        const gameProvider: GameProvider = new StubGameProvider();
+        const uiProvider = new StubUIProvider();
+        const defaultSettingsValue = buildV2SettingsValue();
+        const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
+        const identityFactory = new StubIdentityFactory();
+
+        const user = "Game Master";
+        const gameSystem = "dnd5e";
+        const fabricateAPIFactory = new DefaultFabricateAPIFactory({
+            user,
+            gameSystem,
+            documentManager,
+            clientSettings,
+            gameProvider,
+            identityFactory,
+            uiProvider
+        });
+
+        const underTest = fabricateAPIFactory.make();
+
+        const result = await underTest.migration.getCurrentVersion();
+
+        expect(result).toBe(SettingVersion.V2);
+
+    });
+
+    test("should use 'V3' when global setting version is set to 'V3'", async () => {
+
+        const documentManager = new StubDocumentManager();
+        const gameProvider: GameProvider = new StubGameProvider();
+        const uiProvider = new StubUIProvider();
+        const defaultSettingsValue = buildV3SettingsValue();
+        const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
+        const identityFactory = new StubIdentityFactory();
+
+        const user = "Game Master";
+        const gameSystem = "dnd5e";
+        const fabricateAPIFactory = new DefaultFabricateAPIFactory({
+            user,
+            gameSystem,
+            documentManager,
+            clientSettings,
+            gameProvider,
+            identityFactory,
+            uiProvider
+        });
+
+        const underTest = fabricateAPIFactory.make();
+
+        const result = await underTest.migration.getCurrentVersion();
+
+        expect(result).toBe(SettingVersion.V3);
+
+    });
+
+    test("should not migrate when target version and current version match", async () => {
+
+        const documentManager = new StubDocumentManager();
+        const gameProvider: GameProvider = new StubGameProvider();
+        const uiProvider = new StubUIProvider();
+        const defaultSettingsValue = buildV3SettingsValue();
+        const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
+        const identityFactory = new StubIdentityFactory();
+
+        const user = "Game Master";
+        const gameSystem = "dnd5e";
+        const fabricateAPIFactory = new DefaultFabricateAPIFactory({
+            user,
+            gameSystem,
+            documentManager,
+            clientSettings,
+            gameProvider,
+            identityFactory,
+            uiProvider
+        });
+
+        const underTest = fabricateAPIFactory.make();
+
+        const migrationNeeded = await underTest.migration.isMigrationNeeded();
+
+        expect(migrationNeeded).toBe(false);
+
+        const result = await underTest.migration.migrateAll();
+
+        expect(result.status).toBe(SettingMigrationStatus.NOT_NEEDED);
+        expect(result.from).toBe(SettingVersion.V3);
+        expect(result.to).toBe(SettingVersion.V3);
+
+    });
+
+    test("should migrate from V2 to V3", async () => {
+
+        const documentManager = new StubDocumentManager();
+        const gameProvider: GameProvider = new StubGameProvider();
+        const uiProvider = new StubUIProvider();
+        const defaultSettingsValue = buildV2SettingsValue();
+        const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
+        const identityFactory = new StubIdentityFactory();
+
+        const craftingSystemsBefore = defaultSettingsValue.get(Properties.module.id).get(Properties.settings.craftingSystems.key).value;
+        const craftingSystemIds = Object.keys(craftingSystemsBefore);
+        const fabricateStatisticsBefore = craftingSystemIds
+            .map(craftingSystemId => {
+                const craftingSystem = craftingSystemsBefore[craftingSystemId];
+                const essences = craftingSystem.parts.essences;
+                const components = craftingSystem.parts.components;
+                const recipes = craftingSystem.parts.recipes;
+                return {
+                    craftingSystemId,
+                    essences,
+                    components,
+                    recipes
+                }
+            })
+            .reduce((statistics, system) => {
+                statistics.craftingSystems.count++;
+                statistics.craftingSystems.ids.push(system.craftingSystemId);
+                statistics.essences.count += Object.keys(system.essences).length;
+                statistics.essences.ids.push(...Object.keys(system.essences));
+                statistics.components.count += Object.keys(system.components).length;
+                statistics.components.ids.push(...Object.keys(system.components));
+                statistics.recipes.count += Object.keys(system.recipes).length;
+                statistics.recipes.ids.push(...Object.keys(system.recipes));
+                return statistics;
+            }, <FabricateStatistics>{
+                craftingSystems: { count: 0, ids: [] },
+                essences: { count: 0, ids: [], byCraftingSystem: {} },
+                components: { count: 0, ids: [], byCraftingSystem: {} },
+                recipes: { count: 0, ids: [], byCraftingSystem: {} }
+            });
+
+        const user = "Game Master";
+        const gameSystem = "dnd5e";
+        const fabricateAPIFactory = new DefaultFabricateAPIFactory({
+            user,
+            gameSystem,
+            documentManager,
+            clientSettings,
+            gameProvider,
+            identityFactory,
+            uiProvider
+        });
+
+        const underTest = fabricateAPIFactory.make();
+
+        const result = await underTest.migration.migrateAll();
+
+        expect(result.status).toBe(SettingMigrationStatus.SUCCESS);
+        expect(result.from).toBe(SettingVersion.V2);
+        expect(result.to).toBe(SettingVersion.V3);
+
+        const fabricateStatisticsAfter = await underTest.getStatistics();
+
+        expect(fabricateStatisticsAfter.craftingSystems.count).toBe(fabricateStatisticsBefore.craftingSystems.count);
+        expect(fabricateStatisticsAfter.craftingSystems.ids).toEqual(fabricateStatisticsBefore.craftingSystems.ids);
+        expect(fabricateStatisticsAfter.essences.count).toEqual(fabricateStatisticsBefore.essences.count);
+        expect(fabricateStatisticsAfter.essences.ids).toEqual(fabricateStatisticsBefore.essences.ids);
+        expect(fabricateStatisticsAfter.components.count).toEqual(fabricateStatisticsBefore.components.count);
+        expect(fabricateStatisticsAfter.components.ids).toEqual(fabricateStatisticsBefore.components.ids);
+        expect(fabricateStatisticsAfter.recipes.count).toEqual(fabricateStatisticsBefore.recipes.count);
+        expect(fabricateStatisticsAfter.recipes.ids).toEqual(fabricateStatisticsBefore.recipes.ids);
 
     });
 

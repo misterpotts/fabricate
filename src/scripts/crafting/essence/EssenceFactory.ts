@@ -1,6 +1,6 @@
 import {Essence, EssenceJson} from "./Essence";
 import {DocumentManager} from "../../foundry/DocumentManager";
-import {EntityFactory} from "../../api/EntityFactory";
+import {EntityFactory} from "../../repository/EntityFactory";
 
 class EssenceFactory implements EntityFactory<EssenceJson, Essence> {
 

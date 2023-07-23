@@ -1,4 +1,4 @@
-import {EntityFactory} from "../../src/scripts/api/EntityFactory";
+import {EntityFactory} from "../../src/scripts/repository/EntityFactory";
 import {Identifiable} from "../../src/scripts/common/Identifiable";
 import {Serializable} from "../../src/scripts/common/Serializable";
 

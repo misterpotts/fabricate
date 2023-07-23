@@ -47,8 +47,8 @@
       "settingDeleted": "The setting {settingPath} was deleted. ",
       "craftingSystem": {
         "deleted": "Deleted crafting system \"{systemName}\"",
-        "created": "",
-        "updated": ""
+        "created": "Created crafting system \"{systemName}\"",
+        "updated": "Updated crafting system \"{systemName}\""
       },
       "errors": {
         "invalidRead": "The stored value for the setting {settingPath} is not valid, and could not be read. {errors}",
@@ -77,6 +77,12 @@
           "invalid": "The essence with ID {essenceId} is not valid. Errors: {errors}. ",
           "missingEssences": "The essences with the IDs {essenceIds} could not be found. "
         }
+      },
+      "migration": {
+        "notNeeded": "Fabricate settings are already up to date and don't not need to be migrated. ",
+        "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
+        "failed": "Fabricate was unable to migrate your crafting system settings. Please report this error to the module author. ",
+        "success": "Fabricate has finished migrating your crafting system settings!"
       }
     },
     "CraftingComponentCarousel": {

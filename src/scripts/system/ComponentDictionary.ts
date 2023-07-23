@@ -6,7 +6,7 @@ import {
     NoFabricateItemData
 } from "../foundry/DocumentManager";
 import {EssenceDictionary} from "./EssenceDictionary";
-import {SelectableOptions} from "../crafting/recipe/SelectableOptions";
+import {SelectableOptions} from "../crafting/selection/SelectableOptions";
 import {Essence} from "../crafting/essence/Essence";
 import Properties from "../Properties";
 import {Combination} from "../common/Combination";

@@ -27,13 +27,13 @@ import {
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {DefaultComponentValidator} from "../src/scripts/crafting/component/ComponentValidator";
-import {EntityDataStore, SerialisedEntityData} from "../src/scripts/api/EntityDataStore";
+import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
 import {ComponentJson} from "../src/scripts/crafting/component/Component";
 import Properties from "../src/scripts/Properties";
 import {DefaultComponentAPI} from "../src/scripts/api/ComponentAPI";
 import {Component} from "../src/scripts/crafting/component/Component";
 import {ComponentFactory} from "../src/scripts/crafting/component/ComponentFactory";
-import {ComponentCollectionManager} from "../src/scripts/api/CollectionManager";
+import {ComponentCollectionManager} from "../src/scripts/repository/CollectionManager";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
@@ -69,8 +69,7 @@ const documentManager = new StubDocumentManager({
 });
 const componentValidator = new DefaultComponentValidator({
     craftingSystemAPI,
-    essenceAPI,
-    documentManager
+    essenceAPI
 });
 const defaultSettingValue: () => SerialisedEntityData<ComponentJson> = () => {
    return {
@@ -118,10 +117,7 @@ describe("Create", () => {
             entityName: "Component",
             settingManager,
             collectionManager: new ComponentCollectionManager(),
-            entityFactory: new ComponentFactory({
-                essenceAPI,
-                documentManager
-            }),
+            entityFactory: new ComponentFactory({ documentManager }),
         });
         documentManager.setAllowUnknownIds(true);
 
