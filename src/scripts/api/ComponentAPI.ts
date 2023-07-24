@@ -6,6 +6,7 @@ import {IdentityFactory} from "../foundry/IdentityFactory";
 import {EntityValidationResult} from "./EntityValidator";
 import {ComponentValidator} from "../crafting/component/ComponentValidator";
 import {NotificationService} from "../foundry/NotificationService";
+import {SalvageOptionJson} from "../crafting/component/SalvageOption";
 
 /**
  * A value object representing an option for salvaging a component
@@ -264,7 +265,9 @@ class DefaultComponentAPI implements ComponentAPI {
             this.notificationService.error(message);
             throw new Error(message);
         }
-        return this.create(source.toJson());
+        const assignedIds = await this.componentStore.listAllEntityIds();
+        const clone = source.clone(this.identityFactory.make(assignedIds));
+        return this.save(clone);
     }
 
     async create({
@@ -277,6 +280,16 @@ class DefaultComponentAPI implements ComponentAPI {
 
         const assignedIds = await this.componentStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
+
+        const mappedSalvageOptions = salvageOptions.reduce((result, salvageOption) => {
+            const optionId = this.identityFactory.make();
+            result[optionId] = {
+                id: optionId,
+                ...salvageOption
+            };
+            return result;
+        }, <Record<string, SalvageOptionJson>>{});
+
         const entityJson: ComponentJson = {
             id,
             embedded: false,
@@ -284,7 +297,7 @@ class DefaultComponentAPI implements ComponentAPI {
             itemUuid,
             essences,
             disabled,
-            salvageOptions
+            salvageOptions: mappedSalvageOptions
         };
 
         const component = await this.componentStore.buildEntity(entityJson);

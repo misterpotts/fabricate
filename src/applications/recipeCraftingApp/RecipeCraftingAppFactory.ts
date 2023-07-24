@@ -1,34 +1,41 @@
 import {SvelteApplication} from "../SvelteApplication";
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
 import Properties from "../../scripts/Properties";
 import {DefaultLocalizationService} from "../common/LocalizationService";
 import RecipeCraftingApp from "./RecipeCraftingApp.svelte";
 import {Recipe} from "../../scripts/crafting/recipe/Recipe";
-import {DefaultInventoryFactory} from "../../scripts/actor/InventoryFactory";
+import {CraftingAPI} from "../../scripts/api/CraftingAPI";
 
 interface RecipeCraftingAppFactory {
 
-    make(recipe: Recipe, craftingSystem: CraftingSystem, actor: Actor, appId: string): SvelteApplication;
+    make(recipe: Recipe, actor: Actor, appId: string): SvelteApplication;
 
 }
 
 class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
 
-    make(recipe: Recipe, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
+    private readonly localizationService: DefaultLocalizationService;
+    private readonly craftingAPI: CraftingAPI;
 
-        const gameProvider = new DefaultGameProvider();
-        const GAME = gameProvider.get();
+    constructor({
+        craftingAPI,
+        localizationService,
+    }: {
+        craftingAPI: CraftingAPI;
+        localizationService: DefaultLocalizationService;
+    }) {
+        this.craftingAPI = craftingAPI;
+        this.localizationService = localizationService;
+    }
+
+    make(recipe: Recipe, actor: any, appId: string): SvelteApplication {
 
         const applicationOptions = {
-            title: GAME.i18n.format(`${Properties.module.id}.RecipeCraftingApp.title`, { actorName: actor.name }),
+            title: this.localizationService.format(`${Properties.module.id}.RecipeCraftingApp.title`, { actorName: actor.name }),
             id: appId,
             resizable: false,
             width: 680,
             height: 620
         }
-
-        const inventory = new DefaultInventoryFactory(gameProvider).make(actor, craftingSystem);
 
         return new SvelteApplication({
             applicationOptions,
@@ -36,8 +43,8 @@ class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
                 options: {
                     props: {
                         recipe,
-                        inventory,
-                        localization: new DefaultLocalizationService(gameProvider),
+                        craftingAPI: this.craftingAPI,
+                        localization: this.localizationService,
                         closeHook: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
                                 .find(w => w.id == appId);

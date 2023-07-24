@@ -3,6 +3,7 @@ import {EssenceAPI} from "./EssenceAPI";
 import {ComponentAPI} from "./ComponentAPI";
 import {RecipeAPI} from "./RecipeAPI";
 import {SettingMigrationAPI} from "./SettingMigrationAPI";
+import {CraftingAPI} from "./CraftingAPI";
 
 interface EntityCountStatistics {
 
@@ -64,9 +65,14 @@ interface FabricateAPI {
     readonly recipes: RecipeAPI;
 
     /**
-     * Gets the API for managing fabricate's data migrations.
+     * Gets the API for managing Fabricate's data migrations.
      */
     readonly migration: SettingMigrationAPI;
+
+    /**
+     * Gets the API for performing crafting.
+     */
+    readonly crafting: CraftingAPI;
 
     /**
      * Suppresses notifications from Fabricate for all operations. Use {@link FabricateAPI#activateNotifications} to
@@ -95,6 +101,7 @@ class DefaultFabricateAPI implements FabricateAPI {
 
     private readonly recipeAPI: RecipeAPI;
     private readonly essenceAPI: EssenceAPI;
+    private readonly craftingAPI: CraftingAPI;
     private readonly componentAPI: ComponentAPI;
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly settingMigrationAPI: SettingMigrationAPI;
@@ -102,18 +109,21 @@ class DefaultFabricateAPI implements FabricateAPI {
     constructor({
         recipeAPI,
         essenceAPI,
+        craftingAPI,
         componentAPI,
         craftingSystemAPI,
         settingMigrationAPI,
     }: {
         recipeAPI: RecipeAPI;
         essenceAPI: EssenceAPI;
+        craftingAPI: CraftingAPI;
         componentAPI: ComponentAPI;
         craftingSystemAPI: CraftingSystemAPI;
         settingMigrationAPI: SettingMigrationAPI;
     }) {
         this.recipeAPI = recipeAPI;
         this.essenceAPI = essenceAPI;
+        this.craftingAPI = craftingAPI;
         this.componentAPI = componentAPI;
         this.craftingSystemAPI = craftingSystemAPI;
         this.settingMigrationAPI = settingMigrationAPI;
@@ -152,6 +162,10 @@ class DefaultFabricateAPI implements FabricateAPI {
 
     get migration(): SettingMigrationAPI {
         return this.settingMigrationAPI;
+    }
+
+    get crafting(): CraftingAPI {
+        return this.craftingAPI;
     }
 
     async getStatistics(): Promise<FabricateStatistics> {

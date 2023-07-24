@@ -82,7 +82,7 @@
         "notNeeded": "Fabricate settings are already up to date and don't not need to be migrated. ",
         "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
         "failed": "Fabricate was unable to migrate your crafting system settings. Please report this error to the module author. ",
-        "success": "Fabricate has finished migrating your crafting system settings!"
+        "success": "Fabricate has finished migrating your crafting system settings!",
       }
     },
     "CraftingComponentCarousel": {
@@ -391,24 +391,6 @@
       }
     },
     "ui": {
-      "notifications": {
-        "submissionError": {
-          "prefix": "There were some problems with your form"
-        },
-        "settings": {
-          "migration": {
-            "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
-            "finished": "Fabricate has finished migrating your crafting system settings!"
-          },
-          "errors": {
-            "summary": "Fabricate was unable to read the setting for the key {settingKey}. Caused by:",
-            "noValue": "Expected a non-null, non-empty setting value.",
-            "noVersion": "Expected a non-null, non-empty setting version.",
-            "notFound": "No Setting was registered for the provided setting key.",
-            "migration": "Unable to migrate the setting for the key {settingKey}."
-          }
-        }
-      },
       "sidebar": {
         "buttons": {
           "openCraftingSystemManager": "Crafting Systems"

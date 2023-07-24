@@ -217,6 +217,7 @@ class DefaultEssenceAPI implements EssenceAPI {
             tooltip,
             iconCode,
             description,
+            disabled: false,
             embedded: false,
             craftingSystemId,
             activeEffectSourceItemUuid,

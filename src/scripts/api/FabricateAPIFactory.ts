@@ -40,12 +40,15 @@ import {
 } from "../repository/embedded_systems/EmbeddedCraftingSystemManager";
 import {DefaultSettingsRegistry, SettingsRegistry} from "../repository/SettingsRegistry";
 import {SettingsMigrator} from "../repository/migration/SettingsMigrator";
+import {DefaultCraftingAPI} from "./CraftingAPI";
 
 interface FabricateAPIFactory {
 
     make(): FabricateAPI;
 
 }
+
+export { FabricateAPIFactory };
 
 class DefaultFabricateAPIFactory implements FabricateAPIFactory {
 
@@ -133,13 +136,21 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             this.makeEmbeddedCraftingSystemManager(craftingSystemStore, essenceStore, componentStore, recipeStore),
             this.makeSettingsMigrator(craftingSystemSettingManager, essenceSettingManager, componentSettingManager, recipeSettingManager)
         );
+        const craftingAPI = this.makeCraftingAPI(
+            localizationService,
+            craftingSystemAPI,
+            essenceAPI,
+            componentAPI,
+            recipeAPI,
+        );
 
         return new DefaultFabricateAPI({
             craftingSystemAPI,
             essenceAPI,
             componentAPI,
             recipeAPI,
-            settingMigrationAPI
+            settingMigrationAPI,
+            craftingAPI
         });
 
     }
@@ -306,7 +317,20 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             settingKey: Properties.settings.modelVersion.key
         });
     }
+
+    private makeCraftingAPI(localizationService: DefaultLocalizationService,
+                            craftingSystemAPI: CraftingSystemAPI,
+                            essenceAPI: EssenceAPI,
+                            componentAPI: ComponentAPI,
+                            recipeAPI: RecipeAPI) {
+        return new DefaultCraftingAPI({
+            recipeAPI,
+            essenceAPI,
+            componentAPI,
+            craftingSystemAPI,
+            localizationService,
+        });
+    }
 }
 
-export {DefaultFabricateAPIFactory};
-export {FabricateAPIFactory};
+export { DefaultFabricateAPIFactory};

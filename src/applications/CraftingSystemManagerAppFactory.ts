@@ -1,19 +1,29 @@
 import CraftingSystemManager from "./craftingSystemManagerApp/CraftingSystemEditor.svelte"
 import Properties from "../scripts/Properties";
 import {SvelteApplication} from "./SvelteApplication";
-import {DefaultGameProvider} from "../scripts/foundry/GameProvider";
-import {DefaultSystemRegistry} from "../scripts/registries/SystemRegistry";
-import {DefaultLocalizationService} from "./common/LocalizationService";
+import {LocalizationService} from "./common/LocalizationService";
+import {FabricateAPI} from "../scripts/api/FabricateAPI";
 
 class CraftingSystemManagerAppFactory {
 
-    public static async make(systemRegistry: DefaultSystemRegistry): Promise<SvelteApplication> {
+    private readonly localizationService: LocalizationService;
+    private readonly fabricateAPI: FabricateAPI;
 
-        const gameProvider = new DefaultGameProvider();
-        const GAME = gameProvider.get();
+    constructor({
+        fabricateAPI,
+        localizationService,
+    }: {
+        fabricateAPI: FabricateAPI;
+        localizationService: LocalizationService;
+    }) {
+        this.fabricateAPI = fabricateAPI;
+        this.localizationService = localizationService;
+    }
+
+    public make(): SvelteApplication {
 
         const applicationOptions = {
-            title: GAME.i18n.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
+            title: this.localizationService.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
             id: Properties.ui.apps.craftingSystemManager.id,
             resizable: false,
             width: 1020,
@@ -25,9 +35,8 @@ class CraftingSystemManagerAppFactory {
             svelteConfig: {
                 options: {
                     props: {
-                        localization: new DefaultLocalizationService(gameProvider),
-                        systemRegistry,
-                        gameProvider
+                        localization: this.localizationService,
+                        fabricateAPI: this.fabricateAPI
                     }
                 },
                 componentType: CraftingSystemManager

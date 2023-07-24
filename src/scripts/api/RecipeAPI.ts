@@ -329,23 +329,24 @@ class DefaultRecipeAPI implements RecipeAPI {
         requirementOptions = [],
         resultOptions = [],
     }: RecipeOptions): Promise<Recipe> {
+
         const assignedIds = await this.recipeStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
 
-        const mappedRequirementOptions = requirementOptions.reduce((result, option) => {
+        const mappedRequirementOptions = requirementOptions.reduce((result, requirementOption) => {
             const optionId = this.identityFactory.make();
             result[optionId] = {
                 id: optionId,
-                ...option
+                ...requirementOption
             };
             return result;
         }, <Record<string, RequirementOptionJson>>{});
 
-        const mappedResultOptions = resultOptions.reduce((result, option) => {
+        const mappedResultOptions = resultOptions.reduce((result, resultOption) => {
             const optionId = this.identityFactory.make();
             result[optionId] = {
                 id: optionId,
-                ...option
+                ...resultOption
             };
             return result;
         }, <Record<string, ResultOptionJson>>{});
