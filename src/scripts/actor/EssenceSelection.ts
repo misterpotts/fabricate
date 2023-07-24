@@ -1,14 +1,14 @@
 import {Combination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
 import {ComponentCombinationGenerator, ComponentEssenceCombination} from "./ComponentCombinationGenerator";
-import {Essence} from "../crafting/essence/Essence";
 import {TrackedCombination} from "../common/TrackedCombination";
+import {EssenceReference} from "../crafting/essence/EssenceReference";
 
 export class EssenceSelection {
 
-    private readonly _essences: Combination<Essence>;
+    private readonly _essences: Combination<EssenceReference>;
 
-    constructor(essences: Combination<Essence>) {
+    constructor(essences: Combination<EssenceReference>) {
         this._essences = essences;
     }
 
@@ -45,7 +45,7 @@ export class EssenceSelection {
         return sortedCombinations[0].components;
     }
 
-    private selectClosestMatch(combinations: ComponentEssenceCombination[], requiredEssences: Combination<Essence>): Combination<Component> {
+    private selectClosestMatch(combinations: ComponentEssenceCombination[], requiredEssences: Combination<EssenceReference>): Combination<Component> {
         if (combinations.length === 0) {
             return Combination.EMPTY();
         }

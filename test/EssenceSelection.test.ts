@@ -15,8 +15,8 @@ describe("Essence selection", () => {
     test("Should produce closest incomplete selection", () => {
 
         const required = Combination.ofUnits([
-            new Unit(elementalWater, 2),
-            new Unit(elementalEarth, 4)
+            new Unit(elementalWater.toReference(), 2),
+            new Unit(elementalEarth.toReference(), 4)
         ]);
 
         const underTest = new EssenceSelection(required);
@@ -46,8 +46,8 @@ describe("Essence selection", () => {
     test("Should produce smallest complete selection", () => {
 
         const required = Combination.ofUnits([
-            new Unit(elementalFire, 3),
-            new Unit(elementalAir, 1)
+            new Unit(elementalFire.toReference(), 3),
+            new Unit(elementalAir.toReference(), 1)
         ]);
 
         const underTest = new EssenceSelection(required);

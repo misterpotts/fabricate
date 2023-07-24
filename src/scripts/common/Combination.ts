@@ -443,7 +443,7 @@ class Combination<T extends Identifiable> {
      * @returns {boolean} True if the original Combination and the provided Combination share any common members, otherwise false.
      */
     intersects(other: Combination<T>) {
-        return other.members.some((otherMember: T) => this.members.includes(otherMember));
+        return other.members.some((otherMember: T) => this.members.find(value => value.id === otherMember.id) !== undefined);
     }
 
     /**

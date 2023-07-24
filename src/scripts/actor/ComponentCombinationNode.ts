@@ -1,17 +1,17 @@
 import {Combination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
-import {Essence} from "../crafting/essence/Essence";
 import {Unit} from "../common/Unit";
+import {EssenceReference} from "../crafting/essence/EssenceReference";
 
 export class ComponentCombinationNode {
-    private readonly _requiredEssences: Combination<Essence>;
+    private readonly _requiredEssences: Combination<EssenceReference>;
     private readonly _componentCombination: Combination<Component>;
-    private readonly _essenceCombination: Combination<Essence>;
+    private readonly _essenceCombination: Combination<EssenceReference>;
     private readonly _remainingPicks: Combination<Component>;
 
     private _children: ComponentCombinationNode[];
 
-    constructor(requiredEssences: Combination<Essence>, nodeCombination: Combination<Component>, remainingPicks: Combination<Component>) {
+    constructor(requiredEssences: Combination<EssenceReference>, nodeCombination: Combination<Component>, remainingPicks: Combination<Component>) {
         this._requiredEssences = requiredEssences;
         this._componentCombination = nodeCombination;
         this._remainingPicks = remainingPicks;
@@ -35,7 +35,7 @@ export class ComponentCombinationNode {
         return this._componentCombination;
     }
 
-    get essenceCombination(): Combination<Essence> {
+    get essenceCombination(): Combination<EssenceReference> {
         return this._essenceCombination;
     }
 

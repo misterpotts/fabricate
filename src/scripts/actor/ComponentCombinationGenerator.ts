@@ -1,13 +1,13 @@
 import {ComponentCombinationNode} from "./ComponentCombinationNode";
 import {Combination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
-import {Essence} from "../crafting/essence/Essence";
 import {Unit} from "../common/Unit";
+import {EssenceReference} from "../crafting/essence/EssenceReference";
 
 interface ComponentEssenceCombination {
     components: Combination<Component>;
-    essences: Combination<Essence>;
-    isSufficientFor(requiredEssences: Combination<Essence>): boolean;
+    essences: Combination<EssenceReference>;
+    isSufficientFor(requiredEssences: Combination<EssenceReference>): boolean;
 }
 
 interface CombinationGenerationResult {
@@ -71,9 +71,9 @@ class SuccessfulCombinationGenerationResult implements CombinationGenerationResu
 class DefaultComponentEssenceCombination implements ComponentEssenceCombination {
 
     private readonly _components: Combination<Component>;
-    private readonly _essences: Combination<Essence>;
+    private readonly _essences: Combination<EssenceReference>;
 
-    constructor(components: Combination<Component>, essences: Combination<Essence>) {
+    constructor(components: Combination<Component>, essences: Combination<EssenceReference>) {
         this._components = components;
         this._essences = essences;
     }
@@ -82,11 +82,11 @@ class DefaultComponentEssenceCombination implements ComponentEssenceCombination 
         return this._components;
     }
 
-    get essences(): Combination<Essence> {
+    get essences(): Combination<EssenceReference> {
         return this._essences;
     }
 
-    public isSufficientFor(requiredEssences: Combination<Essence>): boolean {
+    public isSufficientFor(requiredEssences: Combination<EssenceReference>): boolean {
         return this._essences.size >= requiredEssences.size
             && requiredEssences.isIn(this._essences);
     }
@@ -96,9 +96,9 @@ class DefaultComponentEssenceCombination implements ComponentEssenceCombination 
 class ComponentCombinationGenerator {
 
     private readonly _roots: ComponentCombinationNode[];
-    private readonly _requiredEssences: Combination<Essence>;
+    private readonly _requiredEssences: Combination<EssenceReference>;
 
-    constructor(availableComponents: Combination<Component>, requiredEssences: Combination<Essence>) {
+    constructor(availableComponents: Combination<Component>, requiredEssences: Combination<EssenceReference>) {
         this._requiredEssences = requiredEssences;
         this._roots = availableComponents.members
             .map((component) => Combination.ofUnit(new Unit(component, 1)))
