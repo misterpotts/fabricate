@@ -109,6 +109,7 @@ class DefaultSettingMigrationAPI implements SettingMigrationAPI {
         const startedMessage = this._localizationService.localize(`${Properties.module.id}.settings.migration.started`);
         this._notificationService.info(startedMessage);
         const migrationResult = await this._settingsMigrator.performMigration();
+        await this.restoreEmbeddedCraftingSystems();
         const outcomeMessage = this._localizationService.localize(this._getLocalizationMessagePathBySettingMigrationStatus(migrationResult.status));
         this._notificationService.info(outcomeMessage);
         return migrationResult;

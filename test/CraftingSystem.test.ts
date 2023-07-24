@@ -25,8 +25,7 @@ describe('Create and configure', () => {
             }),
             id: testSystemId,
             enabled: true,
-            embedded: false,
-            gameSystem: "dnd5e"
+            embedded: false
         });
 
         expect(underTest).not.toBeNull();
@@ -47,8 +46,7 @@ describe('Create and configure', () => {
             }),
             id: testSystemId,
             enabled: true,
-            embedded: false,
-            gameSystem: "dnd5e"
+            embedded: false
         });
 
         expect(underTest).not.toBeNull();

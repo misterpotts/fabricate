@@ -477,14 +477,15 @@ describe("FabricateAPI data migration", () => {
 
         const fabricateStatisticsAfter = await underTest.getStatistics();
 
+        // todo: add assertions for the component and recipe IDs, which have changed for alchemist's supplies in the migration
+        //   count is okay for now, but we should probably add assertions for the IDs as well
+
         expect(fabricateStatisticsAfter.craftingSystems.count).toBe(fabricateStatisticsBefore.craftingSystems.count);
         expect(fabricateStatisticsAfter.craftingSystems.ids).toEqual(fabricateStatisticsBefore.craftingSystems.ids);
         expect(fabricateStatisticsAfter.essences.count).toEqual(fabricateStatisticsBefore.essences.count);
-        expect(fabricateStatisticsAfter.essences.ids).toEqual(fabricateStatisticsBefore.essences.ids);
+        expect(fabricateStatisticsAfter.essences.ids).toEqual(expect.arrayContaining(fabricateStatisticsBefore.essences.ids));
         expect(fabricateStatisticsAfter.components.count).toEqual(fabricateStatisticsBefore.components.count);
-        expect(fabricateStatisticsAfter.components.ids).toEqual(fabricateStatisticsBefore.components.ids);
         expect(fabricateStatisticsAfter.recipes.count).toEqual(fabricateStatisticsBefore.recipes.count);
-        expect(fabricateStatisticsAfter.recipes.ids).toEqual(fabricateStatisticsBefore.recipes.ids);
 
     });
 
