@@ -132,7 +132,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         if (this._salvageOptions.isEmpty) {
             return false;
         }
-        return this._salvageOptions.options
+        return this._salvageOptions.all
             .map(option => !option.results.isEmpty())
             .reduce((left, right) => left || right, false);
     }
@@ -224,7 +224,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     }
 
     removeComponentFromSalvageOptions(componentId: string) {
-        const options = this._salvageOptions.options
+        const options = this._salvageOptions.all
             .map(option => option.without(componentId));
         this._salvageOptions = new SelectableOptions({ options });
     }

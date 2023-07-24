@@ -122,10 +122,8 @@ const defaultSettingValue = () => {
        }
     };
 };
-const settingManager = new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue());
 
 beforeEach(() => {
-    settingManager.reset(defaultSettingValue());
     documentManager.reset();
     resetAllTestRecipes();
 });
@@ -153,7 +151,7 @@ describe("Create", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: new Map([[ "3456abcd", createdRecipe ]]) }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -178,7 +176,7 @@ describe("Create", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -205,7 +203,7 @@ describe("Create", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -229,7 +227,7 @@ describe("Create", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -252,7 +250,7 @@ describe("Create", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -269,7 +267,6 @@ describe("Create", () => {
             id: identityFactory.make(),
             craftingSystemId: "notAValidCraftingSystemId",
             itemData: testRecipeOne.itemData,
-            essences: testRecipeOne.essences,
             resultOptions: testRecipeOne.resultOptions.clone(),
             requirementOptions: testRecipeOne.requirementOptions.clone(),
             disabled: testRecipeOne.isDisabled
@@ -284,7 +281,7 @@ describe("Create", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -310,7 +307,7 @@ describe("Access", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -333,7 +330,7 @@ describe("Access", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -369,7 +366,7 @@ describe("Access", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -403,7 +400,7 @@ describe("Access", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -435,7 +432,7 @@ describe("Access", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -467,7 +464,7 @@ describe("Access", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -495,19 +492,12 @@ describe("Edit", () => {
 
     test("should clone a recipe by ID", async () => {
 
-        let clonedRecipeJson: RecipeJson;
-        const factoryFunction = (recipeJson: RecipeJson) => {
-            clonedRecipeJson = recipeJson;
-            return Promise.resolve(
-                new Recipe({
-                    id: recipeJson.id,
-                    craftingSystemId: recipeJson.craftingSystemId
-                })
-            );
+        const factoryFunction = async (recipeJson: RecipeJson) => {
+            return Recipe.fromJson(recipeJson);
         };
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes, factoryFunction }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -525,9 +515,8 @@ describe("Edit", () => {
         expect(result).not.toBeNull();
         expect(result.id.length).toBeGreaterThan(1);
         expect(result.id).not.toEqual(testRecipeOne.id);
-        expect(clonedRecipeJson.requirementOptions.length).toEqual(testRecipeOne.requirementOptions.size);
-        expect(clonedRecipeJson.resultOptions.length).toEqual(testRecipeOne.resultOptions.size);
-        expect(Object.keys(clonedRecipeJson.essences).length).toEqual(testRecipeOne.essences.size);
+        expect(result.requirementOptions.equals(testRecipeOne.requirementOptions)).toBe(true);
+        expect(result.resultOptions.equals(testRecipeOne.resultOptions)).toBe(true);
 
     });
 
@@ -535,7 +524,7 @@ describe("Edit", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -551,17 +540,24 @@ describe("Edit", () => {
         const recipeToEdit = await underTest.getById(testRecipeOne.id);
 
         const essencesBefore = {
-            size: recipeToEdit.essences.size,
-            fireCount: recipeToEdit.essences.amountFor(elementalFire.id)
+            size: recipeToEdit.requirementOptions.all.map(option => option.essences.size).reduce((left, right) => left + right, 0),
+            fireCount: recipeToEdit.requirementOptions.all.map(option => option.essences.amountFor(elementalFire.id)).reduce((left, right) => left + right, 0)
         };
-        recipeToEdit.essences = recipeToEdit.essences.increment(elementalFire.id);
+        const requirementOptionCount = recipeToEdit.requirementOptions.size;
+        recipeToEdit.requirementOptions.all.forEach(option => {
+            option.essences = option.essences.increment(elementalFire.toReference());
+        });
 
         await underTest.save(recipeToEdit);
 
         const editedRecipe = await underTest.getById(testRecipeOne.id);
+        const essencesAfter = {
+            size: editedRecipe.requirementOptions.all.map(option => option.essences.size).reduce((left, right) => left + right, 0),
+            fireCount: editedRecipe.requirementOptions.all.map(option => option.essences.amountFor(elementalFire.id)).reduce((left, right) => left + right, 0)
+        };
 
-        expect(editedRecipe.essences.size).toEqual(essencesBefore.size + 1);
-        expect(editedRecipe.essences.amountFor(elementalFire.id)).toEqual(essencesBefore.fireCount + 1);
+        expect(essencesAfter.size).toEqual(essencesBefore.size + requirementOptionCount);
+        expect(essencesAfter.fireCount).toEqual(essencesBefore.fireCount + requirementOptionCount);
 
     });
 
@@ -573,7 +569,7 @@ describe("Delete", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -606,7 +602,7 @@ describe("Delete", () => {
         const emptyCraftingSystemApi = new StubCraftingSystemApi();
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -642,7 +638,7 @@ describe("Delete", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -676,7 +672,7 @@ describe("Delete", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -712,7 +708,7 @@ describe("Delete", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -744,7 +740,7 @@ describe("Delete", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -761,17 +757,17 @@ describe("Delete", () => {
         const craftingSystemId = testCraftingSystemOne.id;
         const allBefore = await underTest.getAllByCraftingSystemId(craftingSystemId);
         const countBefore = countComponentReferences(Array.from(allBefore.values()), componentIdToDelete);
-        expect(countBefore.matches.length).toBeGreaterThan(0);
+        expect(countBefore.matchingRecipes.length).toBeGreaterThan(0);
         expect(countBefore.amount).toBeGreaterThan(0);
 
         const modified = await underTest.removeComponentReferences(componentIdToDelete, craftingSystemId);
-        expect(modified.length).toEqual(countBefore.matches.length);
-        modified.forEach(recipe => expect(countBefore.matches.includes(recipe.id)).toEqual(true));
+        expect(modified.length).toEqual(countBefore.matchingRecipes.length);
+        modified.forEach(recipe => expect(countBefore.matchingRecipes.includes(recipe.id)).toEqual(true));
 
         const allAfter = await underTest.getAllByCraftingSystemId(craftingSystemId);
         expect(allAfter.size).toEqual(allBefore.size);
         const countAfter = countComponentReferences(Array.from(allAfter.values()), componentIdToDelete);
-        expect(countAfter.matches.length).toEqual(0);
+        expect(countAfter.matchingRecipes.length).toEqual(0);
         expect(countAfter.amount).toEqual(0);
 
     });
@@ -780,7 +776,7 @@ describe("Delete", () => {
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
-            settingManager,
+            settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
             entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: allTestRecipes }),
             collectionManager: new RecipeCollectionManager()
         });
@@ -797,16 +793,16 @@ describe("Delete", () => {
         const craftingSystemId = testCraftingSystemOne.id;
         const allBefore = await underTest.getAllByCraftingSystemId(craftingSystemId);
         const countBefore = countEssenceReferences(Array.from(allBefore.values()), essenceIdToDelete);
-        expect(countBefore.matches.length).toBeGreaterThan(0);
+        expect(countBefore.matchingRecipes.length).toBeGreaterThan(0);
         expect(countBefore.amount).toBeGreaterThan(0);
 
         const modified = await underTest.removeEssenceReferences(essenceIdToDelete, craftingSystemId);
-        expect(modified.length).toEqual(countBefore.matches.length);
-        modified.forEach(recipe => expect(countBefore.matches.includes(recipe.id)).toEqual(true));
+        expect(modified.length).toEqual(countBefore.matchingRecipes.length);
+        modified.forEach(recipe => expect(countBefore.matchingRecipes.includes(recipe.id)).toEqual(true));
 
         const allAfter = await underTest.getAllByCraftingSystemId(craftingSystemId);
         const countAfter = countEssenceReferences(Array.from(allAfter.values()), essenceIdToDelete);
-        expect(countAfter.matches.length).toEqual(0);
+        expect(countAfter.matchingRecipes.length).toEqual(0);
         expect(countAfter.amount).toEqual(0);
 
     });
@@ -817,44 +813,46 @@ function countComponentReferences(recipes: Recipe[], componentId: string) {
     return recipes
         .map(recipe => {
             const amountInIngredients = recipe.requirementOptions
-                .options
+                .all
                 .map(requirementOption => requirementOption.ingredients.amountFor(componentId))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
             const amountInCatalysts = recipe.requirementOptions
-                .options
+                .all
                 .map(requirementOption => requirementOption.catalysts.amountFor(componentId))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
             const amountInResults = recipe.resultOptions
-                .options
+                .all
                 .map(resultOption => resultOption.results.amountFor(componentId))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
             const amount = amountInIngredients + amountInCatalysts + amountInResults;
             return {
                 amount,
-                matches: amount > 0 ? [recipe.id] : []
+                matchingRecipes: amount > 0 ? [recipe.id] : []
             };
         })
         .reduce((previousValue, currentValue) => {
             return {
                 amount: previousValue.amount + currentValue.amount,
-                matches: previousValue.matches.concat(currentValue.matches)
+                matchingRecipes: previousValue.matchingRecipes.concat(currentValue.matchingRecipes)
             }
-        }, { amount: 0, matches: [] });
+        }, { amount: 0, matchingRecipes: [] });
 }
 
-function countEssenceReferences(recipes: Recipe[], essenceId: string) {
+function countEssenceReferences(recipes: Recipe[], essenceId: string): { amount: number, matchingRecipes: string[] } {
     return recipes
-        .map(recipe => {
-            const amount = recipe.essences.amountFor(essenceId);
-            return {
-                amount,
-                matches: amount > 0 ? [recipe.id] : []
-            };
+        .flatMap(recipe => {
+            return recipe.requirementOptions.all.map(requirementOption => {
+                return {
+                    requirementOption,
+                    recipeId: recipe.id
+                }
+            });
         })
-        .reduce((previousValue, currentValue) => {
+        .filter(candidate => candidate.requirementOption.essences.has(essenceId))
+        .reduce((summary, recipeRequirementOption) => {
             return {
-                amount: previousValue.amount + currentValue.amount,
-                matches: previousValue.matches.concat(currentValue.matches)
+                amount: summary.amount + recipeRequirementOption.requirementOption.essences.amountFor(essenceId),
+                matchingRecipes: summary.matchingRecipes.includes(recipeRequirementOption.recipeId) ? summary.matchingRecipes : summary.matchingRecipes.concat(recipeRequirementOption.recipeId)
             }
-        }, { amount: 0, matches: [] });
+        }, { amount: 0, matchingRecipes: <string[]>[] });
 }

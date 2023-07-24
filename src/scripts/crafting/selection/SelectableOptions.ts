@@ -57,10 +57,6 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         return Array.from(this._options.values());
     }
 
-    get options(): T[] {
-        return Array.from(this._options.values());
-    }
-
     set options(values: T[]) {
         this._options = new Map(values.map(value => [value.id, value]));
     }
@@ -225,6 +221,10 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         return nextId;
     }
 
+    static fromJson<J, T extends Identifiable & Serializable<J>>(optionsJson: Record<string, J>, optionFactoryFunction: (json: J) => T) {
+        const options = Object.values(optionsJson).map(optionJson => optionFactoryFunction(optionJson));
+        return new SelectableOptions<J, T>({options});
+    }
 }
 
 export { SelectableOptions }

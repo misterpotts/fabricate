@@ -33,14 +33,12 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with essences only", () => {
         const underTest = testRecipeThree;
 
-        expect(underTest.essences.size).toEqual(4);
-        expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
-        expect(underTest.essences.amountFor(elementalEarth.id)).toEqual(3);
-
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.requiresEssences).toEqual(true);
-        expect(underTest.hasRequirements).toEqual(false);
+        expect(underTest.hasRequirements).toEqual(true);
+        expect(underTest.requirementOptions.all[0].essences.size).toEqual(4);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalEarth.id)).toEqual(3);
         expect(underTest.hasRequirementOptions).toEqual(false);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultOptions).toEqual(false);
@@ -49,20 +47,19 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with essences and catalysts", () => {
         const underTest = testRecipeFive;
 
-        expect(underTest.essences.size).toEqual(2);
-        expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
-        expect(underTest.essences.amountFor(elementalWater.id)).toEqual(1);
-
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.requiresEssences).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
         expect(underTest.hasRequirementOptions).toEqual(false);
-        expect(underTest.requirementOptions.options.length).toEqual(1);
-        expect(underTest.requirementOptions.options[0].requiresCatalysts).toEqual(true);
-        expect(underTest.requirementOptions.options[0].requiresIngredients).toEqual(false);
-        expect(underTest.requirementOptions.options[0].catalysts.size).toEqual(1);
-        expect(underTest.requirementOptions.options[0].catalysts.amountFor(testComponentFour.id)).toEqual(1);
+        expect(underTest.requirementOptions.all.length).toEqual(1);
+        expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
+        expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(false);
+        expect(underTest.requirementOptions.all[0].requiresEssences).toEqual(true);
+        expect(underTest.requirementOptions.all[0].essences.size).toEqual(2);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalWater.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultOptions).toEqual(false);
     });
@@ -72,16 +69,15 @@ describe("When creating a recipe", () => {
 
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.requiresEssences).toEqual(false);
         expect(underTest.hasRequirements).toEqual(true);
         expect(underTest.hasRequirementOptions).toEqual(false);
-        expect(underTest.requirementOptions.options.length).toEqual(1);
-        expect(underTest.requirementOptions.options[0].requiresCatalysts).toEqual(true);
-        expect(underTest.requirementOptions.options[0].requiresIngredients).toEqual(true);
-        expect(underTest.requirementOptions.options[0].catalysts.size).toEqual(1);
-        expect(underTest.requirementOptions.options[0].catalysts.amountFor(testComponentFive.id)).toEqual(1);
-        expect(underTest.requirementOptions.options[0].ingredients.size).toEqual(1);
-        expect(underTest.requirementOptions.options[0].ingredients.amountFor(testComponentFour.id)).toEqual(1);
+        expect(underTest.requirementOptions.all.length).toEqual(1);
+        expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
+        expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(true);
+        expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFive.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].ingredients.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].ingredients.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultOptions).toEqual(false);
 
@@ -92,13 +88,12 @@ describe("When creating a recipe", () => {
 
         expect(underTest.hasOptions).toEqual(true);
         expect(underTest.ready()).toEqual(false);
-        expect(underTest.requiresEssences).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
         expect(underTest.hasRequirementOptions).toEqual(true);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultOptions).toEqual(true);
-        expect(underTest.requirementOptions.options.length).toEqual(2);
-        expect(underTest.resultOptions.options.length).toEqual(2);
+        expect(underTest.requirementOptions.all.length).toEqual(2);
+        expect(underTest.resultOptions.all.length).toEqual(2);
 
     });
 
@@ -127,10 +122,12 @@ describe("When selecting ingredients", () => {
             requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
                     new RequirementOption({
+                        id: `${id}-requirement-1`,
                         name: "Option 1",
                         ingredients: combinationOne
                     }),
                     new RequirementOption({
+                        id: `${id}-requirement-2`,
                         name: "Option 2",
                         ingredients: combinationTwo
                     }),
@@ -151,17 +148,21 @@ describe("When selecting ingredients", () => {
             new Unit(testComponentTwo.toReference(), 1)
         ]);
         const optionOneId = "1";
+        const optionOneName = "Option 1";
         const optionOne = new RequirementOption({
-            name: optionOneId,
+            id: optionOneId,
+            name: optionOneName,
             ingredients: combinationOne
         });
 
         const optionTwoId = "2";
+        const optionTwoName = "Option 2";
         const combinationTwo = Combination.ofUnits([
             new Unit(testComponentThree.toReference(), 2)
         ]);
         const optionTwo = new RequirementOption({
-            name: optionTwoId,
+            id: optionTwoId,
+            name: optionTwoName,
             ingredients: combinationTwo
         });
 
@@ -174,7 +175,7 @@ describe("When selecting ingredients", () => {
             })
         });
 
-        expect(underTest.requirementOptions.options.length).toEqual(2);
+        expect(underTest.requirementOptions.all.length).toEqual(2);
         expect(underTest.ready()).toEqual(false);
 
         underTest.selectRequirementOption(optionOneId);
@@ -219,6 +220,7 @@ describe("When selecting results", () => {
             resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
                 options: [
                     new ResultOption({
+                        id: `${id}-result-1`,
                         name: "Option 1",
                         results: singletonResult
                     })
@@ -227,6 +229,7 @@ describe("When selecting results", () => {
             requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
                     new RequirementOption({
+                        id: `${id}-requirement-1`,
                         name: "Option 1",
                         ingredients: singletonIngredient
                     })
@@ -262,10 +265,12 @@ describe("When selecting results", () => {
             resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
                 options: [
                     new ResultOption({
+                        id: `${id}-result-1`,
                         name: "Option 1",
                         results: resultCombinationOne
                     }),
                     new ResultOption({
+                        id: `${id}-result-2`,
                         name: "Option 2",
                         results: resultCombinationTwo
                     })
@@ -290,8 +295,8 @@ describe("When selecting results", () => {
             new Unit(testComponentThree.toReference(), 2)
         ]);
 
-        const optionOneId = "1";
-        const optionTwoId = "2";
+        const optionOneId = `${id}-result-1`;
+        const optionTwoId = `${id}-result-2`;
         const underTest = new Recipe({
             id,
             craftingSystemId: "acb123",
@@ -299,11 +304,13 @@ describe("When selecting results", () => {
             resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
                 options: [
                     new ResultOption({
-                        name: optionOneId,
+                        id: optionOneId,
+                        name: "Option 1",
                         results: resultCombinationOne
                     }),
                     new ResultOption({
-                        name: optionTwoId,
+                        id: optionTwoId,
+                        name: "Option 2",
                         results: resultCombinationTwo
                     })
                 ]

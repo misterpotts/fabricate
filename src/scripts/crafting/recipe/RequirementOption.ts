@@ -29,12 +29,12 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
     private _essences: Combination<EssenceReference>;
 
     constructor({
-                    id,
-                    name,
-                    essences = Combination.EMPTY(),
-                    catalysts = Combination.EMPTY(),
-                    ingredients = Combination.EMPTY(),
-                }: {
+        id,
+        name,
+        essences = Combination.EMPTY(),
+        catalysts = Combination.EMPTY(),
+        ingredients = Combination.EMPTY(),
+    }: {
         id: string;
         name: string;
         essences?: Combination<EssenceReference>;
@@ -52,12 +52,20 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         return this._essences;
     }
 
+    set essences(value: Combination<EssenceReference>) {
+        this._essences = value;
+    }
+
     get requiresCatalysts(): boolean {
         return !this._catalysts.isEmpty();
     }
 
     get requiresIngredients(): boolean {
         return !this._ingredients.isEmpty();
+    }
+
+    get requiresEssences(): boolean {
+        return !this._essences.isEmpty();
     }
 
     set catalysts(value: Combination<ComponentReference>) {

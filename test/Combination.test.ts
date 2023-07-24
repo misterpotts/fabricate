@@ -41,7 +41,7 @@ test('Should create a Combination from a single Unit',() => {
     let equivalentComponent = new Component({
         id: testComponentOne.id,
         craftingSystemId: testComponentOne.craftingSystemId,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.options }),
+        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.all }),
         essences: testComponentOne.essences,
         disabled: testComponentOne.disabled,
         itemData: testComponentOne.itemData
@@ -83,7 +83,7 @@ test('Should create a Combination from a several Units',() => {
         craftingSystemId: testComponentOne.craftingSystemId,
         itemData: testComponentOne.itemData,
         disabled: testComponentOne.disabled,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.options }),
+        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.all }),
         essences: testComponentOne.essences
     }))).toBe(true);
     expect(underTest.has(new Component({

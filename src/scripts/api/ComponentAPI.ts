@@ -384,7 +384,7 @@ class DefaultComponentAPI implements ComponentAPI {
                 if (!component.isSalvageable) {
                     return false;
                 }
-                const firstMatchingSalvage = component.salvageOptions.options
+                const firstMatchingSalvage = component.salvageOptions.all
                     .map(salvageOption => salvageOption.results)
                     .find(salvage => salvage.has(componentId));
                 return !!firstMatchingSalvage;

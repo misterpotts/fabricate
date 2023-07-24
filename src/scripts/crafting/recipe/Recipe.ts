@@ -283,12 +283,12 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     getUniqueReferencedComponents(): ComponentReference[] {
-        const componentsFromResults = this.resultOptions.options
+        const componentsFromResults = this.resultOptions.all
             .map(resultOption => resultOption.results)
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
             }, Combination.EMPTY<ComponentReference>());
-        const componentFromRequirements = this.requirementOptions.options
+        const componentFromRequirements = this.requirementOptions.all
             .map(requirementOption => requirementOption.ingredients.combineWith(requirementOption.catalysts))
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
@@ -338,7 +338,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     hasComponent(componentId: string): boolean {
-        const inRequirements = this.requirementOptions.options
+        const inRequirements = this.requirementOptions.all
             .map(option => option.ingredients.has(componentId) || option.catalysts.has(componentId))
             .reduce((previousValue, currentValue) => {
                 return previousValue || currentValue;
@@ -348,7 +348,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             return true;
         }
 
-        return this.resultOptions.options
+        return this.resultOptions.all
             .map(option => option.results.has(componentId))
             .reduce((previousValue, currentValue) => {
                 return previousValue || currentValue;
@@ -356,7 +356,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     removeComponent(componentId: string) {
-        const modifiedRequirementOptions = this.requirementOptions.options.map(option => {
+        const modifiedRequirementOptions = this.requirementOptions.all.map(option => {
             const ingredients = option.ingredients.without(componentId);
             const catalysts = option.catalysts.without(componentId);
             return new RequirementOption({
@@ -368,7 +368,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             });
         });
         this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({ options: modifiedRequirementOptions });
-        const modifiedResultOptions = this.resultOptions.options.map(option => {
+        const modifiedResultOptions = this.resultOptions.all.map(option => {
             const results = option.results.without(componentId);
             return new ResultOption({
                 id: option.id,
@@ -380,7 +380,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     removeEssence(essenceIdToRemove: string) {
-        const modifiedRequirementOptions = this.requirementOptions.options.map(option => {
+        const modifiedRequirementOptions = this.requirementOptions.all.map(option => {
             const essences = option.essences.without(essenceIdToRemove);
             return new RequirementOption({
                 id: option.id,
@@ -398,7 +398,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     getUniqueReferencedEssences(): EssenceReference[] {
-        return this.requirementOptions.options
+        return this.requirementOptions.all
             .flatMap(option => option.essences.members)
             .filter((essence, index, array) => array.indexOf(essence) === index);
     }
@@ -421,6 +421,19 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
 
+    static fromJson(recipeJson: RecipeJson) {
+        const resultOptions = SelectableOptions.fromJson<ResultOptionJson, ResultOption>(recipeJson.resultOptions, ResultOption.fromJson);
+        const requirementOptions = SelectableOptions.fromJson<RequirementOptionJson, RequirementOption>(recipeJson.requirementOptions, RequirementOption.fromJson);
+        return new Recipe({
+            id: recipeJson.id,
+            embedded: recipeJson.embedded,
+            craftingSystemId: recipeJson.craftingSystemId,
+            disabled: recipeJson.disabled,
+            itemData: NoFabricateItemData.INSTANCE(),
+            resultOptions,
+            requirementOptions
+        });
+    }
 }
 
 export { Recipe, RecipeJson }

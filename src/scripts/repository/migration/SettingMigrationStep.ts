@@ -231,7 +231,6 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
                 record[value.id] = value;
                 return record;
             }, <Record<string, ResultOptionJson>> {});
-        // todo: If the recipe doesn't have any requirement options (uses essences only) it will create a new option with just the essences.
         const requirementOptions = Object.keys(source.ingredientOptions)
             .map(ingredientOptionId => {
                 const ingredientOption = source.ingredientOptions[ingredientOptionId];
@@ -247,6 +246,16 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
                 record[value.id] = value;
                 return record;
             }, <Record<string, RequirementOptionJson>> {});
+        if (Object.keys(source.essences).length > 0 && Object.keys(requirementOptions).length === 0) {
+            const optionId = this._identityFactory.make();
+            requirementOptions[optionId] = {
+                id: optionId,
+                name: "Essences only",
+                essences: source.essences,
+                ingredients: {},
+                catalysts: {},
+            }
+        }
         return {
             id: recipeId,
             resultOptions,
