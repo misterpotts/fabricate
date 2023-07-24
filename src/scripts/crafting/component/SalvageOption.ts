@@ -32,12 +32,12 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         id,
         name,
         salvage,
-        catalysts
+        catalysts = Combination.EMPTY()
     }: {
         id: string;
         name: string;
         salvage: Combination<ComponentReference>;
-        catalysts: Combination<ComponentReference>;
+        catalysts?: Combination<ComponentReference>;
     }) {
         this._id = id;
         this._name = name;

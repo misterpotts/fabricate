@@ -18,7 +18,7 @@ const testComponentOne: Component = new Component({
         itemUuid: "Compendium.module.compendium-name.iyeUGBbSts0ij92X",
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
-    essences: Combination.ofUnits([new Unit(elementalEarth, 2)]),
+    essences: Combination.ofUnits([new Unit(elementalEarth.toReference(), 2)]),
 });
 
 const testComponentTwo: Component = new Component({
@@ -30,7 +30,7 @@ const testComponentTwo: Component = new Component({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
-    essences: Combination.ofUnits([new Unit(elementalFire, 2)]),
+    essences: Combination.ofUnits([new Unit(elementalFire.toReference(), 2)]),
 });
 
 const testComponentThree: Component = new Component({
@@ -42,11 +42,12 @@ const testComponentThree: Component = new Component({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
-    essences: Combination.ofUnits([new Unit(elementalWater, 2)]),
+    essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 2)]),
 });
 
+const testComponentFourId = "Ra2Z1ujre76weR0i";
 const testComponentFour: Component = new Component({
-    id: "Ra2Z1ujre76weR0i",
+    id: testComponentFourId,
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
         name: "Test Component Four",
@@ -54,19 +55,21 @@ const testComponentFour: Component = new Component({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
-    essences: Combination.ofUnits([new Unit(elementalAir, 2)]),
+    essences: Combination.ofUnits([new Unit(elementalAir.toReference(), 2)]),
     salvageOptions: new SelectableOptions({
         options: [
             new SalvageOption({
+                id: `${testComponentFourId}-salvage-1`,
                 name: "Option 1",
-                salvage: Combination.of(testComponentThree, 2)
+                salvage: Combination.of(testComponentThree.toReference(), 2)
             })
         ]
     })
 });
 
+const testComponentFiveId = "74K6TAuSg2xzd209";
 const testComponentFive: Component = new Component({
-    id:"74K6TAuSg2xzd209",
+    id: testComponentFiveId,
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
         itemUuid: "Compendium.module.compendium-name.74K6TAuSg2xzd209",
@@ -75,16 +78,17 @@ const testComponentFive: Component = new Component({
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
     essences: Combination.ofUnits([
-        new Unit(elementalFire, 1),
-        new Unit(elementalEarth, 3)
+        new Unit(elementalFire.toReference(), 1),
+        new Unit(elementalEarth.toReference(), 3)
     ]),
     salvageOptions: new SelectableOptions({
         options: [
             new SalvageOption({
+                id: `${testComponentFiveId}-salvage-1`,
                 name: "Option 1",
                 salvage: Combination.ofUnits([
-                    new Unit(testComponentOne, 2),
-                    new Unit(testComponentTwo, 1)
+                    new Unit(testComponentOne.toReference(), 2),
+                    new Unit(testComponentTwo.toReference(), 1)
                 ])
             })
         ]
@@ -100,7 +104,7 @@ const testComponentSix: Component = new Component({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
-    essences: Combination.ofUnits([new Unit(elementalWater, 1)])
+    essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 1)])
 });
 
 const testComponentSeven: Component = new Component({
@@ -112,7 +116,7 @@ const testComponentSeven: Component = new Component({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: {} }
     }),
-    essences: Combination.ofUnits([new Unit(elementalAir, 1)])
+    essences: Combination.ofUnits([new Unit(elementalAir.toReference(), 1)])
 });
 
 const allTestComponents = new Map([
