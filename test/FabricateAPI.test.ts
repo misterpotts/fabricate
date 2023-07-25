@@ -12,6 +12,9 @@ import {SettingVersion} from "../src/scripts/repository/migration/SettingVersion
 import {SettingMigrationStatus} from "../src/scripts/repository/migration/SettingMigrationStatus";
 import {buildV2SettingsValue, buildV3SettingsValue} from "./test_data/TestSettingMigrationData";
 import {FabricateStatistics} from "../src/scripts/api/FabricateAPI";
+import {
+    AlchemistsSuppliesV16SystemDefinition
+} from "../src/scripts/repository/embedded_systems/AlchemistsSuppliesV16SystemDefinition";
 
 function buildDefaultSettingsValue() {
     const defaultSettingsValues = new Map();
@@ -477,15 +480,43 @@ describe("FabricateAPI data migration", () => {
 
         const fabricateStatisticsAfter = await underTest.getStatistics();
 
-        // todo: add assertions for the component and recipe IDs, which have changed for alchemist's supplies in the migration
-        //   count is okay for now, but we should probably add assertions for the IDs as well
+        const alchemistsSuppliesV16SystemDefinition = new AlchemistsSuppliesV16SystemDefinition();
+        const alchemistsSuppliesUpdatedComponentIds = alchemistsSuppliesV16SystemDefinition.components.map(component => component.id);
+        const alchemistsSuppliesUpdatedRecipeIds = alchemistsSuppliesV16SystemDefinition.recipes.map(recipe => recipe.id);
+        const otherSystemPartIds = Object.keys(craftingSystemsBefore)
+            .filter(craftingSystemId => craftingSystemId !== alchemistsSuppliesV16SystemDefinition.craftingSystem.id)
+            .map(craftingSystemId => craftingSystemsBefore[craftingSystemId])
+            .map(craftingSystem => {
+                const componentIds = Object.keys(craftingSystem.parts.components);
+                const recipeIds = Object.keys(craftingSystem.parts.recipes);
+                return {
+                    componentIds,
+                    recipeIds
+                }
+            })
+            .reduce((allIds, systemIds) => {
+                allIds.componentIds.push(...systemIds.componentIds);
+                allIds.recipeIds.push(...systemIds.recipeIds);
+                return allIds;
+            }, { recipeIds: [], componentIds: [] });
+
+        const expectedComponentIds = [
+            ...alchemistsSuppliesUpdatedComponentIds,
+            ...otherSystemPartIds.componentIds
+        ];
+        const expectedRecipeIds = [
+            ...alchemistsSuppliesUpdatedRecipeIds,
+            ...otherSystemPartIds.recipeIds
+        ];
 
         expect(fabricateStatisticsAfter.craftingSystems.count).toBe(fabricateStatisticsBefore.craftingSystems.count);
         expect(fabricateStatisticsAfter.craftingSystems.ids).toEqual(fabricateStatisticsBefore.craftingSystems.ids);
         expect(fabricateStatisticsAfter.essences.count).toEqual(fabricateStatisticsBefore.essences.count);
         expect(fabricateStatisticsAfter.essences.ids).toEqual(expect.arrayContaining(fabricateStatisticsBefore.essences.ids));
         expect(fabricateStatisticsAfter.components.count).toEqual(fabricateStatisticsBefore.components.count);
+        expect(fabricateStatisticsAfter.components.ids).toEqual(expect.arrayContaining(expectedComponentIds));
         expect(fabricateStatisticsAfter.recipes.count).toEqual(fabricateStatisticsBefore.recipes.count);
+        expect(fabricateStatisticsAfter.recipes.ids).toEqual(expect.arrayContaining(expectedRecipeIds));
 
     });
 
