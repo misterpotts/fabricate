@@ -1,14 +1,11 @@
 import {Writable} from "svelte/store";
 import {CraftingSystem, CraftingSystemJson} from "../../scripts/system/CraftingSystem";
-import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
 import Properties from "../../scripts/Properties";
-import FabricateApplication from "../../scripts/interface/FabricateApplication";
 import {LocalizationService} from "../common/LocalizationService";
 
 class CraftingSystemEditor {
 
     private readonly _craftingSystems: Writable<CraftingSystem[]>;
-    private readonly _systemRegistry: SystemRegistry;
     private readonly _localization: LocalizationService;
     private readonly _game: Game;
 
@@ -16,28 +13,20 @@ class CraftingSystemEditor {
 
     constructor({
         craftingSystems,
-        systemRegistry,
         localization,
         game
     }: {
         craftingSystems: Writable<CraftingSystem[]>;
-        systemRegistry: SystemRegistry;
         localization: LocalizationService;
         game: Game;
     }) {
         this._craftingSystems = craftingSystems;
-        this._systemRegistry = systemRegistry;
         this._localization = localization;
         this._game = game;
     }
 
     public async createNewCraftingSystem(): Promise<CraftingSystem> {
         const systemJson: CraftingSystemJson = {
-            parts: {
-                recipes: {},
-                components: {},
-                essences: {}
-            },
             locked: false,
             details: {
                 name: "(New!) My New Crafting System",
