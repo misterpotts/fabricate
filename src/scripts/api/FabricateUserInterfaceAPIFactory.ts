@@ -6,7 +6,6 @@ import {DefaultRecipeCraftingAppCatalog} from "../../applications/recipeCrafting
 import {DefaultRecipeCraftingAppFactory} from "../../applications/recipeCraftingApp/RecipeCraftingAppFactory";
 import {FabricateAPI} from "./FabricateAPI";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
-import {DefaultUIProvider, UIProvider} from "../foundry/UIProvider";
 import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 
 interface FabricateUserInterfaceAPIFactory {
