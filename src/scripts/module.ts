@@ -47,7 +47,6 @@ Hooks.once('ready', async () => {
     fabricateAPI = fabricateAPIFactory.make();
 
     const fabricateUserInterfaceAPIFactory = new DefaultFabricateUserInterfaceAPIFactory({
-        uiProvider,
         fabricateAPI,
         gameProvider,
     });

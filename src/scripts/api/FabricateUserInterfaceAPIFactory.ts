@@ -6,7 +6,6 @@ import {DefaultRecipeCraftingAppCatalog} from "../../applications/recipeCrafting
 import {DefaultRecipeCraftingAppFactory} from "../../applications/recipeCraftingApp/RecipeCraftingAppFactory";
 import {FabricateAPI} from "./FabricateAPI";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
-import {DefaultNotificationService} from "../foundry/NotificationService";
 import {DefaultUIProvider, UIProvider} from "../foundry/UIProvider";
 import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 
@@ -20,20 +19,16 @@ export { FabricateUserInterfaceAPIFactory };
 class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceAPIFactory {
 
     private readonly fabricateAPI: FabricateAPI;
-    private readonly uiProvider: UIProvider;
     private readonly gameProvider: GameProvider;
 
     constructor({
         fabricateAPI,
-        uiProvider = new DefaultUIProvider(),
         gameProvider = new DefaultGameProvider(),
     }: {
         fabricateAPI: FabricateAPI;
-        uiProvider?: UIProvider;
         gameProvider?: GameProvider;
     }) {
         this.fabricateAPI = fabricateAPI;
-        this.uiProvider = uiProvider;
         this.gameProvider = gameProvider;
     }
 
@@ -47,21 +42,25 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
         });
 
         const componentSalvageAppCatalog = new DefaultComponentSalvageAppCatalog({
-            componentSalvageAppFactory: new DefaultComponentSalvageAppFactory(),
-            fabricateAPI: this.fabricateAPI
+            componentSalvageAppFactory: new DefaultComponentSalvageAppFactory({
+                craftingAPI: this.fabricateAPI.crafting,
+                localizationService
+            })
         });
 
         const recipeCraftingAppCatalog = new DefaultRecipeCraftingAppCatalog({
-            recipeCraftingAppFactory: new DefaultRecipeCraftingAppFactory(),
-            fabricateAPI: this.fabricateAPI
+            recipeCraftingAppFactory: new DefaultRecipeCraftingAppFactory({
+                craftingAPI: this.fabricateAPI.crafting,
+                localizationService
+            })
         });
 
         return new DefaultFabricateUserInterfaceAPI({
-            notificationService: new DefaultNotificationService(this.uiProvider),
-            localizationService,
             craftingSystemManagerAppFactory,
             componentSalvageAppCatalog,
-            recipeCraftingAppCatalog
+            recipeCraftingAppCatalog,
+            fabricateAPI: this.fabricateAPI,
+            gameProvider: this.gameProvider,
         });
     }
 
