@@ -25,7 +25,7 @@ class CraftingSystemManagerAppFactory {
         const applicationOptions = {
             title: this.localizationService.localize(`${Properties.module.id}.CraftingSystemManagerApp.title`),
             id: Properties.ui.apps.craftingSystemManager.id,
-            resizable: false,
+            resizable: true,
             width: 1020,
             height: 780
         }
