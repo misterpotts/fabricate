@@ -656,8 +656,15 @@ export function getBlacksmithingInitialSettingValue() {
                 },
                 "tegu4v2pdxdhhfkR": {
                     "itemUuid": "Item.pYeRwYNAthPTyIQD",
-                    "essences": {},
-                    "resultOptions": {},
+                    "essences": {
+                        "xKBJYzDLgW600jk4": 1,
+                        "DLjJ02fNb41YVTlx": 2
+                    },
+                    "resultOptions": {
+                        "Option 1": {
+                            "BM4mXqHsz6CBYMJY": 1,
+                        }
+                    },
                     "ingredientOptions": {}
                 },
                 "cBT3w7YCBWlzNfEj": {
@@ -701,7 +708,8 @@ export function getBlacksmithingInitialSettingValue() {
                     "name": "Warpfire",
                     "tooltip": "My new Essence",
                     "iconCode": "fa-regular fa-fire-flame-curved",
-                    "description": "A new Essence added to Blacksmithing"
+                    "description": "A new Essence added to Blacksmithing",
+                    "activeEffectSourceItemUuid": "XrYAtSQhioRclpOq"
                 }
             }
         }

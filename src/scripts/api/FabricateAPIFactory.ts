@@ -33,7 +33,6 @@ import {DefaultRecipeValidator} from "../crafting/recipe/RecipeValidator";
 import {DefaultFabricateAPI, FabricateAPI} from "./FabricateAPI";
 import {DefaultSettingsMigrator} from "../repository/migration/DefaultSettingsMigrator";
 import {SettingVersion} from "../repository/migration/SettingVersion";
-import {V2ToV3SettingMigrationStep} from "../repository/migration/SettingMigrationStep";
 import {
     DefaultEmbeddedCraftingSystemManager,
     EmbeddedCraftingSystemManager
@@ -41,6 +40,7 @@ import {
 import {DefaultSettingsRegistry, SettingsRegistry} from "../repository/SettingsRegistry";
 import {SettingsMigrator} from "../repository/migration/SettingsMigrator";
 import {DefaultCraftingAPI} from "./CraftingAPI";
+import {V2ToV3SettingMigrationStep} from "../repository/migration/V2ToV3SettingMigrationStep";
 
 interface FabricateAPIFactory {
 

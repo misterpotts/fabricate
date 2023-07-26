@@ -3,8 +3,6 @@ import {EssenceAPI} from "./EssenceAPI";
 import {ComponentAPI} from "./ComponentAPI";
 import {RecipeAPI} from "./RecipeAPI";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";
-import {SalvageOption} from "../crafting/component/SalvageOption";
-import {Component} from "../crafting/component/Component";
 
 enum CraftingResultOutcomeType {
 
