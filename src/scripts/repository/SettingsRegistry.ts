@@ -17,25 +17,30 @@ class DefaultSettingsRegistry implements SettingsRegistry {
         Properties.settings.craftingSystems.key,
         Properties.settings.essences.key,
         Properties.settings.components.key,
-        Properties.settings.recipes.key
+        Properties.settings.recipes.key,
+        Properties.settings.modelVersion.key,
     ];
 
     private readonly _clientSettings: ClientSettings;
     private readonly _gameProvider: GameProvider;
     private readonly _settingKeys: string[];
+    private readonly _defaultValuesBySettingKey: Map<string, any>;
 
     constructor({
         settingKeys = DefaultSettingsRegistry.DEFAULT_SETTING_KEYS,
         gameProvider,
         clientSettings,
+        defaultValuesBySettingKey = new Map<string, any>(),
     }: {
         settingKeys?: string[];
         gameProvider: GameProvider;
         clientSettings: ClientSettings;
+        defaultValuesBySettingKey?: Map<string, any>;
     }) {
         this._settingKeys = settingKeys;
         this._gameProvider = gameProvider;
         this._clientSettings = clientSettings;
+        this._defaultValuesBySettingKey = defaultValuesBySettingKey;
     }
 
     async clearAll(): Promise<void> {
@@ -54,7 +59,7 @@ class DefaultSettingsRegistry implements SettingsRegistry {
             scope: "world",
             config: false,
             type: Object,
-            default: {}
+            default: this._defaultValuesBySettingKey.has(settingKey) ? this._defaultValuesBySettingKey.get(settingKey) : {}
         });
     }
 

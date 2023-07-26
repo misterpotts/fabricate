@@ -28,7 +28,15 @@ Hooks.once('ready', async () => {
             Properties.settings.essences.key,
             Properties.settings.components.key,
             Properties.settings.craftingSystems.key,
-        ]
+            Properties.settings.modelVersion.key
+        ],
+        defaultValuesBySettingKey: new Map<string, any>([
+            [Properties.settings.recipes.key, { entities: {}, collections: {} }],
+            [Properties.settings.essences.key, { entities: {}, collections: {} }],
+            [Properties.settings.components.key, { entities: {}, collections: {} }],
+            [Properties.settings.craftingSystems.key, { entities: {}, collections: {} }],
+            [Properties.settings.modelVersion.key, Properties.settings.modelVersion.targetValue.toString()],
+        ])
     });
 
     settingsRegistry.registerAll();

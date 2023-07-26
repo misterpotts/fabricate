@@ -9,14 +9,16 @@ enum SettingVersion {
 namespace SettingVersion {
 
     export function fromString(value: string): SettingVersion {
-        switch (value) {
-            case "V2":
-                return SettingVersion.V2;
-            case "V3":
-                return SettingVersion.V3;
-            default:
-                throw new Error(`Unknown SettingVersion: ${value}`);
+        if (!value) {
+            throw new Error("Cannot convert null or undefined to SettingVersion");
         }
+        if (value === "V2") {
+            return SettingVersion.V2;
+        }
+        if (value === "V3") {
+            return SettingVersion.V3;
+        }
+        throw new Error(`Unknown SettingVersion: ${value}`);
     }
 
     export function toString(value: SettingVersion): string {

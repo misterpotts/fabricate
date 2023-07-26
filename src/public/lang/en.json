@@ -82,7 +82,7 @@
         "notNeeded": "Fabricate settings are already up to date and don't not need to be migrated. ",
         "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
         "failed": "Fabricate was unable to migrate your crafting system settings. Please report this error to the module author. ",
-        "success": "Fabricate has finished migrating your crafting system settings!",
+        "success": "Fabricate has finished migrating your crafting system settings!"
       }
     },
     "CraftingComponentCarousel": {
