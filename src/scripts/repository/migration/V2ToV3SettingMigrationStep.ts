@@ -84,6 +84,11 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
         const craftingSystemsSettingManager = this._getSettingManagerByKey(Properties.settings.craftingSystems.key);
         const sourceData = await craftingSystemsSettingManager.read() as V2SettingsModel["craftingSystems"];
 
+        const canMigrate = sourceData !== null && sourceData.hasOwnProperty("value");
+        if (!canMigrate) {
+            throw new Error("Cannot migrate V2 settings model to V3 settings model. V2 source data must be an object with a 'value' property.");
+        }
+
         Object.keys(sourceData.value)
             .filter(craftingSystemId => !this._embeddedCraftingSystemIds.includes(craftingSystemId))
             .forEach(craftingSystemId => {

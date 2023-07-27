@@ -12,10 +12,10 @@ namespace SettingVersion {
         if (!value) {
             throw new Error("Cannot convert null or undefined to SettingVersion");
         }
-        if (value === "V2") {
+        if (value == "V2") {
             return SettingVersion.V2;
         }
-        if (value === "V3") {
+        if (value == "V3") {
             return SettingVersion.V3;
         }
         throw new Error(`Unknown SettingVersion: ${value}`);

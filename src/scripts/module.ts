@@ -35,7 +35,7 @@ Hooks.once('ready', async () => {
             [Properties.settings.essences.key, { entities: {}, collections: {} }],
             [Properties.settings.components.key, { entities: {}, collections: {} }],
             [Properties.settings.craftingSystems.key, { entities: {}, collections: {} }],
-            [Properties.settings.modelVersion.key, Properties.settings.modelVersion.targetValue.toString()],
+            [Properties.settings.modelVersion.key, ""],
         ])
     });
 
