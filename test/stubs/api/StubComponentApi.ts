@@ -1,5 +1,5 @@
 import {Component} from "../../../src/scripts/crafting/component/Component";
-import {ComponentAPI, ComponentOptions} from "../../../src/scripts/api/ComponentAPI";
+import {ComponentAPI, ComponentCreationOptions} from "../../../src/scripts/api/ComponentAPI";
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
 import {StubIdentityFactory} from "../foundry/StubIdentityFactory";
 import {StubDocumentManager} from "../StubDocumentManager";
@@ -42,7 +42,7 @@ class StubComponentApi implements ComponentAPI {
         throw new Error("Not implemented by this stub");
     }
 
-    async create(componentOptions: ComponentOptions): Promise<Component> {
+    async create(componentOptions: ComponentCreationOptions): Promise<Component> {
         const itemData = await this.stubDocumentManager.loadItemDataByDocumentUuid(componentOptions.itemUuid);
         return new Component({
             id: this.identityFactory.make(),

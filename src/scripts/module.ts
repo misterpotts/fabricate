@@ -109,7 +109,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
         return;
     }
 
-    const craftingSystemsById = await fabricateAPI.craftingSystems.getAll();
+    const craftingSystemsById = await fabricateAPI.systems.getAll();
     const componentsForSourceItem = await fabricateAPI.components.getAllByItemUuid(sourceItemUuid);
     await Promise.all(Array.from(componentsForSourceItem.values()).map(component => component.load()));
     const recipesForSourceItem = await fabricateAPI.recipes.getAllByItemUuid(sourceItemUuid);

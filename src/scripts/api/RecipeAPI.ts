@@ -8,6 +8,7 @@ import {RecipeValidator} from "../crafting/recipe/RecipeValidator";
 import {NotificationService} from "../foundry/NotificationService";
 import {RequirementOptionJson} from "../crafting/recipe/RequirementOption";
 import {ResultOptionJson} from "../crafting/recipe/ResultOption";
+import {RecipeExportModel} from "../repository/import/FabricateExportModel";
 
 /**
  * A value object representing a Requirement option
@@ -250,6 +251,29 @@ interface RecipeAPI {
      * */
     notifications: NotificationService;
 
+    /**
+     * Creates or overwrites a recipe with the given details. This operation is intended to be used when importing a
+     * crafting system and its recipes from a JSON file. Most users should use `create` or `save` recipes instead.
+     *
+     * @async
+     * @param recipeData - The recipe data to insert
+     * @returns {Promise<Recipe>} A Promise that resolves with the saved recipe, or rejects with an error if
+     *   the recipe is not valid, or cannot be saved.
+     */
+    insert(recipeData: RecipeExportModel): Promise<Recipe>;
+
+    /**
+     * Creates or overwrites multiple recipes with the given details. This operation is intended to be used when
+     *   importing a crafting system and its recipes from a JSON file. Most users should use `create` or `save`
+     *   recipes instead.
+     *
+     * @async
+     * @param recipeData - The recipe data to insert
+     * @returns {Promise<Recipe[]>} A Promise that resolves with the saved recipes, or rejects with an error
+     *   if any of the recipes are not valid, or cannot be saved.
+     */
+    insertMany(recipeData: RecipeExportModel[]): Promise<Recipe[]>;
+
 }
 
 export { RecipeAPI };
@@ -436,6 +460,45 @@ class DefaultRecipeAPI implements RecipeAPI {
     async getAllByItemUuid(itemUuid: string): Promise<Map<string, Recipe>> {
         const recipes = await this.recipeStore.getCollection(itemUuid, Properties.settings.collectionNames.item);
         return new Map(recipes.map(recipe => [ recipe.id, recipe ]));
+    }
+
+    async insert({
+         id,
+         disabled = false,
+         craftingSystemId,
+         itemUuid,
+         requirementOptions = [],
+         resultOptions = [],
+     }: RecipeExportModel): Promise<Recipe> {
+        const requirementOptionsRecord = requirementOptions
+            .reduce((result, requirementOption) => {
+                result[requirementOption.id] = {
+                    ...requirementOption
+                };
+                return result;
+            }, <Record<string, RequirementOptionJson>>{});
+        const resultOptionsRecord = resultOptions
+            .reduce((result, resultOption) => {
+                result[resultOption.id] = {
+                    ...resultOption
+                };
+                return result;
+            }, <Record<string, ResultOptionJson>>{});
+        const componentJson = {
+            id,
+            craftingSystemId,
+            itemUuid,
+            disabled,
+            embedded: false,
+            resultOptions: resultOptionsRecord,
+            requirementOptions: requirementOptionsRecord,
+        }
+        const recipe = await this.recipeStore.buildEntity(componentJson);
+        return this.save(recipe);
+    }
+
+    async insertMany(recipeImportData: RecipeExportModel[]): Promise<Recipe[]> {
+        return Promise.all(recipeImportData.map(recipe => this.insert(recipe)));
     }
 
     async removeComponentReferences(componentIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {

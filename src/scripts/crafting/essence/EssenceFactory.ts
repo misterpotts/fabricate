@@ -19,7 +19,8 @@ class EssenceFactory implements EntityFactory<EssenceJson, Essence> {
             description: entityJson.description,
             embedded: entityJson.embedded,
             activeEffectSource: itemData,
-            iconCode: entityJson.iconCode
+            iconCode: entityJson.iconCode,
+            disabled: entityJson.disabled
         })
     }
 

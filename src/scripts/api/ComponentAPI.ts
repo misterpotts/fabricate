@@ -7,6 +7,7 @@ import {EntityValidationResult} from "./EntityValidator";
 import {ComponentValidator} from "../crafting/component/ComponentValidator";
 import {NotificationService} from "../foundry/NotificationService";
 import {SalvageOptionJson} from "../crafting/component/SalvageOption";
+import {ComponentExportModel} from "../repository/import/FabricateExportModel";
 
 /**
  * A value object representing an option for salvaging a component
@@ -37,7 +38,7 @@ interface SalvageOptionValue {
  *
  * @interface
  */
-interface ComponentOptions {
+interface ComponentCreationOptions {
 
     /**
      * The UUID of the item associated with the component.
@@ -50,8 +51,8 @@ interface ComponentOptions {
     craftingSystemId: string;
 
     /**
-     * Optional dictionary of the essences contained by the component. The dictionary is keyed on the essence ID and with
-     * the values representing the required quantities.
+     * Optional dictionary of the essences contained by the component. The dictionary is keyed on the essence ID and
+     * with the values representing the required quantities.
      * */
     essences?: Record<string, number>;
 
@@ -67,7 +68,7 @@ interface ComponentOptions {
 
 }
 
-export { ComponentOptions }
+export { ComponentCreationOptions };
 
 /**
  * A service for managing components.
@@ -80,12 +81,12 @@ interface ComponentAPI {
      * Creates a new component with the given options.
      *
      * @async
-     * @param {ComponentOptions} componentOptions - The options for the component.
+     * @param {ComponentCreationOptions} componentOptions - The options for the component.
      * @returns {Promise<Component>} - A promise that resolves with the newly created component. As document data is loaded
      *  during validation, the created component is returned with item data loaded.
      * @throws {Error} - If there is an error creating the component.
      */
-    create(componentOptions: ComponentOptions): Promise<Component>;
+    create(componentOptions: ComponentCreationOptions): Promise<Component>;
 
     /**
      * Returns all components.
@@ -217,6 +218,29 @@ interface ComponentAPI {
      * */
     notifications: NotificationService;
 
+    /**
+     * Creates or overwrites a component with the given details. This operation is intended to be used when importing a
+     * crafting system and its components from a JSON file. Most users should use `create` or `save` components instead.
+     *
+     * @async
+     * @param componentData - The component data to insert
+     * @returns {Promise<Component>} A Promise that resolves with the saved component, or rejects with an error if
+     *   the component is not valid, or cannot be saved.
+     */
+    insert(componentData: ComponentExportModel): Promise<Component>;
+
+    /**
+     * Creates or overwrites multiple components with the given details. This operation is intended to be used when
+     *   importing a crafting system and its components from a JSON file. Most users should use `create` or `save`
+     *   components instead.
+     *
+     * @async
+     * @param componentData - The component data to insert
+     * @returns {Promise<Component[]>} A Promise that resolves with the saved components, or rejects with an error
+     *   if any of the components are not valid, or cannot be saved.
+     */
+    insertMany(componentData: ComponentExportModel[]): Promise<Component[]>;
+
 }
 
 export { ComponentAPI };
@@ -276,7 +300,7 @@ class DefaultComponentAPI implements ComponentAPI {
         disabled = false,
         craftingSystemId,
         salvageOptions = []
-     }: ComponentOptions): Promise<Component> {
+     }: ComponentCreationOptions): Promise<Component> {
 
         const assignedIds = await this.componentStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
@@ -377,6 +401,38 @@ class DefaultComponentAPI implements ComponentAPI {
             return undefined;
         }
         return component;
+    }
+
+    async insert({
+        id,
+        disabled = false,
+        essences = {},
+        craftingSystemId,
+        itemUuid,
+        salvageOptions = []
+     }: ComponentExportModel): Promise<Component> {
+        const salvageOptionsRecord = salvageOptions
+            .reduce((result, salvageOption) => {
+                result[salvageOption.id] = {
+                    ...salvageOption
+                };
+            return result;
+        }, <Record<string, SalvageOptionJson>>{});
+        const componentJson = {
+            id,
+            craftingSystemId,
+            itemUuid,
+            disabled,
+            essences,
+            embedded: false,
+            salvageOptions: salvageOptionsRecord,
+        }
+        const component = await this.componentStore.buildEntity(componentJson);
+        return this.save(component);
+    }
+
+    async insertMany(componentImportData: ComponentExportModel[]): Promise<Component[]> {
+        return Promise.all(componentImportData.map(component => this.insert(component)));
     }
 
     async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Component[]> {

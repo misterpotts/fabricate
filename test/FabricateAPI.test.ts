@@ -118,7 +118,7 @@ describe("FabricateAPI component integration", () => {
             summary: "Test Summary",
             description: "Test Description"
         };
-        const craftingSystem = await underTest.craftingSystems.create(craftingSystemOptions);
+        const craftingSystem = await underTest.systems.create(craftingSystemOptions);
 
         expect(craftingSystem).not.toBeUndefined();
         expect(craftingSystem.details.name).toEqual(craftingSystemOptions.name);

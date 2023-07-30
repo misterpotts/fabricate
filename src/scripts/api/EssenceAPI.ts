@@ -7,6 +7,7 @@ import {EntityValidationResult} from "./EntityValidator";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";
 import {EssenceValidator} from "../crafting/essence/EssenceValidator";
 import {NotificationService} from "../foundry/NotificationService";
+import {EssenceExportModel} from "../repository/import/FabricateExportModel";
 
 /**
  * Represents a set of options for creating an essence.
@@ -42,6 +43,11 @@ interface EssenceCreationOptions {
      * The ID of the crafting system to which this essence belongs.
      */
     craftingSystemId: string;
+
+    /**
+     * Whether the essence is disabled. Defaults to false.
+     */
+    disabled?: boolean;
 
 }
 
@@ -137,15 +143,64 @@ interface EssenceAPI {
      *
      * @async
      * @param {Essence} essence - The essence to save.
-     * @returns {Promise<Essence>} A Promise that resolves to the saved essence.
+     * @returns {Promise<Essence>} A Promise that resolves to the saved essence, or rejects with an Error if the
+     *  essence is invalid or cannot be saved.
      */
     save(essence: Essence): Promise<Essence>;
+
+    /**
+     * Saves all the given essences.
+     *
+     * @async
+     * @param essences - The essences to save.
+     * @returns {Promise<Essence[]>} A Promise that resolves to the saved essences, or rejects with an Error if any
+     *  of the essences are invalid or cannot be saved.
+     */
+    saveAll(essences: Essence[]): Promise<Essence[]>;
 
     /**
      * The Notification service used by this API. If `notifications.suppressed` is true, all notification messages
      * will print only to the console. If false, notification messages will be displayed in both the console and the UI.
      * */
     readonly notifications: NotificationService;
+
+    /**
+     * Creates or overwrites an essence with the given details. This operation is intended to be used when importing a
+     * crafting system and its essences from a JSON file. Most users should use `create` or `save` essences instead.
+     *
+     * @async
+     * @param essenceData - The essence data to insert
+     * @returns {Promise<CraftingSystem>} A Promise that resolves with the saved essence, or rejects with an error if
+     *   the essence is not valid, or cannot be saved.
+     */
+    insert(essenceData: EssenceExportModel): Promise<Essence>;
+
+    /**
+     * Creates or overwrites multiple essences with the given details. This operation is intended to be used when
+     *   importing a crafting system and its essences from a JSON file. Most users should use `create` or `save`
+     *   essences instead.
+     *
+     * @async
+     * @param essenceData - The essence data to insert
+     * @returns {Promise<CraftingSystem[]>} A Promise that resolves with the saved essences, or rejects with an error if
+     *  any of the essences are not valid, or cannot be saved.
+     */
+    insertMany(essenceData: EssenceExportModel[]): Promise<Essence[]>;
+
+    /**
+     * Clones all provided Essences to a target Crafting System. Essences are cloned by value and the copies will be
+     *   assigned new IDs. The cloned Essences will be assigned to the Crafting System with the given target Crafting
+     *   System ID. This operation is not idempotent and will produce duplicate Essences with distinct IDs if called
+     *   multiple times with the same source Essences and target Crafting System ID.
+     *
+     * @async
+     * @param essencesToClone - The Essences to clone.
+     * @param targetCraftingSystemId - The ID of the Crafting System to clone the essences to.
+     * @returns {Promise<Essence[]>} A Promise that resolves to an object containing the cloned Essences and a Map keyed
+     *   on the source Essence IDs pointing to the newly cloned Essence IDs, or rejects with an Error if the target
+     *   Crafting System does not exist or any of the Essences are invalid.
+     */
+    cloneAll(essencesToClone: Essence[], targetCraftingSystemId: string): Promise<{ essences: Essence[], idLinks: Map<string, string> }>;
 
 }
 
@@ -304,6 +359,74 @@ class DefaultEssenceAPI implements EssenceAPI {
         return essence;
     }
 
+    async saveAll(essences: Essence[]): Promise<Essence[]> {
+
+        const existing = await this.essenceStore.getAllById(essences.map(essence => essence.id));
+        existing.forEach(existingEssence => this.rejectModifyingEmbeddedEssence(existingEssence));
+
+        essences.forEach(essence => this.rejectSavingInvalidEssence(essence));
+
+        await this.essenceStore.insertAll(essences);
+
+        const message = this.localizationService.format(
+            `${DefaultEssenceAPI._LOCALIZATION_PATH}.messages.essence.savedAll`,
+            { essenceCount: essences.length }
+        );
+        this.notificationService.info(message);
+
+        return essences;
+
+    }
+
+    async insert(essenceData: EssenceExportModel): Promise<Essence> {
+        const essenceJson = {
+            ...essenceData,
+            embedded: false,
+        }
+        const essence = await this.essenceStore.buildEntity(essenceJson);
+        return this.save(essence);
+    }
+
+    insertMany(essenceData: EssenceExportModel[]): Promise<Essence[]> {
+        return Promise.all(essenceData.map(essence => this.insert(essence)));
+    }
+
+    async cloneAll(essencesToClone: Essence[], targetCraftingSystemId: string): Promise<{ essences: Essence[], idLinks: Map<string, string> }> {
+        const existingEssences = await this.getAll();
+        const excludedIdentityValues = Array.from(existingEssences.keys());
+
+        const cloneData = essencesToClone
+            .map(sourceEssence => {
+                const clonedEssence = sourceEssence.clone({
+                    embedded: false,
+                    craftingSystemId: targetCraftingSystemId,
+                    id: this.identityFactory.make(excludedIdentityValues),
+                });
+                return {
+                    essence: clonedEssence,
+                    sourceId: sourceEssence.id,
+                }
+            })
+            .reduce(
+                (result, currentValue) => {
+                    result.ids.set(currentValue.sourceId, currentValue.essence.id);
+                    result.essences.push(currentValue.essence);
+                    return result;
+                },
+                {
+                    ids: new Map<string, string>,
+                    essences: <Essence[]>[],
+                }
+            );
+
+        const savedClones = await this.saveAll(cloneData.essences);
+
+        return {
+            essences: savedClones,
+            idLinks: cloneData.ids,
+        };
+    }
+
     private async rejectSavingInvalidEssence(essence: Essence): Promise<EntityValidationResult<Essence>> {
         const validationResult = await this.essenceValidator.validate(essence);
         if (validationResult.successful) {
@@ -340,6 +463,7 @@ class DefaultEssenceAPI implements EssenceAPI {
         this.notificationService.error(message);
         throw new Error(message);
     }
+
 }
 
 export { DefaultEssenceAPI };

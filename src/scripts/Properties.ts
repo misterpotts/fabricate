@@ -9,7 +9,7 @@ const Properties = {
         },
         documents: {
             supportedTypes: ["Item"]
-        }
+        },
     },
     ui: {
         defaults: {

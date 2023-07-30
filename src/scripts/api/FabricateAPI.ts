@@ -4,6 +4,13 @@ import {ComponentAPI} from "./ComponentAPI";
 import {RecipeAPI} from "./RecipeAPI";
 import {SettingMigrationAPI} from "./SettingMigrationAPI";
 import {CraftingAPI} from "./CraftingAPI";
+import {Recipe} from "../crafting/recipe/Recipe";
+import {Component} from "../crafting/component/Component";
+import {Essence} from "../crafting/essence/Essence";
+import {CraftingSystem} from "../system/CraftingSystem";
+import {FabricateExportModel} from "../repository/import/FabricateExportModel";
+import Properties from "../Properties";
+import {V2Component, V2CraftingSystem, V2Essence, V2Recipe} from "../repository/migration/V2SettingsModel";
 
 interface EntityCountStatistics {
 
@@ -37,6 +44,13 @@ interface FabricateStatistics {
 
 export { FabricateStatistics }
 
+interface CraftingSystemData {
+    craftingSystem: CraftingSystem;
+    essences: Essence[];
+    components: Component[];
+    recipes: Recipe[];
+}
+
 /**
  * Represents an API for managing crafting systems, components, essences, and recipes.
  *
@@ -47,7 +61,7 @@ interface FabricateAPI {
     /**
      * Gets the API for managing crafting systems.
      */
-    readonly craftingSystems: CraftingSystemAPI;
+    readonly systems: CraftingSystemAPI;
 
     /**
      * Gets the API for managing essences.
@@ -94,6 +108,49 @@ interface FabricateAPI {
      */
     getStatistics(): Promise<FabricateStatistics>;
 
+    /**
+     * Deletes all Crafting Systems, Essences, Components, and Recipes in the Fabricate database for the given Crafting
+     *  System id.
+     *
+     * @async
+     * @param id - The ID of the Crafting System to delete.
+     * @returns {Promise<void>} A Promise that resolves to an object containing the deleted Crafting System, Essences,
+     *   Components, and Recipes.
+     */
+    deleteAllByCraftingSystemId(id: string): Promise<CraftingSystemData>;
+
+    /**
+     * Duplicates the Crafting System with the given ID. The copy will have the same name as the original, with the
+     *   suffix "Copy" appended to it. All Essences, Components, and Recipes in the Crafting System will also be
+     *   duplicated.
+     *
+     * @async
+     * @param sourceCraftingSystemId - The ID of the Crafting System to duplicate.
+     * @returns {Promise<CraftingSystemData>} A Promise that resolves to an object containing the duplicated Crafting
+     *   System, Essences, Components, and Recipes.
+     */
+    duplicateCraftingSystem(sourceCraftingSystemId: string): Promise<CraftingSystemData>;
+
+    /**
+     * Imports the given Fabricate data into the Fabricate database.
+     *
+     * @async
+     * @param importData - The Fabricate data to import.
+     * @returns {Promise<void>} A Promise that resolves to an object containing the imported Crafting System, Essences,
+     *  Components, and Recipes.
+     */
+    import(importData: FabricateExportModel): Promise<CraftingSystemData>;
+
+    /**
+     * Exports a complete Crafting System from Fabricate for the given Crafting System ID.
+     *
+     * @async
+     * @param craftingSystemId - The ID of the Crafting System to export.
+     * @returns {Promise<FabricateExportModel>} A Promise that resolves to the exported Fabricate Crafting System, with
+     * its Essences, Components, and Recipes.
+     */
+    export(craftingSystemId: string): Promise<FabricateExportModel>;
+
 }
 export { FabricateAPI }
 
@@ -103,6 +160,8 @@ class DefaultFabricateAPI implements FabricateAPI {
     private readonly essenceAPI: EssenceAPI;
     private readonly craftingAPI: CraftingAPI;
     private readonly componentAPI: ComponentAPI;
+    private readonly localization: Localization;
+    private readonly notifications: Notifications;
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly settingMigrationAPI: SettingMigrationAPI;
 
@@ -111,6 +170,8 @@ class DefaultFabricateAPI implements FabricateAPI {
         essenceAPI,
         craftingAPI,
         componentAPI,
+        localization,
+        notifications,
         craftingSystemAPI,
         settingMigrationAPI,
     }: {
@@ -118,6 +179,8 @@ class DefaultFabricateAPI implements FabricateAPI {
         essenceAPI: EssenceAPI;
         craftingAPI: CraftingAPI;
         componentAPI: ComponentAPI;
+        localization: Localization;
+        notifications: Notifications;
         craftingSystemAPI: CraftingSystemAPI;
         settingMigrationAPI: SettingMigrationAPI;
     }) {
@@ -125,6 +188,8 @@ class DefaultFabricateAPI implements FabricateAPI {
         this.essenceAPI = essenceAPI;
         this.craftingAPI = craftingAPI;
         this.componentAPI = componentAPI;
+        this.localization = localization;
+        this.notifications = notifications;
         this.craftingSystemAPI = craftingSystemAPI;
         this.settingMigrationAPI = settingMigrationAPI;
     }
@@ -144,7 +209,7 @@ class DefaultFabricateAPI implements FabricateAPI {
         this.recipeAPI.notifications.suppressed = value;
     }
 
-    get craftingSystems(): CraftingSystemAPI {
+    get systems(): CraftingSystemAPI {
         return this.craftingSystemAPI;
     }
 
@@ -232,6 +297,251 @@ class DefaultFabricateAPI implements FabricateAPI {
                 byCraftingSystem: recipeStatsByCraftingSystem,
             }
         }
+    }
+
+    async deleteAllByCraftingSystemId(id: string): Promise<CraftingSystemData> {
+
+        const [
+            craftingSystem,
+            essences,
+            components,
+            recipes
+        ] = await Promise.all([
+            this.craftingSystemAPI.deleteById(id),
+            this.essenceAPI.deleteByCraftingSystemId(id),
+            this.componentAPI.deleteByCraftingSystemId(id),
+            this.recipeAPI.deleteByCraftingSystemId(id),
+        ]);
+
+        const message = this.localization.format(`${Properties.module.id}.settings.craftingSystem.deleted`, { systemName: craftingSystem.details.name });
+        this.notifications.info(message);
+
+        return {
+            craftingSystem,
+            essences,
+            components,
+            recipes
+        }
+
+    }
+
+    async duplicateCraftingSystem(sourceCraftingSystemId: string): Promise<CraftingSystemData> {
+        const clonedCraftingSystem = await this.craftingSystemAPI.cloneById(sourceCraftingSystemId);
+
+        const sourceEssences = await this.essenceAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
+        const essenceCloneResult = await this.essenceAPI.cloneAll(Array.from(sourceEssences.values()), clonedCraftingSystem.id);
+
+        const sourceComponents = await this.componentAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
+        const componentCloneResult = await this.componentAPI.cloneAll(Array.from(sourceComponents.values()), clonedCraftingSystem.id, essenceCloneResult.idLinks);
+
+        const sourceRecipes = await this.recipeAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
+        const recipeCloneResult = await this.recipeAPI.cloneAll(Array.from(sourceRecipes.values()), clonedCraftingSystem.id, essenceCloneResult.idLinks, componentCloneResult.idLinks);
+
+        return {
+            craftingSystem: clonedCraftingSystem,
+            essences: essenceCloneResult.essences,
+            components: componentCloneResult.components,
+            recipes: recipeCloneResult.recipes,
+        }
+    }
+
+    async import(importData: FabricateExportModel): Promise<CraftingSystemData> {
+
+
+        importData = this.upgradeV1ImportData(importData);
+        await this.validateImportData(importData);
+
+        try {
+
+            const importedCraftingSystem = await this.craftingSystemAPI.insert(importData.craftingSystem);
+            const importedEssences = await this.essenceAPI.insertMany(importData.essences);
+            const importedComponents = await this.componentAPI.insertMany(importData.components);
+            const importedRecipes = await this.recipeAPI.insertMany(importData.recipes);
+            const message = this.localization.format(
+                `${Properties.module.id}.settings.craftingSystem.import.success`,
+                {
+                    systemName: importedCraftingSystem.details.name,
+                    essenceCount: importedEssences.length,
+                    componentCount: importedComponents.length,
+                    recipeCount: importedRecipes.length,
+                }
+            );
+            this.notifications.info(message);
+            return {
+                craftingSystem: importedCraftingSystem,
+                essences: importedEssences,
+                components: importedComponents,
+                recipes: importedRecipes,
+            }
+
+        } catch (e: any) {
+
+            const message = this.localization.format(
+                `${Properties.module.id}.settings.craftingSystem.import.failure`, 
+                { systemName: importData?.craftingSystem?.details?.name, cause: e.message }
+            );
+            this.notifications.error(message);
+
+        }
+
+    }
+
+    private async validateImportData(importData: FabricateExportModel) {
+
+        const errors: string[] = [];
+
+        if (!importData) {
+            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noData`));
+        }
+
+        if (!importData.version || typeof importData.version !== "string") {
+            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noVersion`));
+        }
+
+        if (!importData.craftingSystem || typeof importData.craftingSystem !== "object") {
+            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noCraftingSystem`));
+        }
+
+        if (!importData.essences || !Array.isArray(importData.essences)) {
+            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noEssences`));
+        }
+
+        if (!importData.components || !Array.isArray(importData.components)) {
+            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noComponents`));
+        }
+
+        if (!importData.recipes || !Array.isArray(importData.recipes)) {
+            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noRecipes`));
+        }
+
+        if (errors.length > 0) {
+            const message = this.localization.format(`${Properties.module.id}.settings.craftingSystem.import.invalidData.summary`, { errors: errors.join(', ') });
+            this.notifications.error(message);
+            throw new Error(message);
+        }
+
+    }
+
+    private upgradeV1ImportData(importData: FabricateExportModel) {
+
+        if (importData?.version === "V2") {
+            return importData;
+        }
+
+        if (! importData || ("parts" in importData)) {
+            const message = this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.upgrade.failure`);
+            this.notifications.error(message);
+            throw new Error(message);
+        }
+
+        const legacyImportData: V2CraftingSystem = importData as unknown as V2CraftingSystem;
+        const upgradedImportData: FabricateExportModel = {
+            version: "V2",
+            craftingSystem: {
+                id: legacyImportData.id,
+                details: {
+                    name: legacyImportData.details.name,
+                    author: legacyImportData.details.author,
+                    summary: legacyImportData.details.summary,
+                    description: legacyImportData.details.description,
+                },
+                disabled: legacyImportData.enabled === false,
+            },
+            essences: Object.keys(legacyImportData.parts.essences).map(essenceId => {
+                const legacyEssence: V2Essence = legacyImportData.parts.essences[essenceId];
+                return {
+                    id: essenceId,
+                    craftingSystemId: legacyImportData.id,
+                    disabled: false,
+                    ...legacyEssence,
+                }
+            }),
+            components: Object.keys(legacyImportData.parts.components).map(componentId => {
+                const legacyComponent: V2Component = legacyImportData.parts.components[componentId];
+                return {
+                    id: componentId,
+                    craftingSystemId: legacyImportData.id,
+                    disabled: legacyComponent.disabled,
+                    essences: legacyComponent.essences,
+                    itemUuid: legacyComponent.itemUuid,
+                    salvageOptions: Object.keys(legacyComponent.salvageOptions).map(salvageOptionId => {
+                        const legacySalvageOption = legacyComponent.salvageOptions[salvageOptionId];
+                        return {
+                            id: salvageOptionId,
+                            name: salvageOptionId,
+                            catalysts: {},
+                            results: legacySalvageOption
+                        }
+                    }),
+                }
+            }),
+            recipes: Object.keys(legacyImportData.parts.recipes).map(recipeId => {
+                const legacyRecipe: V2Recipe = legacyImportData.parts.recipes[recipeId];
+                return {
+                    id: recipeId,
+                    craftingSystemId: legacyImportData.id,
+                    disabled: legacyRecipe.disabled,
+                    itemUuid: legacyRecipe.itemUuid,
+                    requirementOptions: Object.keys(legacyRecipe.ingredientOptions).map(ingredientOptionId => {
+                        const legacyIngredientOption = legacyRecipe.ingredientOptions[ingredientOptionId];
+                        return {
+                            id: ingredientOptionId,
+                            name: ingredientOptionId,
+                            ingredients: legacyIngredientOption.ingredients,
+                            catalysts: legacyIngredientOption.catalysts,
+                            essences: legacyRecipe.essences,
+                        }
+                    }),
+                    resultOptions: Object.keys(legacyRecipe.resultOptions).map(resultOptionId => {
+                        const legacyResultOption = legacyRecipe.resultOptions[resultOptionId];
+                        return {
+                            id: resultOptionId,
+                            name: resultOptionId,
+                            results: legacyResultOption,
+                        }
+                    }),
+                }
+            })
+        };
+        return upgradedImportData;
+    }
+
+    async export(craftingSystemId: string): Promise<FabricateExportModel> {
+
+        const craftingSystem = await this.craftingSystemAPI.getById(craftingSystemId);
+        const essences = await this.essenceAPI.getAllByCraftingSystemId(craftingSystemId);
+        const components = await this.componentAPI.getAllByCraftingSystemId(craftingSystemId);
+        const recipes = await this.recipeAPI.getAllByCraftingSystemId(craftingSystemId);
+
+        return {
+            version: "V2",
+            craftingSystem: {
+                id: craftingSystem.id,
+                details: {
+                    name: craftingSystem.details.name,
+                    summary: craftingSystem.details.summary,
+                    description: craftingSystem.details.description,
+                    author: craftingSystem.details.author,
+                },
+                disabled: craftingSystem.disabled,
+            },
+            essences: Array.from(essences.values()).map(essence => essence.toJson()),
+            components: Array.from(components.values()).map(component => {
+                const componentJson = component.toJson();
+                return {
+                    ...componentJson,
+                    salvageOptions: Object.values(componentJson.salvageOptions),
+                }
+            }),
+            recipes: Array.from(recipes.values()).map(recipe => {
+                const recipeJson = recipe.toJson();
+                return {
+                    ...recipeJson,
+                    requirementOptions: Object.values(recipeJson.requirementOptions),
+                    resultOptions: Object.values(recipeJson.resultOptions),
+                }
+            })
+        };
     }
 
 }

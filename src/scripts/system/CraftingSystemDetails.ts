@@ -79,6 +79,14 @@ class CraftingSystemDetails {
         });
     }
 
+    static fromJson(craftingSystemDetailsJson: CraftingSystemDetailsJson) {
+        return new CraftingSystemDetails({
+            name: craftingSystemDetailsJson.name,
+            summary: craftingSystemDetailsJson.summary,
+            description: craftingSystemDetailsJson.description,
+            author: craftingSystemDetailsJson.author
+        });
+    }
 }
 
 export { CraftingSystemDetails, CraftingSystemDetailsJson }

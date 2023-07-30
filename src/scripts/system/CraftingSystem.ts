@@ -4,7 +4,7 @@ interface CraftingSystemJson {
     id: string;
     embedded: boolean;
     details: CraftingSystemDetailsJson;
-    enabled: boolean;
+    disabled: boolean;
 }
 
 export { CraftingSystemJson }
@@ -15,7 +15,7 @@ class CraftingSystem {
     private readonly _embedded: boolean;
 
     private _details: CraftingSystemDetails;
-    private _enabled: boolean;
+    private _disabled: boolean;
 
     constructor({
         id,
@@ -31,19 +31,23 @@ class CraftingSystem {
         this._id = id;
         this._embedded = embedded;
         this._details = craftingSystemDetails;
-        this._enabled = enabled;
+        this._disabled = enabled;
     }
 
     get embedded(): boolean {
         return this._embedded;
     }
 
-    get enabled(): boolean {
-        return this._enabled;
+    get disabled(): boolean {
+        return this._disabled;
     }
 
-    set enabled(value: boolean) {
-        this._enabled = value;
+    set disabled(value: boolean) {
+        this._disabled = value;
+    }
+
+    get id(): string {
+        return this._id;
     }
 
     get details(): CraftingSystemDetails {
@@ -58,13 +62,9 @@ class CraftingSystem {
         return {
             id: this._id,
             details: this._details.toJson(),
-            enabled: this._enabled,
+            disabled: this._disabled,
             embedded: this._embedded
         };
-    }
-
-    get id(): string {
-        return this._id;
     }
 
     clone({id, name, embedded = false}: { name?: string; id: string; embedded?: boolean }): CraftingSystem {
@@ -72,9 +72,19 @@ class CraftingSystem {
             id,
             embedded,
             craftingSystemDetails: this._details.clone(name),
-            enabled: this._enabled,
+            enabled: this._disabled,
         });
     }
+
+    static fromJson(craftingSystemJson: CraftingSystemJson) {
+        return new CraftingSystem({
+            id: craftingSystemJson.id,
+            embedded: craftingSystemJson.embedded,
+            craftingSystemDetails: CraftingSystemDetails.fromJson(craftingSystemJson.details),
+            enabled: craftingSystemJson.disabled,
+        });
+    }
+
 }
 
 export { CraftingSystem }

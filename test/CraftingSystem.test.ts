@@ -30,7 +30,7 @@ describe('Create and configure', () => {
 
         expect(underTest).not.toBeNull();
         expect(underTest.id).toEqual(testSystemId);
-        expect(underTest.enabled).toEqual(true);
+        expect(underTest.disabled).toEqual(true);
 
     });
 
@@ -51,7 +51,7 @@ describe('Create and configure', () => {
 
         expect(underTest).not.toBeNull();
         expect(underTest.id).toEqual(testSystemId);
-        expect(underTest.enabled).toEqual(true);
+        expect(underTest.disabled).toEqual(true);
 
     });
 

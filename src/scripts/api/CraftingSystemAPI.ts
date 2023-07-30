@@ -3,13 +3,27 @@ import {
     CraftingSystemJson
 } from "../system/CraftingSystem";
 import {IdentityFactory} from "../foundry/IdentityFactory";
-import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
 import {EntityValidationResult} from "./EntityValidator";
 import {EntityDataStore} from "../repository/EntityDataStore";
 import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
 import {NotificationService} from "../foundry/NotificationService";
+import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
+
+/**
+ * CraftingSystemImportData is the data format used when importing crafting systems into Fabricate.
+ */
+interface CraftingSystemImportData {
+    id: string;
+    details: {
+        name: string;
+        summary: string;
+        description: string;
+        author: string;
+    },
+    disabled: boolean;
+}
 
 /**
  * An API for managing crafting systems.
@@ -19,7 +33,18 @@ import {NotificationService} from "../foundry/NotificationService";
 interface CraftingSystemAPI {
 
     /**
-     * Creates a new crafting system with the given details.
+     * Clones a Crafting System by ID.
+     *
+     * @async
+     * @param {string} craftingSystemId - The ID of the Crafting System to clone.
+     * @returns {Promise<CraftingSystem>} A Promise that resolves with the newly cloned Crafting System, or rejects with
+     *   an Error if the Crafting System is not valid or cannot be cloned.
+     */
+    cloneById(craftingSystemId: string): Promise<CraftingSystem>;
+
+    /**
+     * Creates a new crafting system with the given details. If no details are provided, a default crafting system is
+     *  created. The crafting system id is generated automatically.
      *
      * @async
      * @param {object} options - The crafting system details.
@@ -30,7 +55,7 @@ interface CraftingSystemAPI {
      * @returns {Promise<CraftingSystem>} A Promise that resolves with the newly created `CraftingSystem` instance, or
      *  rejects with an Error if the crafting system is not valid.
      */
-    create({ name, summary, description, author }: { name?: string, summary?: string, description?: string, author?: string }): Promise<CraftingSystem>;
+    create({ name, summary, description, author }?: { name?: string, summary?: string, description?: string, author?: string }): Promise<CraftingSystem>;
 
     /**
      * Retrieves the crafting system with the specified ID.
@@ -50,6 +75,18 @@ interface CraftingSystemAPI {
      *  error if the crafting system is not valid, or cannot be saved.
      */
     save(craftingSystem: CraftingSystem): Promise<CraftingSystem>;
+
+    /**
+     * Creates or overwrites a crafting system with the given details. This operation is intended to be used when
+     *   importing a crafting system from a JSON file. Most users should use `create` or `save` crafting systems
+     *   instead.
+     *
+     * @async
+     * @param craftingSystemData - The crafting system data to insert.
+     * @returns {Promise<CraftingSystem>} A Promise that resolves with the saved crafting system, or rejects with an
+     *   error if the crafting system is not valid, or cannot be saved.
+     */
+    insert(craftingSystemData: CraftingSystemImportData): Promise<CraftingSystem>;
 
     /**
      * Deletes a crafting system by ID.
@@ -152,6 +189,25 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         return craftingSystem;
     }
 
+    async cloneById(craftingSystemId: string): Promise<CraftingSystem> {
+        const source = await this.getById(craftingSystemId);
+        if (!source) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.cloneTargetNotFound`,
+                { craftingSystemId }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+        const assignedIds = await this.craftingSystemStore.listAllEntityIds();
+        const clone = source.clone({
+            id: this.identityFactory.make(assignedIds),
+            name: `${source.details.name} (Copy)`,
+            embedded: false,
+        });
+        return this.save(clone);
+    }
+
     async getAll(): Promise<Map<string, CraftingSystem>> {
         const allCraftingSystems = await this.craftingSystemStore.getAllEntities();
         return new Map(allCraftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
@@ -174,6 +230,14 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         this.notificationService.info(message);
 
         return craftingSystem;
+    }
+
+    async insert(craftingSystemData: CraftingSystemImportData): Promise<CraftingSystem> {
+        const craftingSystem = CraftingSystem.fromJson({
+            ...craftingSystemData,
+            embedded: false
+        });
+        return this.save(craftingSystem);
     }
 
     async create({

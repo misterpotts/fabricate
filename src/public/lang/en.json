@@ -48,7 +48,21 @@
       "craftingSystem": {
         "deleted": "Deleted crafting system \"{systemName}\"",
         "created": "Created crafting system \"{systemName}\"",
-        "updated": "Updated crafting system \"{systemName}\""
+        "updated": "Updated crafting system \"{systemName}\"",
+        "import": {
+          "invalidData": {
+            "summary": "The provided crafting system import data is not valid. Correct the following errors and try again: {errors}",
+            "invalidJson": "Invalid JSON. ",
+            "noData": "No data was provided to import. ",
+            "noVersion": "Missing required property \"version: string\". ",
+            "noSystem": "Missing required property \"system: CraftingSystemExportModel\". ",
+            "noEssences": "Missing required property \"essences: EssenceExportModel[]\". ",
+            "noComponents": "Missing required property \"components: ComponentExportModel[]\". ",
+            "noRecipes": "Missing required property \"recipes: RecipeExportModel[]\". "
+          },
+          "failure": "Failed to import crafting system \"{systemName}\"",
+          "success": "Successfully imported crafting system \"{systemName}\", with {essenceCount} essences, {componentCount} components, and {recipeCount} recipes. "
+        }
       },
       "errors": {
         "invalidRead": "The stored value for the setting {settingPath} is not valid, and could not be read. {errors}",
@@ -347,9 +361,6 @@
         "deleteSystemConfirm": {
           "title": "Delete Crafting System",
           "content": "Are you sure you want to delete {systemName}? This action cannot be undone. "
-        },
-        "deleteCraftingSystem": {
-          "success": "The Crafting System {systemName} was successfully deleted."
         },
         "saveCraftingSystem": {
           "success": "The Crafting System {systemName} was successfully updated."

@@ -2,56 +2,47 @@ import {Writable} from "svelte/store";
 import {CraftingSystem, CraftingSystemJson} from "../../scripts/system/CraftingSystem";
 import Properties from "../../scripts/Properties";
 import {LocalizationService} from "../common/LocalizationService";
+import {FabricateAPI} from "../../scripts/api/FabricateAPI";
+import {FabricateExportModel} from "../../scripts/repository/import/FabricateExportModel";
 
 class CraftingSystemEditor {
 
     private readonly _craftingSystems: Writable<CraftingSystem[]>;
     private readonly _localization: LocalizationService;
-    private readonly _game: Game;
+    private readonly _fabricateAPI: FabricateAPI;
 
     private static readonly _dialogLocalizationPath = `${Properties.module.id}.CraftingSystemManagerApp.dialog`;
 
     constructor({
         craftingSystems,
         localization,
-        game
+        fabricateAPI,
     }: {
         craftingSystems: Writable<CraftingSystem[]>;
         localization: LocalizationService;
-        game: Game;
+        fabricateAPI: FabricateAPI;
     }) {
+        this._fabricateAPI = fabricateAPI;
         this._craftingSystems = craftingSystems;
         this._localization = localization;
-        this._game = game;
     }
 
     public async createNewCraftingSystem(): Promise<CraftingSystem> {
-        const systemJson: CraftingSystemJson = {
-            locked: false,
-            details: {
-                name: "(New!) My New Crafting System",
-                author: this._game.user.name,
-                summary: "A brand new Crafting System created with Fabricate",
-                description: ""
-            },
-            enabled: true,
-            id: randomID()
-        };
-        const createdSystem = await this._systemRegistry.createCraftingSystem(systemJson);
+        const result = await this._fabricateAPI.systems.create();
         this._craftingSystems.update((craftingSystems) => {
-            craftingSystems.push(createdSystem);
+            craftingSystems.push(result);
             return craftingSystems;
         });
-        return createdSystem;
+        return result;
     }
 
     async deleteCraftingSystem(craftingSystemToDelete: CraftingSystem) {
         await Dialog.confirm({
             title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.deleteSystemConfirm.title`),
-            content: `<p>${this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteSystemConfirm.content`, {systemName: craftingSystemToDelete.name})}</p>`,
+            content: `<p>${this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteSystemConfirm.content`, {systemName: craftingSystemToDelete.details.name})}</p>`,
             yes: async () => {
-                await this._systemRegistry.deleteCraftingSystemById(craftingSystemToDelete.id);
-                const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteCraftingSystem.success`, { systemName: craftingSystemToDelete.name});
+                await this._fabricateAPI.deleteAllByCraftingSystemId(craftingSystemToDelete.id);
+                const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteCraftingSystem.success`, { systemName: craftingSystemToDelete.details.name});
                 this._craftingSystems.update((craftingSystems) => {
                     const filtered = craftingSystems.filter(craftingSystem => craftingSystem.id !== craftingSystemToDelete.id);
                     ui.notifications.info(message);
@@ -61,7 +52,7 @@ class CraftingSystemEditor {
         });
     }
 
-    async importCraftingSystem(onSuccess?: (craftingSystem: CraftingSystem) => void, targetSystem?: CraftingSystem): Promise<void> {
+    async importCraftingSystem(onSuccess?: (craftingSystem: CraftingSystem) => void): Promise<void> {
         const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
         const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
         const content = await renderTemplate("templates/apps/import-data.html", {
@@ -85,21 +76,15 @@ class CraftingSystemEditor {
                             throw new Error(message);
                         }
                         const fileData = await readTextFromFile(form.data.files[0]);
-                        let craftingSystemJson: CraftingSystemJson;
+                        let craftingSystemData: FabricateExportModel;
                         try {
-                            craftingSystemJson = JSON.parse(fileData);
+                            craftingSystemData = JSON.parse(fileData);
                         } catch (e: any) {
                             const message = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.couldNotParseFile`);
                             ui.notifications.error(message);
                             throw new Error(message);
                         }
-                        if (targetSystem) {
-                            const updated = await this.overwriteCraftingSystem(craftingSystemJson, targetSystem);
-                            onSuccess(updated);
-                        } else {
-                            const created = await this.importNewCraftingSystem(craftingSystemJson);
-                            onSuccess(created);
-                        }
+                        await this._fabricateAPI.import(craftingSystemData);
                     }
                 },
                 no: {
@@ -112,67 +97,23 @@ class CraftingSystemEditor {
         }).render(true);
     }
 
-    private async importNewCraftingSystem(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
-        if (!craftingSystemJson.id) {
-            craftingSystemJson.id = randomID();
-        }
-        const importedSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
-        const message = this._localization.format(
-            `${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.success`,
-            { systemName: importedSystem.name}
-        );
-        this._craftingSystems.update((craftingSystems) => {
-            craftingSystems.push(importedSystem);
-            return craftingSystems;
-        });
-        ui.notifications.info(message);
-        return importedSystem;
-    }
-
-    private async overwriteCraftingSystem(craftingSystemJson: CraftingSystemJson, targetSystem: CraftingSystem): Promise<CraftingSystem> {
-        const systemFound = await this._systemRegistry.hasCraftingSystem(targetSystem.id);
-        if (!systemFound) {
-            const message = this._localization.format(
-                `${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.targetSystemNotFound`,
-                { systemName: targetSystem.name });
-            ui.notifications.error(message);
-            throw new Error(message);
-        }
-        if (targetSystem.id !== craftingSystemJson.id) {
-            const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.importIdMismatch`, {
-                systemName: targetSystem.name,
-                expectedId: targetSystem.id,
-                actualId: craftingSystemJson.id,
-            })
-            ui.notifications.error(message);
-            throw new Error(message);
-        }
-        const updatedCraftingSystem = await FabricateApplication.systemRegistry.createCraftingSystem(craftingSystemJson);
-        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.success`, { systemName: updatedCraftingSystem.name});
-        this._craftingSystems.update((craftingSystems) => {
-            const filtered = craftingSystems.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
-            filtered.push(updatedCraftingSystem);
-            ui.notifications.info(message);
-            return filtered;
-        });
-        return updatedCraftingSystem;
-    }
-
     public exportCraftingSystem(craftingSystem: CraftingSystem) {
-        const exportData = JSON.stringify(craftingSystem.toJson(), null, 2);
-        const fileName = `fabricate-crafting-system-${craftingSystem.name.slugify()}.json`;
-        saveDataToFile(exportData, "application/json", fileName);
-        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.name, fileName });
+        const exportData = this._fabricateAPI.export(craftingSystem.id);
+        const fileContents = JSON.stringify(exportData, null, 2);
+        const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
+        saveDataToFile(fileContents, "application/json", fileName);
+        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
         ui.notifications.info(message);
     }
 
     async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
-        const clonedCraftingSystem = sourceCraftingSystem.clone({
-            id: randomID(),
-            name: `${sourceCraftingSystem.name} (copy)`,
-            locked: false
-        });
-        const duplicationResult = await FabricateApplication.systemRegistry.saveCraftingSystem(clonedCraftingSystem);
+        // const clonedCraftingSystem = sourceCraftingSystem.clone({
+        //     id: randomID(),
+        //     name: `${sourceCraftingSystem.name} (copy)`,
+        //     locked: false
+        // });
+        // const duplicationResult = await FabricateApplication.systemRegistry.saveCraftingSystem(clonedCraftingSystem);
+        await this._fabricateAPI.duplicateCraftingSystem(sourceCraftingSystem.id);
         ui.notifications.info(this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.duplicateCraftingSystem.success`, {
             sourceSystemName: sourceCraftingSystem.name,
             duplicatedSystemName: duplicationResult.name

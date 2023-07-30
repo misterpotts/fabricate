@@ -182,7 +182,7 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
                 author: source.details.author
             },
             embedded: false,
-            enabled: source.enabled
+            disabled: source.enabled
         };
     }
 

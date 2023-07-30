@@ -33,13 +33,13 @@ class CraftingSystemsStore {
 
     private sort(craftingSystems: CraftingSystem[]): CraftingSystem[] {
         return craftingSystems.sort((left, right) => {
-            if (left.isLocked && !right.isLocked) {
+            if (left.embedded && !right.embedded) {
                 return -1;
             }
-            if (right.isLocked && !left.isLocked) {
+            if (right.embedded && !left.embedded) {
                 return 1;
             }
-            return left.name.localeCompare(right.name);
+            return left.details.name.localeCompare(right.details.name);
         });
     }
 

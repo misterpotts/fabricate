@@ -153,6 +153,20 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
     toReference(): EssenceReference {
         return new EssenceReference(this._id);
     }
+
+    clone({ craftingSystemId = this.craftingSystemId, id, embedded = false }: { id: string, craftingSystemId?: string, embedded?: boolean }): Essence {
+        return new Essence({
+            id,
+            embedded,
+            craftingSystemId,
+            name: this._name,
+            tooltip: this._tooltip,
+            iconCode: this._iconCode,
+            disabled: this._disabled,
+            description: this._description,
+        });
+    }
+
 }
 
 export { EssenceJson, Essence }

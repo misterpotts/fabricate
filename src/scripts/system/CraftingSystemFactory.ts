@@ -16,7 +16,7 @@ class CraftingSystemFactory implements EntityFactory<CraftingSystemJson, Craftin
                 description: craftingSystemJson.details.description,
                 author: craftingSystemJson.details.author,
             }),
-            enabled: craftingSystemJson.enabled,
+            enabled: craftingSystemJson.disabled,
         });
 
     }
