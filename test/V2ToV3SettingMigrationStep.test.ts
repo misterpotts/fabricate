@@ -58,7 +58,7 @@ describe("V2 to V3 Settings Migration Step", () => {
         expect(migratedBlacksmithingSystem.details.author).toEqual(blacksmithingInitialSettingValue.details.author);
         expect(migratedBlacksmithingSystem.details.summary).toEqual(blacksmithingInitialSettingValue.details.summary);
         expect(migratedBlacksmithingSystem.embedded).toBe(false);
-        expect(migratedBlacksmithingSystem.enabled).toBe(blacksmithingInitialSettingValue.enabled);
+        expect(migratedBlacksmithingSystem.disabled).toBe(!!blacksmithingInitialSettingValue.enabled);
 
     });
 
