@@ -241,6 +241,35 @@ interface ComponentAPI {
      */
     insertMany(componentData: ComponentExportModel[]): Promise<Component[]>;
 
+
+    /**
+     * Clones all provided Components to a target Crafting System, optionally substituting each Component's essences with
+     *   new IDs. Components are cloned by value and the copies will be assigned new IDs. The cloned Components will be
+     *   assigned to the Crafting System with the given target Crafting System ID. This operation is not idempotent and
+     *   will produce duplicate Components with distinct IDs if called multiple times with the same source Components
+     *   and target Crafting System ID. As only one Component can be associated with a given game item within a single
+     *   Crafting system, Components cloned into the same Crafting system will have their associated items removed.
+     *
+     * @async
+     * @param sourceComponents - The Components to clone
+     * @param targetCraftingSystemId - The ID of the Crafting System to clone the Components to. Defaults to the source
+     *   component's Crafting System ID.
+     * @param substituteEssenceIds - An optional Map of Essence IDs to substitute with new IDs. If a Component
+     *   references an Essence ID in this Map, the Component will be cloned with the new Essence ID in place of the
+     *   original ID.
+     */
+    cloneAll(sourceComponents: Component[], targetCraftingSystemId?: string, substituteEssenceIds?: Map<string, string>): Promise<{ components: Component[], idLinks: Map<string, string> }>;
+
+    /**
+     * Saves all provided components.
+     *
+     * @async
+     * @param components - The components to save.
+     * @returns {Promise<Component[]>} A Promise that resolves with the saved components, or rejects with an error if
+     *   any of the components are not valid, or cannot be saved.
+     */
+    saveAll(components: Component[]): Promise<Component[]>;
+
 }
 
 export { ComponentAPI };
@@ -290,7 +319,9 @@ class DefaultComponentAPI implements ComponentAPI {
             throw new Error(message);
         }
         const assignedIds = await this.componentStore.listAllEntityIds();
-        const clone = source.clone(this.identityFactory.make(assignedIds));
+        const clone = source.clone({
+            id: this.identityFactory.make(assignedIds)
+        });
         return this.save(clone);
     }
 
@@ -435,6 +466,58 @@ class DefaultComponentAPI implements ComponentAPI {
         return Promise.all(componentImportData.map(component => this.insert(component)));
     }
 
+    async cloneAll(sourceComponents: Component[],
+             targetCraftingSystemId?: string,
+             substituteEssenceIds: Map<string, string> = new Map()
+    ): Promise<{ components: Component[]; idLinks: Map<string, string> }> {
+
+        const assignedComponentIds = await this.componentStore.listAllEntityIds();
+        const newComponentIdsBySourceComponentId = sourceComponents
+            .map(sourceComponent => {
+                const newId = this.identityFactory.make(assignedComponentIds);
+                return [sourceComponent.id, newId]
+            })
+            .reduce((result, [sourceId, newId]) => {
+                result.set(sourceId, newId);
+                return result;
+            }, new Map<string, string>());
+
+        const cloneData = sourceComponents
+            .map(sourceComponent => {
+                const newId = newComponentIdsBySourceComponentId.get(sourceComponent.id);
+                if (!newId) {
+                    throw new Error(`Failed to find new id for source component id ${sourceComponent.id}`);
+                }
+                const clonedComponent = sourceComponent.clone({
+                    id: newId,
+                    craftingSystemId: targetCraftingSystemId,
+                    substituteEssenceIds
+                });
+                return {
+                    component: clonedComponent,
+                    sourceId: sourceComponent.id,
+                }
+            })
+            .reduce(
+                (result, currentValue) => {
+                    result.ids.set(currentValue.sourceId, currentValue.component.id);
+                    result.components.push(currentValue.component);
+                    return result;
+                },
+                {
+                    ids: new Map<string, string>,
+                    components: <Component[]>[],
+                }
+            );
+
+        const savedClones = await this.saveAll(cloneData.components);
+
+        return {
+            components: savedClones,
+            idLinks: cloneData.ids,
+        };
+    }
+
     async removeEssenceReferences(essenceIdToDelete: string, craftingSystemId: string): Promise<Component[]> {
         const componentsForCraftingSystem = await this.componentStore.getCollection(craftingSystemId, Properties.settings.collectionNames.craftingSystem);
         const componentsWithEssence = componentsForCraftingSystem.filter(component => component.essences.has(essenceIdToDelete));
@@ -523,6 +606,24 @@ class DefaultComponentAPI implements ComponentAPI {
         throw new Error(message);
     }
 
+    async saveAll(components: Component[]) {
+
+        const existing = await this.componentStore.getAllById(components.map(component => component.id));
+        existing.forEach(existingComponent => this.rejectModifyingEmbeddedComponent(existingComponent));
+
+        components.forEach(component => this.rejectSavingInvalidComponent(component));
+
+        await this.componentStore.insertAll(components);
+
+        const message = this.localizationService.format(
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.settings.components.savedAll`,
+            {count: components.length}
+        );
+        this.notificationService.info(message);
+
+        return components;
+
+    }
 }
 
 export { DefaultComponentAPI };

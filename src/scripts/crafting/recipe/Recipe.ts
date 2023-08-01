@@ -34,7 +34,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     private _itemData: FabricateItemData;
     private _requirementOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
     private _resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
-    private disabled: boolean;
+    private _disabled: boolean;
 
     /* ===========================
     *  Constructor
@@ -61,7 +61,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._embedded = embedded;
         this._craftingSystemId = craftingSystemId;
         this._itemData = itemData;
-        this.disabled = disabled;
+        this._disabled = disabled;
         this._requirementOptions = requirementOptions;
         this._resultOptions = resultOptions;
     }
@@ -107,11 +107,11 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     set isDisabled(value: boolean) {
-        this.disabled = value;
+        this._disabled = value;
     }
 
     get isDisabled(): boolean {
-        return this.disabled;
+        return this._disabled;
     }
 
     get resultOptions(): SelectableOptions<ResultOptionJson, ResultOption> {
@@ -270,15 +270,37 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions.deselect();
     }
 
-    clone(cloneId: string) {
+    public clone({
+         id,
+         embedded = false,
+         craftingSystemId = this._craftingSystemId,
+         substituteEssenceIds = new Map<string, string>(),
+         substituteComponentIds = new Map<string, string>(),
+     }: {
+        id: string;
+        embedded?: boolean;
+        craftingSystemId?: string;
+        substituteEssenceIds?: Map<string, string>;
+        substituteComponentIds?: Map<string, string>;
+    }): Recipe {
+        const itemData = craftingSystemId === this._craftingSystemId ? NoFabricateItemData.INSTANCE() : this._itemData;
         return new Recipe({
-            id: cloneId,
-            embedded: false,
-            craftingSystemId: this._craftingSystemId,
-            itemData: NoFabricateItemData.INSTANCE(),
-            disabled: this.disabled,
-            resultOptions: this._resultOptions.clone(),
-            requirementOptions: this._requirementOptions.clone()
+            id,
+            itemData,
+            embedded,
+            craftingSystemId,
+            disabled: this._disabled,
+            resultOptions: this._resultOptions.clone((resultOption) => {
+                return resultOption.clone({
+                    substituteComponentIds,
+                });
+            }),
+            requirementOptions: this._requirementOptions.clone((requirementOption) => {
+                return requirementOption.clone({
+                    substituteEssenceIds,
+                    substituteComponentIds,
+                });
+            })
         });
     }
 
@@ -309,7 +331,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             id: this._id,
             itemUuid: this._itemData.uuid,
             craftingSystemId: this._craftingSystemId,
-            disabled: this.disabled,
+            disabled: this._disabled,
             embedded: this._embedded,
             resultOptions: this._resultOptions.toJson(),
             requirementOptions: this._requirementOptions.toJson()

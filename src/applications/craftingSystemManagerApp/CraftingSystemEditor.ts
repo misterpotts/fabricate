@@ -1,5 +1,5 @@
 import {Writable} from "svelte/store";
-import {CraftingSystem, CraftingSystemJson} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import Properties from "../../scripts/Properties";
 import {LocalizationService} from "../common/LocalizationService";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
@@ -52,7 +52,7 @@ class CraftingSystemEditor {
         });
     }
 
-    async importCraftingSystem(onSuccess?: (craftingSystem: CraftingSystem) => void): Promise<void> {
+    async importCraftingSystem(): Promise<void> {
         const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
         const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
         const content = await renderTemplate("templates/apps/import-data.html", {
@@ -76,15 +76,25 @@ class CraftingSystemEditor {
                             throw new Error(message);
                         }
                         const fileData = await readTextFromFile(form.data.files[0]);
-                        let craftingSystemData: FabricateExportModel;
+                        let dataToImport: FabricateExportModel;
                         try {
-                            craftingSystemData = JSON.parse(fileData);
+                            dataToImport = JSON.parse(fileData);
                         } catch (e: any) {
                             const message = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.couldNotParseFile`);
                             ui.notifications.error(message);
                             throw new Error(message);
                         }
-                        await this._fabricateAPI.import(craftingSystemData);
+                        const importResult = await this._fabricateAPI.import(dataToImport);
+                        this._craftingSystems.update((craftingSystems) => {
+                            const found = craftingSystems.find(craftingSystem => craftingSystem.id === importResult.craftingSystem.id);
+                            if (!found) {
+                                craftingSystems.push(importResult.craftingSystem);
+                                return craftingSystems;
+                            }
+                            return craftingSystems
+                                .filter(craftingSystem => craftingSystem.id !== importResult.craftingSystem.id)
+                                .concat(importResult.craftingSystem);
+                        });
                     }
                 },
                 no: {
@@ -107,26 +117,25 @@ class CraftingSystemEditor {
     }
 
     async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
-        // const clonedCraftingSystem = sourceCraftingSystem.clone({
-        //     id: randomID(),
-        //     name: `${sourceCraftingSystem.name} (copy)`,
-        //     locked: false
-        // });
-        // const duplicationResult = await FabricateApplication.systemRegistry.saveCraftingSystem(clonedCraftingSystem);
-        await this._fabricateAPI.duplicateCraftingSystem(sourceCraftingSystem.id);
-        ui.notifications.info(this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.duplicateCraftingSystem.success`, {
-            sourceSystemName: sourceCraftingSystem.name,
-            duplicatedSystemName: duplicationResult.name
-        }));
+
+        const duplicatedCraftingSystemData = await this._fabricateAPI.duplicateCraftingSystem(sourceCraftingSystem.id);
+
         this._craftingSystems.update((craftingSystems) => {
-            craftingSystems.push(duplicationResult);
+            craftingSystems.push(duplicatedCraftingSystemData.craftingSystem);
             return craftingSystems;
         });
-        return duplicationResult;
+
+        ui.notifications.info(this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.duplicateCraftingSystem.success`, {
+            sourceSystemName: sourceCraftingSystem.details.name,
+            duplicatedSystemName: duplicatedCraftingSystemData.craftingSystem.details.name
+        }));
+
+        return duplicatedCraftingSystemData.craftingSystem;
+
     }
 
     async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
-        const updatedCraftingSystem = await this._systemRegistry.saveCraftingSystem(craftingSystem);
+        const updatedCraftingSystem = await this._fabricateAPI.systems.save(craftingSystem);
         this._craftingSystems.update((craftingSystems) => {
             const filtered = craftingSystems.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
             filtered.push(updatedCraftingSystem);

@@ -149,6 +149,54 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         }
     }
 
+    clone({
+        substituteEssenceIds = new Map(),
+        substituteComponentIds = new Map(),
+    }: {
+        substituteEssenceIds: Map<string, string>;
+        substituteComponentIds: Map<string, string>;
+    }) {
+
+        const catalysts = this._catalysts
+            .map((catalystUnit) => {
+                if (!substituteComponentIds.has(catalystUnit.element.id)) {
+                    return catalystUnit;
+                }
+                const substituteId = substituteComponentIds.get(catalystUnit.element.id);
+                return new Unit<ComponentReference>(new ComponentReference(substituteId), catalystUnit.quantity);
+            })
+            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<ComponentReference>());
+
+        const ingredients = this._ingredients
+            .map((ingredientUnit) => {
+                if (!substituteComponentIds.has(ingredientUnit.element.id)) {
+                    return ingredientUnit;
+                }
+                const substituteId = substituteComponentIds.get(ingredientUnit.element.id);
+                return new Unit<ComponentReference>(new ComponentReference(substituteId), ingredientUnit.quantity);
+            })
+            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<ComponentReference>());
+
+        const essences = this._essences
+            .map((essenceUnit) => {
+                if (!substituteEssenceIds.has(essenceUnit.element.id)) {
+                    return essenceUnit;
+                }
+                const substituteId = substituteEssenceIds.get(essenceUnit.element.id);
+                return new Unit<EssenceReference>(new EssenceReference(substituteId), essenceUnit.quantity);
+            })
+            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<EssenceReference>());
+
+        return new RequirementOption({
+            essences,
+            catalysts,
+            ingredients,
+            id: this._id,
+            name: this._name,
+        });
+
+    }
+
 }
 
 export {RequirementOption};

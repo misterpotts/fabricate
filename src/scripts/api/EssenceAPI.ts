@@ -194,13 +194,14 @@ interface EssenceAPI {
      *   multiple times with the same source Essences and target Crafting System ID.
      *
      * @async
-     * @param essencesToClone - The Essences to clone.
-     * @param targetCraftingSystemId - The ID of the Crafting System to clone the essences to.
+     * @param sourceEssences - The Essences to clone.
+     * @param targetCraftingSystemId - The ID of the Crafting System to clone the essences to. Defaults to the source
+     *   Essence's Crafting System ID.
      * @returns {Promise<Essence[]>} A Promise that resolves to an object containing the cloned Essences and a Map keyed
      *   on the source Essence IDs pointing to the newly cloned Essence IDs, or rejects with an Error if the target
      *   Crafting System does not exist or any of the Essences are invalid.
      */
-    cloneAll(essencesToClone: Essence[], targetCraftingSystemId: string): Promise<{ essences: Essence[], idLinks: Map<string, string> }>;
+    cloneAll(sourceEssences: Essence[], targetCraftingSystemId?: string): Promise<{ essences: Essence[], idLinks: Map<string, string> }>;
 
 }
 
@@ -391,14 +392,13 @@ class DefaultEssenceAPI implements EssenceAPI {
         return Promise.all(essenceData.map(essence => this.insert(essence)));
     }
 
-    async cloneAll(essencesToClone: Essence[], targetCraftingSystemId: string): Promise<{ essences: Essence[], idLinks: Map<string, string> }> {
+    async cloneAll(sourceEssences: Essence[], targetCraftingSystemId?: string): Promise<{ essences: Essence[], idLinks: Map<string, string> }> {
         const existingEssences = await this.getAll();
         const excludedIdentityValues = Array.from(existingEssences.keys());
 
-        const cloneData = essencesToClone
+        const cloneData = sourceEssences
             .map(sourceEssence => {
                 const clonedEssence = sourceEssence.clone({
-                    embedded: false,
                     craftingSystemId: targetCraftingSystemId,
                     id: this.identityFactory.make(excludedIdentityValues),
                 });

@@ -102,6 +102,10 @@ class Unit<T extends Identifiable> {
         return this.add(other.quantity);
     }
 
+    clone() {
+        return new Unit<T>(this._element, this._quantity);
+    }
+
 }
 
 export { Unit };

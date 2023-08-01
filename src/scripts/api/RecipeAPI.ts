@@ -274,6 +274,25 @@ interface RecipeAPI {
      */
     insertMany(recipeData: RecipeExportModel[]): Promise<Recipe[]>;
 
+    /**
+     * Clones all recipes in the given array, optionally substituting the IDs of essences and crafting components with
+     *   new IDs. Recipes are cloned by value and the copies will be assigned new IDs. The cloned Recipes will be
+     *   assigned to the Crafting System with the given target Crafting System ID. This operation is not idempotent and
+     *   will produce duplicate Recipes with distinct IDs if called multiple times with the same source Recipes and
+     *   target Crafting System ID. As only one Recipe can be associated with a given game item within a single Crafting
+     *   system, Recipes cloned into the same Crafting system will have their associated items removed.
+     *
+     * @param recipes - The Recipes to clone
+     * @param targetCraftingSystemId - The ID of the Crafting System to clone the Recipes to. Defaults to the source
+     *   Recipe's Crafting System ID.
+     * @param substituteEssenceIds - An optional Map of Essence IDs to substitute with new IDs. If a Recipe references
+     *   an Essence in this Map , the Recipe will be cloned with the new Essence ID in place of the original ID.
+     * @param substituteComponentIds - An optional Map of Crafting Component IDs to substitute with new IDs. If a Recipe
+     *   references a Crafting Component in this Map , the Recipe will be cloned with the new Crafting Component ID in
+     *   place of the original ID.
+     */
+    cloneAll(recipes: Recipe[], targetCraftingSystemId?: string, substituteEssenceIds?: Map<string, string>, substituteComponentIds?: Map<string, string>): Promise<{ recipes: Recipe[], idLinks: Map<string, string> }>;
+
 }
 
 export { RecipeAPI };
@@ -343,6 +362,25 @@ class DefaultRecipeAPI implements RecipeAPI {
         this.notificationService.info(message);
 
         return recipe;
+    }
+
+    private async saveAll(recipes: Recipe[]) {
+
+        const existing = await this.recipeStore.getAllById(recipes.map(recipe => recipe.id));
+        existing.forEach(existingRecipe => this.rejectModifyingEmbeddedRecipe(existingRecipe));
+
+        recipes.forEach(recipe => this.rejectSavingInvalidRecipe(recipe));
+
+        await this.recipeStore.insertAll(recipes);
+
+        const message = this.localizationService.format(
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.settings.recipe.savedAll`,
+            { count: recipes.length }
+        );
+        this.notificationService.info(message);
+
+        return recipes;
+
     }
 
     async create({
@@ -429,7 +467,9 @@ class DefaultRecipeAPI implements RecipeAPI {
             throw new Error(message);
         }
         const assignedIds = await this.recipeStore.listAllEntityIds();
-        const clone = source.clone(this.identityFactory.make(assignedIds));
+        const clone = source.clone({
+            id: this.identityFactory.make(assignedIds)
+        });
         return this.save(clone);
     }
 
@@ -499,6 +539,61 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     async insertMany(recipeImportData: RecipeExportModel[]): Promise<Recipe[]> {
         return Promise.all(recipeImportData.map(recipe => this.insert(recipe)));
+    }
+
+    async cloneAll(sourceRecipes: Recipe[],
+                   targetCraftingSystemId?: string,
+                   substituteEssenceIds?: Map<string, string>,
+                   substituteComponentIds?: Map<string, string>
+    ): Promise<{ recipes: Recipe[]; idLinks: Map<string, string> }> {
+
+        const assignedRecipeIds = await this.recipeStore.listAllEntityIds();
+        const newRecipeIdsBySourceRecipeId = sourceRecipes
+            .map((sourceRecipe) => {
+                const newId = this.identityFactory.make(assignedRecipeIds);
+                return [sourceRecipe.id, newId];
+            })
+            .reduce((result, [sourceId, newId]) => {
+                result.set(sourceId, newId);
+                return result;
+            }, new Map<string, string>());
+
+        const cloneData = sourceRecipes
+            .map(sourceRecipe => {
+                const newId = newRecipeIdsBySourceRecipeId.get(sourceRecipe.id);
+                if (!newId) {
+                    throw new Error(`Failed to find new id for source recipe id ${sourceRecipe.id}`);
+                }
+                const clonedRecipe = sourceRecipe.clone({
+                    id: newId,
+                    craftingSystemId: targetCraftingSystemId,
+                    substituteEssenceIds,
+                    substituteComponentIds
+                });
+                return {
+                    recipe: clonedRecipe,
+                    sourceId: sourceRecipe.id,
+                }
+            })
+            .reduce(
+                (result, currentValue) => {
+                    result.ids.set(currentValue.sourceId, currentValue.recipe.id);
+                    result.recipes.push(currentValue.recipe);
+                    return result;
+                },
+                {
+                    ids: new Map<string, string>,
+                    recipes: <Recipe[]>[],
+                }
+            );
+
+        const savedClones = await this.saveAll(cloneData.recipes);
+
+        return {
+            recipes: savedClones,
+            idLinks: cloneData.ids,
+        };
+
     }
 
     async removeComponentReferences(componentIdToDelete: string, craftingSystemId: string): Promise<Recipe[]> {

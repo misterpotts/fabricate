@@ -496,6 +496,12 @@ class Combination<T extends Identifiable> {
             }, {});
     }
 
+    map<R = any>(mappingFunction: (unit: Unit<T>) => R) {
+        return this.units
+            .map(unit => unit.clone())
+            .map(mappingFunction);
+    }
+
 }
 
 export { Combination }

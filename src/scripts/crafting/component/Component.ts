@@ -36,7 +36,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     private _itemData: FabricateItemData;
     private _essences: Combination<EssenceReference>;
     private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
-    private _isDisabled: boolean;
+    private _disabled: boolean;
 
     constructor({
         id,
@@ -58,7 +58,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._id = id;
         this._embedded = embedded;
         this._itemData = itemData;
-        this._isDisabled = disabled;
+        this._disabled = disabled;
         this._essences = essences;
         this._salvageOptions = salvageOptions;
         this._craftingSystemId = craftingSystemId;
@@ -125,7 +125,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
     }
 
     get isDisabled(): boolean {
-        return this._isDisabled;
+        return this._disabled;
     }
 
     get isSalvageable(): boolean {
@@ -145,7 +145,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return {
             id: this._id,
             embedded: false,
-            disabled: this._isDisabled,
+            disabled: this._disabled,
             essences: this._essences.toJson(),
             itemUuid: this._itemData.toJson().uuid,
             craftingSystemId: this._craftingSystemId,
@@ -157,19 +157,40 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return new ComponentReference(this._id);
     }
 
-    public clone(cloneId: string): Component {
+    public clone({
+         id,
+         embedded = false,
+         craftingSystemId = this._craftingSystemId,
+         substituteEssenceIds = new Map<string, string>(),
+     }: {
+        id: string;
+        embedded?: boolean;
+        craftingSystemId?: string;
+        substituteEssenceIds?: Map<string, string>;
+    }): Component {
+        const itemData = craftingSystemId === this._craftingSystemId ? NoFabricateItemData.INSTANCE() : this._itemData;
+        const essences = this._essences
+            .map(essenceUnit => {
+                if (!substituteEssenceIds.has(essenceUnit.element.id)) {
+                    return essenceUnit;
+                }
+                const substituteId = substituteEssenceIds.get(essenceUnit.element.id);
+                return new Unit(new EssenceReference(substituteId), essenceUnit.quantity);
+            })
+            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<EssenceReference>());
         return new Component({
-            id: cloneId,
-            craftingSystemId: this._craftingSystemId,
-            itemData: NoFabricateItemData.INSTANCE(),
+            id,
+            embedded,
+            itemData,
+            essences,
+            craftingSystemId,
             salvageOptions: this._salvageOptions.clone(),
-            disabled: this._isDisabled,
-            essences: this._essences.clone()
+            disabled: this._disabled,
         });
     }
 
     set isDisabled(value: boolean) {
-        this._isDisabled = value;
+        this._disabled = value;
     }
 
     set essences(value: Combination<EssenceReference>) {

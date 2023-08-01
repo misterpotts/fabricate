@@ -124,7 +124,12 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         this._selectedOptionId = null;
     }
 
-    clone(): SelectableOptions<J, T> {
+    clone(mappingFunction?: (option: T) => T): SelectableOptions<J, T> {
+        if (mappingFunction) {
+            return new SelectableOptions<J, T>({
+                options: Array.from(this._options.values()).map(mappingFunction)
+            });
+        }
         return new SelectableOptions<J, T>({
             options: Array.from(this._options.values())
         })

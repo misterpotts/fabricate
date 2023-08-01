@@ -87,6 +87,24 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
             throw new Error(`Unable to build result option ${resultOptionJson.name}`, {cause});
         }
     }
+
+    clone({ substituteComponentIds = new Map() }: { substituteComponentIds?: Map<string, string> }) {
+        const results= this._results
+            .map((resultUnit) => {
+                if (!substituteComponentIds.has(resultUnit.element.id)) {
+                    return resultUnit;
+                }
+                const substituteId = substituteComponentIds.get(resultUnit.element.id);
+                return new Unit<ComponentReference>(new ComponentReference(substituteId), resultUnit.quantity);
+            })
+            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<ComponentReference>());
+        return new ResultOption({
+            results,
+            id: this._id,
+            name: this._name,
+        });
+    }
+
 }
 
 export {ResultOption};
