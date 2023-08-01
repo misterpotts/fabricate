@@ -52,7 +52,7 @@ class CraftingSystemEditor {
         });
     }
 
-    async importCraftingSystem(): Promise<void> {
+    async importCraftingSystem(targetCraftingSystem: CraftingSystem): Promise<void> {
         const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
         const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
         const content = await renderTemplate("templates/apps/import-data.html", {
@@ -68,6 +68,7 @@ class CraftingSystemEditor {
                     icon: '<i class="fas fa-file-import"></i>',
                     label: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.buttons.import`),
                     callback: async (html) => {
+
                         // @ts-ignore
                         const form = html.find("form")[0];
                         if (!form.data.files.length) {
@@ -76,6 +77,7 @@ class CraftingSystemEditor {
                             throw new Error(message);
                         }
                         const fileData = await readTextFromFile(form.data.files[0]);
+
                         let dataToImport: FabricateExportModel;
                         try {
                             dataToImport = JSON.parse(fileData);
@@ -84,6 +86,17 @@ class CraftingSystemEditor {
                             ui.notifications.error(message);
                             throw new Error(message);
                         }
+
+                        if (targetCraftingSystem.id !== dataToImport.craftingSystem.id) {
+                            const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.importIdMismatch`, {
+                                systemName: targetCraftingSystem.details.name,
+                                expectedId: targetCraftingSystem.id,
+                                actualId: dataToImport.craftingSystem.id,
+                            })
+                            ui.notifications.error(message);
+                            throw new Error(message);
+                        }
+
                         const importResult = await this._fabricateAPI.import(dataToImport);
                         this._craftingSystems.update((craftingSystems) => {
                             const found = craftingSystems.find(craftingSystem => craftingSystem.id === importResult.craftingSystem.id);
@@ -95,6 +108,7 @@ class CraftingSystemEditor {
                                 .filter(craftingSystem => craftingSystem.id !== importResult.craftingSystem.id)
                                 .concat(importResult.craftingSystem);
                         });
+
                     }
                 },
                 no: {

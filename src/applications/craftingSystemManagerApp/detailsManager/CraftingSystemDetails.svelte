@@ -29,36 +29,36 @@
         <img src="{Properties.ui.banners.detailsEditor}" >
     </div>
     <div class="fab-tab-header fab-row">
-        <h2>{localization.format(`${localizationPath}.title`, { systemName: $selectedCraftingSystem?.name })}</h2>
+        <h2>{localization.format(`${localizationPath}.title`, { systemName: $selectedCraftingSystem?.details.name })}</h2>
     </div>
     <div class="fab-row fab-columns">
         <div class="fab-column">
             <div class="fab-row fab-system-name">
                 <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.labels.name`)}: </p>
-                {#if !$selectedCraftingSystem?.isLocked}
+                {#if !$selectedCraftingSystem?.embedded}
                     <div class="fab-editable fab-inline"
                          contenteditable="true"
-                         bind:textContent={$selectedCraftingSystem.name}
+                         bind:textContent={$selectedCraftingSystem.details.name}
                          on:input={scheduleSave}>
-                        {$selectedCraftingSystem.name}
+                        {$selectedCraftingSystem.details.name}
                     </div>
                 {:else}
-                    <div class="fab-locked fab-inline">{$selectedCraftingSystem.name}</div>
+                    <div class="fab-locked fab-inline">{$selectedCraftingSystem.details.name}</div>
                 {/if}
             </div>
         </div>
         <div class="fab-column">
             <div class="fab-row fab-system-author">
                 <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.labels.author`)}: </p>
-                {#if !$selectedCraftingSystem?.isLocked}
+                {#if !$selectedCraftingSystem?.embedded}
                     <div class="fab-editable fab-inline"
                          contenteditable="true"
-                         bind:textContent={$selectedCraftingSystem.author}
+                         bind:textContent={$selectedCraftingSystem.details.author}
                          on:input={scheduleSave}>
-                        {$selectedCraftingSystem.author}
+                        {$selectedCraftingSystem.details.author}
                     </div>
                 {:else}
-                    <div class="fab-locked fab-inline">{$selectedCraftingSystem.author}</div>
+                    <div class="fab-locked fab-inline">{$selectedCraftingSystem.details.author}</div>
                 {/if}
             </div>
         </div>
@@ -67,39 +67,39 @@
         <p class="fab-label">{localization.localize(`${localizationPath}.labels.summary`)}: </p>
     </div>
     <div class="fab-row fab-system-summary">
-        {#if !$selectedCraftingSystem?.isLocked}
+        {#if !$selectedCraftingSystem?.embedded}
             <div class="fab-editable fab-textbox"
                  contenteditable="true"
-                 bind:textContent={$selectedCraftingSystem.summary}
+                 bind:textContent={$selectedCraftingSystem.details.summary}
                  on:input={scheduleSave}>
-                {$selectedCraftingSystem.summary}
+                {$selectedCraftingSystem.details.summary}
             </div>
         {:else}
-            <div class="fab-locked fab-textbox">{$selectedCraftingSystem.summary}</div>
+            <div class="fab-locked fab-textbox">{$selectedCraftingSystem.details.summary}</div>
         {/if}
     </div>
     <div class="fab-row fab-system-description">
         <p class="fab-label">{localization.localize(`${localizationPath}.labels.description`)}: </p>
     </div>
     <div class="fab-row fab-system-description">
-        {#if !$selectedCraftingSystem?.isLocked}
+        {#if !$selectedCraftingSystem?.embedded}
             <div class="fab-editable fab-textbox"
                  contenteditable="true"
-                 bind:textContent={$selectedCraftingSystem.description}
+                 bind:textContent={$selectedCraftingSystem.details.description}
                  on:input={scheduleSave}>
-                {$selectedCraftingSystem.description}
+                {$selectedCraftingSystem.details.description}
             </div>
         {:else}
-            <div class="fab-locked fab-textbox">{$selectedCraftingSystem.description}</div>
+            <div class="fab-locked fab-textbox">{$selectedCraftingSystem.details.description}</div>
         {/if}
     </div>
     <div class="fab-tab-header fab-row">
         <h2>{localization.localize(`${localizationPath}.settings.title`)}</h2>
     </div>
     <div class="fab-row">
-        <p class="fab-label">{localization.localize(`${localizationPath}.settings.enabled.label`)}: </p>
+        <p class="fab-label">{localization.localize(`${localizationPath}.settings.disabled.label`)}: </p>
         <input type="checkbox"
-               bind:checked={$selectedCraftingSystem.enabled}
+               bind:checked={$selectedCraftingSystem.disabled}
                on:change={scheduleSave}>
     </div>
     <div class="fab-row">

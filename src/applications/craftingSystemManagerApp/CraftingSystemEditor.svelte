@@ -19,6 +19,7 @@
     import eventBus from "../common/EventBus";
     import {onMount, setContext} from "svelte";
     import RecipesTab from "./recipeManager/RecipesTab.svelte";
+    import {CraftingSystemEditor} from "./CraftingSystemEditor";
 
     export let localization;
     export let fabricateAPI;
@@ -32,6 +33,7 @@
     const craftingComponents = new CraftingComponentsStore({ selectedCraftingSystem, fabricateAPI });
     const selectedRecipe = new SelectedRecipeStore({recipes});
     const selectedComponent = new SelectedCraftingComponentStore({craftingComponents});
+    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization})
 
     setContext(key, {
         craftingSystems,
@@ -42,6 +44,7 @@
         selectedComponent,
         localization,
         loading,
+        craftingSystemEditor
     });
 
     onMount(async () => {

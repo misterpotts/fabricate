@@ -24,9 +24,7 @@
 
     async function importCraftingSystem() {
         $loading = true;
-        await craftingSystemEditor.importCraftingSystem((craftingSystem) => {
-            $selectedCraftingSystem = craftingSystem;
-        }, craftingSystem);
+        await craftingSystemEditor.importCraftingSystem();
         $loading = false;
     }
 
@@ -55,7 +53,7 @@
             <p class="fab-description">{craftingSystem.details.summary}</p>
             <hr />
             <div class="fab-ctx-menu-buttons">
-                {#if !craftingSystem.isLocked}
+                {#if !craftingSystem.embedded}
                     <button on:click={importCraftingSystem(craftingSystem)}>
                         <i class="fa-solid fa-file-import fa-fw"></i>{localization.localize(`${localizationPath}.buttons.import`)}
                     </button>
@@ -66,7 +64,7 @@
                 <button on:click={duplicateSystem}>
                     <i class="fa-solid fa-paste fa-fw"></i>{localization.localize(`${localizationPath}.buttons.duplicate`)}
                 </button>
-                {#if !craftingSystem.isLocked}
+                {#if !craftingSystem.embedded}
                     <button on:click={deleteSystem}>
                         <i class="fa-solid fa-trash fa-fw"></i>{localization.localize(`${localizationPath}.buttons.delete`)}
                     </button>

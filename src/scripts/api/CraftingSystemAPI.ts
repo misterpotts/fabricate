@@ -223,8 +223,8 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
 
         const localizationActivity = existing ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.settings.craftingSystem.${localizationActivity}`,
-            { craftingSystemName: craftingSystem.details.name }
+            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.craftingSystem.${localizationActivity}`,
+            { systemName: craftingSystem.details.name }
         );
 
         this.notificationService.info(message);

@@ -180,8 +180,8 @@
           },
           "settings": {
             "title": "Settings",
-            "enabled": {
-              "label": "Enabled",
+            "disabled": {
+              "label": "Disabled",
               "description": "Disabled systems cannot be used. Their components cannot be salvaged. Their recipes cannot be crafted."
             }
           }
