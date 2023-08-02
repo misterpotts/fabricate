@@ -35,7 +35,7 @@
         <div class="fab-column">
             <div class="fab-row fab-system-name">
                 <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.labels.name`)}: </p>
-                {#if !$selectedCraftingSystem?.embedded}
+                {#if !$selectedCraftingSystem?.isEmbedded}
                     <div class="fab-editable fab-inline"
                          contenteditable="true"
                          bind:textContent={$selectedCraftingSystem.details.name}
@@ -50,7 +50,7 @@
         <div class="fab-column">
             <div class="fab-row fab-system-author">
                 <p class="fab-label fab-inline">{localization.localize(`${localizationPath}.labels.author`)}: </p>
-                {#if !$selectedCraftingSystem?.embedded}
+                {#if !$selectedCraftingSystem?.isEmbedded}
                     <div class="fab-editable fab-inline"
                          contenteditable="true"
                          bind:textContent={$selectedCraftingSystem.details.author}
@@ -67,7 +67,7 @@
         <p class="fab-label">{localization.localize(`${localizationPath}.labels.summary`)}: </p>
     </div>
     <div class="fab-row fab-system-summary">
-        {#if !$selectedCraftingSystem?.embedded}
+        {#if !$selectedCraftingSystem?.isEmbedded}
             <div class="fab-editable fab-textbox"
                  contenteditable="true"
                  bind:textContent={$selectedCraftingSystem.details.summary}
@@ -82,7 +82,7 @@
         <p class="fab-label">{localization.localize(`${localizationPath}.labels.description`)}: </p>
     </div>
     <div class="fab-row fab-system-description">
-        {#if !$selectedCraftingSystem?.embedded}
+        {#if !$selectedCraftingSystem?.isEmbedded}
             <div class="fab-editable fab-textbox"
                  contenteditable="true"
                  bind:textContent={$selectedCraftingSystem.details.description}
@@ -99,7 +99,7 @@
     <div class="fab-row">
         <p class="fab-label">{localization.localize(`${localizationPath}.settings.disabled.label`)}: </p>
         <input type="checkbox"
-               bind:checked={$selectedCraftingSystem.disabled}
+               bind:checked={$selectedCraftingSystem.isDisabled}
                on:change={scheduleSave}>
     </div>
     <div class="fab-row">

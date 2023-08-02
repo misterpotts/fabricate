@@ -149,8 +149,8 @@ describe("Read", () => {
         expect(result.details.summary).toEqual(testCraftingSystemOne.details.summary);
         expect(result.details.description).toEqual(testCraftingSystemOne.details.description);
         expect(result.details.author).toEqual(testCraftingSystemOne.details.author);
-        expect(result.embedded).toEqual(testCraftingSystemOne.embedded);
-        expect(result.disabled).toEqual(testCraftingSystemOne.disabled);
+        expect(result.isEmbedded).toEqual(testCraftingSystemOne.isEmbedded);
+        expect(result.isDisabled).toEqual(testCraftingSystemOne.isDisabled);
 
     });
 
@@ -181,8 +181,8 @@ describe("Read", () => {
         expect(result.details.summary).toEqual(testCraftingSystemTwo.details.summary);
         expect(result.details.description).toEqual(testCraftingSystemTwo.details.description);
         expect(result.details.author).toEqual(testCraftingSystemTwo.details.author);
-        expect(result.embedded).toEqual(testCraftingSystemTwo.embedded);
-        expect(result.disabled).toEqual(testCraftingSystemTwo.disabled);
+        expect(result.isEmbedded).toEqual(testCraftingSystemTwo.isEmbedded);
+        expect(result.isDisabled).toEqual(testCraftingSystemTwo.isDisabled);
 
         await expect(craftingSystemStore.size()).resolves.toEqual(2);
 

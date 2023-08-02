@@ -34,15 +34,15 @@ class CraftingSystem {
         this._disabled = enabled;
     }
 
-    get embedded(): boolean {
+    get isEmbedded(): boolean {
         return this._embedded;
     }
 
-    get disabled(): boolean {
+    get isDisabled(): boolean {
         return this._disabled;
     }
 
-    set disabled(value: boolean) {
+    set isDisabled(value: boolean) {
         this._disabled = value;
     }
 
@@ -91,6 +91,7 @@ class CraftingSystem {
             && this._details.equals(other._details)
             && excludeDisabled || this._disabled === other._disabled;
     }
+
 }
 
 export { CraftingSystem }

@@ -523,7 +523,7 @@ class DefaultFabricateAPI implements FabricateAPI {
                     description: craftingSystem.details.description,
                     author: craftingSystem.details.author,
                 },
-                disabled: craftingSystem.disabled,
+                disabled: craftingSystem.isDisabled,
             },
             essences: Array.from(essences.values()).map(essence => essence.toJson()),
             components: Array.from(components.values()).map(component => {

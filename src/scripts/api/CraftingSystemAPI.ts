@@ -278,7 +278,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
     }
 
     private rejectDeletingEmbeddedCraftingSystem(craftingSystem: CraftingSystem): void {
-        if (!craftingSystem?.embedded) {
+        if (!craftingSystem?.isEmbedded) {
             return;
         }
         const message = this.localizationService.format(
@@ -292,7 +292,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
 
     private rejectModifyingEmbeddedSystem(existingCraftingSystem: CraftingSystem, updatedCraftingSystem: CraftingSystem): void {
 
-        if (!existingCraftingSystem || !existingCraftingSystem.embedded) {
+        if (!existingCraftingSystem || !existingCraftingSystem.isEmbedded) {
             return;
         }
 
