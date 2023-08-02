@@ -85,6 +85,12 @@ class CraftingSystem {
         });
     }
 
+    equals(other: CraftingSystem, excludeDisabled: boolean = false): boolean {
+        return this._id === other._id
+            && this._embedded === other._embedded
+            && this._details.equals(other._details)
+            && excludeDisabled || this._disabled === other._disabled;
+    }
 }
 
 export { CraftingSystem }

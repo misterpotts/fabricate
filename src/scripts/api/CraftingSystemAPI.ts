@@ -213,23 +213,24 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         return new Map(allCraftingSystems.map(craftingSystem => [craftingSystem.id, craftingSystem]));
     }
 
-    async save(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
-        const existing = await this.craftingSystemStore.getById(craftingSystem.id);
+    async save(updatedCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
 
-        this.rejectModifyingEmbeddedSystem(existing);
-        await this.rejectSavingInvalidSystem(craftingSystem);
+        const existingCraftingSystem = await this.craftingSystemStore.getById(updatedCraftingSystem.id);
 
-        await this.craftingSystemStore.insert(craftingSystem);
+        this.rejectModifyingEmbeddedSystem(existingCraftingSystem, updatedCraftingSystem);
+        await this.rejectSavingInvalidSystem(updatedCraftingSystem);
 
-        const localizationActivity = existing ? "updated" : "created";
+        await this.craftingSystemStore.insert(updatedCraftingSystem);
+
+        const localizationActivity = existingCraftingSystem ? "updated" : "created";
         const message = this.localizationService.format(
             `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.craftingSystem.${localizationActivity}`,
-            { systemName: craftingSystem.details.name }
+            { systemName: updatedCraftingSystem.details.name }
         );
 
         this.notificationService.info(message);
 
-        return craftingSystem;
+        return updatedCraftingSystem;
     }
 
     async insert(craftingSystemData: CraftingSystemImportData): Promise<CraftingSystem> {
@@ -289,13 +290,19 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
 
     }
 
-    private rejectModifyingEmbeddedSystem(craftingSystem: CraftingSystem): void {
-        if (!craftingSystem?.embedded) {
+    private rejectModifyingEmbeddedSystem(existingCraftingSystem: CraftingSystem, updatedCraftingSystem: CraftingSystem): void {
+
+        if (!existingCraftingSystem || !existingCraftingSystem.embedded) {
             return;
         }
+
+        if (existingCraftingSystem.equals(updatedCraftingSystem, true)) {
+            return;
+        }
+
         const message = this.localizationService.format(
-            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.canNotModifyEmbedded`,
-            { craftingSystemName: craftingSystem.details.name }
+            `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.cannotModifyEmbedded`,
+            { craftingSystemName: existingCraftingSystem.details.name }
         );
         this.notificationService.error(message);
         throw new Error(message);

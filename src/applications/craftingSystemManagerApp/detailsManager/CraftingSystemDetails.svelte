@@ -103,6 +103,6 @@
                on:change={scheduleSave}>
     </div>
     <div class="fab-row">
-        <p>{localization.localize(`${localizationPath}.settings.enabled.description`)}</p>
+        <p>{localization.localize(`${localizationPath}.settings.disabled.description`)}</p>
     </div>
 </div>

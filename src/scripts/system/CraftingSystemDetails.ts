@@ -87,6 +87,13 @@ class CraftingSystemDetails {
             author: craftingSystemDetailsJson.author
         });
     }
+
+    equals(other: CraftingSystemDetails) {
+        return this._name === other._name &&
+            this._summary === other._summary &&
+            this._description === other._description &&
+            this._author === other._author;
+    }
 }
 
 export { CraftingSystemDetails, CraftingSystemDetailsJson }
