@@ -255,6 +255,7 @@ BEGIN FABRICATE THEME STYLES
       }
       .fab-component-name, .fab-recipe-name, .fab-component-requirements {
         background: var(--color-background-dark-5);
+        position: relative;
         i.fa-circle-exclamation {
           color: var(--color-error-bg);
           position: absolute;
@@ -262,6 +263,7 @@ BEGIN FABRICATE THEME STYLES
           font-size: var(--font-size-20);
           right: -9px;
           top: -9px;
+          z-index: 10;
           &::after {
             border-radius: 50%;
             content: "";

@@ -20,9 +20,7 @@ const defaultSettingValue = (): SerialisedEntityData<CraftingSystemJson> => {
             [ testCraftingSystemOne.id ]: testCraftingSystemOne.toJson(),
             [ testCraftingSystemTwo.id ]: testCraftingSystemTwo.toJson()
         },
-        collections: {
-            [ `${Properties.settings.collectionNames.gameSystem}.${testCraftingSystemOne.gameSystem}` ]: [ testCraftingSystemOne.id, testCraftingSystemTwo.id ]
-        }
+        collections: {}
     }
 }
 
@@ -65,7 +63,6 @@ describe("Create", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "Game Master",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory(expectedIdentity)
@@ -101,7 +98,6 @@ describe("Create", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: expectedAuthor,
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -135,7 +131,6 @@ describe("Read", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -167,7 +162,6 @@ describe("Read", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -201,7 +195,6 @@ describe("Read", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -228,7 +221,6 @@ describe("Update", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -243,7 +235,6 @@ describe("Update", () => {
                     description: "Any description",
                     author: "Any author"
                 }),
-                gameSystem: "dnd5e",
                 embedded: false
             })
         ))
@@ -252,10 +243,41 @@ describe("Update", () => {
 
         await expect(craftingSystemStore.size()).resolves.toEqual(2);
         const allEntities = await craftingSystemStore.getAllEntities();
-        await expect(allEntities.length).toEqual(2);
+        expect(allEntities.length).toEqual(2);
 
         expect(notificationService.invocations.length).toEqual(1);
         expect(notificationService.invocations[0].level).toEqual("error");
+    });
+
+    test("should allow an embedded system with `isDisabled` toggled as the only change to be saved", async () => {
+
+        const craftingSystemStore = new EntityDataStore({
+            entityName: "CraftingSystem",
+            settingManager,
+            entityFactory: stubCraftingSystemFactory,
+            collectionManager: new CraftingSystemCollectionManager()
+        });
+
+        const underTest = new DefaultCraftingSystemAPI({
+            notificationService,
+            localizationService,
+            craftingSystemValidator,
+            user: "User",
+            craftingSystemStore,
+            identityFactory: new StubIdentityFactory()
+        });
+
+        const testCraftingSystemTwoClone = testCraftingSystemTwo.clone({ id: testCraftingSystemTwo.id, embedded: true });
+        testCraftingSystemTwoClone.isDisabled = !testCraftingSystemTwoClone.isDisabled;
+        const saved = await underTest.save(testCraftingSystemTwoClone);
+
+        expect(saved.equals(testCraftingSystemTwo, true)).toBe(true);
+        await expect(craftingSystemStore.size()).resolves.toEqual(2);
+        const allEntities = await craftingSystemStore.getAllEntities();
+        expect(allEntities.length).toEqual(2);
+
+        expect(notificationService.invocations.length).toEqual(1);
+        expect(notificationService.invocations[0].level).toEqual("info");
     });
 
     test("should update system if exists and changes valid", async () => {
@@ -271,7 +293,6 @@ describe("Update", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -307,7 +328,6 @@ describe("Update", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -346,7 +366,6 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -371,7 +390,6 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()
@@ -394,7 +412,6 @@ describe("Delete", () => {
             notificationService,
             localizationService,
             craftingSystemValidator,
-            gameSystem: "dnd5e",
             user: "User",
             craftingSystemStore,
             identityFactory: new StubIdentityFactory()

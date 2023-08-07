@@ -11,7 +11,6 @@ const testCraftingSystemOne = new CraftingSystem({
         author: "None"
     }),
     embedded: false,
-    gameSystem: "dnd5e"
 });
 
 export { testCraftingSystemOne }
@@ -26,7 +25,6 @@ const testCraftingSystemTwo = new CraftingSystem({
         author: "None"
     }),
     embedded: true,
-    gameSystem: "dnd5e"
 });
 
 export { testCraftingSystemTwo }

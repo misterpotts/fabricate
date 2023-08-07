@@ -20,7 +20,6 @@
 
     const {
         localization,
-        loading,
         selectedComponent,
         craftingComponents,
         selectedCraftingSystem,
@@ -36,23 +35,17 @@
     }
 
     async function replaceItem(event) {
-        $loading = true;
-        await craftingComponentEditor.replaceItem(event, $selectedCraftingSystem, $selectedComponent);
-        $loading = false;
+        await craftingComponentEditor.replaceItem(event,$selectedComponent);
     }
     
     async function incrementEssence(essence) {
-        $loading = true;
         $selectedComponent.essences = $selectedComponent.essences.add(new Unit(essence, 1));
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        $loading = false;
     }
 
     async function decrementEssence(essence) {
-        $loading = true;
         $selectedComponent.essences = $selectedComponent.essences.minus(new Unit(essence, 1));
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        $loading = false;
     }
 
     function clearSearch() {
@@ -60,7 +53,6 @@
     }
 
     async function addSalvageOption(event) {
-        $loading = true;
         const dropEventParser = new DropEventParser({
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
@@ -75,7 +67,6 @@
         if ($selectedComponent.salvageOptions.length > 1) {
             selectPreviousTab();
         }
-        $loading = false;
         componentUpdated($selectedComponent);
     }
 
@@ -101,22 +92,17 @@
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            $loading = true;
             await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-            $loading = false;
         }, 1000);
     }
     
     async function deleteSalvageOption(optionToDelete) {
-        $loading = true;
         $selectedComponent.deleteSalvageOptionByName(optionToDelete.name);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        $loading = false;
         componentUpdated($selectedComponent);
     }
 
     async function addComponentToSalvageOption(event, salvageOption) {
-        $loading = true;
         const dropEventParser = new DropEventParser({
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
@@ -126,18 +112,15 @@
         const component = (await dropEventParser.parse(event)).component;
         salvageOption.add(component);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        $loading = false;
         componentUpdated($selectedComponent);
     }
 
     async function decrementSalvageOptionComponent(salvageOption, component) {
-        $loading = true;
         salvageOption.subtract(component);
         if (salvageOption.isEmpty) {
             return deleteSalvageOption(salvageOption);
         }
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        $loading = false;
         componentUpdated($selectedComponent);
     }
 
@@ -145,10 +128,8 @@
         if (event && event.shiftKey) {
             return decrementSalvageOptionComponent(salvageOption, component);
         }
-        $loading = true;
         salvageOption.add(component);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        $loading = false;
         componentUpdated($selectedComponent);
     }
 

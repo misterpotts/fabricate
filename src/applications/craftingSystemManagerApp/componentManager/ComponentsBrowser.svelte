@@ -9,13 +9,13 @@
 
     const {
         selectedCraftingSystem,
-        craftingComponents,
+        componentsStore,
         localization,
         craftingComponentEditor,
         selectedComponent
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({availableComponents: craftingComponents});
+    const componentSearchResults = new ComponentSearchStore({availableComponents: componentsStore});
     const searchTerms = componentSearchResults.searchTerms;
 
     function clearSearch() {
@@ -63,7 +63,7 @@
     }
 
     async function duplicateComponent(component) {
-        await craftingComponentEditor.duplicateComponent(component, $selectedCraftingSystem);
+        await craftingComponentEditor.duplicateComponent(component);
     }
 
     async function openItemSheet(component) {
@@ -103,7 +103,7 @@
             <input type="checkbox" bind:checked={$searchTerms.hasSalvage} />
         </div>
     </div>
-    {#if $craftingComponents.length > 0}
+    {#if $componentsStore.length > 0}
         <div class="fab-row">
             <div class="fab-component-grid fab-grid-4">
                 {#each $componentSearchResults as component}
@@ -112,28 +112,38 @@
                             {:then nothing}
                                 <div class="fab-component-name">
                                     <p>{component.name}</p>
-                                    {#if component.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
                                 </div>
                                 <div class="fab-columns fab-component-preview">
-                                    {#if !component.hasErrors}
-                                        <div class="fab-column fab-component-image" data-tooltip="{localization.localize(`${localizationPath}.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
-                                            <img src={component.imageUrl} alt={component.name} />
-                                        </div>
-                                    {:else}
-                                        <div class="fab-column fab-component-image" data-tooltip="{localization.localizeAll(`${localizationPath}.component.errors`, component.errorCodes)}">
-                                            <img src={component.imageUrl} alt={component.name} />
-                                        </div>
-                                    {/if}
-                                    {#if !$selectedCraftingSystem.isEmbedded}
-                                    <div class="fab-column fab-component-editor-buttons">
-                                        <button class="fab-edit-component" on:click|preventDefault={selectComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
-                                        <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
-                                        <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
-                                        <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                    <div class="fab-column fab-component-image" data-tooltip="{localization.localize(`${localizationPath}.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
+                                        <img src={component.imageUrl} alt={component.name} />
                                     </div>
+                                    {#if !$selectedCraftingSystem.isEmbedded}
+                                        <div class="fab-column fab-component-editor-buttons">
+                                            <button class="fab-edit-component" on:click|preventDefault={selectComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                        </div>
                                     {/if}
                                 </div>
                             {:catch error}
+                                <div class="fab-component-name">
+                                    <p>{component.name}</p>
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                </div>
+                                <div class="fab-columns fab-component-preview">
+                                    <div class="fab-column fab-component-image" data-tooltip="{localization.localizeAll(`${localizationPath}.component.errors`, component.errorCodes)}">
+                                        <img src={component.imageUrl} alt={component.name} />
+                                    </div>
+                                    {#if !$selectedCraftingSystem.isEmbedded}
+                                        <div class="fab-column fab-component-editor-buttons">
+                                            <button class="fab-edit-component" on:click|preventDefault={selectComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                        </div>
+                                    {/if}
+                            </div>
                         {/await}
                     </div>
                 {/each}

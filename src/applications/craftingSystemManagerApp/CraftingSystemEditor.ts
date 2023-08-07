@@ -4,10 +4,12 @@ import Properties from "../../scripts/Properties";
 import {LocalizationService} from "../common/LocalizationService";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
 import {FabricateExportModel} from "../../scripts/repository/import/FabricateExportModel";
+import {Component} from "../../scripts/crafting/component/Component";
 
 class CraftingSystemEditor {
 
     private readonly _craftingSystems: Writable<CraftingSystem[]>;
+    private readonly _components: Writable<Component[]>;
     private readonly _localization: LocalizationService;
     private readonly _fabricateAPI: FabricateAPI;
 
@@ -15,14 +17,17 @@ class CraftingSystemEditor {
 
     constructor({
         craftingSystems,
+        components,
         localization,
         fabricateAPI,
     }: {
         craftingSystems: Writable<CraftingSystem[]>;
+        components: Writable<Component[]>;
         localization: LocalizationService;
         fabricateAPI: FabricateAPI;
     }) {
         this._fabricateAPI = fabricateAPI;
+        this._components = components;
         this._craftingSystems = craftingSystems;
         this._localization = localization;
     }
@@ -158,6 +163,19 @@ class CraftingSystemEditor {
         return updatedCraftingSystem;
     }
 
+    async deleteComponent(component: Component): Promise<Component> {
+        return this._fabricateAPI.components.deleteById(component.id);
+    }
+
+    async saveComponent(craftingComponent: Component) {
+        const updatedComponent = await this._fabricateAPI.components.save(craftingComponent);
+        this._components.update((components) => {
+            const filtered = components.filter(component => component.id !== updatedComponent.id);
+            filtered.push(updatedComponent);
+            return filtered;
+        });
+        return updatedComponent;
+    }
 }
 
 export { CraftingSystemEditor }

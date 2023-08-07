@@ -10,7 +10,7 @@
     import {CraftingSystemsStore} from "../stores/CraftingSystemsStore";
     import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore";
     import {RecipesStore} from "../stores/RecipesStore";
-    import {CraftingComponentsStore} from "../stores/CraftingComponentsStore";
+    import {ComponentsStore} from "../stores/ComponentsStore";
     import {SelectedRecipeStore} from "../stores/SelectedRecipeStore";
     import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore";
     import {LoadingStore} from "../common/LoadingStore";
@@ -20,6 +20,7 @@
     import {onMount, setContext} from "svelte";
     import RecipesTab from "./recipeManager/RecipesTab.svelte";
     import {CraftingSystemEditor} from "./CraftingSystemEditor";
+    import {CraftingComponentEditor} from "./componentManager/CraftingComponentEditor";
 
     export let localization;
     export let fabricateAPI;
@@ -29,22 +30,26 @@
 
     const craftingSystems = new CraftingSystemsStore({});
     const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
-    const recipes = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
-    const craftingComponents = new CraftingComponentsStore({ selectedCraftingSystem, fabricateAPI });
-    const selectedRecipe = new SelectedRecipeStore({recipes});
-    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents});
-    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization})
+    const recipesStore = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
+
+    const componentsStore = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
+    const craftingComponentEditor = new CraftingComponentEditor({ fabricateAPI, components: componentsStore, localization });
+
+    const selectedRecipe = new SelectedRecipeStore({recipes: recipesStore});
+    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents: componentsStore});
+    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization, components: componentsStore });
 
     setContext(key, {
         craftingSystems,
         selectedCraftingSystem,
-        recipes,
-        craftingComponents,
+        recipesStore,
+        componentsStore,
         selectedRecipe,
         selectedComponent,
         localization,
         loading,
-        craftingSystemEditor
+        craftingSystemEditor,
+        craftingComponentEditor
     });
 
     onMount(async () => {
