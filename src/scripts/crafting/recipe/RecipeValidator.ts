@@ -50,14 +50,17 @@ class DefaultRecipeValidator implements RecipeValidator  {
             errors.push(`The item with UUID ${candidate.itemUuid} is already a recipe in the system "${candidate.craftingSystemId}" with the ID "${existingRecipeId}". `);
         }
 
-        // Check that the item exists and can be loaded
-        if (!candidate.itemData.loaded && !(candidate.itemData instanceof NoFabricateItemData)) {
-            await candidate.load();
-        }
-        if (candidate.itemData.hasErrors) {
-            const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);
-            const cause = itemDataErrorMessages.length > 0 ? `Caused by: ${itemDataErrorMessages.join(", ")}. ` : "";
-            errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. ${cause} `);
+        // If the recipe has an item specified, check it is valid
+        if (!(candidate.itemData instanceof NoFabricateItemData)){
+            // Check that the item exists and can be loaded
+            if (!candidate.itemData.loaded) {
+                await candidate.load();
+            }
+            if (candidate.itemData.hasErrors) {
+                const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);
+                const cause = itemDataErrorMessages.length > 0 ? `Caused by: ${itemDataErrorMessages.join(", ")}. ` : "";
+                errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. ${cause} `);
+            }
         }
 
         // Check that the essences referenced by this recipe all exist

@@ -1,4 +1,4 @@
-import {CraftingSystemAPI} from "../../../src/scripts/api/CraftingSystemAPI";
+import {CraftingSystemAPI, CraftingSystemImportData} from "../../../src/scripts/api/CraftingSystemAPI";
 import {CraftingSystem} from "../../../src/scripts/system/CraftingSystem";
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
 import {CraftingSystemDetails} from "../../../src/scripts/system/CraftingSystemDetails";
@@ -22,6 +22,14 @@ class StubCraftingSystemApi implements CraftingSystemAPI {
         this.valuesById = valuesById;
     }
 
+    cloneById(_craftingSystemId: string): Promise<CraftingSystem> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    insert(_craftingSystemData: CraftingSystemImportData): Promise<CraftingSystem> {
+        throw new Error("Not implemented by this stub");
+    }
+
     async create(): Promise<CraftingSystem> {
         return new CraftingSystem({
             id: this.identityFactory.make(),
@@ -31,7 +39,7 @@ class StubCraftingSystemApi implements CraftingSystemAPI {
                 description: "Crafting system description",
                 author: "No author"
             }),
-            enabled: false
+            disabled: false
         });
     }
 

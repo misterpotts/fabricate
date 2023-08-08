@@ -168,7 +168,7 @@ class NoFabricateItemData implements FabricateItemData {
     }
 
     get hasErrors(): boolean {
-        return false;
+        return true;
     }
 
     get imageUrl(): string {

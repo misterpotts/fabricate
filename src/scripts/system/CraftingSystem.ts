@@ -21,17 +21,17 @@ class CraftingSystem {
         id,
         embedded = false,
         craftingSystemDetails,
-        enabled = true,
+        disabled = false,
     }: {
         id: string;
         embedded?: boolean;
         craftingSystemDetails: CraftingSystemDetails,
-        enabled?: boolean;
+        disabled?: boolean;
     }) {
         this._id = id;
         this._embedded = embedded;
         this._details = craftingSystemDetails;
-        this._disabled = enabled;
+        this._disabled = disabled;
     }
 
     get isEmbedded(): boolean {
@@ -72,7 +72,7 @@ class CraftingSystem {
             id,
             embedded,
             craftingSystemDetails: this._details.clone(name),
-            enabled: this._disabled,
+            disabled: this._disabled,
         });
     }
 
@@ -81,7 +81,7 @@ class CraftingSystem {
             id: craftingSystemJson.id,
             embedded: craftingSystemJson.embedded,
             craftingSystemDetails: CraftingSystemDetails.fromJson(craftingSystemJson.details),
-            enabled: craftingSystemJson.disabled,
+            disabled: craftingSystemJson.disabled,
         });
     }
 

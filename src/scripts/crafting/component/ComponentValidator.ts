@@ -46,14 +46,17 @@ class DefaultComponentValidator implements ComponentValidator {
             }
         }
 
-        // Check that the item exists and can be loaded
-        if (!candidate.itemData.loaded && !(candidate.itemData instanceof NoFabricateItemData)) {
-            await candidate.load();
-        }
-        if (candidate.itemData.hasErrors) {
-            const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);
-            const cause = itemDataErrorMessages.length > 0 ? `Caused by: ${itemDataErrorMessages.join(", ")}. ` : "";
-            errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. ${cause} `);
+        // If the component has an item specified, check it is valid
+        if (!(candidate.itemData instanceof NoFabricateItemData)){
+            // Check that the item exists and can be loaded
+            if (!candidate.itemData.loaded) {
+                await candidate.load();
+            }
+            if (candidate.itemData.hasErrors) {
+                const itemDataErrorMessages = candidate.itemData.errors.map(error => error.message);
+                const cause = itemDataErrorMessages.length > 0 ? `Caused by: ${itemDataErrorMessages.join(", ")}. ` : "";
+                errors.push(`The item with UUID ${candidate.itemUuid} could not be loaded. ${cause} `);
+            }
         }
 
         // Check that the salvage and catalysts referenced by this component all exist

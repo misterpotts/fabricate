@@ -1,5 +1,5 @@
 import {Identifiable} from "../../common/Identifiable";
-import {FabricateItemData, ItemLoadingError} from "../../foundry/DocumentManager";
+import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
 import {EssenceReference} from "./EssenceReference";
 
@@ -33,18 +33,18 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         name,
         tooltip,
         iconCode,
-        embedded,
-        disabled,
+        embedded = false,
+        disabled = false,
         description,
         craftingSystemId,
-        activeEffectSource
+        activeEffectSource = NoFabricateItemData.INSTANCE(),
     }: {
         id: string;
         name: string;
         tooltip: string;
         iconCode: string;
-        embedded: boolean;
-        disabled: boolean;
+        embedded?: boolean;
+        disabled?: boolean;
         description: string;
         craftingSystemId: string;
         activeEffectSource?: FabricateItemData;
@@ -87,7 +87,10 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
     }
 
     get hasActiveEffectSource(): boolean {
-        return !!this._activeEffectSource;
+        if (!this._activeEffectSource) {
+            return false;
+        }
+        return this._activeEffectSource.uuid !== NoFabricateItemData.INSTANCE().uuid;
     }
 
     get activeEffectSource(): FabricateItemData {

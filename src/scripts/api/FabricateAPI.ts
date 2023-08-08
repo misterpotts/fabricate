@@ -11,6 +11,8 @@ import {CraftingSystem} from "../system/CraftingSystem";
 import {FabricateExportModel} from "../repository/import/FabricateExportModel";
 import Properties from "../Properties";
 import {V2Component, V2CraftingSystem, V2Essence, V2Recipe} from "../repository/migration/V2SettingsModel";
+import {NotificationService} from "../foundry/NotificationService";
+import {LocalizationService} from "../../applications/common/LocalizationService";
 
 interface EntityCountStatistics {
 
@@ -160,8 +162,8 @@ class DefaultFabricateAPI implements FabricateAPI {
     private readonly essenceAPI: EssenceAPI;
     private readonly craftingAPI: CraftingAPI;
     private readonly componentAPI: ComponentAPI;
-    private readonly localization: Localization;
-    private readonly notifications: Notifications;
+    private readonly localizationService: LocalizationService;
+    private readonly notificationService: NotificationService;
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly settingMigrationAPI: SettingMigrationAPI;
 
@@ -170,27 +172,27 @@ class DefaultFabricateAPI implements FabricateAPI {
         essenceAPI,
         craftingAPI,
         componentAPI,
-        localization,
-        notifications,
         craftingSystemAPI,
+        localizationService,
+        notificationService,
         settingMigrationAPI,
     }: {
         recipeAPI: RecipeAPI;
         essenceAPI: EssenceAPI;
         craftingAPI: CraftingAPI;
         componentAPI: ComponentAPI;
-        localization: Localization;
-        notifications: Notifications;
         craftingSystemAPI: CraftingSystemAPI;
+        localizationService: LocalizationService;
+        notificationService: NotificationService;
         settingMigrationAPI: SettingMigrationAPI;
     }) {
         this.recipeAPI = recipeAPI;
         this.essenceAPI = essenceAPI;
         this.craftingAPI = craftingAPI;
         this.componentAPI = componentAPI;
-        this.localization = localization;
-        this.notifications = notifications;
         this.craftingSystemAPI = craftingSystemAPI;
+        this.localizationService = localizationService;
+        this.notificationService = notificationService;
         this.settingMigrationAPI = settingMigrationAPI;
     }
 
@@ -313,8 +315,8 @@ class DefaultFabricateAPI implements FabricateAPI {
             this.recipeAPI.deleteByCraftingSystemId(id),
         ]);
 
-        const message = this.localization.format(`${Properties.module.id}.settings.craftingSystem.deleted`, { systemName: craftingSystem.details.name });
-        this.notifications.info(message);
+        const message = this.localizationService.format(`${Properties.module.id}.settings.craftingSystem.deleted`, { systemName: craftingSystem.details.name });
+        this.notificationService.info(message);
 
         return {
             craftingSystem,
@@ -357,7 +359,7 @@ class DefaultFabricateAPI implements FabricateAPI {
             const importedEssences = await this.essenceAPI.insertMany(importData.essences);
             const importedComponents = await this.componentAPI.insertMany(importData.components);
             const importedRecipes = await this.recipeAPI.insertMany(importData.recipes);
-            const message = this.localization.format(
+            const message = this.localizationService.format(
                 `${Properties.module.id}.settings.craftingSystem.import.success`,
                 {
                     systemName: importedCraftingSystem.details.name,
@@ -366,7 +368,7 @@ class DefaultFabricateAPI implements FabricateAPI {
                     recipeCount: importedRecipes.length,
                 }
             );
-            this.notifications.info(message);
+            this.notificationService.info(message);
             return {
                 craftingSystem: importedCraftingSystem,
                 essences: importedEssences,
@@ -376,11 +378,11 @@ class DefaultFabricateAPI implements FabricateAPI {
 
         } catch (e: any) {
 
-            const message = this.localization.format(
+            const message = this.localizationService.format(
                 `${Properties.module.id}.settings.craftingSystem.import.failure`, 
                 { systemName: importData?.craftingSystem?.details?.name, cause: e.message }
             );
-            this.notifications.error(message);
+            this.notificationService.error(message);
 
         }
 
@@ -391,32 +393,32 @@ class DefaultFabricateAPI implements FabricateAPI {
         const errors: string[] = [];
 
         if (!importData) {
-            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noData`));
+            errors.push(this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noData`));
         }
 
         if (!importData.version || typeof importData.version !== "string") {
-            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noVersion`));
+            errors.push(this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noVersion`));
         }
 
         if (!importData.craftingSystem || typeof importData.craftingSystem !== "object") {
-            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noCraftingSystem`));
+            errors.push(this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noCraftingSystem`));
         }
 
         if (!importData.essences || !Array.isArray(importData.essences)) {
-            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noEssences`));
+            errors.push(this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noEssences`));
         }
 
         if (!importData.components || !Array.isArray(importData.components)) {
-            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noComponents`));
+            errors.push(this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noComponents`));
         }
 
         if (!importData.recipes || !Array.isArray(importData.recipes)) {
-            errors.push(this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noRecipes`));
+            errors.push(this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.invalidData.noRecipes`));
         }
 
         if (errors.length > 0) {
-            const message = this.localization.format(`${Properties.module.id}.settings.craftingSystem.import.invalidData.summary`, { errors: errors.join(', ') });
-            this.notifications.error(message);
+            const message = this.localizationService.format(`${Properties.module.id}.settings.craftingSystem.import.invalidData.summary`, { errors: errors.join(', ') });
+            this.notificationService.error(message);
             throw new Error(message);
         }
 
@@ -428,9 +430,9 @@ class DefaultFabricateAPI implements FabricateAPI {
             return importData;
         }
 
-        if (! importData || ("parts" in importData)) {
-            const message = this.localization.localize(`${Properties.module.id}.settings.craftingSystem.import.upgrade.failure`);
-            this.notifications.error(message);
+        if (!importData || !("parts" in importData)) {
+            const message = this.localizationService.localize(`${Properties.module.id}.settings.craftingSystem.import.upgrade.failure`);
+            this.notificationService.error(message);
             throw new Error(message);
         }
 
@@ -509,6 +511,16 @@ class DefaultFabricateAPI implements FabricateAPI {
     async export(craftingSystemId: string): Promise<FabricateExportModel> {
 
         const craftingSystem = await this.craftingSystemAPI.getById(craftingSystemId);
+
+        if (!craftingSystem) {
+            const message = this.localizationService.format(
+                `${Properties.module.id}.settings.craftingSystem.export.craftingSystemNotFound`,
+                { craftingSystemId }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
         const essences = await this.essenceAPI.getAllByCraftingSystemId(craftingSystemId);
         const components = await this.componentAPI.getAllByCraftingSystemId(craftingSystemId);
         const recipes = await this.recipeAPI.getAllByCraftingSystemId(craftingSystemId);

@@ -62,6 +62,9 @@
           },
           "failure": "Failed to import crafting system \"{systemName}\"",
           "success": "Successfully imported crafting system \"{systemName}\", with {essenceCount} essences, {componentCount} components, and {recipeCount} recipes. "
+        },
+        "export": {
+          "craftingSystemNotFound": "The crafting system with ID {craftingSystemId} does not exist. "
         }
       },
       "errors": {

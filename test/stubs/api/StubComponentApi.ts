@@ -3,6 +3,8 @@ import {ComponentAPI, ComponentCreationOptions} from "../../../src/scripts/api/C
 import {IdentityFactory} from "../../../src/scripts/foundry/IdentityFactory";
 import {StubIdentityFactory} from "../foundry/StubIdentityFactory";
 import {StubDocumentManager} from "../StubDocumentManager";
+import {NotificationService} from "../../../src/scripts/foundry/NotificationService";
+import {ComponentExportModel} from "../../../src/scripts/repository/import/FabricateExportModel";
 
 class StubComponentApi implements ComponentAPI {
 
@@ -26,6 +28,29 @@ class StubComponentApi implements ComponentAPI {
 
     get notifications(): NotificationService {
         throw new Error("This is a stub. Stubs do not provide user interface notifications. ");
+    }
+
+    cloneAll(
+        _sourceComponents: Component[],
+        _targetCraftingSystemId?: string,
+        _substituteEssenceIds?: Map<string, string>
+    ): Promise<{
+        components: Component[];
+        idLinks: Map<string, string>
+    }> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    insert(_componentData: ComponentExportModel): Promise<Component> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    insertMany(_componentData: ComponentExportModel[]): Promise<Component[]> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    saveAll(_components: Component[]): Promise<Component[]> {
+        throw new Error("Not implemented by this stub");
     }
 
     async getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Component>> {

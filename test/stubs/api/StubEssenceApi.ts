@@ -3,6 +3,8 @@ import {EssenceAPI, EssenceCreationOptions} from "../../../src/scripts/api/Essen
 import {Essence} from "../../../src/scripts/crafting/essence/Essence";
 import {StubIdentityFactory} from "../foundry/StubIdentityFactory";
 import {PendingFabricateItemData} from "../../../src/scripts/foundry/DocumentManager";
+import {NotificationService} from "../../../src/scripts/foundry/NotificationService";
+import {EssenceExportModel} from "../../../src/scripts/repository/import/FabricateExportModel";
 
 class StubEssenceApi implements EssenceAPI {
 
@@ -22,6 +24,28 @@ class StubEssenceApi implements EssenceAPI {
 
     get notifications(): NotificationService {
         throw new Error("This is a stub. Stubs do not provide user interface notifications. ");
+    }
+
+    cloneAll(
+        _sourceEssences: Essence[],
+        _targetCraftingSystemId?: string
+    ): Promise<{
+        essences: Essence[];
+        idLinks: Map<string, string>
+    }> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    insert(_essenceData: EssenceExportModel): Promise<Essence> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    insertMany(_essenceData: EssenceExportModel[]): Promise<Essence[]> {
+        throw new Error("Not implemented by this stub");
+    }
+
+    saveAll(_essences: Essence[]): Promise<Essence[]> {
+        throw new Error("Not implemented by this stub");
     }
 
     async getAllByCraftingSystemId(craftingSystemId: string): Promise<Map<string, Essence>> {
@@ -52,8 +76,8 @@ class StubEssenceApi implements EssenceAPI {
             tooltip,
             iconCode,
             description,
-            activeEffectSource: new PendingFabricateItemData(activeEffectSourceItemUuid, () => undefined),
             craftingSystemId,
+            activeEffectSource: new PendingFabricateItemData(activeEffectSourceItemUuid, () => undefined)
         });
     }
 

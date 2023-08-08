@@ -24,7 +24,7 @@ describe('Create and configure', () => {
                 description: ""
             }),
             id: testSystemId,
-            enabled: true,
+            disabled: true,
             embedded: false
         });
 
@@ -45,7 +45,7 @@ describe('Create and configure', () => {
                 description: ""
             }),
             id: testSystemId,
-            enabled: true,
+            disabled: true,
             embedded: false
         });
 

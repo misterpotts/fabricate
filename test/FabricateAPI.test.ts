@@ -10,37 +10,22 @@ import {FabricateItemData, LoadedFabricateItemData} from "../src/scripts/foundry
 import {DefaultFabricateAPIFactory} from "../src/scripts/api/FabricateAPIFactory";
 import {SettingVersion} from "../src/scripts/repository/migration/SettingVersion";
 import {SettingMigrationStatus} from "../src/scripts/repository/migration/SettingMigrationStatus";
-import {buildV2SettingsValue, buildV3SettingsValue} from "./test_data/TestSettingMigrationData";
+import {
+    buildV2SettingsValue,
+    buildDefaultV3SettingsValue,
+    buildAlchemistsSuppliesOnlyV3SettingsValue
+} from "./test_data/TestSettingMigrationData";
 import {FabricateStatistics} from "../src/scripts/api/FabricateAPI";
 import {
     AlchemistsSuppliesV16SystemDefinition
 } from "../src/scripts/repository/embedded_systems/AlchemistsSuppliesV16SystemDefinition";
+import {Combination} from "../src/scripts/common/Combination";
+import {EssenceReference} from "../src/scripts/crafting/essence/EssenceReference";
+import {ComponentReference} from "../src/scripts/crafting/component/ComponentReference";
 
-function buildDefaultSettingsValue() {
-    const defaultSettingsValues = new Map();
-    defaultSettingsValues.set(Properties.module.id, new Map());
-    defaultSettingsValues.get(Properties.module.id).set(Properties.settings.craftingSystems.key, {
-        entities: {},
-        collections: {}
-    });
-    defaultSettingsValues.get(Properties.module.id).set(Properties.settings.essences.key, {
-        entities: {},
-        collections: {}
-    });
-    defaultSettingsValues.get(Properties.module.id).set(Properties.settings.components.key, {
-        entities: {},
-        collections: {}
-    });
-    defaultSettingsValues.get(Properties.module.id).set(Properties.settings.recipes.key, {
-        entities: {},
-        collections: {}
-    });
-    return defaultSettingsValues;
-}
+describe("Crafting System integration", () => {
 
-describe("FabricateAPI component integration", () => {
-
-    test("Create crafting system from scratch", async () => {
+    test("Create Crafting System from scratch", async () => {
 
         // Prepare the test item data that would be provided by Foundry
 
@@ -91,7 +76,7 @@ describe("FabricateAPI component integration", () => {
 
         const gameProvider: GameProvider = new StubGameProvider();
         const uiProvider = new StubUIProvider();
-        const defaultSettingsValue = buildDefaultSettingsValue();
+        const defaultSettingsValue = buildDefaultV3SettingsValue();
         const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
         const identityFactory = new StubIdentityFactory();
 
@@ -322,7 +307,7 @@ describe("FabricateAPI component integration", () => {
 
 });
 
-describe("FabricateAPI data migration", () => {
+describe("Data migration", () => {
 
     test("should use 'V2' when no global setting version is set", async () => {
 
@@ -358,7 +343,7 @@ describe("FabricateAPI data migration", () => {
         const documentManager = new StubDocumentManager();
         const gameProvider: GameProvider = new StubGameProvider();
         const uiProvider = new StubUIProvider();
-        const defaultSettingsValue = buildV3SettingsValue();
+        const defaultSettingsValue = buildDefaultV3SettingsValue();
         const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
         const identityFactory = new StubIdentityFactory();
 
@@ -387,7 +372,7 @@ describe("FabricateAPI data migration", () => {
         const documentManager = new StubDocumentManager();
         const gameProvider: GameProvider = new StubGameProvider();
         const uiProvider = new StubUIProvider();
-        const defaultSettingsValue = buildV3SettingsValue();
+        const defaultSettingsValue = buildDefaultV3SettingsValue();
         const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
         const identityFactory = new StubIdentityFactory();
 
@@ -517,6 +502,131 @@ describe("FabricateAPI data migration", () => {
         expect(fabricateStatisticsAfter.components.ids).toEqual(expect.arrayContaining(expectedComponentIds));
         expect(fabricateStatisticsAfter.recipes.count).toEqual(fabricateStatisticsBefore.recipes.count);
         expect(fabricateStatisticsAfter.recipes.ids).toEqual(expect.arrayContaining(expectedRecipeIds));
+
+    });
+
+});
+
+describe("Export and import data", () => {
+
+    test("Import V1 export data", async () => {});
+
+    test("Import V2 export data", async () => {});
+
+    test("Export Crafting System to V2 export data", async () => {
+
+        // Build the API factory's dependencies
+
+        const gameProvider: GameProvider = new StubGameProvider();
+        const uiProvider = new StubUIProvider();
+        const documentManager = new StubDocumentManager({ allowUnknownIds: true });
+        const defaultSettingsValue = buildAlchemistsSuppliesOnlyV3SettingsValue();
+        const clientSettings: ClientSettings = new StubClientSettingsFactory().make(defaultSettingsValue);
+        const identityFactory = new StubIdentityFactory();
+
+        const user = "Game Master";
+        const gameSystem = "dnd5e";
+        const fabricateAPIFactory = new DefaultFabricateAPIFactory({
+            user,
+            gameSystem,
+            documentManager,
+            clientSettings,
+            gameProvider,
+            identityFactory,
+            uiProvider
+        });
+
+        // Create the test Fabricate API instance
+
+        const underTest = fabricateAPIFactory.make();
+
+        const alchemistsSupplies = new AlchemistsSuppliesV16SystemDefinition();
+        const exportData = await underTest.export(alchemistsSupplies.craftingSystem.id);
+
+        expect(exportData).not.toBeNull();
+        expect(exportData.version).toBe("V2");
+
+        expect(exportData.craftingSystem).not.toBeNull();
+        expect(exportData.craftingSystem.id).toBe(alchemistsSupplies.craftingSystem.id);
+        expect(exportData.craftingSystem.details.name).toBe(alchemistsSupplies.craftingSystem.details.name);
+        expect(exportData.craftingSystem.details.description).toBe(alchemistsSupplies.craftingSystem.details.description);
+        expect(exportData.craftingSystem.details.author).toBe(alchemistsSupplies.craftingSystem.details.author);
+        expect(exportData.craftingSystem.details.summary).toBe(alchemistsSupplies.craftingSystem.details.summary);
+
+        expect(exportData.essences).not.toBeNull();
+        expect(exportData.essences.length).toBe(alchemistsSupplies.essences.length);
+        alchemistsSupplies.essences.forEach(essence => {
+            const exportedEssence = exportData.essences.find(exportedEssence => exportedEssence.id === essence.id);
+            expect(exportedEssence).not.toBeNull();
+            expect(exportedEssence.id).toEqual(essence.id);
+            expect(exportedEssence.craftingSystemId).toEqual(essence.craftingSystemId);
+            expect(exportedEssence.name).toEqual(essence.name);
+            expect(exportedEssence.description).toEqual(essence.description);
+            expect(exportedEssence.tooltip).toEqual(essence.tooltip);
+            expect(exportedEssence.iconCode).toEqual(essence.iconCode);
+            expect(exportedEssence.disabled).toEqual(essence.disabled);
+        });
+
+        expect(exportData.components).not.toBeNull();
+        expect(exportData.components.length).toEqual(alchemistsSupplies.components.length);
+        alchemistsSupplies.components.forEach(component => {
+            const exportedComponent = exportData.components.find(exportedComponent => exportedComponent.id === component.id);
+            expect(exportedComponent).not.toBeNull();
+            expect(exportedComponent.id).toEqual(component.id);
+            expect(exportedComponent.craftingSystemId).toEqual(component.craftingSystemId);
+            expect(exportedComponent.itemUuid).toEqual(component.itemUuid);
+            expect(exportedComponent.disabled).toEqual(component.isDisabled);
+
+            const exportedComponentEssences = Combination.fromRecord(exportedComponent.essences, id => new EssenceReference(id));
+            expect(exportedComponentEssences.equals(component.essences)).toBe(true);
+
+            expect(exportedComponent.salvageOptions.length).toEqual(component.salvageOptions.size);
+            exportedComponent.salvageOptions.forEach(exportedSalvageOption => {
+                const componentSalvageOption = component.salvageOptions.all.find(componentSalvageOption => componentSalvageOption.id === exportedSalvageOption.id);
+                expect(componentSalvageOption).not.toBeNull();
+                expect(exportedSalvageOption.id).toEqual(componentSalvageOption.id);
+                expect(exportedSalvageOption.name).toEqual(componentSalvageOption.name);
+                const exportedSalvageOptionCatalysts = Combination.fromRecord(exportedSalvageOption.catalysts, id => new ComponentReference(id));
+                expect(exportedSalvageOptionCatalysts.equals(componentSalvageOption.catalysts)).toBe(true);
+                const exportedSalvageOptionResults = Combination.fromRecord(exportedSalvageOption.results, id => new ComponentReference(id));
+                expect(exportedSalvageOptionResults.equals(componentSalvageOption.results)).toBe(true);
+            });
+        });
+
+        expect(exportData.recipes).not.toBeNull();
+        expect(exportData.recipes.length).toEqual(alchemistsSupplies.recipes.length);
+        alchemistsSupplies.recipes.forEach(recipe => {
+            const exportedRecipe = exportData.recipes.find(exportedRecipe => exportedRecipe.id === recipe.id);
+            expect(exportedRecipe).not.toBeNull();
+            expect(exportedRecipe.id).toEqual(recipe.id);
+            expect(exportedRecipe.craftingSystemId).toEqual(recipe.craftingSystemId);
+            expect(exportedRecipe.itemUuid).toEqual(recipe.itemUuid);
+            expect(exportedRecipe.disabled).toEqual(recipe.isDisabled);
+
+            expect(exportedRecipe.resultOptions.length).toEqual(recipe.resultOptions.size);
+            exportedRecipe.resultOptions.forEach(exportedResultOption => {
+                const recipeResultOption = recipe.resultOptions.byId.get(exportedResultOption.id);
+                expect(recipeResultOption).not.toBeNull();
+                expect(exportedResultOption.id).toEqual(recipeResultOption.id);
+                expect(exportedResultOption.name).toEqual(recipeResultOption.name);
+                const exportedResultOptionResults = Combination.fromRecord(exportedResultOption.results, id => new ComponentReference(id));
+                expect(exportedResultOptionResults.equals(recipeResultOption.results)).toBe(true);
+            });
+
+            expect(exportedRecipe.requirementOptions.length).toEqual(recipe.requirementOptions.size);
+            exportedRecipe.requirementOptions.forEach(exportedRequirementOption => {
+                const recipeRequirementOption = recipe.requirementOptions.byId.get(exportedRequirementOption.id);
+                expect(recipeRequirementOption).not.toBeNull();
+                expect(exportedRequirementOption.id).toEqual(recipeRequirementOption.id);
+                expect(exportedRequirementOption.name).toEqual(recipeRequirementOption.name);
+                const exportedRequirementOptionCatalysts = Combination.fromRecord(exportedRequirementOption.catalysts, id => new ComponentReference(id));
+                expect(exportedRequirementOptionCatalysts.equals(recipeRequirementOption.catalysts)).toBe(true);
+                const exportedRequirementOptionIngredients = Combination.fromRecord(exportedRequirementOption.ingredients, id => new ComponentReference(id));
+                expect(exportedRequirementOptionIngredients.equals(recipeRequirementOption.ingredients)).toBe(true);
+                const exportedRequirementOptionEssences = Combination.fromRecord(exportedRequirementOption.essences, id => new EssenceReference(id));
+                expect(exportedRequirementOptionEssences.equals(recipeRequirementOption.essences)).toBe(true);
+            });
+        });
 
     });
 

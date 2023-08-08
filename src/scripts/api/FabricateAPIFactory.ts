@@ -145,12 +145,14 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
         );
 
         return new DefaultFabricateAPI({
-            craftingSystemAPI,
-            essenceAPI,
-            componentAPI,
             recipeAPI,
+            essenceAPI,
+            craftingAPI,
+            componentAPI,
+            craftingSystemAPI,
             settingMigrationAPI,
-            craftingAPI
+            localizationService,
+            notificationService: new DefaultNotificationService(this.uiProvider),
         });
 
     }

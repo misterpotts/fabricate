@@ -25,6 +25,8 @@ interface CraftingSystemImportData {
     disabled: boolean;
 }
 
+export { CraftingSystemImportData }
+
 /**
  * An API for managing crafting systems.
  *
@@ -257,7 +259,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         const craftingSystemDetails = new CraftingSystemDetails({name, summary, description, author});
         const created = new CraftingSystem({
             id,
-            enabled: true,
+            disabled: true,
             craftingSystemDetails,
             embedded: false
         });

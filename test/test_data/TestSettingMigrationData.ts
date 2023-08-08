@@ -1,5 +1,12 @@
 import Properties from "../../src/scripts/Properties";
 import {SettingVersion} from "../../src/scripts/repository/migration/SettingVersion";
+import {
+    AlchemistsSuppliesV16SystemDefinition
+} from "../../src/scripts/repository/embedded_systems/AlchemistsSuppliesV16SystemDefinition";
+import {CraftingSystemJson} from "../../src/scripts/system/CraftingSystem";
+import {EssenceJson} from "../../src/scripts/crafting/essence/Essence";
+import {ComponentJson} from "../../src/scripts/crafting/component/Component";
+import {RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";
 
 export function getAlchemistsSuppliesV16InitialSettingValue() {
     return {
@@ -731,7 +738,7 @@ export function buildV2SettingsValue() {
     return v2Settings;
 }
 
-export function buildV3SettingsValue() {
+export function buildDefaultV3SettingsValue() {
     const v3Settings = new Map();
     v3Settings.set(Properties.module.id, new Map());
     const fabricateSettingsNamespace = v3Settings.get(Properties.module.id);
@@ -753,4 +760,76 @@ export function buildV3SettingsValue() {
         collections: {}
     });
     return v3Settings;
+}
+
+export function buildAlchemistsSuppliesOnlyV3SettingsValue() {
+    const v3Settings = buildDefaultV3SettingsValue();
+    v3Settings.get(Properties.module.id).set(Properties.settings.craftingSystems.key, buildCraftingSystemsV3SettingValue());
+    v3Settings.get(Properties.module.id).set(Properties.settings.essences.key, buildEssencesV3SettingValue());
+    v3Settings.get(Properties.module.id).set(Properties.settings.components.key, buildComponentsV3SettingValue());
+    v3Settings.get(Properties.module.id).set(Properties.settings.recipes.key, buildRecipesV3SettingValue());
+    return v3Settings;
+}
+
+export function buildCraftingSystemsV3SettingValue() {
+    const craftingSystemsV3SettingValue: Record<string, any> = {
+        entities: <Record<string, CraftingSystemJson>>{
+            "alchemists-supplies-v1.6": new AlchemistsSuppliesV16SystemDefinition().craftingSystem.toJson(),
+        },
+        collections: {}
+    };
+    return craftingSystemsV3SettingValue;
+}
+
+export function buildEssencesV3SettingValue() {
+    const alchemistsSupplies = new AlchemistsSuppliesV16SystemDefinition();
+    const alchemistsSuppliesCraftingSystemCollection = `${Properties.settings.collectionNames.craftingSystem}.alchemists-supplies-v1.6`;
+    const essencesV3SettingValue: Record<string, any> = {
+        entities: <Record<string, EssenceJson>>{},
+        collections: {
+            [alchemistsSuppliesCraftingSystemCollection]: []
+        }
+    };
+    alchemistsSupplies.essences.forEach(essence => {
+        essencesV3SettingValue.entities[essence.id] = essence.toJson();
+        essencesV3SettingValue.collections[alchemistsSuppliesCraftingSystemCollection].push(essence.id);
+        if (essence.hasActiveEffectSource) {
+            essencesV3SettingValue.collections[`${Properties.settings.collectionNames.item}.${essence.activeEffectSource.uuid}`].push(essence.id);
+        }
+    });
+    return essencesV3SettingValue;
+}
+
+export function buildComponentsV3SettingValue() {
+    const alchemistsSupplies = new AlchemistsSuppliesV16SystemDefinition();
+    const alchemistsSuppliesCraftingSystemCollection = `${Properties.settings.collectionNames.craftingSystem}.alchemists-supplies-v1.6`;
+    const componentsV3SettingValue: Record<string, any> = {
+        entities: <Record<string, ComponentJson>>{},
+        collections: {
+            [alchemistsSuppliesCraftingSystemCollection]: []
+        }
+    };
+    alchemistsSupplies.components.forEach(component => {
+        componentsV3SettingValue.entities[component.id] = component.toJson();
+        componentsV3SettingValue.collections[alchemistsSuppliesCraftingSystemCollection].push(component.id);
+        componentsV3SettingValue.collections[`${Properties.settings.collectionNames.item}.${component.itemUuid}`] = [component.id];
+    });
+    return componentsV3SettingValue;
+}
+
+export function buildRecipesV3SettingValue() {
+    const alchemistsSupplies = new AlchemistsSuppliesV16SystemDefinition();
+    const alchemistsSuppliesCraftingSystemCollection = `${Properties.settings.collectionNames.craftingSystem}.alchemists-supplies-v1.6`;
+    const recipesV3SettingValue: Record<string, any> = {
+        entities: <Record<string, RecipeJson>>{},
+        collections: {
+            [alchemistsSuppliesCraftingSystemCollection]: []
+        }
+    };
+    alchemistsSupplies.recipes.forEach(recipe => {
+        recipesV3SettingValue.entities[recipe.id] = recipe.toJson();
+        recipesV3SettingValue.collections[alchemistsSuppliesCraftingSystemCollection].push(recipe.id);
+        recipesV3SettingValue.collections[`${Properties.settings.collectionNames.item}.${recipe.itemUuid}`] = [recipe.id];
+    });
+    return recipesV3SettingValue;
 }

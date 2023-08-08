@@ -42,7 +42,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 summary: "A crafting system for 5th Edition by u/calculusChild",
                 author: "u/calculusChild",
             }),
-            enabled: true,
+            disabled: true,
         });
     }
 
