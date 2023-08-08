@@ -21,12 +21,12 @@
     const {
         localization,
         selectedComponent,
-        craftingComponents,
+        components,
         selectedCraftingSystem,
         craftingComponentEditor
     } = getContext(key);
 
-    const salvageSearchResults = new SalvageSearchStore({ selectedComponent, availableComponents: craftingComponents });
+    const salvageSearchResults = new SalvageSearchStore({ selectedComponent, components });
     const searchTerms = salvageSearchResults.searchTerms;
     const componentEssences = new ComponentEssenceStore({selectedCraftingSystem, selectedComponent});
 
@@ -57,11 +57,15 @@
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $craftingComponents
+            allowedCraftingComponents: components
         });
-        const component = (await dropEventParser.parse(event)).component;
+        const component = (await dropEventParser.parse(event)).component.toReference();
         const name = generateOptionName($selectedComponent);
-        const salvageOption = new SalvageOption({name, salvage: Combination.of(component, 1)});
+        const salvageOption = new SalvageOption({
+            id: randomID(),
+            name,
+            results: Combination.of(component, 1)
+        });
         $selectedComponent.addSalvageOption(salvageOption);
         await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         if ($selectedComponent.salvageOptions.length > 1) {
@@ -107,7 +111,7 @@
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $craftingComponents
+            allowedCraftingComponents: components
         });
         const component = (await dropEventParser.parse(event)).component;
         salvageOption.add(component);

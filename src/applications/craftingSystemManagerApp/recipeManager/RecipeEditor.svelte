@@ -26,7 +26,7 @@
         craftingComponentEditor
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({ availableComponents: craftingComponents });
+    const componentSearchResults = new ComponentSearchStore({ components: craftingComponents });
     const searchTerms = componentSearchResults.searchTerms;
     const recipeEssences = new RecipeEssenceStore({selectedCraftingSystem, selectedRecipe});
     let selectPreviousTab;

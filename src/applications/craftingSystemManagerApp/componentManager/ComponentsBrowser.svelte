@@ -9,13 +9,13 @@
 
     const {
         selectedCraftingSystem,
-        componentsStore,
+        components,
         localization,
         craftingComponentEditor,
         selectedComponent
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({availableComponents: componentsStore});
+    const componentSearchResults = new ComponentSearchStore({ components });
     const searchTerms = componentSearchResults.searchTerms;
 
     function clearSearch() {
@@ -103,7 +103,7 @@
             <input type="checkbox" bind:checked={$searchTerms.hasSalvage} />
         </div>
     </div>
-    {#if $componentsStore.length > 0}
+    {#if $components.length > 0}
         <div class="fab-row">
             <div class="fab-component-grid fab-grid-4">
                 {#each $componentSearchResults as component}

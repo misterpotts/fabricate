@@ -13,15 +13,15 @@ class SalvageSearchStore {
     private readonly _searchTerms: Writable<SalvageSearchTerms>;
 
     constructor({
-        availableComponents,
+        components,
         selectedComponent,
         searchTerms = {}
     }: {
-        availableComponents: Readable<Component[]>;
+        components: Readable<Component[]>;
         selectedComponent: Readable<Component>;
         searchTerms?: SalvageSearchTerms;
     }) {
-        this._availableComponents = availableComponents;
+        this._availableComponents = components;
         this._selectedComponent = selectedComponent;
         this._searchTerms = writable(searchTerms);
         this._searchResults = derived(

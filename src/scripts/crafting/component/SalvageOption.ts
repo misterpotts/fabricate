@@ -31,17 +31,17 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
     constructor({
         id,
         name,
-        salvage,
+        results,
         catalysts = Combination.EMPTY()
     }: {
         id: string;
         name: string;
-        salvage: Combination<ComponentReference>;
+        results: Combination<ComponentReference>;
         catalysts?: Combination<ComponentReference>;
     }) {
         this._id = id;
         this._name = name;
-        this._results = salvage;
+        this._results = results;
         this._catalysts = catalysts;
     }
 
@@ -108,7 +108,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         return new SalvageOption({
             id: salvageOptionJson.id,
             name: salvageOptionJson.name,
-            salvage: Combination.ofUnits(salvage),
+            results: Combination.ofUnits(salvage),
             catalysts: Combination.ofUnits(catalysts)
         });
     }
@@ -117,7 +117,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         return new SalvageOption({
             id: this._id,
             name: this._name,
-            salvage: this._results.without(componentId),
+            results: this._results.without(componentId),
             catalysts: this._catalysts.without(componentId)
         });
     }

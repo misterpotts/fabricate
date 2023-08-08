@@ -14,13 +14,13 @@ class ComponentSearchStore {
     private readonly _searchTerms: Writable<ComponentSearchTerms>;
 
     constructor({
-        availableComponents,
+        components,
         searchTerms = {}
     }: {
-        availableComponents: Readable<Component[]>;
+        components: Readable<Component[]>;
         searchTerms?: ComponentSearchTerms;
     }) {
-        this._availableComponents = availableComponents;
+        this._availableComponents = components;
         this._searchTerms = writable(searchTerms);
         this._searchResults = derived(
             [this._availableComponents, this._searchTerms],

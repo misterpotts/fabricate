@@ -194,7 +194,7 @@ export class ComponentDictionary implements Dictionary<ComponentJson, Component>
     private buildSalvageOption(name: string, salvageOptionJson: SalvageOptionJson, allComponents: Map<string, Component>): SalvageOption {
         return new SalvageOption({
             name,
-            salvage: Combination.fromRecord(salvageOptionJson, allComponents)
+            results: Combination.fromRecord(salvageOptionJson, allComponents)
         });
     }
 

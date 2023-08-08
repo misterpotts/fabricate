@@ -61,7 +61,7 @@ const testComponentFour: Component = new Component({
             new SalvageOption({
                 id: `${testComponentFourId}-salvage-1`,
                 name: "Option 1",
-                salvage: Combination.of(testComponentThree.toReference(), 2)
+                results: Combination.of(testComponentThree.toReference(), 2)
             })
         ]
     })
@@ -86,7 +86,7 @@ const testComponentFive: Component = new Component({
             new SalvageOption({
                 id: `${testComponentFiveId}-salvage-1`,
                 name: "Option 1",
-                salvage: Combination.ofUnits([
+                results: Combination.ofUnits([
                     new Unit(testComponentOne.toReference(), 2),
                     new Unit(testComponentTwo.toReference(), 1)
                 ])

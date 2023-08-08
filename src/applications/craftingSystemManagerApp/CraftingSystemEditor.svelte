@@ -30,20 +30,21 @@
 
     const craftingSystems = new CraftingSystemsStore({});
     const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
-    const recipesStore = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
+    const recipes = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
 
-    const componentsStore = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
-    const craftingComponentEditor = new CraftingComponentEditor({ fabricateAPI, components: componentsStore, localization });
+    const components = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
+    const craftingComponentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization });
 
-    const selectedRecipe = new SelectedRecipeStore({recipes: recipesStore});
-    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents: componentsStore});
-    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization, components: componentsStore });
+    const selectedRecipe = new SelectedRecipeStore({recipes: recipes});
+    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents: components});
+
+    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization, components: components });
 
     setContext(key, {
         craftingSystems,
         selectedCraftingSystem,
-        recipesStore,
-        componentsStore,
+        recipes,
+        components,
         selectedRecipe,
         selectedComponent,
         localization,
