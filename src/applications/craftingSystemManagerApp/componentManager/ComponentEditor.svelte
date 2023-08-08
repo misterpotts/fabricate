@@ -141,6 +141,15 @@
         return salvageOption.sort((left, right) => left.name.localeCompare(right.name));
     }
 
+    function dereferenceComponentCombination(componentReferenceCombination) {
+        return componentReferenceCombination
+            .map(componentReferenceUnit => new Unit(dereferenceComponent(componentReferenceUnit.element), componentReferenceUnit.quantity));
+    }
+
+    function dereferenceComponent(componentReference) {
+        return $components.find(component => component.id === componentReference.id);
+    }
+
     onDestroy(() => {
         clearTimeout(scheduledSave);
     });
@@ -173,12 +182,12 @@
                         <div class="fab-salvage-editor fab-row">
                             <Tabs bind:selectPreviousTab={selectPreviousTab}>
                                 <TabList>
-                                    {#each $selectedComponent.salvageOptions as salvageOption}
+                                    {#each $selectedComponent.salvageOptions.all as salvageOption}
                                         <Tab>{salvageOption.name}</Tab>
                                     {/each}
                                     <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.component.labels.newSalvageOption`)}</Tab>
                                 </TabList>
-                                {#each $selectedComponent.salvageOptions as salvageOption}
+                                {#each $selectedComponent.salvageOptions.all as salvageOption}
                                     <TabPanel class="fab-columns">
                                         <div class="fab-column">
                                             <div class="fab-option-controls fab-row">
@@ -189,16 +198,16 @@
                                                 <button class="fab-delete-salvage-opt" on:click={deleteSalvageOption(salvageOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.component.buttons.deleteSalvageOption`)}</button>
                                             </div>
                                             <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-option-actual" on:drop={(e) => addComponentToSalvageOption(e, salvageOption)}>
-                                                {#each salvageOption.salvage.units as salvageUnit}
-                                                    <div class="fab-component" on:click={(e) => incrementSalvageOptionComponent(salvageOption, salvageUnit.part, e)} on:auxclick={decrementSalvageOptionComponent(salvageOption, salvageUnit.part)}>
+                                                {#each dereferenceComponentCombination(salvageOption.results) as resultUnit}
+                                                    <div class="fab-component" on:click={(e) => incrementSalvageOptionComponent(salvageOption, resultUnit.element, e)} on:auxclick={decrementSalvageOptionComponent(salvageOption, resultUnit.element)}>
                                                         <div class="fab-component-name">
-                                                            <p>{truncate(salvageUnit.part.name, 9)}</p>
+                                                            <p>{truncate(resultUnit.element.name, 9)}</p>
                                                         </div>
                                                         <div class="fab-component-preview">
-                                                            <div class="fab-component-image" data-tooltip={salvageUnit.part.name}>
-                                                                <img src={salvageUnit.part.imageUrl} alt={salvageUnit.part.name} />
-                                                                {#if salvageUnit.quantity > 1}
-                                                                    <span class="fab-component-info fab-component-quantity">{salvageUnit.quantity}</span>
+                                                            <div class="fab-component-image" data-tooltip={resultUnit.element.name}>
+                                                                <img src={resultUnit.element.imageUrl} alt={resultUnit.element.name} />
+                                                                {#if resultUnit.quantity > 1}
+                                                                    <span class="fab-component-info fab-component-quantity">{resultUnit.quantity}</span>
                                                                 {/if}
                                                             </div>
                                                         </div>
@@ -265,19 +274,19 @@
                 {#if $selectedCraftingSystem.hasEssences}
                     {#each $componentEssences as essenceUnit}
                         <div class="fab-component-essence-adjustment">
-                            <button class="fab-increment-essence" on:click={incrementEssence(essenceUnit.part)}><i class="fa-solid fa-plus"></i></button>
+                            <button class="fab-increment-essence" on:click={incrementEssence(essenceUnit.element)}><i class="fa-solid fa-plus"></i></button>
                             <div class="fab-essence-amount">
                                 <span class="fab-essence-quantity">
                                     {essenceUnit.quantity}
                                 </span>
                                 <span class="fab-essence-icon">
-                                    <i class="{essenceUnit.part.iconCode}"></i>
+                                    <i class="{essenceUnit.element.iconCode}"></i>
                                 </span>
                                 <span class="fab-essence-name">
-                                    {essenceUnit.part.name}
+                                    {essenceUnit.element.name}
                                 </span>
                             </div>
-                            <button class="fab-decrement-essence" on:click={decrementEssence(essenceUnit.part)}><i class="fa-solid fa-minus"></i></button>
+                            <button class="fab-decrement-essence" on:click={decrementEssence(essenceUnit.element)}><i class="fa-solid fa-minus"></i></button>
                         </div>
                     {/each}
                 {:else}
