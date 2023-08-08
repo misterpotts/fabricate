@@ -126,8 +126,8 @@ class CraftingSystemEditor {
         }).render(true);
     }
 
-    public exportCraftingSystem(craftingSystem: CraftingSystem) {
-        const exportData = this._fabricateAPI.export(craftingSystem.id);
+    public async exportCraftingSystem(craftingSystem: CraftingSystem) {
+        const exportData = await this._fabricateAPI.export(craftingSystem.id);
         const fileContents = JSON.stringify(exportData, null, 2);
         const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
         saveDataToFile(fileContents, "application/json", fileName);

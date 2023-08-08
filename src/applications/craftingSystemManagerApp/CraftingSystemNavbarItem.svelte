@@ -7,8 +7,7 @@
     const {
         craftingSystemEditor,
         selectedCraftingSystem,
-        localization,
-        loading
+        localization
     } = getContext(key);
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.navbar`;
 
@@ -17,27 +16,19 @@
     }
 
     async function deleteSystem() {
-        $loading = true;
         await craftingSystemEditor.deleteCraftingSystem(craftingSystem);
-        $loading = false;
     }
 
     async function importCraftingSystem() {
-        $loading = true;
         await craftingSystemEditor.importCraftingSystem();
-        $loading = false;
     }
 
-    function exportSystem() {
-        $loading = true;
-        craftingSystemEditor.exportCraftingSystem(craftingSystem);
-        $loading = false;
+    async function exportSystem() {
+        await craftingSystemEditor.exportCraftingSystem(craftingSystem);
     }
 
     async function duplicateSystem() {
-        $loading = true;
         $selectedCraftingSystem = await craftingSystemEditor.duplicateCraftingSystem(craftingSystem);
-        $loading = false;
     }
 
 </script>
