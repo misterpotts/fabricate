@@ -102,7 +102,7 @@ class Combination<T extends Identifiable> {
      * @param {number} quantity - The quantity of the member in the Combination.
      * @returns {Combination<T>} A Combination instance containing the specified member with the given quantity.
      */
-    public static of<T extends Identifiable>(member: T, quantity: number): Combination<T> {
+    public static of<T extends Identifiable>(member: T, quantity: number = 1): Combination<T> {
         const unit: Unit<T> = new Unit<T>(member, quantity);
         return Combination.ofUnit(unit);
     }

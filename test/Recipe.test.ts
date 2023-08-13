@@ -192,7 +192,7 @@ describe("When selecting ingredients", () => {
 
         expect(selectedIngredients.ingredients.equals(combinationTwo)).toEqual(true);
 
-        underTest.deselectIngredients();
+        underTest.deselectRequirements();
         expect(underTest.ready()).toEqual(false);
     });
 

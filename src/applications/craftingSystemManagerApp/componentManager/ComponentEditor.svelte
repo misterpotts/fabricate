@@ -23,7 +23,7 @@
         selectedComponent,
         components,
         selectedCraftingSystem,
-        craftingComponentEditor
+        componentEditor,
     } = getContext(key);
 
     const salvageSearchResults = new SalvageSearchStore({ selectedComponent, components });
@@ -35,17 +35,17 @@
     }
 
     async function replaceItem(event) {
-        await craftingComponentEditor.replaceItem(event,$selectedComponent);
+        await componentEditor.replaceItem(event,$selectedComponent);
     }
     
     async function incrementEssence(essence) {
         $selectedComponent.essences = $selectedComponent.essences.add(new Unit(essence, 1));
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
     }
 
     async function decrementEssence(essence) {
         $selectedComponent.essences = $selectedComponent.essences.minus(new Unit(essence, 1));
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
     }
 
     function clearSearch() {
@@ -67,7 +67,7 @@
             results: Combination.of(component, 1)
         });
         $selectedComponent.addSalvageOption(salvageOption);
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         if ($selectedComponent.salvageOptions.length > 1) {
             selectPreviousTab();
         }
@@ -96,13 +96,13 @@
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+            await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         }, 1000);
     }
     
     async function deleteSalvageOption(optionToDelete) {
         $selectedComponent.deleteSalvageOptionByName(optionToDelete.name);
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         componentUpdated($selectedComponent);
     }
 
@@ -115,7 +115,7 @@
         });
         const component = (await dropEventParser.parse(event)).component;
         salvageOption.add(component);
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         componentUpdated($selectedComponent);
     }
 
@@ -124,7 +124,7 @@
         if (salvageOption.isEmpty) {
             return deleteSalvageOption(salvageOption);
         }
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         componentUpdated($selectedComponent);
     }
 
@@ -133,7 +133,7 @@
             return decrementSalvageOptionComponent(salvageOption, component);
         }
         salvageOption.add(component);
-        await craftingComponentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         componentUpdated($selectedComponent);
     }
 

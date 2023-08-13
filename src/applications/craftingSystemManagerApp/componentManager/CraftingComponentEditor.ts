@@ -47,6 +47,7 @@ class CraftingComponentEditor {
             itemUuid: itemData.uuid
         });
         this._components.insert(component);
+        return component;
     }
 
     public async deleteComponent(event: any, component: Component, selectedSystem: CraftingSystem): Promise<Component | undefined> {
@@ -86,6 +87,7 @@ class CraftingComponentEditor {
     public async duplicateComponent(craftingComponent: Component): Promise<Component> {
         const duplicatedComponent = await this._fabricateAPI.components.cloneById(craftingComponent.id);
         this._components.insert(duplicatedComponent);
+        return duplicatedComponent;
     }
 
     public async replaceItem(event: any, selectedComponent: Component): Promise<Component> {
@@ -98,6 +100,7 @@ class CraftingComponentEditor {
         selectedComponent.itemData = dropData.itemData;
         const updatedComponent = await this._fabricateAPI.components.save(selectedComponent);
         this._components.insert(updatedComponent);
+        return updatedComponent;
     }
 
 }

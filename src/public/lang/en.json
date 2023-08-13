@@ -8,10 +8,7 @@
       "recipe": {
         "singular": "Recipe",
         "plural": "Recipes",
-        "ingredientOption": {
-          "name": "Option {number}"
-        },
-        "resultOption": {
+        "option": {
           "name": "Option {number}"
         }
       },

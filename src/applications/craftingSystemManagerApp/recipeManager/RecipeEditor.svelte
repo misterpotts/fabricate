@@ -20,13 +20,13 @@
         recipes,
         selectedRecipe,
         selectedCraftingSystem,
-        craftingComponents,
+        components,
         loading,
         recipeEditor,
         craftingComponentEditor
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({ components: craftingComponents });
+    const componentSearchResults = new ComponentSearchStore({ components });
     const searchTerms = componentSearchResults.searchTerms;
     const recipeEssences = new RecipeEssenceStore({selectedCraftingSystem, selectedRecipe});
     let selectPreviousTab;
@@ -89,7 +89,7 @@
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $craftingComponents
+            allowedCraftingComponents: $components
         });
         const dropData = await dropEventParser.parse(event);
         if (dropData.hasCraftingComponent) {
@@ -199,7 +199,7 @@
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $craftingComponents
+            allowedCraftingComponents: $components
         });
         const component = (await dropEventParser.parse(event)).component;
         resultOption.add(component);

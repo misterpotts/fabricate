@@ -88,16 +88,16 @@
     <div class="fab-hero-banner">
         <img src="{Properties.ui.banners.recipeEditor}" >
     </div>
-    {#if !$selectedCraftingSystem.isLocked}
+    {#if !$selectedCraftingSystem.isEmbedded}
         <div class="fab-tab-header fab-row">
-            <h2>{localization.format(`${localizationPath}.addNew`, { systemName: $selectedCraftingSystem?.name })}</h2>
+            <h2>{localization.format(`${localizationPath}.addNew`, { systemName: $selectedCraftingSystem?.details.name })}</h2>
         </div>
         <div class="fab-drop-zone fab-add-recipe" on:drop|preventDefault={importRecipe}>
             <i class="fa-solid fa-plus"></i>
         </div>
     {/if}
     <div class="fab-tab-header fab-row">
-        <h2>{localization.format(`${localizationPath}.search.title`, { systemName: $selectedCraftingSystem?.name })}</h2>
+        <h2>{localization.format(`${localizationPath}.search.title`, { systemName: $selectedCraftingSystem?.details.name })}</h2>
     </div>
     <div class="fab-row fab-columns fab-recipe-search">
         <div class="fab-column fab-row fab-search fab-recipe-name">
@@ -119,29 +119,43 @@
             <div class="fab-recipe-grid fab-grid-4">
                 {#each $recipeSearchResults as recipe}
                     <div class="fab-recipe" class:fab-disabled={recipe.isDisabled} class:fab-error={recipe.hasErrors}>
-                        <div class="fab-recipe-name">
-                            <p>{recipe.name}</p>
-                            {#if recipe.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
-                        </div>
-                        <div class="fab-columns fab-recipe-preview">
-                            {#if !recipe.hasErrors}
+                        {#await recipe.load()}
+                            {:then nothing}
+                                <div class="fab-recipe-name">
+                                    <p>{recipe.name}</p>
+                                </div>
+                                <div class="fab-columns fab-recipe-preview">
+                                    <div class="fab-column fab-recipe-image" data-tooltip="{localization.localizeAll(`${localizationPath}.recipe.errors`, recipe.errorCodes)}">
+                                        <img src={recipe.imageUrl} alt={recipe.name} />
+                                    </div>
+                                    {#if !$selectedCraftingSystem.isEmbedded}
+                                        <div class="fab-column fab-recipe-editor-buttons">
+                                            <button class="fab-edit-recipe" on:click|preventDefault={selectRecipe(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
+                                            <button class="fab-edit-recipe" on:click|preventDefault={event => deleteRecipe(event, recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
+                                            <button class="fab-edit-recipe" on:click|preventDefault={toggleRecipeDisabled(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                            <button class="fab-edit-recipe" on:click|preventDefault={duplicateRecipe(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                        </div>
+                                    {/if}
+                                </div>
+                            {:catch error}
+                            <div class="fab-recipe-name">
+                                <p>{recipe.name}</p>
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                            </div>
+                            <div class="fab-columns fab-recipe-preview">
                                 <div class="fab-column fab-recipe-image" data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.openSheet`)}" on:click={openItemSheet(recipe)}>
                                     <img src={recipe.imageUrl} alt={recipe.name} />
                                 </div>
-                            {:else}
-                                <div class="fab-column fab-recipe-image" data-tooltip="{localization.localizeAll(`${localizationPath}.recipe.errors`, recipe.errorCodes)}">
-                                    <img src={recipe.imageUrl} alt={recipe.name} />
-                                </div>
-                            {/if}
-                            {#if !$selectedCraftingSystem.isLocked}
-                                <div class="fab-column fab-recipe-editor-buttons">
-                                    <button class="fab-edit-recipe" on:click|preventDefault={selectRecipe(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
-                                    <button class="fab-edit-recipe" on:click|preventDefault={event => deleteRecipe(event, recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
-                                    <button class="fab-edit-recipe" on:click|preventDefault={toggleRecipeDisabled(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
-                                    <button class="fab-edit-recipe" on:click|preventDefault={duplicateRecipe(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
-                                </div>
-                            {/if}
-                        </div>
+                                {#if !$selectedCraftingSystem.isEmbedded}
+                                    <div class="fab-column fab-recipe-editor-buttons">
+                                        <button class="fab-edit-recipe" on:click|preventDefault={selectRecipe(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
+                                        <button class="fab-edit-recipe" on:click|preventDefault={event => deleteRecipe(event, recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
+                                        <button class="fab-edit-recipe" on:click|preventDefault={toggleRecipeDisabled(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                        <button class="fab-edit-recipe" on:click|preventDefault={duplicateRecipe(recipe)} data-tooltip="{localization.localize(`${localizationPath}.recipe.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                    </div>
+                                {/if}
+                            </div>
+                        {/await}
                     </div>
                 {/each}
             </div>
@@ -152,7 +166,7 @@
     {:else}
         <div class="fab-no-recipes">
             <p>{localization.localize(`${localizationPath}.noneFound`)}</p>
-            {#if !$selectedCraftingSystem.isLocked}<p>{localization.localize(`${localizationPath}.create`)}</p>{/if}
+            {#if !$selectedCraftingSystem.isEmbedded}<p>{localization.localize(`${localizationPath}.create`)}</p>{/if}
         </div>
     {/if}
 </div>

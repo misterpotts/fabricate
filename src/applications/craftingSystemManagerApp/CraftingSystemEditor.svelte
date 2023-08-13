@@ -21,6 +21,7 @@
     import RecipesTab from "./recipeManager/RecipesTab.svelte";
     import {CraftingSystemEditor} from "./CraftingSystemEditor";
     import {CraftingComponentEditor} from "./componentManager/CraftingComponentEditor";
+    import {RecipeEditor} from "./recipeManager/RecipeEditor";
 
     export let localization;
     export let fabricateAPI;
@@ -30,10 +31,12 @@
 
     const craftingSystems = new CraftingSystemsStore({});
     const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
-    const recipes = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
 
     const components = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
-    const craftingComponentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization });
+    const componentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization });
+
+    const recipes = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
+    const recipeEditor = new RecipeEditor({ fabricateAPI, recipes, components, localization });
 
     const selectedRecipe = new SelectedRecipeStore({recipes: recipes});
     const selectedComponent = new SelectedCraftingComponentStore({craftingComponents: components});
@@ -50,7 +53,8 @@
         localization,
         loading,
         craftingSystemEditor,
-        craftingComponentEditor
+        componentEditor,
+        recipeEditor
     });
 
     onMount(async () => {

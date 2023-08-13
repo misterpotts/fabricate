@@ -211,7 +211,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions = value;
     }
 
-    addIngredientOption(value: RequirementOption) {
+    addRequirementOption(value: RequirementOption) {
         if (this._requirementOptions.has(value.id)) {
             throw new Error(`Ingredient option ${value.id} already exists in this recipe. `);
         }
@@ -225,11 +225,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions.add(value);
     }
 
-    setIngredientOption(value: RequirementOption) {
-        this._requirementOptions.set(value);
-    }
-
-    deleteIngredientOptionByName(id: string) {
+    deleteRequirementOptionByName(id: string) {
         this._requirementOptions.deleteById(id);
     }
 
@@ -244,6 +240,23 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             ...value
         });
         this._resultOptions.set(resultOption);
+    }
+
+    setRequirementOption({
+         name,
+         catalysts = {},
+         ingredients = {},
+         essences = {}
+     }: RequirementOptionConfig) {
+        const optionId = this._requirementOptions.nextId();
+        const salvageOption = RequirementOption.fromJson({
+            id: optionId,
+            name,
+            catalysts,
+            ingredients,
+            essences
+        });
+        this._requirementOptions.set(salvageOption);
     }
 
     deleteResultOptionById(id: string) {
@@ -262,7 +275,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._itemData.errors;
     }
 
-    deselectIngredients() {
+    deselectRequirements() {
         this._requirementOptions.deselect();
     }
 
@@ -423,23 +436,6 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this.requirementOptions.all
             .flatMap(option => option.essences.members)
             .filter((essence, index, array) => array.indexOf(essence) === index);
-    }
-
-    setRequirementOption({
-         name,
-         catalysts = {},
-         ingredients = {},
-         essences = {}
-    }: RequirementOptionConfig) {
-        const optionId = this._requirementOptions.nextId();
-        const salvageOption = RequirementOption.fromJson({
-            id: optionId,
-            name,
-            catalysts,
-            ingredients,
-            essences
-        });
-        this._requirementOptions.set(salvageOption);
     }
 
 

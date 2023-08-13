@@ -1,5 +1,5 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
+import {Readable, Subscriber, Updater, writable, Writable, get} from "svelte/store";
 import {Component} from "../../scripts/crafting/component/Component";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
 
@@ -11,11 +11,11 @@ class ComponentsStore implements Writable<Component[]> {
     constructor({
         fabricateAPI,
         selectedCraftingSystem,
-        initialValue,
+        initialValue = [],
     }: {
         fabricateAPI: FabricateAPI;
         selectedCraftingSystem: Readable<CraftingSystem>;
-        initialValue: Component[];
+        initialValue?: Component[];
     }) {
         this._fabricateAPI = fabricateAPI;
         this._craftingComponents = writable(initialValue);
@@ -33,6 +33,10 @@ class ComponentsStore implements Writable<Component[]> {
                     this._craftingComponents.set(Array.from(components.values()));
                 });
         });
+    }
+
+    public get(): Component[] {
+        return get(this._craftingComponents);
     }
 
     public subscribe(subscriber: Subscriber<Component[]>) {
