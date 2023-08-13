@@ -37,7 +37,7 @@ class RecipeSearchStore {
 
     private searchRecipes(recipes: Recipe[], searchTerms: RecipeSearchTerms) {
         return recipes.filter((recipe) => {
-            if (searchTerms.requiresEssences && !recipe.requiresEssences) {
+            if (searchTerms.requiresEssences && !recipe.hasEssenceRequirementOption()) {
                 return false;
             }
             if (searchTerms.requiresNamedIngredients && !recipe.hasRequirements) {

@@ -6,7 +6,6 @@
     import CraftingSystemDetails from "./detailsManager/CraftingSystemDetails.svelte";
     import {key} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./componentManager/ComponentsTab.svelte";
-    import EssenceEditor from "./essenceManager/EssenceEditor.svelte";
     import {CraftingSystemsStore} from "../stores/CraftingSystemsStore";
     import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore";
     import {RecipesStore} from "../stores/RecipesStore";
@@ -22,6 +21,8 @@
     import {CraftingSystemEditor} from "./CraftingSystemEditor";
     import {CraftingComponentEditor} from "./componentManager/CraftingComponentEditor";
     import {RecipeEditor} from "./recipeManager/RecipeEditor";
+    import {EssencesStore} from "../stores/EssenceStore";
+    import {EssenceEditor} from "./essenceManager/EssenceEditor";
 
     export let localization;
     export let fabricateAPI;
@@ -31,6 +32,9 @@
 
     const craftingSystems = new CraftingSystemsStore({});
     const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
+
+    const essences = new EssencesStore({ selectedCraftingSystem, fabricateAPI });
+    const essenceEditor = new EssenceEditor({ fabricateAPI, essences, localization });
 
     const components = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
     const componentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization });
@@ -46,15 +50,16 @@
     setContext(key, {
         craftingSystems,
         selectedCraftingSystem,
-        recipes,
-        components,
-        selectedRecipe,
-        selectedComponent,
-        localization,
-        loading,
         craftingSystemEditor,
+        essences,
+        essenceEditor,
+        recipes,
+        selectedRecipe,
+        recipeEditor,
+        components,
+        selectedComponent,
         componentEditor,
-        recipeEditor
+        localization
     });
 
     onMount(async () => {

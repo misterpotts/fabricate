@@ -14,8 +14,10 @@ const Properties = {
     ui: {
         defaults: {
             essence: {
+                name: "My new essence",
+                tooltip: "A new essence",
                 iconCode: "fa-solid fa-mortar-pestle",
-                "description": "A magical essence that can be used to craft items",
+                description: "A magical essence that can be used to craft items",
             },
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
             noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",

@@ -225,14 +225,6 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions.add(value);
     }
 
-    deleteRequirementOptionByName(id: string) {
-        this._requirementOptions.deleteById(id);
-    }
-
-    deleteResultOptionByName(id: string) {
-        this._resultOptions.deleteById(id);
-    }
-
     setResultOption(value: ResultOptionConfig) {
         const optionId = this._resultOptions.nextId();
         const resultOption = ResultOption.fromJson({
@@ -261,6 +253,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
     deleteResultOptionById(id: string) {
         this._resultOptions.deleteById(id);
+    }
+
+    deleteRequirementOptionById(id: string) {
+        this._requirementOptions.deleteById(id);
     }
 
     get hasErrors(): boolean {
@@ -372,6 +368,10 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._id === other.id;
     }
 
+    hasEssenceRequirementOption() {
+        return this._requirementOptions.all.some(option => !option.essences.isEmpty());
+    }
+
     hasComponent(componentId: string): boolean {
         const inRequirements = this.requirementOptions.all
             .map(option => option.ingredients.has(componentId) || option.catalysts.has(componentId))
@@ -438,7 +438,6 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             .filter((essence, index, array) => array.indexOf(essence) === index);
     }
 
-
     static fromJson(recipeJson: RecipeJson) {
         const resultOptions = SelectableOptions.fromJson<ResultOptionJson, ResultOption>(recipeJson.resultOptions, ResultOption.fromJson);
         const requirementOptions = SelectableOptions.fromJson<RequirementOptionJson, RequirementOption>(recipeJson.requirementOptions, RequirementOption.fromJson);
@@ -452,6 +451,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
             requirementOptions
         });
     }
+
 }
 
 export { Recipe, RecipeJson }

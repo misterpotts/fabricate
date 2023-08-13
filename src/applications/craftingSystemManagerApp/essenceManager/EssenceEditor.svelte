@@ -6,7 +6,7 @@
     import {ICON_NAMES} from "../../FontAwesomeIcons";
     import {clickOutside} from "../../common/ClickOutside";
     import {getContext} from "svelte";
-    import {EssenceManager} from "./EssenceManager";
+    import {EssenceEditor} from "./EssenceEditor";
     import EssenceIconSelectorModal from "./EssenceIconSelectorModal.svelte";
     import {SvelteApplication} from "../../SvelteApplication";
     
@@ -19,7 +19,7 @@
         craftingSystemEditor
     } = getContext(key);
 
-    const essenceManager = new EssenceManager({
+    const essenceManager = new EssenceEditor({
         localization,
         localizationPath,
         craftingSystemEditor

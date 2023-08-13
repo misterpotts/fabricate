@@ -17,7 +17,7 @@ interface EssenceCreationOptions {
     /**
      * The name of the essence.
      */
-    name: string;
+    name?: string;
 
     /**
      * The tooltip text to display when the essence is hovered over.
@@ -134,6 +134,7 @@ interface EssenceAPI {
      * @param {string} [options.description] - A more detailed description of the essence
      * @param {string} [options.activeEffectSourceItemUuid] - The UUID of the item that is the source of the active
      *   effect for this essence, if present
+     * @param {string} options.craftingSystemId - The ID of the crafting system to which this essence belongs
      * @returns {Promise<Essence>} A Promise that resolves to the created essence.
      */
     create({ name, tooltip, iconCode, description, activeEffectSourceItemUuid, craftingSystemId }: EssenceCreationOptions): Promise<Essence>;
@@ -258,8 +259,8 @@ class DefaultEssenceAPI implements EssenceAPI {
     }
 
     async create({
-        name,
-        tooltip = name,
+        name = Properties.ui.defaults.essence.name,
+        tooltip = Properties.ui.defaults.essence.tooltip,
         iconCode = Properties.ui.defaults.essence.iconCode,
         description = Properties.ui.defaults.essence.description,
         activeEffectSourceItemUuid,
