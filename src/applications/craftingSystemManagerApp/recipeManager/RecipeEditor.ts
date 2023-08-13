@@ -9,6 +9,7 @@ import {RecipesStore} from "../../stores/RecipesStore";
 import {ComponentsStore} from "../../stores/ComponentsStore";
 import {RequirementOption} from "../../../scripts/crafting/recipe/RequirementOption";
 import {ResultOption} from "../../../scripts/crafting/recipe/ResultOption";
+import {Essence} from "../../../scripts/crafting/essence/Essence";
 
 class RecipeEditor {
 
@@ -106,9 +107,7 @@ class RecipeEditor {
         })
         const dropData = await dropEventParser.parse(event);
         selectedRecipe.itemData = dropData.itemData;
-        const updatedRecipe = await this._fabricateAPI.recipes.save(selectedRecipe);
-        this._recipes.insert(updatedRecipe);
-        return updatedRecipe;
+        return this.saveRecipe(selectedRecipe);
     }
 
     public async addRequirementOptionComponentAsCatalyst(event: any, selectedRecipe: Recipe) {
@@ -117,6 +116,7 @@ class RecipeEditor {
             name: this.generateOptionName(Array.from(selectedRecipe.requirementOptions.byId.keys())),
             catalysts: { [ component.id ]: 1 }
         });
+        await this.saveRecipe(selectedRecipe);
     }
 
     public async addRequirementOptionComponentAsIngredient(event: any, selectedRecipe: Recipe) {
@@ -125,6 +125,7 @@ class RecipeEditor {
             name: this.generateOptionName(Array.from(selectedRecipe.requirementOptions.byId.keys())),
             ingredients: { [ component.id ]: 1 }
         });
+        await this.saveRecipe(selectedRecipe);
     }
 
     public async addResultOptionComponent(event: any, selectedRecipe: Recipe) {
@@ -133,11 +134,13 @@ class RecipeEditor {
             name: this.generateOptionName(Array.from(selectedRecipe.resultOptions.byId.keys())),
             results: { [ component.id ]: 1 }
         });
+        await this.saveRecipe(selectedRecipe);
     }
 
-    private async getComponentFromDropEvent(event: any) {
+    // todo: prompt to import unknown items as components
+    private async getComponentFromDropEvent(event: any, rejectUnknownItems: boolean = true) {
         const dropEventParser = new DropEventParser({
-            strict: true,
+            strict: rejectUnknownItems,
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),
             partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
@@ -169,9 +172,15 @@ class RecipeEditor {
 
     public async deleteResultOption(selectedRecipe: Recipe, resultOption: ResultOption) {
         selectedRecipe.deleteResultOptionById(resultOption.id);
-        const updatedRecipe = await this._fabricateAPI.recipes.save(selectedRecipe);
-        this._recipes.insert(updatedRecipe);
-        return updatedRecipe;
+        await this.saveRecipe(selectedRecipe);
+    }
+
+    public async createEssenceRequirementOption(selectedRecipe: Recipe, essence: Essence) {
+        selectedRecipe.setRequirementOption({
+            name: this.generateOptionName(Array.from(selectedRecipe.requirementOptions.byId.keys())),
+            essences: { [ essence.id ]: 1 }
+        });
+        await this.saveRecipe(selectedRecipe);
     }
 
 }

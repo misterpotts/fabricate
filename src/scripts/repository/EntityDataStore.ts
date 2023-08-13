@@ -145,7 +145,9 @@ class EntityDataStore<J extends { id: string }, T extends Identifiable & Seriali
         if (!storedData.collections[fullCollectionName]) {
             storedData.collections[fullCollectionName] = [];
         }
-        storedData.collections[fullCollectionName].push(entityId);
+        if (storedData.collections[fullCollectionName].findIndex(id => id === entityId) === -1) {
+            storedData.collections[fullCollectionName].push(entityId);
+        }
     }
 
     private removeFromCollection(entityId: string, collectionName: string, collectionNamePrefix: string = "", storedData: SerialisedEntityData<J>): boolean {

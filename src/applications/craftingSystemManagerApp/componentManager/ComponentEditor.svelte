@@ -24,11 +24,12 @@
         components,
         selectedCraftingSystem,
         componentEditor,
+        essences
     } = getContext(key);
 
     const salvageSearchResults = new SalvageSearchStore({ selectedComponent, components });
     const searchTerms = salvageSearchResults.searchTerms;
-    const componentEssences = new ComponentEssenceStore({selectedCraftingSystem, selectedComponent});
+    const componentEssences = new ComponentEssenceStore({ allEssences: essences, selectedComponent });
 
     function deselectComponent() {
         $selectedComponent = null;

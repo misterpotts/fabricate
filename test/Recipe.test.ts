@@ -13,7 +13,7 @@ import {
 import {Combination} from "../src/scripts/common/Combination";
 import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
-    testRecipeFive,
+    testRecipeFive, testRecipeFour, testRecipeOne, testRecipeSeven,
     testRecipeSix,
     testRecipeThree,
     testRecipeTwo
@@ -331,6 +331,65 @@ describe("When selecting results", () => {
 
         underTest.deselectResults();
         expect(underTest.ready()).toEqual(false);
+
+    });
+
+});
+
+describe("when describing a recipe", () => {
+
+    test("should correctly list the unique referenced essences for a recipe with no options with essences", () => {
+
+        const result = testRecipeOne.getUniqueReferencedEssences();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(0);
+
+    });
+
+    test("should correctly list the unique referenced essences for a recipe with one option with essences", () => {
+
+        const result = testRecipeFour.getUniqueReferencedEssences();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([elementalWater.toReference(), elementalEarth.toReference()]));
+
+    });
+
+    test("should correctly list the unique referenced essences for a recipe with two options with essences", () => {
+
+        const result = testRecipeSix.getUniqueReferencedEssences();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([elementalWater.toReference(), elementalEarth.toReference()]));
+
+    });
+
+    test("should correctly list the unique referenced components for a recipe with no options with components", () => {
+
+        const result = testRecipeThree.getUniqueReferencedComponents();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(1);
+        expect(result).toEqual(expect.arrayContaining([testComponentOne.toReference()]));
+
+    });
+
+    test("should correctly list the unique referenced components for a recipe with one option with catalysts", () => {
+
+        const result = testRecipeFive.getUniqueReferencedComponents();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([testComponentFour.toReference(), testComponentFive.toReference()]));
+
+
+    });
+
+    test("should correctly list the unique referenced components for a recipe with one option with ingredients", () => {
+
+        const result = testRecipeSeven.getUniqueReferencedComponents();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([testComponentFour.toReference(), testComponentTwo.toReference()]));
+
 
     });
 

@@ -13,50 +13,35 @@
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences`;
 
     const { 
-        localization, 
-        loading, 
+        localization,
         selectedCraftingSystem,
-        craftingSystemEditor
+        craftingSystemEditor,
+        essences,
+        essenceEditor
     } = getContext(key);
 
-    const essenceManager = new EssenceEditor({
-        localization,
-        localizationPath,
-        craftingSystemEditor
-    });
-
     async function createEssence() {
-        $loading = true;
-        await essenceManager.create($selectedCraftingSystem);
-        $loading = false;
+        await essenceEditor.create($selectedCraftingSystem);
     }
 
     async function deleteEssence(event, essence) {
-        $loading = true;
-        await essenceManager.deleteEssence(event, essence, $selectedCraftingSystem);
-        $loading = false;
+        await essenceEditor.deleteEssence(event, essence, $selectedCraftingSystem);
     }
 
     async function addActiveEffectSource(event, essence) {
-        $loading = true;
-        await essenceManager.setActiveEffectSource(event, essence, $selectedCraftingSystem);
-        $loading = false;
+        await essenceEditor.setActiveEffectSource(event, essence);
     }
 
     let scheduledSave;
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            $loading = true;
-            await craftingSystemEditor.saveCraftingSystem($selectedCraftingSystem);
-            $loading = false;
+            await essenceEditor.saveAll($essences);
         }, 1000);
     }
 
     async function removeActiveEffectSource(essence) {
-        $loading = true;
-        await essenceManager.removeActiveEffectSource(essence, $selectedCraftingSystem);
-        $loading = false;
+        await essenceEditor.removeActiveEffectSource(essence);
     }
 
     async function openActiveEffectSourceItemSheet(essence) {
@@ -66,9 +51,7 @@
 
     async function setIconCode(event) {
         const { essence, iconCode } = event.detail;
-        $loading = true;
-        await essenceManager.setIconCode(essence, iconCode, $selectedCraftingSystem);
-        $loading = false;
+        await essenceEditor.setIconCode(essence, iconCode);
     }
 
     let showIconModal;

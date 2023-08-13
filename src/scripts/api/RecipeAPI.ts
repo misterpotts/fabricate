@@ -356,8 +356,8 @@ class DefaultRecipeAPI implements RecipeAPI {
 
         const activityName = existing ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultRecipeAPI._LOCALIZATION_PATH}.settings.recipe.${activityName}`,
-            { recipeId: recipe.name }
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.recipe.${activityName}`,
+            { recipeName: recipe.name }
         );
         this.notificationService.info(message);
 
@@ -374,7 +374,7 @@ class DefaultRecipeAPI implements RecipeAPI {
         await this.recipeStore.insertAll(recipes);
 
         const message = this.localizationService.format(
-            `${DefaultRecipeAPI._LOCALIZATION_PATH}.settings.recipe.savedAll`,
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.recipe.savedAll`,
             { count: recipes.length }
         );
         this.notificationService.info(message);
@@ -625,8 +625,8 @@ class DefaultRecipeAPI implements RecipeAPI {
             return validationResult;
         }
         const message = this.localizationService.format(
-            `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.notValid`,
-            { errors: validationResult.errors.join(", ") }
+            `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.invalid`,
+            { errors: validationResult.errors.join(", "), recipeId: recipe.id }
         );
         this.notificationService.error(message);
         throw new Error(message);

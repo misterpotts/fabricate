@@ -211,18 +211,12 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         this._resultOptions = value;
     }
 
-    addRequirementOption(value: RequirementOption) {
-        if (this._requirementOptions.has(value.id)) {
-            throw new Error(`Ingredient option ${value.id} already exists in this recipe. `);
-        }
-        this._requirementOptions.add(value);
+    saveRequirementOption(value: RequirementOption) {
+        this._requirementOptions.set(value);
     }
 
-    addResultOption(value: ResultOption) {
-        if (this._resultOptions.has(value.id)) {
-            throw new Error(`Result option ${value.id} already exists in this recipe. `);
-        }
-        this._resultOptions.add(value);
+    saveResultOption(value: ResultOption) {
+        this._resultOptions.set(value);
     }
 
     setResultOption(value: ResultOptionConfig) {
@@ -435,7 +429,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     getUniqueReferencedEssences(): EssenceReference[] {
         return this.requirementOptions.all
             .flatMap(option => option.essences.members)
-            .filter((essence, index, array) => array.indexOf(essence) === index);
+            .filter((essence, index, array) => array.findIndex(other => other.id === essence.id) === index);
     }
 
     static fromJson(recipeJson: RecipeJson) {

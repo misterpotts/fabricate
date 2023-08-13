@@ -94,18 +94,14 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
         }, <Record<string, J>>{});
     }
 
-    add(value: T) {
-        if (!value.id) {
-            throw new Error("ID must not be null. ");
-        }
-        this._options.set(value.id, value);
-    }
-
     has(id: string) {
         return this._options.has(id);
     }
 
     set(value: T) {
+        if (!value.id) {
+            throw new Error("Option ID must be anon-empty string. ");
+        }
         this._options.set(value.id, value);
     }
 

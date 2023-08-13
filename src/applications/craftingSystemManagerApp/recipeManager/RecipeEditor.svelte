@@ -10,9 +10,9 @@
     import {ComponentSearchStore} from "../../stores/ComponentSearchStore";
     import {DropEventParser} from "../../common/DropEventParser";
     import {recipeUpdated} from "../../common/EventBus";
-    import {RecipeEssenceStore} from "../../stores/RecipeEssenceStore";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import {Unit} from "../../../scripts/common/Unit";
+    import {RecipeRequirementOptionEssenceStore} from "../../stores/RecipeRequirementOptionEssenceStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes`;
     const {
@@ -23,13 +23,13 @@
         essences,
         components,
         recipeEditor,
-        craftingComponentEditor
+        componentEditor
     } = getContext(key);
 
     const componentSearchResults = new ComponentSearchStore({ components });
     const searchTerms = componentSearchResults.searchTerms;
-    const recipeEssences = new RecipeEssenceStore({selectedCraftingSystem, selectedRecipe});
     let selectPreviousTab;
+    const requirementOptionEssences = new RecipeRequirementOptionEssenceStore({ allEssences: essences, selectedRecipe });
 
     function clearSearch() {
         componentSearchResults.clear();
@@ -44,7 +44,7 @@
     }
 
     function replaceItem(event) {
-        recipeEditor.replaceItem(event, $selectedCraftingSystem, $selectedRecipe);
+        recipeEditor.replaceItem(event, $selectedRecipe);
     }
 
     async function addRequirementOption(event, addAsCatalyst) {
@@ -59,14 +59,19 @@
         recipeUpdated($selectedRecipe);
     }
 
-    async function incrementEssence(essence) {
-        $selectedRecipe.essences = $selectedRecipe.essences.add(new Unit(essence, 1));
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+    async function incrementEssence(essence, requirementOption) {
+        requirementOption.addEssence(essence.id);
+        $selectedRecipe.saveRequirementOption(requirementOption)
+        await recipeEditor.saveRecipe($selectedRecipe);
     }
 
-    async function decrementEssence(essence) {
-        $selectedRecipe.essences = $selectedRecipe.essences.minus(new Unit(essence, 1));
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+    async function decrementEssence(essence, requirementOption) {
+        if (!requirementOption.essences.has(essence.id)) {
+            return;
+        }
+        requirementOption.subtractEssence(essence.id);
+        $selectedRecipe.saveRequirementOption(requirementOption)
+        await recipeEditor.saveRecipe($selectedRecipe);
     }
 
     async function deleteRequirementOption(optionToDelete) {
@@ -107,24 +112,24 @@
                 `${localizationPath}.prompts.importItemAsComponent.content`,
                 {
                     componentName: itemData.name,
-                    systemName: $selectedCraftingSystem.name
+                    systemName: $selectedCraftingSystem.details.name
                 }
             )
         });
         if (doImport) {
-            const component = await craftingComponentEditor.createComponent(itemData, $selectedCraftingSystem);
+            const component = await componentEditor.createComponent(itemData, $selectedCraftingSystem);
             await addExistingComponentToIngredientOption(ingredientOption, component, asCatalyst);
         }
     }
 
-    async function addExistingComponentToIngredientOption(ingredientOption, component, asCatalyst) {
+    async function addExistingComponentToIngredientOption(resultOption, component, asCatalyst) {
         if (asCatalyst) {
-            ingredientOption.addCatalyst(component);
+            resultOption.addCatalyst(component);
         } else {
-            ingredientOption.addIngredient(component);
+            resultOption.addIngredient(component);
         }
-        $selectedRecipe.editIngredientOption(ingredientOption);
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $selectedRecipe.setResultOption(resultOption);
+        await recipeEditor.saveRecipe($selectedRecipe);
     }
 
     async function decrementIngredientOptionComponent(ingredientOption, component, asCatalyst) {
@@ -136,7 +141,7 @@
         if (ingredientOption.isEmpty) {
             return deleteRequirementOption(ingredientOption);
         }
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
@@ -149,7 +154,7 @@
         } else {
             ingredientOption.addIngredient(component);
         }
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
@@ -157,7 +162,7 @@
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+            await recipeEditor.saveRecipe($selectedRecipe);
         }, 1000);
     }
 
@@ -166,8 +171,8 @@
     });
 
     async function deleteResultOption(optionToDelete) {
-        $selectedRecipe.deleteResultOptionByName(optionToDelete.name);
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        $selectedRecipe.deleteResultOptionById(optionToDelete.id);
+        await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
@@ -181,7 +186,7 @@
         });
         const component = (await dropEventParser.parse(event)).component;
         resultOption.add(component);
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
@@ -189,25 +194,30 @@
         if (event && event.shiftKey) {
             return decrementResultOptionComponent(resultOption, component);
         }
-        resultOption.add(component);
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        resultOption.add(component.id);
+        await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
     async function decrementResultOptionComponent(resultOption, component) {
-        resultOption.subtract(component);
+        resultOption.subtract(component.id);
         if (resultOption.isEmpty) {
             return deleteResultOption(resultOption);
         }
-        await recipeEditor.saveRecipe($selectedRecipe, $selectedCraftingSystem);
+        await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
     async function addResultOption(event) {
-        await recipeEditor.addResultOption(event, $selectedRecipe, $selectedCraftingSystem);
+        await recipeEditor.addResultOptionComponent(event, $selectedRecipe);
         if ($selectedRecipe.resultOptions.length > 1) {
             selectPreviousTab();
         }
+        recipeUpdated($selectedRecipe);
+    }
+
+    async function createEssenceRequirementOption(essence) {
+        await recipeEditor.createEssenceRequirementOption($selectedRecipe, essence);
         recipeUpdated($selectedRecipe);
     }
 
@@ -218,15 +228,6 @@
 
     function dereferenceComponent(componentReference) {
         return $components.find(component => component.id === componentReference.id);
-    }
-
-    function dereferenceEssenceCombination(essenceReferenceCombination) {
-        return essenceReferenceCombination
-            .map(essenceReferenceUnit => new Unit(dereferenceEssence(essenceReferenceUnit.element), essenceReferenceUnit.quantity));
-    }
-
-    function dereferenceEssence(essenceReference) {
-        return $essences.find(essence => essence.id === essenceReference.id);
     }
 
 </script>
@@ -259,7 +260,7 @@
                     <div class="fab-recipe-ingredients fab-columns">
                         <div class="fab-column">
                             <div class="fab-row">
-                                <h3>{localization.localize(`${localizationPath}.recipe.labels.requirementsHeading`)}</h3>
+                                <h3>{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h3>
                             </div>
                             {#if $selectedRecipe.hasRequirements}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
@@ -269,7 +270,6 @@
                                         {/each}
                                         <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.recipe.labels.newIngredientOption`)}</Tab>
                                     </TabList>
-
                                     {#each $selectedRecipe.requirementOptions.all as requirementOption}
                                         <TabPanel class="fab-columns">
                                             <div class="fab-column">
@@ -278,25 +278,35 @@
                                                         <p>{localization.localize(`${localizationPath}.recipe.labels.ingredientOptionName`)}</p>
                                                         <div class="fab-editable" contenteditable="true" bind:textContent={requirementOption.name} on:input={scheduleSave}>{requirementOption.name}</div>
                                                     </div>
-                                                    <button class="fab-delete-ingredient-opt" on:click={deleteRequirementOption(requirementOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteIngredientOption`)}</button>
+                                                    <button class="fab-delete-ingredient-opt"
+                                                            on:click={deleteRequirementOption(requirementOption)}>
+                                                        <i class="fa-solid fa-trash fa-fw"></i>
+                                                        {localization.localize(`${localizationPath}.recipe.buttons.deleteIngredientOption`)}
+                                                    </button>
                                                 </div>
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
                                                 {#if requirementOption.requiresIngredients}
                                                 <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToIngredientOption(e, requirementOption, false)}>
-                                                    {#each requirementOption.ingredients.units as ingredientUnit}
-                                                        <div class="fab-component" on:click={(e) => incrementIngredientOptionComponent(requirementOption, ingredientUnit.element, e, false)} on:auxclick={decrementIngredientOptionComponent(requirementOption, ingredientUnit.element, false)}>
-                                                            <div class="fab-component-name">
-                                                                <p>{truncate(ingredientUnit.element.name, 9)}</p>
-                                                            </div>
-                                                            <div class="fab-component-preview">
-                                                                <div class="fab-component-image" data-tooltip={ingredientUnit.element.name}>
-                                                                    <img src={ingredientUnit.element.imageUrl} alt={ingredientUnit.element.name} />
-                                                                    {#if ingredientUnit.quantity > 1}
-                                                                        <span class="fab-component-info fab-component-quantity">{ingredientUnit.quantity}</span>
-                                                                    {/if}
+                                                    {#each dereferenceComponentCombination(requirementOption.ingredients) as ingredientUnit}
+                                                        {#await ingredientUnit.element.load()}
+                                                            {:then nothing}
+                                                                <div class="fab-component"
+                                                                     on:click={(e) => incrementIngredientOptionComponent(requirementOption, ingredientUnit.element, e, false)}
+                                                                     on:auxclick={decrementIngredientOptionComponent(requirementOption, ingredientUnit.element, false)}>
+                                                                    <div class="fab-component-name">
+                                                                        <p>{truncate(ingredientUnit.element.name, 9)}</p>
+                                                                    </div>
+                                                                    <div class="fab-component-preview">
+                                                                        <div class="fab-component-image" data-tooltip={ingredientUnit.element.name}>
+                                                                            <img src={ingredientUnit.element.imageUrl} alt={ingredientUnit.element.name} />
+                                                                            {#if ingredientUnit.quantity > 1}
+                                                                                <span class="fab-component-info fab-component-quantity">{ingredientUnit.quantity}</span>
+                                                                            {/if}
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
+                                                            {:catch error}
+                                                        {/await}
                                                     {/each}
                                                 </div>
                                                 {:else}
@@ -307,25 +317,73 @@
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h4>
                                                 {#if requirementOption.requiresCatalysts}
                                                     <div class="fab-component-grid fab-grid-4 fab-scrollable fab-catalyst-option-actual" on:drop={(e) => addComponentToIngredientOption(e, requirementOption, true)}>
-                                                        {#each requirementOption.catalysts.units as catalystUnit}
-                                                            <div class="fab-component" on:click={(e) => incrementIngredientOptionComponent(requirementOption, catalystUnit.element, e, true)} on:auxclick={decrementIngredientOptionComponent(requirementOption, catalystUnit.element, true)}>
-                                                                <div class="fab-component-name">
-                                                                    <p>{truncate(catalystUnit.element.name, 9)}</p>
-                                                                </div>
-                                                                <div class="fab-component-preview">
-                                                                    <div class="fab-component-image" data-tooltip={catalystUnit.element.name}>
-                                                                        <img src={catalystUnit.element.imageUrl} alt={catalystUnit.element.name} />
-                                                                        {#if catalystUnit.quantity > 1}
-                                                                            <span class="fab-component-info fab-component-quantity">{catalystUnit.quantity}</span>
-                                                                        {/if}
+                                                        {#each dereferenceComponentCombination(requirementOption.catalysts) as catalystUnit}
+                                                            {#await catalystUnit.element.load()}
+                                                                {:then nothing}
+                                                                    <div class="fab-component" on:click={(e) => incrementIngredientOptionComponent(requirementOption, catalystUnit.element, e, true)} on:auxclick={decrementIngredientOptionComponent(requirementOption, catalystUnit.element, true)}>
+                                                                        <div class="fab-component-name">
+                                                                            <p>{truncate(catalystUnit.element.name, 9)}</p>
+                                                                        </div>
+                                                                        <div class="fab-component-preview">
+                                                                            <div class="fab-component-image" data-tooltip={catalystUnit.element.name}>
+                                                                                <img src={catalystUnit.element.imageUrl} alt={catalystUnit.element.name} />
+                                                                                {#if catalystUnit.quantity > 1}
+                                                                                    <span class="fab-component-info fab-component-quantity">{catalystUnit.quantity}</span>
+                                                                                {/if}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            </div>
+                                                                {:catch error}
+                                                            {/await}
                                                         {/each}
                                                     </div>
                                                 {:else}
                                                     <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addComponentToIngredientOption(e, requirementOption, true)}>
                                                         <i class="fa-solid fa-plus"></i>
+                                                    </div>
+                                                {/if}
+                                                <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.essencesHeading`)}</h4>
+                                                {#if requirementOption.requiresEssences}
+                                                    <div class="fab-row fab-recipe-essences">
+                                                        {#each $requirementOptionEssences.get(requirementOption.id) as essenceUnit}
+                                                            <div class="fab-recipe-essence-adjustment">
+                                                                <button class="fab-increment-essence" on:click={incrementEssence(essenceUnit.element, requirementOption)}><i class="fa-solid fa-plus"></i></button>
+                                                                <div class="fab-essence-amount">
+                                                                <span class="fab-essence-quantity">
+                                                                    {essenceUnit.quantity}
+                                                                </span>
+                                                                    <span class="fab-essence-icon">
+                                                                    <i class="{essenceUnit.element.iconCode}"></i>
+                                                                </span>
+                                                                    <span class="fab-essence-name">
+                                                                    {essenceUnit.element.name}
+                                                                </span>
+                                                                </div>
+                                                                <button class="fab-decrement-essence" on:click={decrementEssence(essenceUnit.element, requirementOption)}><i class="fa-solid fa-minus"></i></button>
+                                                            </div>
+                                                        {/each}
+                                                    </div>
+                                                {:else}
+                                                    <div class="fab-row">
+                                                        <div class="fab-recipe-essences">
+                                                            {#each $essences as essence}
+                                                                <div class="fab-recipe-essence-adjustment">
+                                                                    <button class="fab-increment-essence"
+                                                                            on:click={incrementEssence(essence, requirementOption)}>
+                                                                        <i class="fa-solid fa-plus"></i>
+                                                                    </button>
+                                                                    <div class="fab-essence-amount">
+                                                                        <span class="fab-essence-quantity">0</span>
+                                                                        <span class="fab-essence-icon">
+                                                                        <i class="{essence.iconCode}"></i>
+                                                                        </span>
+                                                                            <span class="fab-essence-name">
+                                                                            {essence.name}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            {/each}
+                                                        </div>
                                                     </div>
                                                 {/if}
                                             </div>
@@ -360,6 +418,34 @@
                                 <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addRequirementOption(e, true)}>
                                     <i class="fa-solid fa-plus"></i>
                                 </div>
+                                {#if $essences.length > 0}
+                                    <div class="fab-row">
+                                        <h3>{localization.localize(`${localizationPath}.recipe.labels.essencesHeading`)}</h3>
+                                    </div>
+                                    <div class="fab-row">
+                                        <div class="fab-recipe-essences">
+                                            {#each $essences as essence}
+                                                <div class="fab-recipe-essence-adjustment">
+                                                    <button class="fab-increment-essence"
+                                                            on:click={createEssenceRequirementOption(essence)}>
+                                                        <i class="fa-solid fa-plus"></i>
+                                                    </button>
+                                                    <div class="fab-essence-amount">
+                                                        <span class="fab-essence-quantity">0</span>
+                                                        <span class="fab-essence-icon">
+                                                            <i class="{essence.iconCode}"></i>
+                                                        </span>
+                                                        <span class="fab-essence-name">
+                                                            {essence.name}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            {/each}
+                                        </div>
+                                    </div>
+                                {:else}
+                                    <div class="fab-no-essence-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableEssences`, { systemName: $selectedCraftingSystem.details.name, recipeName: selectedRecipe.name })}</p></div>
+                                {/if}
                             {/if}
                         </div>
                     </div>
@@ -396,40 +482,8 @@
                                 {:else if $searchTerms.name}
                                     <div class="fab-no-component-opts"><p>{localization.localize(`${localizationPath}.recipe.info.noMatchingComponents`)}</p></div>
                                 {:else}
-                                    <div class="fab-no-component-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableComponents`, { systemName: $selectedCraftingSystem.name, recipeName: $selectedRecipe.name })}</p></div>
+                                    <div class="fab-no-component-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableComponents`, { systemName: $selectedCraftingSystem.details.name, recipeName: $selectedRecipe.name })}</p></div>
                                 {/if}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="fab-columns" style="grid-column: 1/3">
-                        <div class="fab-column">
-                            <div class="fab-row">
-                                <h3>{localization.localize(`${localizationPath}.recipe.labels.essencesHeading`)}</h3>
-                            </div>
-                            <div class="fab-row">
-                                <div class="fab-recipe-essences">
-                                    {#if $selectedCraftingSystem.hasEssences}
-                                        {#each $recipeEssences as essenceUnit}
-                                            <div class="fab-recipe-essence-adjustment">
-                                                <button class="fab-increment-essence" on:click={incrementEssence(essenceUnit.element)}><i class="fa-solid fa-plus"></i></button>
-                                                <div class="fab-essence-amount">
-                                                    <span class="fab-essence-quantity">
-                                                        {essenceUnit.quantity}
-                                                    </span>
-                                                    <span class="fab-essence-icon">
-                                                        <i class="{essenceUnit.element.iconCode}"></i>
-                                                    </span>
-                                                    <span class="fab-essence-name">
-                                                        {essenceUnit.element.name}
-                                                    </span>
-                                                </div>
-                                                <button class="fab-decrement-essence" on:click={decrementEssence(essenceUnit.element)}><i class="fa-solid fa-minus"></i></button>
-                                            </div>
-                                        {/each}
-                                    {:else}
-                                        <div class="fab-no-essence-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableEssences`, { systemName: $selectedCraftingSystem.name, recipeName: selectedRecipe.name })}</p></div>
-                                    {/if}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -446,36 +500,50 @@
                             {#if $selectedRecipe.hasResults}
                                 <Tabs bind:selectPreviousTab={selectPreviousTab}>
                                     <TabList>
-                                        {#each $selectedRecipe.resultOptions as resultOption}
+                                        {#each $selectedRecipe.resultOptions.all as resultOption}
                                             <Tab>{resultOption.name}</Tab>
                                         {/each}
                                         <Tab><i class="fa-regular fa-square-plus"></i> {localization.localize(`${localizationPath}.recipe.labels.newResultOption`)}</Tab>
                                     </TabList>
-                                    {#each $selectedRecipe.resultOptions as resultOption}
+                                    {#each $selectedRecipe.resultOptions.all as resultOption}
                                         <TabPanel class="fab-columns">
                                             <div class="fab-column">
                                                 <div class="fab-option-controls fab-row">
                                                     <div class="fab-option-name">
                                                         <p>{localization.localize(`${localizationPath}.recipe.labels.resultOptionName`)}</p>
-                                                        <div class="fab-editable" contenteditable="true" bind:textContent={resultOption.name} on:input={scheduleSave}>{resultOption.name}</div>
-                                                    </div>
-                                                    <button class="fab-delete-result-opt" on:click={deleteResultOption(resultOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteResultOption`)}</button>
-                                                </div>
-                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-result-option-actual" on:drop={(e) => addComponentToResultOption(e, resultOption)}>
-                                                    {#each resultOption.results.units as resultUnit}
-                                                        <div class="fab-component" on:click={(e) => incrementResultOptionComponent(resultOption, resultUnit.element, e)} on:auxclick={decrementResultOptionComponent(resultOption, resultUnit.element)}>
-                                                            <div class="fab-component-name">
-                                                                <p>{truncate(resultUnit.element.name, 9)}</p>
-                                                            </div>
-                                                            <div class="fab-component-preview">
-                                                                <div class="fab-component-image" data-tooltip={resultUnit.element.name}>
-                                                                    <img src={resultUnit.element.imageUrl} alt={resultUnit.element.name} />
-                                                                    {#if resultUnit.quantity > 1}
-                                                                        <span class="fab-component-info fab-component-quantity">{resultUnit.quantity}</span>
-                                                                    {/if}
-                                                                </div>
-                                                            </div>
+                                                        <div class="fab-editable" contenteditable="true"
+                                                             bind:textContent={resultOption.name}
+                                                             on:input={scheduleSave}>
+                                                            {resultOption.name}
                                                         </div>
+                                                    </div>
+                                                    <button class="fab-delete-result-opt"
+                                                            on:click={deleteResultOption(resultOption)}>
+                                                        <i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.recipe.buttons.deleteResultOption`)}
+                                                    </button>
+                                                </div>
+                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-result-option-actual"
+                                                     on:drop={(e) => addComponentToResultOption(e, resultOption)}>
+                                                    {#each dereferenceComponentCombination(resultOption.results) as resultUnit}
+                                                        {#await resultUnit.element.load()}
+                                                            {:then nothing}
+                                                                <div class="fab-component"
+                                                                     on:click={(e) => incrementResultOptionComponent(resultOption, resultUnit.element, e)}
+                                                                     on:auxclick={decrementResultOptionComponent(resultOption, resultUnit.element)}>
+                                                                    <div class="fab-component-name">
+                                                                        <p>{truncate(resultUnit.element.name, 9)}</p>
+                                                                    </div>
+                                                                    <div class="fab-component-preview">
+                                                                        <div class="fab-component-image" data-tooltip={resultUnit.element.name}>
+                                                                            <img src={resultUnit.element.imageUrl} alt={resultUnit.element.name} />
+                                                                            {#if resultUnit.quantity > 1}
+                                                                                <span class="fab-component-info fab-component-quantity">{resultUnit.quantity}</span>
+                                                                            {/if}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            {:catch error}
+                                                        {/await}
                                                     {/each}
                                                 </div>
                                             </div>
@@ -523,7 +591,7 @@
                                 {:else if $searchTerms.name}
                                     <div class="fab-no-component-opts"><p>{localization.localize(`${localizationPath}.recipe.info.noMatchingComponents`)}</p></div>
                                 {:else}
-                                    <div class="fab-no-component-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableComponents`, { systemName: $selectedCraftingSystem.name, recipeName: $selectedRecipe.name })}</p></div>
+                                    <div class="fab-no-component-opts"><p>{localization.format(`${localizationPath}.recipe.info.noAvailableComponents`, { systemName: $selectedCraftingSystem.details.name, recipeName: $selectedRecipe.name })}</p></div>
                                 {/if}
                             </div>
                         </div>

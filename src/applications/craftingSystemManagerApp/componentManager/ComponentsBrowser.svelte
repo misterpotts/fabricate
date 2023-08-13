@@ -11,7 +11,7 @@
         selectedCraftingSystem,
         components,
         localization,
-        craftingComponentEditor,
+        componentEditor,
         selectedComponent
     } = getContext(key);
 
@@ -23,7 +23,7 @@
     }
 
     async function importComponent(event) {
-        await craftingComponentEditor.importComponent(event, $selectedCraftingSystem);
+        await componentEditor.importComponent(event, $selectedCraftingSystem);
     }
 
     function selectComponent(component) {
@@ -31,12 +31,12 @@
     }
 
     async function deleteComponent(event, component) {
-        await craftingComponentEditor.deleteComponent(event, component, $selectedCraftingSystem);
+        await componentEditor.deleteComponent(event, component, $selectedCraftingSystem);
     }
 
     async function disableComponent(component) {
         component.isDisabled = true;
-        await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
+        await componentEditor.saveComponent(component, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.component.disabled`,
             {
@@ -48,7 +48,7 @@
 
     async function enableComponent(component) {
         component.isDisabled = false;
-        await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
+        await componentEditor.saveComponent(component, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.component.enabled`,
             {
@@ -63,7 +63,7 @@
     }
 
     async function duplicateComponent(component) {
-        await craftingComponentEditor.duplicateComponent(component);
+        await componentEditor.duplicateComponent(component);
     }
 
     async function openItemSheet(component) {
