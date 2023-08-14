@@ -51,6 +51,9 @@
     function selectLastRequirementOption() {
         selectRequirementsTab(length => length - 1);
     }
+    function selectLastResultOption() {
+        selectResultsTab(length => length - 1);
+    }
 
     async function addRequirementOption(event, addAsCatalyst) {
         if (addAsCatalyst) {
@@ -217,7 +220,7 @@
 
     async function addResultOption(event) {
         await recipeEditor.addResultOptionComponent(event, $selectedRecipe);
-        selectLastRequirementOption();
+        selectLastResultOption();
         recipeUpdated($selectedRecipe);
     }
 
