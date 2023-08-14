@@ -113,7 +113,7 @@ class RecipeEditor {
     public async addRequirementOptionComponentAsCatalyst(event: any, selectedRecipe: Recipe) {
         const component = await this.getComponentFromDropEvent(event);
         selectedRecipe.setRequirementOption({
-            name: this.generateOptionName(Array.from(selectedRecipe.requirementOptions.byId.keys())),
+            name: this.generateOptionName(selectedRecipe.requirementOptions.all.map(requirementOption => requirementOption.name)),
             catalysts: { [ component.id ]: 1 }
         });
         await this.saveRecipe(selectedRecipe);
@@ -122,7 +122,7 @@ class RecipeEditor {
     public async addRequirementOptionComponentAsIngredient(event: any, selectedRecipe: Recipe) {
         const component = await this.getComponentFromDropEvent(event);
         selectedRecipe.setRequirementOption({
-            name: this.generateOptionName(Array.from(selectedRecipe.requirementOptions.byId.keys())),
+            name: this.generateOptionName(selectedRecipe.requirementOptions.all.map(requirementOption => requirementOption.name)),
             ingredients: { [ component.id ]: 1 }
         });
         await this.saveRecipe(selectedRecipe);
@@ -131,7 +131,7 @@ class RecipeEditor {
     public async addResultOptionComponent(event: any, selectedRecipe: Recipe) {
         const component = await this.getComponentFromDropEvent(event);
         selectedRecipe.setResultOption({
-            name: this.generateOptionName(Array.from(selectedRecipe.resultOptions.byId.keys())),
+            name: this.generateOptionName(selectedRecipe.resultOptions.all.map(resultOption => resultOption.name)),
             results: { [ component.id ]: 1 }
         });
         await this.saveRecipe(selectedRecipe);
@@ -177,7 +177,7 @@ class RecipeEditor {
 
     public async createEssenceRequirementOption(selectedRecipe: Recipe, essence: Essence) {
         selectedRecipe.setRequirementOption({
-            name: this.generateOptionName(Array.from(selectedRecipe.requirementOptions.byId.keys())),
+            name: this.generateOptionName(selectedRecipe.requirementOptions.all.map(requirementOption => requirementOption.name)),
             essences: { [ essence.id ]: 1 }
         });
         await this.saveRecipe(selectedRecipe);

@@ -68,6 +68,10 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         return !this._essences.isEmpty();
     }
 
+    public isEmpty(): boolean {
+        return this._catalysts.isEmpty() && this._ingredients.isEmpty() && this._essences.isEmpty();
+    }
+
     set catalysts(value: Combination<ComponentReference>) {
         this._catalysts = value;
     }
@@ -118,10 +122,6 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
 
     public subtractEssence(essenceId: string, amount = 1) {
         this._essences = this._essences.subtractUnit(new Unit<EssenceReference>(new EssenceReference(essenceId), amount));
-    }
-
-    public get isEmpty(): boolean {
-        return this._ingredients.isEmpty() && this._catalysts.isEmpty();
     }
 
     toJson(): RequirementOptionJson {

@@ -47,11 +47,8 @@ class CraftingSystemEditor {
             content: `<p>${this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteSystemConfirm.content`, {systemName: craftingSystemToDelete.details.name})}</p>`,
             yes: async () => {
                 await this._fabricateAPI.deleteAllByCraftingSystemId(craftingSystemToDelete.id);
-                const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteCraftingSystem.success`, { systemName: craftingSystemToDelete.details.name});
                 this._craftingSystems.update((craftingSystems) => {
-                    const filtered = craftingSystems.filter(craftingSystem => craftingSystem.id !== craftingSystemToDelete.id);
-                    ui.notifications.info(message);
-                    return filtered;
+                    return craftingSystems.filter(craftingSystem => craftingSystem.id !== craftingSystemToDelete.id);
                 });
             }
         });
