@@ -49,10 +49,14 @@
     }
 
     function selectLastRequirementOption() {
-        selectRequirementsTab(length => length - 1);
+        if ($selectedRecipe.requirementOptions.all.length > 1) {
+            selectRequirementsTab(length => length - 1);
+        }
     }
     function selectLastResultOption() {
-        selectResultsTab(length => length - 1);
+        if ($selectedRecipe.resultOptions.all.length > 1) {
+            selectResultsTab(length => length - 1);
+        }
     }
 
     async function addRequirementOption(event, addAsCatalyst) {

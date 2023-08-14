@@ -559,7 +559,7 @@ class DefaultComponentAPI implements ComponentAPI {
 
         const activityName = existing ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultComponentAPI._LOCALIZATION_PATH}.messages.component.${activityName}`,
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.component.${activityName}`,
             { componentName: component.name }
         );
         this.notificationService.info(message);
