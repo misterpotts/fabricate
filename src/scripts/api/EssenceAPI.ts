@@ -353,7 +353,7 @@ class DefaultEssenceAPI implements EssenceAPI {
 
         const localizationActivity = existing ? "updated" : "created";
         const message = this.localizationService.format(
-            `${DefaultEssenceAPI._LOCALIZATION_PATH}.messages.essence.${localizationActivity}`,
+            `${DefaultEssenceAPI._LOCALIZATION_PATH}.essence.${localizationActivity}`,
             { essenceName: essence.name }
         );
         this.notificationService.info(message);
@@ -371,7 +371,7 @@ class DefaultEssenceAPI implements EssenceAPI {
         await this.essenceStore.insertAll(essences);
 
         const message = this.localizationService.format(
-            `${DefaultEssenceAPI._LOCALIZATION_PATH}.messages.essence.savedAll`,
+            `${DefaultEssenceAPI._LOCALIZATION_PATH}.essence.savedAll`,
             { essenceCount: essences.length }
         );
         this.notificationService.info(message);

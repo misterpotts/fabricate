@@ -54,7 +54,7 @@ class CraftingSystemEditor {
         });
     }
 
-    async importCraftingSystem(targetCraftingSystem: CraftingSystem): Promise<void> {
+    async importCraftingSystem(targetCraftingSystem?: CraftingSystem): Promise<void> {
         const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
         const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
         const content = await renderTemplate("templates/apps/import-data.html", {
@@ -89,7 +89,7 @@ class CraftingSystemEditor {
                             throw new Error(message);
                         }
 
-                        if (targetCraftingSystem.id !== dataToImport.craftingSystem.id) {
+                        if (targetCraftingSystem && (targetCraftingSystem.id !== dataToImport.craftingSystem.id)) {
                             const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.importIdMismatch`, {
                                 systemName: targetCraftingSystem.details.name,
                                 expectedId: targetCraftingSystem.id,
@@ -100,6 +100,9 @@ class CraftingSystemEditor {
                         }
 
                         const importResult = await this._fabricateAPI.import(dataToImport);
+                        if (!importResult) {
+                            return;
+                        }
                         this._craftingSystems.update((craftingSystems) => {
                             const found = craftingSystems.find(craftingSystem => craftingSystem.id === importResult.craftingSystem.id);
                             if (!found) {

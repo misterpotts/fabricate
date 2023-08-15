@@ -190,9 +190,8 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
     private makeEssenceAPI(identityFactory: DefaultIdentityFactory,
                            localizationService: DefaultLocalizationService,
                            craftingSystemAPI: CraftingSystemAPI,
-                           essenceStore: EntityDataStore<EssenceJson, Essence>,
-                           documentManager: DocumentManager = this.documentManager): EssenceAPI {
-        const essenceValidator = new DefaultEssenceValidator({craftingSystemAPI, documentManager});
+                           essenceStore: EntityDataStore<EssenceJson, Essence>): EssenceAPI {
+        const essenceValidator = new DefaultEssenceValidator({craftingSystemAPI});
         return new DefaultEssenceAPI({
             notificationService: new DefaultNotificationService(this.uiProvider),
             localizationService,

@@ -1,13 +1,11 @@
 import {DefaultEntityValidationResult, EntityValidationResult} from "../../api/EntityValidator";
-import {Essence, EssenceJson} from "./Essence";
+import {Essence} from "./Essence";
 import {CraftingSystemAPI} from "../../api/CraftingSystemAPI";
-import {DocumentManager} from "../../foundry/DocumentManager";
+import {NoFabricateItemData} from "../../foundry/DocumentManager";
 
 interface EssenceValidator {
 
     validate(candidate: Essence): Promise<EntityValidationResult<Essence>>;
-
-    validateJson(candidate: EssenceJson): Promise<EntityValidationResult<EssenceJson>>;
 
 }
 
@@ -16,47 +14,46 @@ export { EssenceValidator }
 class DefaultEssenceValidator implements EssenceValidator {
 
     private readonly craftingSystemAPI: CraftingSystemAPI;
-    private readonly documentManager: DocumentManager;
 
     constructor({
-        craftingSystemAPI,
-        documentManager
+        craftingSystemAPI
     }: {
         craftingSystemAPI: CraftingSystemAPI;
-        documentManager: DocumentManager;
     }) {
         this.craftingSystemAPI = craftingSystemAPI;
-        this.documentManager = documentManager;
     }
 
     async validate(candidate: Essence): Promise<EntityValidationResult<Essence>> {
-        const validationResult = await this.validateJson(candidate.toJson());
-        return new DefaultEntityValidationResult({ entity: candidate, errors: validationResult.errors });
-    }
 
-    async validateJson(candidate: EssenceJson): Promise<EntityValidationResult<EssenceJson>> {
+        // Prepare an array to capture any errors that are found
         const errors: string[] = [];
 
-        if (!candidate.name) {
-            errors.push("The essence name is required. ");
-        }
-
-        if (candidate.activeEffectSourceItemUuid) {
-            const itemData = await this.documentManager.loadItemDataByDocumentUuid(candidate.activeEffectSourceItemUuid);
-            if (itemData.hasErrors) {
-                const itemDataErrorMessages = itemData.errors.map(error => error.message);
-                errors.push(`The item with UUID ${candidate.activeEffectSourceItemUuid} could not be loaded. Caused by: ${itemDataErrorMessages.join(", ")} `);
-            }
-        }
-
+        // Check that the crafting system exists
         const craftingSystem = await this.craftingSystemAPI.getById(candidate.craftingSystemId);
         if (!craftingSystem) {
             errors.push(`The crafting system with ID ${candidate.craftingSystemId} does not exist. `);
         }
 
-        return new DefaultEntityValidationResult({ entity: candidate, errors: errors });
-    }
+        if (!candidate.name) {
+            errors.push("The essence name is required. ");
+        }
 
+        // if the essence has an active effect source, check it is valid
+        if (candidate.hasActiveEffectSource && !(candidate.activeEffectSource instanceof NoFabricateItemData)) {
+            // Check that the item exists and can be loaded
+            if (!candidate.loaded) {
+                await candidate.load();
+            }
+            if (candidate.activeEffectSource.hasErrors) {
+                const itemDataErrorMessages = candidate.activeEffectSource.errors.map(error => error.message);
+                const cause = itemDataErrorMessages.length > 0 ? `Caused by: ${itemDataErrorMessages.join(", ")}. ` : "";
+                errors.push(`The item with UUID ${candidate.activeEffectSource?.uuid} could not be loaded. ${cause} `);
+            }
+        }
+
+        return new DefaultEntityValidationResult({ entity: candidate, errors: errors });
+
+    }
 
 }
 

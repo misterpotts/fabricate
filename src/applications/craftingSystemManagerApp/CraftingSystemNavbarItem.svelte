@@ -19,8 +19,8 @@
         await craftingSystemEditor.deleteCraftingSystem(craftingSystem);
     }
 
-    async function importCraftingSystem() {
-        await craftingSystemEditor.importCraftingSystem();
+    async function importCraftingSystem(craftingSystem) {
+        await craftingSystemEditor.importCraftingSystem(craftingSystem);
     }
 
     async function exportSystem() {
