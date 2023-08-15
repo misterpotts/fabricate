@@ -569,14 +569,20 @@ class DefaultComponentAPI implements ComponentAPI {
 
     private async rejectSavingInvalidComponent(component: Component): Promise<EntityValidationResult<Component>> {
         const existingComponentIds = await this.componentStore.listAllEntityIds();
-        const existingComponentsIdsForItem = await this.componentStore.listCollectionEntityIds(component.itemUuid, Properties.settings.collectionNames.item);
+        const existingComponentsForCraftingSystem = await this.getAllByCraftingSystemId(component.craftingSystemId);
+        const existingComponentsIdsForItem = Array.from(existingComponentsForCraftingSystem.values())
+            .filter(other => other.itemUuid === component.itemUuid)
+            .map(other => other.id);
         const validationResult = await this.componentValidator.validate(component, existingComponentIds, existingComponentsIdsForItem);
         if (validationResult.successful) {
             return validationResult;
         }
         const message = this.localizationService.format(
-            `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.notValid`,
-            { errors: validationResult.errors.join(", ") }
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.invalid`,
+            {
+                errors: validationResult.errors.join(", "),
+                componentId: component.id
+            }
         );
         this.notificationService.error(message);
         throw new Error(message);
@@ -611,12 +617,20 @@ class DefaultComponentAPI implements ComponentAPI {
         const existing = await this.componentStore.getAllById(components.map(component => component.id));
         existing.forEach(existingComponent => this.rejectModifyingEmbeddedComponent(existingComponent));
 
-        components.forEach(component => this.rejectSavingInvalidComponent(component));
+        const validations = components.map(component => this.rejectSavingInvalidComponent(component));
+        await Promise.all(validations)
+            .catch(() => {
+                const message = this.localizationService.localize(
+                    `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.component.noneSaved`
+                );
+                this.notificationService.error(message);
+                throw new Error(message);
+            });
 
         await this.componentStore.insertAll(components);
 
         const message = this.localizationService.format(
-            `${DefaultComponentAPI._LOCALIZATION_PATH}.settings.components.savedAll`,
+            `${DefaultComponentAPI._LOCALIZATION_PATH}.component.savedAll`,
             {count: components.length}
         );
         this.notificationService.info(message);

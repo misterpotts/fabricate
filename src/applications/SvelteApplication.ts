@@ -18,20 +18,24 @@ class SvelteApplication extends Application {
     private static readonly _defaultClasses = ["fab-application-window", "fab-fabricate-theme"];
 
     private readonly _svelteConfig: SvelteComponentConfig;
+    private readonly _onClose: () => void;
 
     private _component: SvelteComponent;
 
     constructor({
         applicationOptions,
-        svelteConfig
+        svelteConfig,
+        onClose = () => {},
     }: {
         applicationOptions: Partial<ApplicationOptions>;
         svelteConfig: SvelteComponentConfig;
+        onClose?: () => void;
     }) {
         applicationOptions.template = SvelteApplication._template;
         applicationOptions.classes = applicationOptions.classes ? applicationOptions.classes.concat(SvelteApplication._defaultClasses) : SvelteApplication._defaultClasses;
         super(applicationOptions);
         this._svelteConfig = svelteConfig;
+        this._onClose = onClose;
     }
 
     activateListeners(html: JQuery) {
@@ -48,6 +52,7 @@ class SvelteApplication extends Application {
     async close(): Promise<void> {
         await super.close();
         this._component.$destroy();
+        this._onClose();
         console.log(`Fabricate | Destroyed Svelte component: ${this.options.id}`);
     }
 

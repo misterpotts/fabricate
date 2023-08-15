@@ -75,7 +75,7 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
     }
 
     async renderCraftingSystemManagerApp(): Promise<void> {
-        const application = await this.craftingSystemManagerAppFactory.make();
+        const application = this.craftingSystemManagerAppFactory.make();
         application.render(true);
     }
 

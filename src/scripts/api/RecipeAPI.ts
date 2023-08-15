@@ -369,7 +369,15 @@ class DefaultRecipeAPI implements RecipeAPI {
         const existing = await this.recipeStore.getAllById(recipes.map(recipe => recipe.id));
         existing.forEach(existingRecipe => this.rejectModifyingEmbeddedRecipe(existingRecipe));
 
-        recipes.forEach(recipe => this.rejectSavingInvalidRecipe(recipe));
+        const validations = recipes.map(recipe => this.rejectSavingInvalidRecipe(recipe));
+        await Promise.all(validations)
+            .catch(() => {
+                const message = this.localizationService.localize(
+                    `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.noneSaved`
+                );
+                this.notificationService.error(message);
+                throw new Error(message);
+            });
 
         await this.recipeStore.insertAll(recipes);
 
@@ -619,14 +627,21 @@ class DefaultRecipeAPI implements RecipeAPI {
     }
 
     private async rejectSavingInvalidRecipe(recipe: Recipe): Promise<EntityValidationResult<Recipe>> {
-        const existingRecipeIdsForItem = await this.recipeStore.listCollectionEntityIds(recipe.itemUuid, Properties.settings.collectionNames.item);
-        const validationResult = await this.recipeValidator.validate(recipe, existingRecipeIdsForItem);
+        const existingRecipeIds = await this.recipeStore.listAllEntityIds();
+        const existingRecipesForCraftingSystem = await this.getAllByCraftingSystemId(recipe.craftingSystemId);
+        const existingRecipeIdsForItem = Array.from(existingRecipesForCraftingSystem.values())
+            .filter(other => other.itemUuid === recipe.itemUuid)
+            .map(other => other.id);
+        const validationResult = await this.recipeValidator.validate(recipe, existingRecipeIds, existingRecipeIdsForItem);
         if (validationResult.successful) {
             return validationResult;
         }
         const message = this.localizationService.format(
             `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.recipe.invalid`,
-            { errors: validationResult.errors.join(", "), recipeId: recipe.id }
+            {
+                errors: validationResult.errors.join(", "),
+                recipeId: recipe.id
+            }
         );
         this.notificationService.error(message);
         throw new Error(message);

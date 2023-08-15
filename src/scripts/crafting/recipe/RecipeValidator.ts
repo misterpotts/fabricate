@@ -7,7 +7,7 @@ import {NoFabricateItemData} from "../../foundry/DocumentManager";
 
 interface RecipeValidator {
 
-    validate(candidate: Recipe, existingRecipeIdsForItem: string[]): Promise<EntityValidationResult<Recipe>>;
+    validate(candidate: Recipe, existingRecipeIdsForSystem: string[], existingRecipeIdsForItem: string[]): Promise<EntityValidationResult<Recipe>>;
 
 }
 
@@ -33,7 +33,7 @@ class DefaultRecipeValidator implements RecipeValidator  {
         this.essenceAPI = essenceAPI;
     }
 
-    async validate(candidate: Recipe, existingRecipeIdsForItem: string[]): Promise<EntityValidationResult<Recipe>> {
+    async validate(candidate: Recipe, existingRecipeIdsForSystem: string[], existingRecipeIdsForItem: string[]): Promise<EntityValidationResult<Recipe>> {
 
         // Prepare an array to capture any errors that are found
         const errors: string[] = [];
@@ -44,10 +44,11 @@ class DefaultRecipeValidator implements RecipeValidator  {
             errors.push(`The crafting system with ID ${candidate.craftingSystemId} does not exist. `);
         }
 
-        // Check that this item is not already a component for this crafting system
-        const existingRecipeId = existingRecipeIdsForItem.find(existingRecipeId => existingRecipeId !== candidate.id);
-        if (existingRecipeId) {
-            errors.push(`The item with UUID ${candidate.itemUuid} is already a recipe in the system "${candidate.craftingSystemId}" with the ID "${existingRecipeId}". `);
+        // Check that this item is not already a recipe for this crafting system
+        for (const existingRecipeId of existingRecipeIdsForSystem) {
+            if (existingRecipeId !== candidate.id && existingRecipeIdsForItem.includes(existingRecipeId)) {
+                errors.push(`The item with UUID ${candidate.itemUuid} is already a recipe in the system "${candidate.craftingSystemId}" with the ID "${existingRecipeId}". `);
+            }
         }
 
         // If the recipe has an item specified, check it is valid

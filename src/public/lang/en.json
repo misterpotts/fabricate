@@ -60,6 +60,10 @@
           "failure": "Failed to import crafting system \"{systemName}\"",
           "success": "Successfully imported crafting system \"{systemName}\", with {essenceCount} essences, {componentCount} components, and {recipeCount} recipes. "
         },
+        "duplicate": {
+            "failure": "Failed to duplicate crafting system with ID \"{systemId}\". Caused by: {cause}",
+            "success": "Successfully duplicated crafting system with \"{systemId}\". The clone's ID is \"{cloneId}\". "
+        },
         "export": {
           "craftingSystemNotFound": "The crafting system with ID {craftingSystemId} does not exist. "
         }
@@ -68,8 +72,9 @@
         "invalidRead": "The stored value for the setting {settingPath} is not valid, and could not be read. {errors}",
         "invalidWrite": "The provided value for the setting {settingPath} is not valid, and could not be saved. {errors}",
         "craftingSystem": {
-          "doesNotExist": "The crafting system {craftingSystemId} does not exist. ",
-          "invalid": "The crafting system entity is not valid. Errors: {errors}. ",
+          "doesNotExist": "The crafting system with ID {craftingSystemId} does not exist. ",
+          "invalid": "The crafting system with ID {craftingSystemId} is not valid. Errors: {errors}. ",
+          "missingCraftingSystems": "The crafting systems with the IDs {craftingSystemIds} could not be found. ",
           "cannotModifyEmbedded": "The crafting system {craftingSystemName} is an embedded system and cannot be modified. ",
           "cannotDeleteEmbedded": "The crafting system {craftingSystemName} is an embedded system and cannot be deleted. "
         },
@@ -79,17 +84,20 @@
         "recipe": {
           "doesNotExist": "The recipe with ID {recipeId} does not exist. ",
           "invalid": "The recipe with ID {recipeId} is not valid. Errors: {errors}. ",
-          "missingRecipes": "The recipes with the IDs {recipeIds} could not be found. "
+          "missingRecipes": "The recipes with the IDs {recipeIds} could not be found. ",
+          "noneSaved": "A problem occurred saving one or more recipes. No recipes were saved. "
         },
         "component": {
           "doesNotExist": "The component with ID {componentId} does not exist. ",
           "invalid": "The component with ID {componentId} is not valid. Errors: {errors}. ",
-          "missingComponents": "The components with the IDs {componentIds} could not be found. "
+          "missingComponents": "The components with the IDs {componentIds} could not be found. ",
+          "noneSaved": "A problem occurred saving one or more components. No components were saved."
         },
         "essence": {
           "doesNotExist": "The essence with ID {essenceId} does not exist. ",
           "invalid": "The essence with ID {essenceId} is not valid. Errors: {errors}. ",
-          "missingEssences": "The essences with the IDs {essenceIds} could not be found. "
+          "missingEssences": "The essences with the IDs {essenceIds} could not be found. ",
+          "noneSaved": "A problem occurred saving one or more essences. No essences were saved."
         }
       },
       "migration": {
@@ -100,15 +108,18 @@
       },
       "recipe": {
         "updated": "Updated recipe \"{recipeName}\"",
-        "created": "Created recipe \"{recipeName}\""
+        "created": "Created recipe \"{recipeName}\"",
+        "savedAll": "Saved {count} recipes"
       },
       "component": {
         "updated": "Updated component \"{componentName}\"",
-        "created": "Created component \"{componentName}\""
+        "created": "Created component \"{componentName}\"",
+        "savedAll": "Saved {count} components"
       },
       "essence": {
         "updated": "Updated essence \"{essenceName}\"",
-        "created": "Created essence \"{essenceName}\""
+        "created": "Created essence \"{essenceName}\"",
+        "savedAll": "Saved {count} essences"
       }
     },
     "CraftingComponentCarousel": {
@@ -381,7 +392,7 @@
           "success": "The Crafting System {systemName} was successfully exported to {fileName}."
         },
         "duplicateCraftingSystem": {
-          "success": "Duplicated {sourceSystemName} as {duplicatedSystemName}."
+          "complete": "Duplicated {sourceSystemName} as {duplicatedSystemName}."
         },
         "importCraftingSystem": {
           "title": "Import Crafting System",

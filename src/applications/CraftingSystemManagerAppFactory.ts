@@ -32,6 +32,9 @@ class CraftingSystemManagerAppFactory {
 
         return new SvelteApplication({
             applicationOptions,
+            onClose: () => {
+                this.fabricateAPI.activateNotifications();
+            },
             svelteConfig: {
                 options: {
                     props: {

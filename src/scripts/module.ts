@@ -174,6 +174,7 @@ Hooks.on("renderSidebarTab", async (app: any, html: any) => {
 
     button.on('click', async (_event) => {
         await fabricateUserInterfaceAPI.renderCraftingSystemManagerApp();
+        fabricateAPI.suppressNotifications();
     });
 
     buttons.append(button);

@@ -53,6 +53,8 @@ interface CraftingSystemData {
     recipes: Recipe[];
 }
 
+export { CraftingSystemData }
+
 /**
  * Represents an API for managing crafting systems, components, essences, and recipes.
  *
@@ -205,6 +207,7 @@ class DefaultFabricateAPI implements FabricateAPI {
     }
 
     private setNotificationsSuppressed(value: boolean): void {
+        this.notificationService.suppressed = value;
         this.componentAPI.notifications.suppressed = value;
         this.essenceAPI.notifications.suppressed = value;
         this.craftingSystemAPI.notifications.suppressed = value;
@@ -328,23 +331,54 @@ class DefaultFabricateAPI implements FabricateAPI {
     }
 
     async duplicateCraftingSystem(sourceCraftingSystemId: string): Promise<CraftingSystemData> {
-        const clonedCraftingSystem = await this.craftingSystemAPI.cloneById(sourceCraftingSystemId);
 
-        const sourceEssences = await this.essenceAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
-        const essenceCloneResult = await this.essenceAPI.cloneAll(Array.from(sourceEssences.values()), clonedCraftingSystem.id);
+        const result: CraftingSystemData = {
+            craftingSystem: null,
+            essences: [],
+            components: [],
+            recipes: [],
+        };
 
-        const sourceComponents = await this.componentAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
-        const componentCloneResult = await this.componentAPI.cloneAll(Array.from(sourceComponents.values()), clonedCraftingSystem.id, essenceCloneResult.idLinks);
+        try {
 
-        const sourceRecipes = await this.recipeAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
-        const recipeCloneResult = await this.recipeAPI.cloneAll(Array.from(sourceRecipes.values()), clonedCraftingSystem.id, essenceCloneResult.idLinks, componentCloneResult.idLinks);
+            const clonedCraftingSystem = await this.craftingSystemAPI.cloneById(sourceCraftingSystemId);
+            result.craftingSystem = clonedCraftingSystem;
 
-        return {
-            craftingSystem: clonedCraftingSystem,
-            essences: essenceCloneResult.essences,
-            components: componentCloneResult.components,
-            recipes: recipeCloneResult.recipes,
+            const sourceEssences = await this.essenceAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
+            const essenceCloneResult = await this.essenceAPI.cloneAll(Array.from(sourceEssences.values()), clonedCraftingSystem.id);
+            result.essences = essenceCloneResult.essences;
+
+            const sourceComponents = await this.componentAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
+            const componentCloneResult = await this.componentAPI.cloneAll(Array.from(sourceComponents.values()), clonedCraftingSystem.id, essenceCloneResult.idLinks);
+            result.components = componentCloneResult.components;
+
+            const sourceRecipes = await this.recipeAPI.getAllByCraftingSystemId(sourceCraftingSystemId);
+            const recipeCloneResult = await this.recipeAPI.cloneAll(Array.from(sourceRecipes.values()), clonedCraftingSystem.id, essenceCloneResult.idLinks, componentCloneResult.idLinks);
+            result.recipes = recipeCloneResult.recipes;
+
+        } catch (e: any) {
+            const error = e instanceof Error ? e : new Error(e);
+            const message = this.localizationService.format(
+                `${Properties.module.id}.settings.craftingSystem.duplicate.failure`,
+                {
+                    systemId: sourceCraftingSystemId,
+                    cause: error.message
+                }
+            );
+            this.notificationService.error(message);
+            return result;
         }
+
+        const message = this.localizationService.format(
+            `${Properties.module.id}.settings.craftingSystem.duplicate.success`,
+            {
+                cloneId: result.craftingSystem.id,
+                systemId: sourceCraftingSystemId,
+            }
+        );
+        this.notificationService.info(message);
+
+        return result;
     }
 
     async import(importData: FabricateExportModel): Promise<CraftingSystemData> {

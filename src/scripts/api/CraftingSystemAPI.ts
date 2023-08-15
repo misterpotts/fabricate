@@ -270,8 +270,11 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         const validationResult = await this.craftingSystemValidator.validate(craftingSystem);
         if (!validationResult.successful) {
             const message = this.localizationService.format(
-                `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.notValid`,
-                { errors: validationResult.errors.join(", ") }
+                `${DefaultCraftingSystemAPI._LOCALIZATION_PATH}.errors.craftingSystem.invalid`,
+                {
+                    errors: validationResult.errors.join(", "),
+                    craftingSystemId: craftingSystem.id
+                }
             );
             this.notificationService.error(message);
             throw new Error(message);

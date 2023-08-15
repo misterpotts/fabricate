@@ -137,17 +137,23 @@ class CraftingSystemEditor {
 
     async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
 
-        const duplicatedCraftingSystemData = await this._fabricateAPI.duplicateCraftingSystem(sourceCraftingSystem.id);
+        let duplicatedCraftingSystemData = await this._fabricateAPI.duplicateCraftingSystem(sourceCraftingSystem.id);
 
-        this._craftingSystems.update((craftingSystems) => {
-            craftingSystems.push(duplicatedCraftingSystemData.craftingSystem);
-            return craftingSystems;
-        });
+        const message = this._localization.format(
+        `${CraftingSystemEditor._dialogLocalizationPath}.duplicateCraftingSystem.complete`,
+        {
+                sourceSystemName: sourceCraftingSystem.details.name,
+                duplicatedSystemName: duplicatedCraftingSystemData?.craftingSystem?.details?.name
+            }
+        );
+        ui.notifications.info(message);
 
-        ui.notifications.info(this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.duplicateCraftingSystem.success`, {
-            sourceSystemName: sourceCraftingSystem.details.name,
-            duplicatedSystemName: duplicatedCraftingSystemData.craftingSystem.details.name
-        }));
+        if (duplicatedCraftingSystemData?.craftingSystem) {
+            this._craftingSystems.update((craftingSystems) => {
+                craftingSystems.push(duplicatedCraftingSystemData.craftingSystem);
+                return craftingSystems;
+            });
+        }
 
         return duplicatedCraftingSystemData.craftingSystem;
 

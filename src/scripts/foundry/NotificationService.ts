@@ -35,13 +35,18 @@ export { NotificationService };
 
 class DefaultNotificationService implements NotificationService {
 
+    private static readonly _CONSOLE_MESSAGE_FORMATTER = (consoleMessage: string) => `Fabricate | ${consoleMessage}`;
+
     private _suppressed: boolean;
     private readonly ui: UI;
-
 
     constructor(uiProvider: UIProvider, suppressed: boolean = false) {
         this.ui = uiProvider.get();
         this._suppressed = suppressed;
+    }
+
+    private format(message: string): string {
+        return DefaultNotificationService._CONSOLE_MESSAGE_FORMATTER(message);
     }
 
     get suppressed(): boolean {
@@ -53,7 +58,7 @@ class DefaultNotificationService implements NotificationService {
 
     error(message: string): void {
         if (this._suppressed) {
-            console.error(message);
+            console.error(this.format(message));
             return;
         }
         this.ui.notifications.error(message);
@@ -61,7 +66,7 @@ class DefaultNotificationService implements NotificationService {
 
     info(message: string): void {
         if (this._suppressed) {
-            console.info(message);
+            console.info(this.format(message));
             return;
         }
         this.ui.notifications.info(message);
@@ -69,7 +74,7 @@ class DefaultNotificationService implements NotificationService {
 
     warn(message: string): void {
         if (this._suppressed) {
-            console.warn(message);
+            console.warn(this.format(message));
             return;
         }
         this.ui.notifications.warn(message);

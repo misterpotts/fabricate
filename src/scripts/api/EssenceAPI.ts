@@ -366,13 +366,21 @@ class DefaultEssenceAPI implements EssenceAPI {
         const existing = await this.essenceStore.getAllById(essences.map(essence => essence.id));
         existing.forEach(existingEssence => this.rejectModifyingEmbeddedEssence(existingEssence));
 
-        essences.forEach(essence => this.rejectSavingInvalidEssence(essence));
+        const validations = essences.map(essence => this.rejectSavingInvalidEssence(essence));
+        await Promise.all(validations)
+            .catch(() => {
+                const message = this.localizationService.localize(
+                    `${DefaultEssenceAPI._LOCALIZATION_PATH}.errors.essence.noneSaved`
+                );
+                this.notificationService.error(message);
+                throw new Error(message);
+            });
 
         await this.essenceStore.insertAll(essences);
 
         const message = this.localizationService.format(
             `${DefaultEssenceAPI._LOCALIZATION_PATH}.essence.savedAll`,
-            { essenceCount: essences.length }
+            { count: essences.length }
         );
         this.notificationService.info(message);
 
@@ -435,7 +443,10 @@ class DefaultEssenceAPI implements EssenceAPI {
         }
         const message = this.localizationService.format(
             `${DefaultEssenceAPI._LOCALIZATION_PATH}.errors.essence.invalid`,
-            { errors: validationResult.errors.join(", ") }
+            {
+                errors: validationResult.errors.join(", "),
+                essenceId: essence.id
+            }
         );
         this.notificationService.error(message);
         throw new Error(message);
