@@ -133,7 +133,7 @@ describe("Create", () => {
 
     test("should create a new recipe for valid item UUID and crafting system ID", async () => {
 
-        const itemUuid = "1234abcd";
+        const itemUuid = "12345abcd";
         const craftingSystemId = testCraftingSystemOne.id;
         const loadedFabricateItemData = new LoadedFabricateItemData({
             itemUuid,
@@ -152,7 +152,18 @@ describe("Create", () => {
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
             settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
-            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({ valuesById: new Map([[ "3456abcd", createdRecipe ]]) }),
+            entityFactory: new StubEntityFactory<RecipeJson, Recipe>({
+                valuesById: new Map([
+                    [ "3456abcd", createdRecipe ],
+                    [ testRecipeOne.id, testRecipeOne ],
+                    [ testRecipeTwo.id, testRecipeTwo ],
+                    [ testRecipeThree.id, testRecipeThree ],
+                    [ testRecipeFour.id, testRecipeFour ],
+                    [ testRecipeFive.id, testRecipeFive ],
+                    [ testRecipeSix.id, testRecipeSix ],
+                    [ testRecipeSeven.id, testRecipeSeven ]
+                ])
+            }),
             collectionManager: new RecipeCollectionManager()
         });
 
