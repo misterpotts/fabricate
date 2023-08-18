@@ -201,7 +201,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         if (this._salvageOptions.has(value.id)) {
             throw new Error(`Result option ${value.id} already exists in this recipe. `);
         }
-        this._salvageOptions.add(value);
+        this._salvageOptions.set(value);
     }
 
     set salvageOptions(options: SelectableOptions<SalvageOptionJson, SalvageOption>) {
@@ -220,7 +220,7 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this._salvageOptions.byId;
     }
 
-    public deleteSalvageOptionByName(id: string) {
+    public deleteSalvageOptionById(id: string) {
         this._salvageOptions.deleteById(id);
     }
 

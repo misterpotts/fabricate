@@ -8,17 +8,14 @@
     const {
         selectedCraftingSystem,
         craftingSystemEditor,
-        localization,
-        loading
+        localization
     } = getContext(key);
 
     let scheduledSave;
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            $loading = true;
             await craftingSystemEditor.saveCraftingSystem($selectedCraftingSystem);
-            $loading = false;
         }, 1000);
     }
 

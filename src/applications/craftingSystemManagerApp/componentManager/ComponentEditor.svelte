@@ -16,7 +16,7 @@
     import {SalvageOption} from "../../../scripts/crafting/component/SalvageOption";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
-    let selectPreviousTab;
+    let selectSalvageTab;
 
     const {
         localization,
@@ -35,17 +35,23 @@
         $selectedComponent = null;
     }
 
+    function selectLastSalvageOption() {
+        if ($selectedComponent.salvageOptions.all.length > 1) {
+            selectSalvageTab(length => length - 1);
+        }
+    }
+
     async function replaceItem(event) {
         await componentEditor.replaceItem(event,$selectedComponent);
     }
     
     async function incrementEssence(essence) {
-        $selectedComponent.essences = $selectedComponent.essences.add(new Unit(essence, 1));
+        $selectedComponent.essences = $selectedComponent.essences.addUnit(new Unit(essence.toReference(), 1));
         await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
     }
 
     async function decrementEssence(essence) {
-        $selectedComponent.essences = $selectedComponent.essences.minus(new Unit(essence, 1));
+        $selectedComponent.essences = $selectedComponent.essences.subtractUnit(new Unit(essence.toReference(), 1));
         await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
     }
 
@@ -58,7 +64,7 @@
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: components
+            allowedCraftingComponents: $components
         });
         const component = (await dropEventParser.parse(event)).component.toReference();
         const name = generateOptionName($selectedComponent);
@@ -69,9 +75,7 @@
         });
         $selectedComponent.addSalvageOption(salvageOption);
         await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        if ($selectedComponent.salvageOptions.length > 1) {
-            selectPreviousTab();
-        }
+        selectLastSalvageOption();
         componentUpdated($selectedComponent);
     }
 
@@ -79,7 +83,7 @@
         if (!component.isSalvageable) {
             return localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: 1 });
         }
-        const existingNames = component.salvageOptions.map(salvageOption => salvageOption.name);
+        const existingNames = component.salvageOptions.all.map(salvageOption => salvageOption.name);
         let nextOptionNumber = 2;
         let nextOptionName;
         do {
@@ -102,7 +106,7 @@
     }
     
     async function deleteSalvageOption(optionToDelete) {
-        $selectedComponent.deleteSalvageOptionByName(optionToDelete.name);
+        $selectedComponent.deleteSalvageOptionById(optionToDelete.id);
         await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
         componentUpdated($selectedComponent);
     }
@@ -181,7 +185,7 @@
                     </div>
                     {#if $selectedComponent.isSalvageable}
                         <div class="fab-salvage-editor fab-row">
-                            <Tabs bind:selectPreviousTab={selectPreviousTab}>
+                            <Tabs bind:selectTabAtIndex={selectSalvageTab}>
                                 <TabList>
                                     {#each $selectedComponent.salvageOptions.all as salvageOption}
                                         <Tab>{salvageOption.name}</Tab>
@@ -261,7 +265,7 @@
                         {:else if $searchTerms.name}
                             <div class="fab-no-salvage-opts"><p>{localization.localize(`${localizationPath}.component.info.noMatchingSalvage`)}</p></div>
                         {:else}
-                            <div class="fab-no-salvage-opts"><p>{localization.format(`${localizationPath}.component.info.noAvailableSalvage`, { systemName: $selectedCraftingSystem.name, componentName: selectedComponent.name })}</p></div>
+                            <div class="fab-no-salvage-opts"><p>{localization.format(`${localizationPath}.component.info.noAvailableSalvage`, { systemName: $selectedCraftingSystem.details.name, componentName: selectedComponent.name })}</p></div>
                         {/if}
                     </div>
                 </div>
@@ -272,7 +276,7 @@
         </div>
         <div class="fab-row">
             <div class="fab-component-essences">
-                {#if $selectedCraftingSystem.hasEssences}
+                {#if $essences.length > 0}
                     {#each $componentEssences as essenceUnit}
                         <div class="fab-component-essence-adjustment">
                             <button class="fab-increment-essence" on:click={incrementEssence(essenceUnit.element)}><i class="fa-solid fa-plus"></i></button>
@@ -291,7 +295,7 @@
                         </div>
                     {/each}
                 {:else}
-                    <div class="fab-no-essence-opts"><p>{localization.format(`${localizationPath}.component.info.noAvailableEssences`, { systemName: $selectedCraftingSystem.name, componentName: selectedComponent.name })}</p></div>
+                    <div class="fab-no-essence-opts"><p>{localization.format(`${localizationPath}.component.info.noAvailableEssences`, { systemName: $selectedCraftingSystem.details.name, componentName: $selectedComponent.name })}</p></div>
                 {/if}
             </div>
         </div>

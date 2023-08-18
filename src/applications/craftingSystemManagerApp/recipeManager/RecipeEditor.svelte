@@ -53,6 +53,7 @@
             selectRequirementsTab(length => length - 1);
         }
     }
+
     function selectLastResultOption() {
         if ($selectedRecipe.resultOptions.all.length > 1) {
             selectResultsTab(length => length - 1);
