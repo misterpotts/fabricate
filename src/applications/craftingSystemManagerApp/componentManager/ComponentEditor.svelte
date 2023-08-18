@@ -8,7 +8,7 @@
     import {Tab, Tabs} from "../../common/FabricateTabs.js";
     import TabList from "../../common/TabList.svelte";
     import TabPanel from "../../common/TabPanel.svelte";
-    import {componentUpdated} from "../../common/EventBus";
+    import {componentUpdated, recipeUpdated} from "../../common/EventBus";
     import {getContext, onDestroy} from "svelte";
     import {SalvageSearchStore} from "../../stores/SalvageSearchStore";
     import {ComponentEssenceStore} from "../../stores/ComponentEssenceStore";
@@ -59,38 +59,14 @@
         salvageSearchResults.clear();
     }
 
-    async function addSalvageOption(event) {
-        const dropEventParser = new DropEventParser({
-            localizationService: localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $components
-        });
-        const component = (await dropEventParser.parse(event)).component.toReference();
-        const name = generateOptionName($selectedComponent);
-        const salvageOption = new SalvageOption({
-            id: randomID(),
-            name,
-            results: Combination.of(component, 1)
-        });
-        $selectedComponent.addSalvageOption(salvageOption);
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+    async function addSalvageOption(event, addAsCatalyst = false) {
+        if (addAsCatalyst) {
+            await componentEditor.addSalvageOptionComponentAsCatalyst(event, $selectedComponent);
+        } else {
+            await componentEditor.addSalvageOptionComponentAsSalvageResult(event, $selectedComponent);
+        }
         selectLastSalvageOption();
         componentUpdated($selectedComponent);
-    }
-
-    function generateOptionName(component) {
-        if (!component.isSalvageable) {
-            return localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: 1 });
-        }
-        const existingNames = component.salvageOptions.all.map(salvageOption => salvageOption.name);
-        let nextOptionNumber = 2;
-        let nextOptionName;
-        do {
-            nextOptionName = localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: nextOptionNumber });
-            nextOptionNumber++;
-        } while (existingNames.includes(nextOptionName));
-        return nextOptionName;
     }
     
     function dragStart(event, component) {
@@ -111,39 +87,83 @@
         componentUpdated($selectedComponent);
     }
 
-    async function addComponentToSalvageOption(event, salvageOption) {
+    async function addComponentToSalvageOption(event, salvageOption, addAsCatalyst = false) {
         const dropEventParser = new DropEventParser({
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
             partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: components
+            allowedCraftingComponents: $components
         });
-        const component = (await dropEventParser.parse(event)).component;
-        salvageOption.add(component);
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
-        componentUpdated($selectedComponent);
+        const dropData = await dropEventParser.parse(event);
+        if (dropData.hasCraftingComponent) {
+            await addExistingComponentToSalvageOption(salvageOption, dropData.component, addAsCatalyst);
+            componentUpdated($selectedComponent);
+            return;
+        }
+        if (dropData.hasItemData) {
+            await importNewComponent(dropData.itemData, salvageOption, addAsCatalyst);
+            componentUpdated($selectedComponent);
+            return;
+        }
+        throw new Error("Something went wrong adding a component to an Ingredient option. ");
     }
 
-    async function decrementSalvageOptionComponent(salvageOption, component) {
-        salvageOption.subtract(component);
+    async function importNewComponent(itemData, salvageOption, addAsCatalyst) {
+        const doImport = await Dialog.confirm({
+            title: localization.format(
+                `${localizationPath}.prompts.importItemAsComponent.title`,
+                {
+                    componentName: itemData.name
+                }
+            ),
+            content: localization.format(
+                `${localizationPath}.prompts.importItemAsComponent.content`,
+                {
+                    componentName: itemData.name,
+                    systemName: $selectedCraftingSystem.details.name
+                }
+            )
+        });
+        if (doImport) {
+            const component = await componentEditor.createComponent(itemData, $selectedCraftingSystem);
+            await addExistingComponentToSalvageOption(salvageOption, component, addAsCatalyst);
+        }
+    }
+
+    async function addExistingComponentToSalvageOption(salvageOption, component, addAsCatalyst) {
+        if (addAsCatalyst) {
+            salvageOption.addCatalyst(component.id);
+        } else {
+            salvageOption.addResult(component.id);
+        }
+        $selectedComponent.saveSalvageOption(salvageOption);
+        await componentEditor.saveComponent($selectedComponent);
+    }
+
+    async function decrementSalvageOptionComponent(salvageOption, component, asCatalyst = false) {
+        if (asCatalyst) {
+            salvageOption.subtractCatalyst(component.id);
+        } else {
+            salvageOption.subtractResult(component.id);
+        }
         if (salvageOption.isEmpty) {
             return deleteSalvageOption(salvageOption);
         }
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent);
         componentUpdated($selectedComponent);
     }
 
-    async function incrementSalvageOptionComponent(salvageOption, component, event) {
+    async function incrementSalvageOptionComponent(salvageOption, component, event, asCatalyst = false) {
         if (event && event.shiftKey) {
-            return decrementSalvageOptionComponent(salvageOption, component);
+            return decrementSalvageOptionComponent(salvageOption, component, asCatalyst);
         }
-        salvageOption.add(component);
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        if (asCatalyst) {
+            salvageOption.addCatalyst(component.id);
+        } else {
+            salvageOption.addResult(component.id);
+        }
+        await componentEditor.saveComponent($selectedComponent);
         componentUpdated($selectedComponent);
-    }
-
-    function sortByName(salvageOption) {
-        return salvageOption.sort((left, right) => left.name.localeCompare(right.name));
     }
 
     function dereferenceComponentCombination(componentReferenceCombination) {
@@ -202,35 +222,91 @@
                                                 </div>
                                                 <button class="fab-delete-salvage-opt" on:click={deleteSalvageOption(salvageOption)}><i class="fa-solid fa-trash fa-fw"></i> {localization.localize(`${localizationPath}.component.buttons.deleteSalvageOption`)}</button>
                                             </div>
-                                            <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-option-actual" on:drop={(e) => addComponentToSalvageOption(e, salvageOption)}>
-                                                {#each dereferenceComponentCombination(salvageOption.results) as resultUnit}
-                                                    <div class="fab-component" on:click={(e) => incrementSalvageOptionComponent(salvageOption, resultUnit.element, e)} on:auxclick={decrementSalvageOptionComponent(salvageOption, resultUnit.element)}>
-                                                        <div class="fab-component-name">
-                                                            <p>{truncate(resultUnit.element.name, 9)}</p>
-                                                        </div>
-                                                        <div class="fab-component-preview">
-                                                            <div class="fab-component-image" data-tooltip={resultUnit.element.name}>
-                                                                <img src={resultUnit.element.imageUrl} alt={resultUnit.element.name} />
-                                                                {#if resultUnit.quantity > 1}
-                                                                    <span class="fab-component-info fab-component-quantity">{resultUnit.quantity}</span>
-                                                                {/if}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                {/each}
-                                            </div>
+                                            <h4 class="fab-section-title">{localization.localize(`${localizationPath}.component.labels.salvageHeading`)}</h4>
+                                            {#if salvageOption.hasResults}
+                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-option-actual" on:drop={(e) => addComponentToSalvageOption(e, salvageOption)}>
+                                                    {#each dereferenceComponentCombination(salvageOption.results) as resultUnit}
+                                                        {#await resultUnit.element.load()}
+                                                            {:then nothing}
+                                                                <div class="fab-component" on:click={(e) => incrementSalvageOptionComponent(salvageOption, resultUnit.element, e)} on:auxclick={decrementSalvageOptionComponent(salvageOption, resultUnit.element)}>
+                                                                    <div class="fab-component-name">
+                                                                        <p>{truncate(resultUnit.element.name, 9)}</p>
+                                                                    </div>
+                                                                    <div class="fab-component-preview">
+                                                                        <div class="fab-component-image" data-tooltip={resultUnit.element.name}>
+                                                                            <img src={resultUnit.element.imageUrl} alt={resultUnit.element.name} />
+                                                                            {#if resultUnit.quantity > 1}
+                                                                                <span class="fab-component-info fab-component-quantity">{resultUnit.quantity}</span>
+                                                                            {/if}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            {:catch error}
+                                                        {/await}
+                                                    {/each}
+                                                </div>
+                                            {:else}
+                                                <div class="fab-no-salvage-results fab-drop-zone fab-row" on:drop|preventDefault={(e) => addComponentToSalvageOption(e, salvageOption, false)}>
+                                                    <i class="fa-solid fa-plus"></i>
+                                                </div>
+                                            {/if}
+                                            <h4 class="fab-section-title">{localization.localize(`${localizationPath}.component.labels.catalystsHeading`)}</h4>
+                                            {#if salvageOption.requiresCatalysts}
+                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-salvage-option-catalysts" on:drop={(e) => addComponentToSalvageOption(e, salvageOption, true)}>
+                                                    {#each dereferenceComponentCombination(salvageOption.catalysts) as catalystUnit}
+                                                        {#await catalystUnit.element.load()}
+                                                            {:then nothing}
+                                                                <div class="fab-component" on:click={(e) => incrementSalvageOptionComponent(salvageOption, catalystUnit.element, e)} on:auxclick={decrementSalvageOptionComponent(salvageOption, catalystUnit.element, true)}>
+                                                                    <div class="fab-component-name">
+                                                                        <p>{truncate(catalystUnit.element.name, 9)}</p>
+                                                                    </div>
+                                                                    <div class="fab-component-preview">
+                                                                        <div class="fab-component-image" data-tooltip={catalystUnit.element.name}>
+                                                                            <img src={catalystUnit.element.imageUrl} alt={catalystUnit.element.name} />
+                                                                            {#if catalystUnit.quantity > 1}
+                                                                                <span class="fab-component-info fab-component-quantity">{catalystUnit.quantity}</span>
+                                                                            {/if}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            {:catch error}
+                                                        {/await}
+                                                    {/each}
+                                                </div>
+                                            {:else}
+                                                <div class="fab-no-salvage-catalysts fab-drop-zone fab-row" on:drop|preventDefault={(e) => addComponentToSalvageOption(e, salvageOption, true)}>
+                                                    <i class="fa-solid fa-plus"></i>
+                                                </div>
+                                            {/if}
                                         </div>
                                     </TabPanel>
                                 {/each}
                                 <TabPanel>
-                                    <div class="fab-drop-zone fab-new-salvage-opt" on:drop|preventDefault={(e) => addSalvageOption(e)}>
-                                        <i class="fa-solid fa-plus"></i>
+                                    <div class="fab-column">
+                                        <div class="fab-row">
+                                            <h3 class="fab-section-title">{localization.localize(`${localizationPath}.component.labels.resultsHeading`)}</h3>
+                                        </div>
+                                        <div class="fab-not-salvageable fab-drop-zone fab-row" on:drop|preventDefault={(e) => addSalvageOption(e, false)}>
+                                            <i class="fa-solid fa-plus"></i>
+                                        </div>
+                                        <div class="fab-row">
+                                            <h3 class="fab-section-title">{localization.localize(`${localizationPath}.component.labels.catalystsHeading`)}</h3>
+                                        </div>
+                                        <div class="fab-not-salvageable fab-drop-zone fab-row" on:drop|preventDefault={(e) => addSalvageOption(e, true)}>
+                                            <i class="fa-solid fa-plus"></i>
+                                        </div>
                                     </div>
                                 </TabPanel>
                             </Tabs>
                         </div>
                     {:else}
-                        <div class="fab-not-salvageable fab-drop-zone fab-row" on:drop|preventDefault={(e) => addSalvageOption(e)}>
+                        <div class="fab-not-salvageable fab-drop-zone fab-row" on:drop|preventDefault={(e) => addSalvageOption(e, false)}>
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="fab-row">
+                            <h3 class="fab-section-title">{localization.localize(`${localizationPath}.component.labels.catalystsHeading`)}</h3>
+                        </div>
+                        <div class="fab-not-salvageable fab-drop-zone fab-row" on:drop|preventDefault={(e) => addSalvageOption(e, true)}>
                             <i class="fa-solid fa-plus"></i>
                         </div>
                     {/if}

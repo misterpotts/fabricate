@@ -103,6 +103,57 @@ class CraftingComponentEditor {
         return updatedComponent;
     }
 
+    public async addSalvageOptionComponentAsCatalyst(event: any, selectedComponent: Component): Promise<Component> {
+        const component = await this.getComponentFromDropEvent(event);
+        selectedComponent.setSalvageOption({
+            name: this.generateOptionName(selectedComponent),
+            catalysts: { [ component.id ]: 1 },
+            results: {}
+        });
+        await this.saveComponent(selectedComponent);
+        return selectedComponent;
+    }
+
+    public async addSalvageOptionComponentAsSalvageResult(event: any, selectedComponent: Component): Promise<Component> {
+        const component = await this.getComponentFromDropEvent(event);
+        selectedComponent.setSalvageOption({
+            name: this.generateOptionName(selectedComponent),
+            catalysts: {},
+            results: { [ component.id ]: 1 }
+        });
+        await this.saveComponent(selectedComponent);
+        return selectedComponent;
+    }
+
+    // todo: prompt to import unknown items as components
+    private async getComponentFromDropEvent(event: any): Promise<Component> {
+        const dropEventParser = new DropEventParser({
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
+            allowedCraftingComponents: this._components.get(),
+        });
+        const component = (await dropEventParser.parse(event)).component;
+        if (!component) {
+            throw new Error("No component found in drop data.");
+        }
+        return component;
+    }
+
+    private generateOptionName(component: Component) {
+        if (!component.isSalvageable) {
+            return this._localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: 1 });
+        }
+        const existingNames = component.salvageOptions.all.map(salvageOption => salvageOption.name);
+        let nextOptionNumber = 2;
+        let nextOptionName;
+        do {
+            nextOptionName = this._localization.format(`${Properties.module.id}.typeNames.component.salvageOption.name`, { number: nextOptionNumber });
+            nextOptionNumber++;
+        } while (existingNames.includes(nextOptionName));
+        return nextOptionName;
+    }
+
 }
 
 export { CraftingComponentEditor }

@@ -68,7 +68,7 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
         return !this._essences.isEmpty();
     }
 
-    public isEmpty(): boolean {
+    get isEmpty(): boolean {
         return this._catalysts.isEmpty() && this._ingredients.isEmpty() && this._essences.isEmpty();
     }
 

@@ -49,12 +49,20 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         return this._results;
     }
 
+    get hasResults(): boolean {
+        return !this._results.isEmpty();
+    }
+
     set results(value: Combination<ComponentReference>) {
         this._results = value;
     }
 
     get catalysts(): Combination<ComponentReference> {
         return this._catalysts;
+    }
+
+    get requiresCatalysts(): boolean {
+        return !this._catalysts.isEmpty();
     }
 
     set catalysts(value: Combination<ComponentReference>) {
@@ -66,7 +74,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
     }
 
     get isEmpty(): boolean {
-        return this._results.isEmpty();
+        return this._results.isEmpty() && this._catalysts.isEmpty();
     }
 
     get name(): string {
@@ -75,14 +83,6 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
     get id(): string {
         return this._id;
-    }
-
-    public add(component: ComponentReference, quantity = 1) {
-        this._results = this._results.addUnit(new Unit(component, quantity));
-    }
-
-    public subtract(component: ComponentReference, quantity = 1) {
-        this._results = this._results.subtractUnit(new Unit(component, quantity));
     }
 
     toJson(): SalvageOptionJson {
@@ -95,22 +95,17 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
     }
 
     static fromJson(salvageOptionJson: SalvageOptionJson): SalvageOption {
-        const salvage = Object.keys(salvageOptionJson.results)
-            .map(componentId => {
-                const reference = new ComponentReference(componentId);
-                return new Unit(reference, salvageOptionJson.results[componentId]);
+        try {
+            return new SalvageOption({
+                id: salvageOptionJson.id,
+                name: salvageOptionJson.name,
+                results: Combination.fromRecord(salvageOptionJson.results, ComponentReference.fromComponentId),
+                catalysts: Combination.fromRecord(salvageOptionJson.catalysts, ComponentReference.fromComponentId)
             });
-        const catalysts = Object.keys(salvageOptionJson.catalysts)
-            .map(componentId => {
-                const reference = new ComponentReference(componentId);
-                return new Unit(reference, salvageOptionJson.catalysts[componentId]);
-            });
-        return new SalvageOption({
-            id: salvageOptionJson.id,
-            name: salvageOptionJson.name,
-            results: Combination.ofUnits(salvage),
-            catalysts: Combination.ofUnits(catalysts)
-        });
+        } catch (e: any) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
+            throw new Error(`Unable to build result option ${salvageOptionJson.name}`, {cause});
+        }
     }
 
     without(componentId: string): SalvageOption {
@@ -122,12 +117,20 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         });
     }
 
-    addResult(componentId: string, quantity: number) {
+    addResult(componentId: string, quantity: number = 1) {
         this._results = this._results.addUnit(new Unit(new ComponentReference(componentId), quantity));
     }
 
-    addCatalyst(componentId: string, number: number) {
+    subtractResult(componentId: string, quantity: number = 1) {
+        this._results = this._results.subtractUnit(new Unit(new ComponentReference(componentId), quantity));
+    }
+
+    addCatalyst(componentId: string, number: number = 1) {
         this._catalysts = this._catalysts.addUnit(new Unit(new ComponentReference(componentId), number));
+    }
+
+    subtractCatalyst(componentId: string, number: number = 1) {
+        this._catalysts = this._catalysts.subtractUnit(new Unit(new ComponentReference(componentId), number));
     }
 
 }

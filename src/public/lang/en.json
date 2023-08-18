@@ -253,6 +253,8 @@
             "labels": {
               "salvageName": "Option name",
               "salvageHeading": "Salvage",
+              "resultsHeading": "Results",
+              "catalystsHeading": "Catalysts",
               "availableComponentsHeading": "Available Components",
               "essencesHeading": "Essences",
               "replaceItem": "Drop an item to replace",

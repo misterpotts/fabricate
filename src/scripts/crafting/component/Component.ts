@@ -267,6 +267,10 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._salvageOptions.set(salvageOption);
     }
 
+    public saveSalvageOption(value: SalvageOption) {
+        this._salvageOptions.set(value);
+    }
+
     addEssence(essenceId: string, quantity: number = 1) {
         this._essences = this._essences.addUnit(new Unit(new EssenceReference(essenceId), quantity));
     }

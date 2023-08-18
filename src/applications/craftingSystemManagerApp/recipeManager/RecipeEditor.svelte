@@ -60,7 +60,7 @@
         }
     }
 
-    async function addRequirementOption(event, addAsCatalyst) {
+    async function addRequirementOption(event, addAsCatalyst = false) {
         if (addAsCatalyst) {
             await recipeEditor.addRequirementOptionComponentAsCatalyst(event, $selectedRecipe);
         } else {
@@ -153,7 +153,7 @@
         } else {
             requirementOption.subtractIngredient(component.id);
         }
-        if (requirementOption.isEmpty()) {
+        if (requirementOption.isEmpty) {
             return deleteRequirementOption(requirementOption);
         }
         await recipeEditor.saveRecipe($selectedRecipe);
@@ -300,29 +300,29 @@
                                                 </div>
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
                                                 {#if requirementOption.requiresIngredients}
-                                                <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToRequirementOption(e, requirementOption, false)}>
-                                                    {#each dereferenceComponentCombination(requirementOption.ingredients) as ingredientUnit}
-                                                        {#await ingredientUnit.element.load()}
-                                                            {:then nothing}
-                                                                <div class="fab-component"
-                                                                     on:click={(e) => incrementRequirementOptionComponent(requirementOption, ingredientUnit.element, e, false)}
-                                                                     on:auxclick={decrementRequirementOptionComponent(requirementOption, ingredientUnit.element, false)}>
-                                                                    <div class="fab-component-name">
-                                                                        <p>{truncate(ingredientUnit.element.name, 9)}</p>
-                                                                    </div>
-                                                                    <div class="fab-component-preview">
-                                                                        <div class="fab-component-image" data-tooltip={ingredientUnit.element.name}>
-                                                                            <img src={ingredientUnit.element.imageUrl} alt={ingredientUnit.element.name} />
-                                                                            {#if ingredientUnit.quantity > 1}
-                                                                                <span class="fab-component-info fab-component-quantity">{ingredientUnit.quantity}</span>
-                                                                            {/if}
+                                                    <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToRequirementOption(e, requirementOption, false)}>
+                                                        {#each dereferenceComponentCombination(requirementOption.ingredients) as ingredientUnit}
+                                                            {#await ingredientUnit.element.load()}
+                                                                {:then nothing}
+                                                                    <div class="fab-component"
+                                                                         on:click={(e) => incrementRequirementOptionComponent(requirementOption, ingredientUnit.element, e, false)}
+                                                                         on:auxclick={decrementRequirementOptionComponent(requirementOption, ingredientUnit.element, false)}>
+                                                                        <div class="fab-component-name">
+                                                                            <p>{truncate(ingredientUnit.element.name, 9)}</p>
+                                                                        </div>
+                                                                        <div class="fab-component-preview">
+                                                                            <div class="fab-component-image" data-tooltip={ingredientUnit.element.name}>
+                                                                                <img src={ingredientUnit.element.imageUrl} alt={ingredientUnit.element.name} />
+                                                                                {#if ingredientUnit.quantity > 1}
+                                                                                    <span class="fab-component-info fab-component-quantity">{ingredientUnit.quantity}</span>
+                                                                                {/if}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            {:catch error}
-                                                        {/await}
-                                                    {/each}
-                                                </div>
+                                                                {:catch error}
+                                                            {/await}
+                                                        {/each}
+                                                    </div>
                                                 {:else}
                                                     <div class="fab-no-ingredients fab-drop-zone fab-row" on:drop|preventDefault={(e) => addComponentToRequirementOption(e, requirementOption, false)}>
                                                         <i class="fa-solid fa-plus"></i>
