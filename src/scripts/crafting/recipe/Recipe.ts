@@ -168,7 +168,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     get selectedRequirementOptionName(): string {
-        return this._requirementOptions.selectedOptionId;
+        return this._requirementOptions.selectedOption.name;
     }
 
     public selectNextRequirementOption(): string {
@@ -182,7 +182,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     get selectedResultOptionName(): string {
-        return this._resultOptions.selectedOptionId;
+        return this._resultOptions.selectedOption.name;
     }
 
     public selectNextResultOption(): string {

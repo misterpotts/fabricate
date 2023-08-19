@@ -87,7 +87,6 @@ describe("When creating a recipe", () => {
         const underTest = testRecipeSix;
 
         expect(underTest.hasOptions).toEqual(true);
-        expect(underTest.ready()).toEqual(false);
         expect(underTest.hasRequirements).toEqual(true);
         expect(underTest.hasRequirementOptions).toEqual(true);
         expect(underTest.hasResults).toEqual(true);
@@ -103,7 +102,7 @@ describe("When selecting ingredients", () => {
 
     const id = "hq4F67hS";
 
-    test("should require choices from ingredient groups with options", () => {
+    test("should default to first choice from ingredient groups with options", () => {
 
         const combinationOne = Combination.ofUnits([
             new Unit(testComponentOne.toReference(), 1),
@@ -135,7 +134,8 @@ describe("When selecting ingredients", () => {
             })
         });
 
-        expect(underTest.ready()).toEqual(false);
+        expect(underTest.ready()).toEqual(true);
+        expect(underTest.selectedRequirementOptionName).toEqual("Option 1");
 
         expect(underTest.getSelectedIngredients).toThrow(Error);
 
@@ -176,7 +176,6 @@ describe("When selecting ingredients", () => {
         });
 
         expect(underTest.requirementOptions.all.length).toEqual(2);
-        expect(underTest.ready()).toEqual(false);
 
         underTest.selectRequirementOption(optionOneId);
         expect(underTest.ready()).toEqual(true);
@@ -248,7 +247,7 @@ describe("When selecting results", () => {
 
     });
 
-    test("should require choices from result groups with options", () => {
+    test("should use first option by default from result groups with options", () => {
 
         const resultCombinationOne = Combination.ofUnits([
             new Unit(testComponentThree.toReference(), 2)
@@ -278,7 +277,8 @@ describe("When selecting results", () => {
             })
         });
 
-        expect(underTest.ready()).toEqual(false);
+        expect(underTest.ready()).toEqual(true);
+        expect(underTest.selectedResultOptionName).toEqual("Option 1");
 
         expect(underTest.getSelectedResults).toThrow(Error);
 
@@ -316,8 +316,6 @@ describe("When selecting results", () => {
                 ]
             })
         });
-
-        expect(underTest.ready()).toEqual(false);
 
         underTest.selectResultOption(optionOneId);
         expect(underTest.ready()).toEqual(true);
