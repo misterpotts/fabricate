@@ -1,4 +1,4 @@
-<!-- CraftingComponentCarousel.svelte -->
+<!-- CraftingResultCarousel.svelte -->
 <script lang="ts">
     import {getContext} from "svelte";
     import Properties from "../../scripts/Properties";

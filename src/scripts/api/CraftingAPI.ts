@@ -3,154 +3,47 @@ import {EssenceAPI} from "./EssenceAPI";
 import {ComponentAPI} from "./ComponentAPI";
 import {RecipeAPI} from "./RecipeAPI";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";
-
-enum CraftingResultOutcomeType {
-
-    /**
-     * The action was successful.
-     */
-    SUCCESS = "SUCCESS",
-
-    /**
-     * The action failed.
-     */
-    FAILURE = "FAILURE",
-
-}
-
-/**
- * A crafting result.
- */
-interface CraftingResult {
-
-    /**
-     * The outcome of this result.
-     */
-    outcome: CraftingResultOutcomeType;
-
-    /**
-     * The id of the Actor to which this result applies
-     */
-    actorId: string;
-
-    /**
-     * The components modified (consumed and produced) for this result.
-     */
-    components: {
-
-        /**
-         * The components consumed for this result.
-         */
-        consumed: Record<string, number>;
-
-        /**
-         * The components produced for this result.
-         */
-        produced: Record<string, number>;
-
-    }
-
-}
-
-interface CraftingArgs {
-
-    /**
-     * The id of the recipe to craft.
-     */
-    recipeId: string;
-
-    /**
-     * The id of the requirement option to use. If not specified, the first option is used. This is particularly
-     *   useful for recipes with only one requirement option.
-     */
-    requirementOptionId?: string;
-
-    /**
-     * The id of the result option to use. If not specified, the first option is used. This is particularly
-     *  useful for recipes with only one result option.
-     */
-    resultOptionId?: string;
-
-    /**
-     * The id of the Actor to which any produced components should be added.
-     */
-    targetActorId: string;
-
-    /**
-     * The id of the Actor from which any consumed components should be removed. If not specified, the targetActorId is
-     *   used. Specify a different sourceActorId when crafting from a container or shared inventory.
-     */
-    sourceActorId?: string;
-
-}
-
-interface SalvageArgs {
-
-    /**
-     * The id of the component to salvage.
-     */
-    componentId: string;
-
-    /**
-     * The id of the salvage option to use. If not specified, the first option is used. This is particularly useful
-     *  for components with only one salvage option.
-     */
-    salvageOptionId?: string;
-
-    /**
-     * The id of the Actor to which any produced components should be added.
-     */
-    targetActorId: string;
-
-    /**
-     * The id of the Actor from which the component should be removed. If not specified, the targetActorId is used.
-     *  Specify a different sourceActorId when salvaging from a container or shared inventory.
-     */
-    sourceActorId?: string;
-
-}
+import {SalvageResult} from "../crafting/result/SalvageResult";
+import {DefaultSalvageAttempt, ImpossibleSalvageAttempt, SalvageAttempt} from "../crafting/attempt/SalvageAttempt";
+import Properties from "../Properties";
 
 interface CraftingAPI {
 
     /**
-     * Attempts to salvage a component.
+     * Counts the number of components of a given type owned by the specified actor.
      *
-     * @async
-     * @param {args} args - The options to use when salvaging the component.
-     * @param {string} [args.componentId] - The id of the component to salvage.
-     * @param {string} [args.salvageOptionId] - The id of the salvage option to use. If not specified, the first option
-     *   is used. This is particularly useful for components with only one salvage option.
-     * @param {string} [args.targetActorId] - The id of the Actor to which any produced components should be added.
-     * @param {string} [args.sourceActorId=args.targetActorId] - The id of the Actor from which the component should be
-     *  removed. If not specified, the targetActorId is used. Specify a different sourceActorId when salvaging from a
-     *  container or shared inventory.
-     * @returns {Promise<CraftingResult>} A promise that resolves to the result of the salvage attempt.
+     * @param actorId - The id of the actor to check.
+     * @param componentId - The id of the component to count.
+     * @returns A Promise that resolves with the number of components of this type owned by the actor.
      */
-    salvageComponent({ componentId, salvageOptionId, targetActorId, sourceActorId }: SalvageArgs): Promise<CraftingResult>;
+    countOwnedComponents(actorId: string, componentId: string): Promise<number>;
 
     /**
-     * Attempts to craft a recipe.
+     * Prepares a Salvage Attempt for the specified component.
      *
-     * @async
-     * @param {args} args - The options to use when crafting the recipe.
-     * @param {string} [args.recipeId] - The id of the recipe to craft.
-     * @param {string} [args.requirementOptionId] - The id of the requirement option to use. If not specified, the first
-     *  option is used. This is particularly useful for recipes with only one requirement option.
-     * @param {string} [args.resultOptionId] - The id of the result option to use. If not specified, the first option
-     *  is used. This is particularly useful for recipes with only one result option.
-     * @param {string} [args.targetActorId] - The id of the Actor to which any produced components should be added.
-     * @param {string} [args.sourceActorId=args.targetActorId] - The id of the Actor from which any consumed components
-     *  should be removed. If not specified, the targetActorId is used. Specify a different sourceActorId when crafting
-     *  from a container or shared inventory.
-     * @returns {Promise<CraftingResult>} A promise that resolves to the result of the crafting attempt.
+     * @param componentId - The id of the component to salvage.
+     * @param sourceActorId - The id of the Actor from which the component should be removed. If not specified, the
+     *   targetActorId is used. Specify a different sourceActorId when salvaging from a container or shared inventory.
+     * @param targetActorId - The id of the Actor to which any produced components should be added.
+     * @returns A Promise that resolves with the prepared Salvage Attempt.
      */
-    craftRecipe({ recipeId, requirementOptionId, resultOptionId, targetActorId, sourceActorId }: CraftingArgs): Promise<CraftingResult>;
+    prepareSalvageAttempt({ componentId, sourceActorId, targetActorId }: { componentId: string, sourceActorId: string, targetActorId: string }): Promise<SalvageAttempt>;
+
+    /**
+     * Accepts the specified Salvage Result, applying changes to actors and their owned items as necessary.
+     *
+     * @param salvageResult - The Salvage Result to accept.
+     * @returns A Promise that resolves with the accepted Salvage Result.
+     */
+    acceptSalvageResult(salvageResult: SalvageResult): Promise<SalvageResult>;
 
 }
 
 export { CraftingAPI };
 
 class DefaultCraftingAPI implements CraftingAPI {
+
+    private static readonly _LOCALIZATION_PATH = `${Properties.module.id}.crafting`;
 
     private readonly localizationService: LocalizationService;
     private readonly craftingSystemAPI: CraftingSystemAPI;
@@ -178,25 +71,87 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.recipeAPI = recipeAPI;
     }
 
-    salvageComponent({
-         componentId,
-         salvageOptionId,
-         targetActorId,
-         sourceActorId = targetActorId
-    }: SalvageArgs): Promise<CraftingResult> {
-        throw new Error("Method not implemented.");
+    countOwnedComponents(actorId: string, componentId: string): Promise<number> {
+        return Promise.resolve(0);
     }
 
-    craftRecipe({
-        recipeId,
-        requirementOptionId,
-        resultOptionId,
-        targetActorId,
-        sourceActorId = targetActorId
-    }: CraftingArgs): Promise<CraftingResult> {
-        throw new Error("Method not implemented.");
+    async prepareSalvageAttempt({ componentId, sourceActorId, targetActorId }: { componentId: string, sourceActorId: string, targetActorId: string }): Promise<SalvageAttempt> {
+
+        const component = await this.componentAPI.getById(componentId);
+        await component.load();
+
+        if (component.itemData.hasErrors) {
+            return new ImpossibleSalvageAttempt({
+                sourceActorId,
+                targetActorId,
+                componentId: component.id,
+                description: this.localizationService.format(
+                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.invalidItemData`,
+                    { componentId, cause: component.itemData.errors.join(", ") }
+                )
+            });
+        }
+
+        if (component.isDisabled) {
+            return new ImpossibleSalvageAttempt({
+                sourceActorId,
+                targetActorId,
+                componentId: component.id,
+                description: this.localizationService.format(
+                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.disabledComponent`,
+                    { componentName: component.name }
+                )
+            });
+        }
+
+        if (!component.isSalvageable) {
+            return new ImpossibleSalvageAttempt({
+                sourceActorId,
+                targetActorId,
+                componentId: component.id,
+                description: this.localizationService.format(
+                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.unsalvageableComponent`,
+                    { componentName: component.name }
+                )
+            });
+        }
+
+        const craftingSystem = await this.craftingSystemAPI.getById(component.craftingSystemId);
+
+        if (craftingSystem.isDisabled) {
+            return new ImpossibleSalvageAttempt({
+                sourceActorId,
+                targetActorId,
+                componentId: component.id,
+                description: this.localizationService.format(
+                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.disabledCraftingSystem`,
+                    {
+                        craftingSystemName: craftingSystem.details.name,
+                        componentName: component.name
+                    }
+                )
+            });
+        }
+
+        return new DefaultSalvageAttempt({
+            sourceActorId,
+            targetActorId,
+            componentId: component.id,
+            options: component.salvageOptions,
+            description: this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.prepared`,
+                {
+                    craftingSystemName: craftingSystem.details.name,
+                    componentName: component.name
+                }
+            )
+        });
+
     }
 
+    acceptSalvageResult(salvageResult: SalvageResult): Promise<SalvageResult> {
+        return Promise.resolve(undefined);
+    }
 
 }
 

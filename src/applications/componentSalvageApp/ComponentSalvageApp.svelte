@@ -8,29 +8,26 @@
     import eventBus from "../common/EventBus";
     import { localizationKey } from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
-    import CraftingComponentCarousel from "../common/CraftingComponentCarousel.svelte";
-    import {SuccessfulSalvageResult} from "../../scripts/crafting/result/SalvageResult";
-    import {Combination} from "../../scripts/common/Combination";
+    import CraftingComponentCarousel from "../common/ComponentSalvageCarousel.svelte";
 
     const localizationPath = `${Properties.module.id}.ComponentSalvageApp`;
 
     export let component;
-    export let inventory;
-    export let ownedComponentsOfType;
+    export let actor;
+    export let craftingAPI;
     export let localization;
-    export let closeHook;
+    export let closeApplication;
 
-    let selectedOptionName = component.firstOptionName;
-    if (selectedOptionName) {
-        component.selectSalvageOption(selectedOptionName);
-    }
+    let salvageAttempt;
+    let amountOwned;
+
+    onMount(async () => {
+        await loadSalvageAttempt();
+        amountOwned = await craftingAPI.countOwnedComponents(actor.id, component.id);
+    });
 
     setContext(localizationKey, {
         localization,
-    });
-
-    onMount(async () => {
-        return reIndex();
     });
 
     async function doSalvage(event) {
@@ -52,88 +49,87 @@
     }
 
     async function salvageComponent(craftingComponent) {
-        const salvageResult = new SuccessfulSalvageResult({
-            created: craftingComponent.selectedSalvage,
-            consumed: Combination.of(craftingComponent, 1)
-        });
-        await inventory.acceptSalvageResult(salvageResult);
+        const salvageResult = await salvageAttempt.perform();
+        await craftingAPI.acceptSalvageResult(salvageResult);
     }
 
-    function handleComponentUpdated(event) {
+    async function handleComponentUpdated(event) {
         const updatedComponent = event.detail;
         if (updatedComponent.id !== component.id) {
             return;
         }
         component = updatedComponent;
-        selectedOptionName = component.firstOptionName;
-        component.selectSalvageOption(selectedOptionName);
         if (!component.isSalvageable) {
-            closeHook();
+            closeApplication();
             return;
+        }
+        await loadSalvageAttempt();
+        if (!salvageAttempt.isPossible()) {
+            closeApplication();
         }
     }
 
     async function handleItemUpdated(event) {
-        const { sourceId, actor } = event.detail;
         // If the modified item is not owned, not owned by the actor who owns this crafting component, or is not associated with this component
-        if (!actor || !actor.id === inventory.actor.id || sourceId !== component.itemUuid) {
-            // do nothing
+        if (!event?.detail?.actor?.id == actor.id || !event?.detail?.sourceId == component.itemUuid) {
             return;
         }
         // if it is, we need to re-index the inventory
-        return reIndex();
+        return loadSalvageAttempt();
     }
 
     async function handleItemCreated(event) {
-        const {sourceId, actor} = event.detail;
-        if (!actor?.id === inventory.actor.id || sourceId !== component.itemUuid) {
+        if (!event?.detail?.actor?.id == actor.id || !event?.detail?.sourceId == component.itemUuid) {
             return;
         }
-        return reIndex();
+        return loadSalvageAttempt();
     }
 
     async function handleItemDeleted(event) {
-        const {sourceId, actor} = event.detail;
-        if (!actor?.id === inventory.actor.id || sourceId !== component.itemUuid) {
+        if (!event?.detail?.actor?.id == actor.id || !event?.detail?.sourceId == component.itemUuid) {
             return;
         }
-        await reIndex();
-        if (ownedComponentsOfType.isEmpty()) {
-            closeHook();
+        await loadSalvageAttempt();
+        if (!salvageAttempt.isPossible()) {
+            closeApplication();
         }
     }
 
-    async function reIndex() {
-        await inventory.index();
-        const ownedComponents = inventory.ownedComponents;
-        ownedComponentsOfType = ownedComponents.just(component);
+    async function loadSalvageAttempt() {
+        salvageAttempt = await craftingAPI.prepareSalvageAttempt({
+            componentId: component.id,
+            sourceActor: actor.id,
+            targetActor: actor.id,
+        });
     }
 
 </script>
 
-<div class="fab-component-salvage-app fab-columns">
-    <div class="fab-column" style="height: 100%"
-         use:eventBus={["componentUpdated", "itemUpdated", "itemCreated", "itemDeleted"]}
-         on:componentUpdated={(e) => handleComponentUpdated(e)}
-         on:itemUpdated={(e) => handleItemUpdated(e)}
-         on:itemCreated={(e) => handleItemCreated(e)}
-         on:itemDeleted={(e) => handleItemDeleted(e)}>
-        <SalvageHeader component={component} ownedComponentsOfType={ownedComponentsOfType} on:salvageComponent={(e) => doSalvage(e)} />
-        <div class="fab-component-salvage-app-body fab-scrollable">
-            {#if component.salvageOptions.length === 1}
-                <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
-                <div class="fab-component-grid-wrapper">
-                    <CraftingComponentGrid columns={4} componentCombination={component.selectedSalvage} />
-                </div>
-            {:else if component.salvageOptions.length > 1}
-                    <CraftingComponentCarousel columns={4} craftingComponent={component} bind:selectedOptionName={selectedOptionName}>
+{#if salvageAttempt}
+    <div class="fab-component-salvage-app fab-columns">
+        <div class="fab-column" style="height: 100%"
+             use:eventBus={["componentUpdated", "itemUpdated", "itemCreated", "itemDeleted"]}
+             on:componentUpdated={(e) => handleComponentUpdated(e)}
+             on:itemUpdated={(e) => handleItemUpdated(e)}
+             on:itemCreated={(e) => handleItemCreated(e)}
+             on:itemDeleted={(e) => handleItemDeleted(e)}>
+            <SalvageHeader component={component} amountOwned={amountOwned} on:salvageComponent={(e) => doSalvage(e)} />
+            <div class="fab-component-salvage-app-body fab-scrollable">
+                {#if component.salvageOptions.all.length === 1}
+                    <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
+                    <div class="fab-component-grid-wrapper">
+                        <CraftingComponentGrid columns={4} componentCombination={component.selectedSalvage} />
+                    </div>
+                {:else if component.salvageOptions.all.length > 1}
+                    <CraftingComponentCarousel columns={4} salvageAttempt={salvageAttempt}>
                         <p slot="description" class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
                     </CraftingComponentCarousel>
-            {:else}
-                <div class="fab-salvage-hint">
-                    <p>{localization.localize(`${localizationPath}.errors.notSalvageable`)}</p>
-                </div>
-            {/if}
+                {:else}
+                    <div class="fab-salvage-hint">
+                        <p>{localization.localize(`${localizationPath}.errors.notSalvageable`)}</p>
+                    </div>
+                {/if}
+            </div>
         </div>
     </div>
-</div>
+{/if}

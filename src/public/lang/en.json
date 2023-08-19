@@ -122,6 +122,15 @@
         "savedAll": "Saved {count} essences"
       }
     },
+    "crafting": {
+      "salvageAttempt": {
+        "disabledComponent": "The component {componentName} is disabled and cannot be salvaged.",
+        "disabledCraftingSystem": "The component {componentName} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
+        "unsalvageableComponent": "The component {componentName} has no usable salvage options.",
+        "prepared": "A salvage attempt Prepared for {componentName} in {craftingSystemName}.",
+        "invalidItemData": "The component with ID \"{componentId}\" has a problem with its item data. Caused by: {cause}"
+      }
+    },
     "CraftingComponentCarousel": {
       "buttons": {
         "next": "Next option",

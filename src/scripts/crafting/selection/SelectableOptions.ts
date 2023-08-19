@@ -12,12 +12,18 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     }: {
         options?: T[],
         selectedOptionId?: string
-    }) {
+    } = {}) {
         this._options = this.prepareOptions(options);
         this._selectedOptionId = selectedOptionId;
         if (this._selectedOptionId) {
             this.validateSelection(this._selectedOptionId, this._options);
+        } else {
+            this.selectFirst();
         }
+    }
+
+    public static EMPTY<J, T extends Identifiable & Serializable<J>>(): SelectableOptions<J, T> {
+        return new SelectableOptions<J, T>();
     }
 
     private prepareOptions(options: T[]): Map<string, T> {
@@ -66,6 +72,9 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     }
 
     get selectedOption(): T {
+        if (this.isEmpty) {
+            throw new Error("Cannot get selected option from an empty set of options. ");
+        }
         if (this._options.size === 1) {
             return Array.from(this._options.values())[0];
         }
@@ -208,6 +217,7 @@ class SelectableOptions<J, T extends Identifiable & Serializable<J>> implements 
     selectFirst() {
         if (this._options.size === 0) {
             this._selectedOptionId = "";
+            return;
         }
         this._selectedOptionId = Array.from(this._options.values())[0].id;
     }

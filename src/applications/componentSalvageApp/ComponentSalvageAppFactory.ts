@@ -2,7 +2,6 @@ import {SvelteApplication} from "../SvelteApplication";
 import {Component} from "../../scripts/crafting/component/Component";
 import Properties from "../../scripts/Properties";
 import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
-import {Combination} from "../../scripts/common/Combination";
 import {LocalizationService} from "../common/LocalizationService";
 import {CraftingAPI} from "../../scripts/api/CraftingAPI";
 
@@ -41,12 +40,13 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
         return new SvelteApplication({
             applicationOptions,
             svelteConfig: {
+                componentType: ComponentSalvageApp,
                 options: {
                     props: {
+                        actor,
                         component,
                         craftingAPI: this.craftingAPI,
                         localization: this.localizationService,
-                        ownedComponentsOfType: Combination.EMPTY(),
                         closeHook: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
                                 .find(w => w.id == appId);
@@ -54,7 +54,6 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                         }
                     }
                 },
-                componentType: ComponentSalvageApp
             }
         });
     }

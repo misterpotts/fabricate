@@ -129,7 +129,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
                 class: "fab-item-sheet-header-button",
                 icon: "fa-solid fa-recycle",
                 onclick: async () => {
-                    await fabricateUserInterfaceAPI.renderComponentSalvageApp(component.id, document.actor.id);
+                    await fabricateUserInterfaceAPI.renderComponentSalvageApp(document.actor.id, component.id);
                 }
             };
         });
@@ -144,7 +144,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
                 class: "fab-item-sheet-header-button",
                 icon: "fa-solid fa-screwdriver-wrench",
                 onclick: async () => {
-                    await fabricateUserInterfaceAPI.renderRecipeCraftingApp(recipe.id, document.actor.id);
+                    await fabricateUserInterfaceAPI.renderRecipeCraftingApp(document.actor.id, recipe.id);
                 }
             };
         });
