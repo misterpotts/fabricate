@@ -1,9 +1,9 @@
 export class StubItem {
 
-    private readonly _id;
-    private readonly _flags: Record<string, Record<string, string>>;
-    private readonly _system: { quantity: number };
-    private readonly _effects: any[];
+    public readonly id;
+    public flags: Record<string, Record<string, string>>;
+    public system: { quantity: number };
+    public effects: any[];
 
     constructor({
         id,
@@ -18,33 +18,21 @@ export class StubItem {
         };
         effects?: any[];
     }) {
-        this._id = id;
-        this._flags = flags;
-        this._system = system;
-        this._effects = effects;
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    get flags(): Record<string, Record<string, string>> {
-        return this._flags;
-    }
-
-    get system(): { quantity: number } {
-        return this._system;
+        this.id = id;
+        this.flags = flags;
+        this.system = system;
+        this.effects = effects;
     }
 
     getFlag(scope: string, key: string) {
-        if (scope in this._flags) {
-            return this._flags[scope][key];
+        if (scope in this.flags) {
+            return this.flags[scope][key];
         }
         return undefined;
     }
 
-    get effects(): any[] {
-        return this._effects;
+    get _id() {
+        return this.id;
     }
 
 }

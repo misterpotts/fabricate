@@ -16,7 +16,7 @@ const testComponentOne: Component = new Component({
         name: "Test Component One",
         imageUrl: Properties.ui.defaults.itemImageUrl,
         itemUuid: "Compendium.module.compendium-name.iyeUGBbSts0ij92X",
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([new Unit(elementalEarth.toReference(), 2)]),
 });
@@ -28,7 +28,7 @@ const testComponentTwo: Component = new Component({
         name: "Test Component Two",
         itemUuid: "Compendium.module.compendium-name.Ie7NoXMja9wI6xya",
         imageUrl: Properties.ui.defaults.recipeImageUrl,
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([new Unit(elementalFire.toReference(), 2)]),
 });
@@ -40,7 +40,7 @@ const testComponentThree: Component = new Component({
         itemUuid: "Compendium.module.compendium-name.tdyV4AWuTMkXbepw",
         name: "Test Component Three",
         imageUrl: Properties.ui.defaults.recipeImageUrl,
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 2)]),
 });
@@ -53,7 +53,7 @@ const testComponentFour: Component = new Component({
         name: "Test Component Four",
         itemUuid: "Compendium.module.compendium-name.Ra2Z1ujre76weR0i",
         imageUrl: Properties.ui.defaults.recipeImageUrl,
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([new Unit(elementalAir.toReference(), 2)]),
     salvageOptions: new SelectableOptions({
@@ -75,7 +75,7 @@ const testComponentFive: Component = new Component({
         itemUuid: "Compendium.module.compendium-name.74K6TAuSg2xzd209",
         name: "Test Component Five",
         imageUrl: Properties.ui.defaults.recipeImageUrl,
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([
         new Unit(elementalFire.toReference(), 1),
@@ -102,7 +102,7 @@ const testComponentSix: Component = new Component({
         name: "Test Component Six",
         itemUuid: "Compendium.module.compendium-name.rgTv21iOSwjK1882",
         imageUrl: Properties.ui.defaults.recipeImageUrl,
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 1)])
 });
@@ -114,7 +114,7 @@ const testComponentSeven: Component = new Component({
         name: "Test Component Seven",
         itemUuid: "Compendium.module.compendium-name.u9jwSlvIUhlQiEe1",
         imageUrl: Properties.ui.defaults.recipeImageUrl,
-        sourceDocument: { effects: [], flags: {}, system: {} }
+        sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: Combination.ofUnits([new Unit(elementalAir.toReference(), 1)])
 });

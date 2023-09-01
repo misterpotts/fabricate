@@ -1,240 +1,215 @@
 import {describe, expect, test} from '@jest/globals';
-import {CraftingInventory} from "../src/scripts/actor/Inventory";
-import {StubDocumentManager} from "./stubs/StubDocumentManager";
-import {
-    AlwaysOneItemQuantityReader,
-    DnD5EItemQuantityReader,
-    DnD5EItemQuantityWriter, NoItemQuantityWriter
-} from "../src/scripts/actor/ItemQuantity";
-import {StubObjectUtility} from "./stubs/StubObjectUtility";
-import {
-    testComponentFive,
-    testComponentFour,
-    testComponentOne,
-    testComponentSeven,
-    testComponentSix,
-    testComponentThree,
-    testComponentTwo
-} from "./test_data/TestCraftingComponents";
-import {StubActorFactory} from "./stubs/StubActorFactory";
 import {Combination} from "../src/scripts/common/Combination";
 import {Component} from "../src/scripts/crafting/component/Component";
 import {StubItem} from "./stubs/StubItem";
-import {SuccessfulSalvageResult} from "../src/scripts/crafting/result/SalvageResult";
+import {DefaultInventoryFactory} from "../src/scripts/actor/InventoryFactory";
+import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
+import {StubObjectUtility} from "./stubs/StubObjectUtility";
+import {StubActorFactory} from "./stubs/StubActorFactory";
+import {
+    allTestComponents,
+    testComponentFive, testComponentFour,
+    testComponentThree,
+    testComponentTwo
+} from "./test_data/TestCraftingComponents";
 import {Unit} from "../src/scripts/common/Unit";
-import {StubGameProvider} from "./stubs/foundry/StubGameProvider";
+import {SimpleInventoryAction} from "../src/scripts/actor/InventoryAction";
 
 describe("Crafting Inventory", () => {
 
-    const knownComponentsByItemUuid = new Map([
-        [testComponentOne.itemUuid, testComponentOne],
-        [testComponentTwo.itemUuid, testComponentTwo],
-        [testComponentThree.itemUuid, testComponentThree],
-        [testComponentFour.itemUuid, testComponentFour],
-        [testComponentFive.itemUuid, testComponentFive],
-        [testComponentSix.itemUuid, testComponentSix],
-        [testComponentSeven.itemUuid, testComponentSeven]
-    ]);
-    const fabricateItemDataByUuid = new Map(Array.from(knownComponentsByItemUuid.values())
-        .map(component => [component.itemUuid, component.itemData]));
-    const documentManager = new StubDocumentManager({
-        itemDataByUuid: fabricateItemDataByUuid
+    const dnd5eInventoryFactory = new DefaultInventoryFactory({
+        localization: new StubLocalizationService(),
+        objectUtility: new StubObjectUtility(),
     });
 
     describe("indexing", () => {
 
-        test.skip("should index actor's inventory with no fabricate items", async () => {
+        test("should index actor's inventory without fabricate items and without known components", () => {
 
-            const ownedItems = generateInventory(Combination.EMPTY(), 40);
-            const actorFactory = new StubActorFactory({ownedItems});
-            const actor = actorFactory.make();
-
-            const underTest = new CraftingInventory({
-                actor,
-                documentManager,
-                itemQuantityWriter: new DnD5EItemQuantityWriter(),
-                itemQuantityReader: new DnD5EItemQuantityReader(),
-                gameProvider: new StubGameProvider(),
-                objectUtils: new StubObjectUtility(),
-                knownComponentsByItemUuid
-            });
-
-            await underTest.index();
-
-            expect(underTest.size).toEqual(0);
-            expect(underTest.amountFor(testComponentOne)).toEqual(0);
-            expect(underTest.amountFor(testComponentTwo)).toEqual(0);
-            expect(underTest.amountFor(testComponentThree)).toEqual(0);
-            expect(underTest.amountFor(testComponentFour)).toEqual(0);
-            expect(underTest.amountFor(testComponentFive)).toEqual(0);
-            expect(underTest.amountFor(testComponentSix)).toEqual(0);
-            expect(underTest.amountFor(testComponentSeven)).toEqual(0);
+            const stubActor = new StubActorFactory().make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, new Map());
+            const contents = underTest.getContents();
+            expect(contents).not.toBeNull();
+            expect(contents.size).toBe(0);
 
         });
 
-        test.skip("should index actor's inventory with some fabricate items", async () => {
+        test("should index actor's inventory without fabricate items with known components", () => {
 
-            const componentOneQuantity = 7;
-            const componentFiveQuantity = 4;
-            const componentSevenQuantity = 1;
-            const ownedItems = generateInventory(Combination.ofUnits([
-                new Unit<Component>(testComponentOne, componentOneQuantity),
-                new Unit<Component>(testComponentFive, componentFiveQuantity),
-                new Unit<Component>(testComponentSeven, componentSevenQuantity)
-            ]), 34);
-            const actorFactory = new StubActorFactory({ownedItems});
-            const actor = actorFactory.make();
-
-            const underTest = new CraftingInventory({
-                actor,
-                documentManager,
-                itemQuantityWriter: new DnD5EItemQuantityWriter(),
-                itemQuantityReader: new DnD5EItemQuantityReader(),
-                gameProvider: new StubGameProvider(),
-                objectUtils: new StubObjectUtility(),
-                knownComponentsByItemUuid
-            });
-
-            await underTest.index();
-
-            expect(underTest.size).toEqual(12);
-            expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity);
-            expect(underTest.amountFor(testComponentTwo)).toEqual(0);
-            expect(underTest.amountFor(testComponentThree)).toEqual(0);
-            expect(underTest.amountFor(testComponentFour)).toEqual(0);
-            expect(underTest.amountFor(testComponentFive)).toEqual(componentFiveQuantity);
-            expect(underTest.amountFor(testComponentSix)).toEqual(0);
-            expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity);
+            const stubActor = new StubActorFactory().make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const contents = underTest.getContents();
+            expect(contents).not.toBeNull();
+            expect(contents.size).toBe(0);
 
         });
 
-        test.skip("should index actor's inventory without counting item quantity if reader not specified", async () => {
+        test("should index actor's inventory with some fabricate items", () => {
 
-            const componentOneQuantity = 7;
-            const componentFiveQuantity = 4;
-            const componentSevenQuantity = 1;
-            const ownedItems = generateInventory(Combination.ofUnits([
-                new Unit<Component>(testComponentOne, componentOneQuantity),
-                new Unit<Component>(testComponentFive, componentFiveQuantity),
-                new Unit<Component>(testComponentSeven, componentSevenQuantity)
-            ]), 34);
-            generateInventory(Combination.of(testComponentOne, 1), 0)
-                .forEach(value => ownedItems.set(value.id, value));
-            const actorFactory = new StubActorFactory({ownedItems});
-            const actor = actorFactory.make();
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const contents = underTest.getContents();
+            expect(contents).not.toBeNull();
+            expect(contents.size).toBe(5);
+            expect(contents.amountFor(testComponentTwo)).toBe(3);
+            expect(contents.amountFor(testComponentFive)).toBe(2);
 
-            const underTest = new CraftingInventory({
-                actor,
-                documentManager,
-                itemQuantityWriter: new NoItemQuantityWriter(),
-                itemQuantityReader: new AlwaysOneItemQuantityReader(),
-                gameProvider: new StubGameProvider(),
-                objectUtils: new StubObjectUtility(),
-                knownComponentsByItemUuid
+        });
+
+        test("should index actor's inventory without counting item quantity if no item quantity property path is known", () => {
+
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = dnd5eInventoryFactory.make("notDnd5e", stubActor, allTestComponentsByItemUuid());
+            const contents = underTest.getContents();
+            expect(contents).not.toBeNull();
+            expect(contents.size).toBe(2);
+            expect(contents.amountFor(testComponentTwo)).toBe(1);
+            expect(contents.amountFor(testComponentFive)).toBe(1);
+
+        });
+
+        test("should register item quantity property path", () => {
+
+            const inventoryFactory = new DefaultInventoryFactory({
+                localization: new StubLocalizationService(),
+                objectUtility: new StubObjectUtility(),
             });
 
-            await underTest.index();
+            inventoryFactory.registerGameSystemItemQuantityPropertyPath("notDnd5e", "system.quantity");
 
-            expect(underTest.size).toEqual(4);
-
-            const justOne = 1;
-            const two = 2;
-
-            expect(underTest.amountFor(testComponentOne)).toEqual(two);
-            expect(underTest.amountFor(testComponentTwo)).toEqual(0);
-            expect(underTest.amountFor(testComponentThree)).toEqual(0);
-            expect(underTest.amountFor(testComponentFour)).toEqual(0);
-            expect(underTest.amountFor(testComponentFive)).toEqual(justOne);
-            expect(underTest.amountFor(testComponentSix)).toEqual(0);
-            expect(underTest.amountFor(testComponentSeven)).toEqual(justOne);
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = inventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const contents = underTest.getContents();
+            expect(contents).not.toBeNull();
+            expect(contents.size).toBe(5);
+            expect(contents.amountFor(testComponentTwo)).toBe(3);
+            expect(contents.amountFor(testComponentFive)).toBe(2);
 
         });
 
     });
 
-    describe("accepting results", () => {
+    describe("performing actions", () => {
 
-        test.skip("should salvage a component when the results are not owned", async () => {
+        test("should add items without removing if no removals are specified", async () => {
 
-            const ownedItems = generateInventory(Combination.of(testComponentThree, 1));
-            const actorFactory = new StubActorFactory({ ownedItems });
-            const actor = actorFactory.make();
-
-            const underTest = new CraftingInventory({
-                actor,
-                documentManager,
-                itemQuantityWriter: new DnD5EItemQuantityWriter(),
-                itemQuantityReader: new DnD5EItemQuantityReader(),
-                gameProvider: new StubGameProvider(),
-                objectUtils: new StubObjectUtility(),
-                knownComponentsByItemUuid
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const addOneTestComponentThreeOnly = new SimpleInventoryAction({
+                additions: Combination.ofUnits([new Unit(testComponentThree, 1)])
             });
 
-            await underTest.index();
-
-            expect(underTest.size).toEqual(1);
-
-            const componentSevenQuantity = 2;
-            const componentOneQuantity = 1;
-            const salvageResult = new SuccessfulSalvageResult({
-                consumed: Combination.of(testComponentThree, 1),
-                created: Combination.ofUnits([
-                    new Unit(testComponentSeven, componentSevenQuantity),
-                    new Unit(testComponentOne, componentOneQuantity)
-                ])
-            });
-
-            await underTest.acceptSalvageResult(salvageResult);
-
-            expect(underTest.size).toEqual(3);
-            expect(underTest.amountFor(testComponentThree)).toEqual(0);
-            expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity);
-            expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity);
+            const result = await underTest.perform(addOneTestComponentThreeOnly);
+            expect(result).not.toBeNull();
+            expect(result.size).toBe(6);
+            expect(result.amountFor(testComponentTwo)).toBe(3);
+            expect(result.amountFor(testComponentFive)).toBe(2);
+            expect(result.amountFor(testComponentThree)).toBe(1);
 
         });
 
-        test.skip("should salvage a component when the results are owned", async () => {
-            const ownedItems = generateInventory(Combination.ofUnits([
-                new Unit(testComponentThree, 1),
-                new Unit(testComponentSeven, 1),
-                new Unit(testComponentOne, 1)
-            ]));
-            const actorFactory = new StubActorFactory({ ownedItems });
-            const actor = actorFactory.make();
+        test("should remove items without adding if no additions are specified", async () => {
 
-            const underTest = new CraftingInventory({
-                actor,
-                documentManager,
-                itemQuantityWriter: new DnD5EItemQuantityWriter(),
-                itemQuantityReader: new DnD5EItemQuantityReader(),
-                gameProvider: new StubGameProvider(),
-                objectUtils: new StubObjectUtility(),
-                knownComponentsByItemUuid
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const removeTwoTestComponentTwoOnly = new SimpleInventoryAction({
+                removals: Combination.ofUnits([new Unit(testComponentTwo, 2)])
             });
 
-            await underTest.index();
+            const result = await underTest.perform(removeTwoTestComponentTwoOnly);
+            expect(result).not.toBeNull();
+            expect(result.size).toBe(3);
+            expect(result.amountFor(testComponentTwo)).toBe(1);
+            expect(result.amountFor(testComponentFive)).toBe(2);
 
-            expect(underTest.size).toEqual(3);
-            const initialItemCollectionSize = actor.items.size;
+        });
 
-            const componentSevenQuantity = 2;
-            const componentOneQuantity = 1;
-            const salvageResult = new SuccessfulSalvageResult({
-                consumed: Combination.of(testComponentThree, 1),
-                created: Combination.ofUnits([
-                    new Unit(testComponentSeven, componentSevenQuantity),
-                    new Unit(testComponentOne, componentOneQuantity)
-                ])
+        test("should add and remove items if both are specified", async () => {
+
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const removeTwoTestComponentTwoAndTestComponentFiveAndAddTwoTestComponentThree = new SimpleInventoryAction({
+                removals: Combination.ofUnits([
+                    new Unit(testComponentTwo, 2),
+                    new Unit(testComponentFive, 2),
+                ]),
+                additions: Combination.ofUnits([
+                    new Unit(testComponentThree, 2),
+                ]),
             });
 
-            await underTest.acceptSalvageResult(salvageResult);
+            const result = await underTest.perform(removeTwoTestComponentTwoAndTestComponentFiveAndAddTwoTestComponentThree);
+            expect(result).not.toBeNull();
+            expect(result.size).toBe(3);
+            expect(result.amountFor(testComponentTwo)).toBe(1);
+            expect(result.amountFor(testComponentThree)).toBe(2);
 
-            expect(underTest.size).toEqual(5);
-            expect(underTest.amountFor(testComponentThree)).toEqual(0);
-            expect(underTest.amountFor(testComponentSeven)).toEqual(componentSevenQuantity + 1);
-            expect(underTest.amountFor(testComponentOne)).toEqual(componentOneQuantity + 1);
+        });
 
-            expect(actor.items.size).toEqual(initialItemCollectionSize - 1);
+        test("should rationalise complete overlapping additions and removals to no action", async () => {
+
+            const stubActor = new StubActorFactory(
+                {
+                    ownedItems: generateInventory(Combination.ofUnits([
+                        new Unit(testComponentTwo, 3),
+                        new Unit(testComponentFive, 2),
+                    ]), 5),
+                }
+            ).make();
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const removeTwoTestComponentTFourAndAddTwoTestComponentFour = new SimpleInventoryAction({
+                removals: Combination.ofUnits([new Unit(testComponentFour, 2)]),
+                additions: Combination.ofUnits([new Unit(testComponentFour, 2)]),
+            });
+
+            const result = await underTest.perform(removeTwoTestComponentTFourAndAddTwoTestComponentFour);
+            expect(result).not.toBeNull();
+            expect(result.size).toBe(5);
+            expect(result.amountFor(testComponentTwo)).toBe(3);
+            expect(result.amountFor(testComponentFive)).toBe(2);
+
         });
 
     });
@@ -268,4 +243,12 @@ function randomIdentifier(): string {
     return (Math.random() + 1)
         .toString(36)
         .substring(2);
+}
+
+function allTestComponentsByItemUuid() {
+    return Array.from(allTestComponents.values())
+        .reduce((map, component) => {
+            map.set(component.itemUuid, component);
+            return map;
+        }, new Map<string, Component>());
 }

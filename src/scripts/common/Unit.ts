@@ -1,4 +1,4 @@
-import {Identifiable} from "./Identifiable";
+import {Identifiable, Nothing} from "./Identifiable";
 
 /**
  * Represents a single unit with an associated quantity of an Identifiable object.
@@ -87,7 +87,7 @@ class Unit<T extends Identifiable> {
      * @param {number} factor - The multiplication factor.
      * @returns {Unit<T>} A new Unit instance with the updated quantity.
      */
-    multiply(factor: number) {
+    multiply(factor: number): Unit<T> {
         return new Unit<T>(this._element, this._quantity * factor);
     }
 
@@ -98,12 +98,16 @@ class Unit<T extends Identifiable> {
      * @param {Unit<T>} other - The other Unit to combine with the current Unit.
      * @returns {Unit<T>} A new Unit instance with the combined quantities.
      */
-    combineWith(other: Unit<T>) {
+    combineWith(other: Unit<T>): Unit<T> {
         return this.add(other.quantity);
     }
 
     clone() {
         return new Unit<T>(this._element, this._quantity);
+    }
+
+    static NONE<T extends Identifiable>() {
+        return new Unit<T>(new Nothing() as T, 0);
     }
 
 }

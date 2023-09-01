@@ -5,7 +5,7 @@ class StubActorFactory {
 
     private readonly _ownedItems: Map<string, StubItem> ;
 
-    constructor({ ownedItems = new Map() }: { ownedItems?: Map<string, StubItem> }) {
+    constructor({ ownedItems = new Map() }: { ownedItems?: Map<string, StubItem> } = {}) {
         this._ownedItems = ownedItems;
     }
 

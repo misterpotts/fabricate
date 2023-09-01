@@ -39,7 +39,7 @@ import {
 } from "../repository/embedded_systems/EmbeddedCraftingSystemManager";
 import {DefaultSettingsRegistry, SettingsRegistry} from "../repository/SettingsRegistry";
 import {SettingsMigrator} from "../repository/migration/SettingsMigrator";
-import {DefaultCraftingAPI} from "./CraftingAPI";
+import {CraftingAPI, DefaultCraftingAPI} from "./CraftingAPI";
 import {V2ToV3SettingMigrationStep} from "../repository/migration/V2ToV3SettingMigrationStep";
 
 interface FabricateAPIFactory {
@@ -109,12 +109,14 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             localizationService,
             craftingSystemSettingManager
         );
+
         const essenceAPI = this.makeEssenceAPI(
             this.identityFactory,
             localizationService,
             craftingSystemAPI,
             essenceStore
         );
+
         const componentAPI = this.makeComponentAPI(
             this.identityFactory,
             localizationService,
@@ -122,6 +124,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             essenceAPI,
             componentStore
         );
+
         const recipeAPI = this.makeRecipeAPI(
             this.identityFactory,
             localizationService,
@@ -130,18 +133,21 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             componentAPI,
             recipeStore
         );
+
         const settingMigrationAPI = this.makeSettingMigrationAPI(
             localizationService,
             this.settingsRegistry,
             this.makeEmbeddedCraftingSystemManager(craftingSystemStore, essenceStore, componentStore, recipeStore),
             this.makeSettingsMigrator(craftingSystemSettingManager, essenceSettingManager, componentSettingManager, recipeSettingManager)
         );
+
         const craftingAPI = this.makeCraftingAPI(
             localizationService,
             craftingSystemAPI,
             essenceAPI,
             componentAPI,
             recipeAPI,
+            this.gameProvider
         );
 
         return new DefaultFabricateAPI({
@@ -323,10 +329,12 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                             craftingSystemAPI: CraftingSystemAPI,
                             essenceAPI: EssenceAPI,
                             componentAPI: ComponentAPI,
-                            recipeAPI: RecipeAPI) {
+                            recipeAPI: RecipeAPI,
+                            gameProvider: GameProvider): CraftingAPI {
         return new DefaultCraftingAPI({
             recipeAPI,
             essenceAPI,
+            gameProvider,
             componentAPI,
             craftingSystemAPI,
             localizationService,

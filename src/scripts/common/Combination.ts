@@ -496,10 +496,43 @@ class Combination<T extends Identifiable> {
             }, {});
     }
 
-    map<R = any>(mappingFunction: (unit: Unit<T>) => R) {
+    map<R = any>(mappingFunction: (unit: Unit<T>) => R): R[] {
         return this.units
             .map(unit => unit.clone())
             .map(mappingFunction);
+    }
+
+    convertUnits<R extends Identifiable>(conversionFunction: (unit: Unit<T>) => Unit<R>): Combination<R> {
+        return this.units
+            .map(unit => unit.clone())
+            .map(conversionFunction)
+            .reduce((left, right) => left.combineWith(Combination.ofUnit(right)), Combination.EMPTY<R>());
+    }
+
+    convertElements<R extends Identifiable>(conversionFunction: (element: T) => R): Combination<R> {
+        return this.units
+            .map(unit => unit.clone())
+            .map(unit => new Unit(conversionFunction(unit.element), unit.quantity))
+            .reduce((left, right) => left.combineWith(Combination.ofUnit(right)), Combination.EMPTY<R>());
+    }
+
+    /**
+     * Computes the intersection of the original Combination with the provided Combination, i.e., the Combination
+     *  containing only the members that are present in both Combinations with the minimum quantity of the two.
+     *
+     * @param other - The other Combination to compute the intersection with.
+     * @returns {Combination<T>} A new Combination containing only the members that are present in both Combinations
+     *  with the minimum quantity of the two.
+     */
+    intersectionWith(other: Combination<T>): Combination<T> {
+        const intersection: Map<string, Unit<T>> = new Map();
+        this.amounts.forEach((unit: Unit<T>) => {
+            if (other.has(unit.element)) {
+                const minimumAmount = Math.min(unit.quantity, other.amountFor(unit.element.id));
+                intersection.set(unit.element.id, new Unit(unit.element, minimumAmount));
+            }
+        });
+        return new Combination<T>(intersection);
     }
 
 }

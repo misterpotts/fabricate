@@ -29,6 +29,10 @@ class ComponentReference implements Identifiable, Serializable<ComponentReferenc
         return new ComponentReference(componentId);
     }
 
+    static NONE() {
+        return new ComponentReference("NO ID");
+    }
+
 }
 
 export { ComponentReference }

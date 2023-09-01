@@ -81,11 +81,12 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._activeEffectSource.loaded;
     }
 
-    public async load(): Promise<void> {
+    public async load(): Promise<Essence> {
         if (!this.hasActiveEffectSource) {
             return;
         }
         this.activeEffectSource = await this._activeEffectSource.load();
+        return this;
     }
 
     get id(): string {

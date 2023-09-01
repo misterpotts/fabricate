@@ -11,6 +11,20 @@ class StubObjectUtility implements ObjectUtility {
         return _.merge(target, source);
     }
 
+    getPropertyValue<T>(propertyPath: string, object: object): T {
+        if (!_.has(object, propertyPath)) {
+            throw new Error(`Property path ${propertyPath} not found on object`);
+        }
+        return _.get(object, propertyPath);
+    }
+
+    setPropertyValue<T>(propertyPath: string, object: object, value: T): void {
+        if (!_.has(object, propertyPath)) {
+            throw new Error(`Property path ${propertyPath} not found on object`);
+        }
+        _.set(object, propertyPath, value);
+    }
+
 }
 
 export { StubObjectUtility }
