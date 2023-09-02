@@ -5,10 +5,10 @@ interface SalvageAttempt {
 
     readonly targetActorId: string;
     readonly sourceActorId: string;
-    readonly componentId: string
+    readonly componentId: string;
     readonly description: string;
     readonly isPossible: boolean;
-    readonly salvageOption: SalvageOption;
+    readonly selectedSalvageOption: SalvageOption;
     readonly hasOptions: boolean;
     selectNextOption(): void;
     selectPreviousOption(): void;
@@ -22,7 +22,7 @@ class ImpossibleSalvageAttempt implements SalvageAttempt {
     
     private readonly _targetActorId: string;
     private readonly _sourceActorId: string;
-    private readonly _componentId: string
+    private readonly _componentId: string;
     private readonly _description: string;
 
     constructor({
@@ -66,7 +66,7 @@ class ImpossibleSalvageAttempt implements SalvageAttempt {
         return false;
     }
 
-    get salvageOption(): SalvageOption {
+    get selectedSalvageOption(): SalvageOption {
         throw new Error("Impossible salvage attempts have no salvage options. ");
     }
 
@@ -132,7 +132,7 @@ class DefaultSalvageAttempt implements SalvageAttempt {
         return true;
     }
 
-    get salvageOption(): SalvageOption {
+    get selectedSalvageOption(): SalvageOption {
         return this._options.selectedOption;
     }
 

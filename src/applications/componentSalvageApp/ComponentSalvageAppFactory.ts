@@ -4,6 +4,7 @@ import Properties from "../../scripts/Properties";
 import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
 import {LocalizationService} from "../common/LocalizationService";
 import {CraftingAPI} from "../../scripts/api/CraftingAPI";
+import {ComponentAPI} from "../../scripts/api/ComponentAPI";
 
 interface ComponentSalvageAppFactory {
 
@@ -15,15 +16,19 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
 
     private readonly localizationService: LocalizationService;
     private readonly craftingAPI: CraftingAPI;
+    private readonly componentAPI: ComponentAPI;
 
     constructor({
         craftingAPI,
+        componentAPI,
         localizationService,
     }: {
-        localizationService: LocalizationService;
         craftingAPI: CraftingAPI;
+        componentAPI: ComponentAPI;
+        localizationService: LocalizationService;
     }) {
         this.craftingAPI = craftingAPI;
+        this.componentAPI = componentAPI;
         this.localizationService = localizationService;
     }
 
@@ -46,8 +51,9 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                         actor,
                         component,
                         craftingAPI: this.craftingAPI,
+                        componentAPI: this.componentAPI,
                         localization: this.localizationService,
-                        closeHook: async () => {
+                        closeApplication: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
                                 .find(w => w.id == appId);
                             await svelteApplication.close();

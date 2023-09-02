@@ -18,7 +18,7 @@ import {SimpleInventoryAction} from "../src/scripts/actor/InventoryAction";
 describe("Crafting Inventory", () => {
 
     const dnd5eInventoryFactory = new DefaultInventoryFactory({
-        localization: new StubLocalizationService(),
+        localizationService: new StubLocalizationService(),
         objectUtility: new StubObjectUtility(),
     });
 
@@ -85,7 +85,7 @@ describe("Crafting Inventory", () => {
         test("should register item quantity property path", () => {
 
             const inventoryFactory = new DefaultInventoryFactory({
-                localization: new StubLocalizationService(),
+                localizationService: new StubLocalizationService(),
                 objectUtility: new StubObjectUtility(),
             });
 

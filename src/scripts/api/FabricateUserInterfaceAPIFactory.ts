@@ -42,8 +42,9 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
 
         const componentSalvageAppCatalog = new DefaultComponentSalvageAppCatalog({
             componentSalvageAppFactory: new DefaultComponentSalvageAppFactory({
+                localizationService,
                 craftingAPI: this.fabricateAPI.crafting,
-                localizationService
+                componentAPI: this.fabricateAPI.components,
             })
         });
 

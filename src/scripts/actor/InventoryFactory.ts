@@ -20,20 +20,20 @@ class DefaultInventoryFactory implements InventoryFactory {
         ["dnd5e", "system.quantity"]
     ]);
 
-    private readonly _localization: LocalizationService;
+    private readonly _localizationService: LocalizationService;
     private readonly _objectUtility: ObjectUtility;
     private readonly _gameSystemItemQuantityPropertyPaths: Map<string, string>;
 
     constructor({
-        localization,
+        localizationService,
         objectUtility = new DefaultObjectUtility(),
         gameSystemItemQuantityPropertyPaths = DefaultInventoryFactory._KNOWN_GAME_SYSTEM_ITEM_QUANTITY_PROPERTY_PATHS,
     }: {
-        localization: LocalizationService;
+        localizationService: LocalizationService;
         objectUtility?: ObjectUtility;
         gameSystemItemQuantityPropertyPaths?: Map<string, string>;
     }) {
-        this._localization = localization;
+        this._localizationService = localizationService;
         this._objectUtility = objectUtility;
         this._gameSystemItemQuantityPropertyPaths = gameSystemItemQuantityPropertyPaths;
     }
@@ -59,7 +59,7 @@ class DefaultInventoryFactory implements InventoryFactory {
 
         return new CraftingInventory({
             actor,
-            localization: this._localization,
+            localization: this._localizationService,
             itemDataManager,
             knownComponentsBySourceItemUuid,
        });

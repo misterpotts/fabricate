@@ -41,6 +41,7 @@ import {DefaultSettingsRegistry, SettingsRegistry} from "../repository/SettingsR
 import {SettingsMigrator} from "../repository/migration/SettingsMigrator";
 import {CraftingAPI, DefaultCraftingAPI} from "./CraftingAPI";
 import {V2ToV3SettingMigrationStep} from "../repository/migration/V2ToV3SettingMigrationStep";
+import {DefaultInventoryFactory} from "../actor/InventoryFactory";
 
 interface FabricateAPIFactory {
 
@@ -331,6 +332,9 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                             componentAPI: ComponentAPI,
                             recipeAPI: RecipeAPI,
                             gameProvider: GameProvider): CraftingAPI {
+        const inventoryFactory = new DefaultInventoryFactory({
+            localizationService,
+        });
         return new DefaultCraftingAPI({
             recipeAPI,
             essenceAPI,
@@ -338,6 +342,8 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             componentAPI,
             craftingSystemAPI,
             localizationService,
+            notificationService: new DefaultNotificationService(this.uiProvider),
+            inventoryFactory
         });
     }
 }

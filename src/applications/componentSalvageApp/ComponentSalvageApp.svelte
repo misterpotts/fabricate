@@ -8,22 +8,35 @@
     import eventBus from "../common/EventBus";
     import { localizationKey } from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
-    import CraftingComponentCarousel from "../common/ComponentSalvageCarousel.svelte";
+    import ComponentSalvageCarousel from "../common/ComponentSalvageCarousel.svelte";
+    import {Combination} from "../../scripts/common/Combination";
 
     const localizationPath = `${Properties.module.id}.ComponentSalvageApp`;
 
     export let component;
     export let actor;
     export let craftingAPI;
+    export let componentAPI;
     export let localization;
     export let closeApplication;
 
     let salvageAttempt;
     let amountOwned;
+    let selectedSalvage = Combination.EMPTY();
+    let components = new Map();
 
     onMount(async () => {
         await loadSalvageAttempt();
-        amountOwned = await craftingAPI.countOwnedComponents(actor.id, component.id);
+        selectedSalvage = salvageAttempt.selectedSalvageOption;
+        amountOwned = await craftingAPI.countOwnedComponentsOfType(actor.id, component.id);
+        const componentIds = salvageAttempt.options.all
+            .map(salvageOption => {
+                return salvageOption.catalysts.combineWith(salvageOption.results);
+            })
+            .reduce((left, right) => left.combineWith(right), Combination.EMPTY())
+            .map(component => component.element.id);
+        components = await componentAPI.getAllById(componentIds);
+        await Promise.all(Array.from(components.values()).map(component => component.load()));
     });
 
     setContext(localizationKey, {
@@ -118,12 +131,12 @@
                 {#if component.salvageOptions.all.length === 1}
                     <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
                     <div class="fab-component-grid-wrapper">
-                        <CraftingComponentGrid columns={4} componentCombination={component.selectedSalvage} />
+                        <CraftingComponentGrid columns={4} componentCombination={selectedSalvage} />
                     </div>
                 {:else if component.salvageOptions.all.length > 1}
-                    <CraftingComponentCarousel columns={4} salvageAttempt={salvageAttempt}>
+                    <ComponentSalvageCarousel columns={4} salvageAttempt={salvageAttempt} components={components}>
                         <p slot="description" class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
-                    </CraftingComponentCarousel>
+                    </ComponentSalvageCarousel>
                 {:else}
                     <div class="fab-salvage-hint">
                         <p>{localization.localize(`${localizationPath}.errors.notSalvageable`)}</p>
