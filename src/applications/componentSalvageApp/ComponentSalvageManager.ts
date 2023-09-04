@@ -94,6 +94,8 @@ class DefaultSalvageAttempt implements SalvageAttempt {
 
 interface ComponentSalvageManager {
 
+    readonly actor: BaseActor;
+
     readonly componentToSalvage: Component;
 
     loadSalvageAttempts(): Promise<SalvageAttempt[]>;
@@ -126,6 +128,10 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
         this._craftingAPI = craftingAPI;
         this._componentAPI = componentAPI;
         this._componentToSalvage = componentToSalvage;
+    }
+
+    get actor(): BaseActor {
+        return this._actor;
     }
 
     async loadSalvageAttempts(): Promise<SalvageAttempt[]> {

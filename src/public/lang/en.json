@@ -163,6 +163,15 @@
         "previous": "Previous option"
       }
     },
+    "ComponentSalvageCarousel": {
+      "buttons": {
+        "next": "Next option",
+        "previous": "Previous option"
+      },
+      "hints": {
+        "requiresCatalysts": "This component requires these catalysts to salvaged."
+      }
+    },
     "CraftingResultCarousel": {
       "buttons": {
         "next": "Next",
@@ -194,7 +203,8 @@
         "notSalvageable": "Something has gone wrong, and this component has zero salvage options."
       },
       "hints": {
-        "doSalvage": "Salvaging this component will add these items to your inventory"
+        "doSalvage": "Salvaging this component will add these items to your inventory",
+        "requiresCatalysts": "This component requires these catalysts to salvaged."
       },
       "dialog": {
         "doSalvage": {

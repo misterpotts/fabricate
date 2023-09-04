@@ -4,9 +4,10 @@
     import { getContext, createEventDispatcher } from "svelte";
     import {localizationKey} from "./LocalizationService";
     import Properties from "../../scripts/Properties";
+    import TrackedCraftingComponentGrid from "./TrackedCraftingComponentGrid.svelte";
 
     const { localization } = getContext(localizationKey);
-    const localizationPath = `${Properties.module.id}.CraftingComponentCarousel`;
+    const localizationPath = `${Properties.module.id}.ComponentSalvageCarousel`;
     const dispatch = createEventDispatcher();
 
     export let columns;
@@ -35,8 +36,9 @@
                 <CraftingComponentGrid columns={columns} componentCombination={selectedSalvageAttempt.producedComponents} />
             </div>
             {#if selectedSalvageAttempt.requiresCatalysts}
+                <p class="fab-catalyst-hint">{localization.localize(`${localizationPath}.hints.requiresCatalysts`)}</p>
                 <div class="fab-component-grid-wrapper">
-                    <CraftingComponentGrid columns={columns} componentCombination={selectedSalvageAttempt.requiredCatalysts.target} />
+                    <TrackedCraftingComponentGrid columns={4} trackedCombination={selectedSalvageAttempt.requiredCatalysts} />
                 </div>
             {/if}
         </div>

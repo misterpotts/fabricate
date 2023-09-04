@@ -10,6 +10,7 @@
     import Properties from "../../scripts/Properties";
     import ComponentSalvageCarousel from "../common/ComponentSalvageCarousel.svelte";
     import CraftingAttemptCarousel from "../recipeCraftingApp/CraftingAttemptCarousel.svelte";
+    import TrackedCraftingComponentGrid from "../common/TrackedCraftingComponentGrid.svelte";
 
     const localizationPath = `${Properties.module.id}.ComponentSalvageApp`;
 
@@ -90,31 +91,33 @@
         await loadAppData();
     }
 
-    async function handleItemUpdated(event) {
-        // If the modified item is not owned, not owned by the actor who owns this crafting component, or is not associated with this component
-        if (!event?.detail?.actor?.id == componentSalvageManager.actor.id || !event?.detail?.sourceId == componentSalvageManager.componentToSalvage.itemUuid) {
+    async function reloadApplicableInventoryEvents(event) {
+        const actor = event.detail.actor;
+        const sourceId = event.detail.sourceId;
+        if (!actor) {
+            throw new Error("No actor provided in event detail");
+        }
+        if (!sourceId) {
+            throw new Error("No sourceId provided in event detail");
+        }
+        // If the modified item is not owned, or not owned by the actor who owns this crafting component
+        if (actor.id !== componentSalvageManager.actor.id) {
             return;
         }
         // if it is, we need to re-index the inventory
         return loadAppData();
+    }
+
+    async function handleItemUpdated(event) {
+        await reloadApplicableInventoryEvents(event);
     }
 
     async function handleItemCreated(event) {
-        // If the modified item is not owned, not owned by the actor who owns this crafting component, or is not associated with this component
-        if (!event?.detail?.actor?.id == componentSalvageManager.actor.id || !event?.detail?.sourceId == componentSalvageManager.componentToSalvage.itemUuid) {
-            return;
-        }
-        // if it is, we need to re-index the inventory
-        return loadAppData();
+        await reloadApplicableInventoryEvents(event);
     }
 
     async function handleItemDeleted(event) {
-        // If the modified item is not owned, not owned by the actor who owns this crafting component, or is not associated with this component
-        if (!event?.detail?.actor?.id == componentSalvageManager.actor.id || !event?.detail?.sourceId == componentSalvageManager.componentToSalvage.itemUuid) {
-            return;
-        }
-        // if it is, we need to re-index the inventory
-        return loadAppData();
+        await reloadApplicableInventoryEvents(event);
     }
 
 </script>
@@ -133,6 +136,10 @@
                     <p class="fab-salvage-hint">{localization.localize(`${localizationPath}.hints.doSalvage`)}:</p>
                     <div class="fab-component-grid-wrapper">
                         <CraftingComponentGrid columns={4} componentCombination={selectedSalvageAttempt.producedComponents} />
+                        {#if selectedSalvageAttempt.requiresCatalysts}
+                            <p style="margin: 10px 0;">{localization.localize(`${localizationPath}.hints.requiresCatalysts`)}</p>
+                            <TrackedCraftingComponentGrid columns={4} trackedCombination={selectedSalvageAttempt.requiredCatalysts} />
+                        {/if}
                     </div>
                 {:else if salvageAttempts.length > 1}
                     <ComponentSalvageCarousel columns={4}
