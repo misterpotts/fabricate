@@ -5,7 +5,8 @@ interface RecipeCraftingPrep {
 
     recipe: Recipe;
     isSingleton: boolean;
-    getCraftingAttemptByIngredientOptionName(optionName: string): CraftingAttempt;
+
+    getCraftingAttemptByRequirementOptionName(optionName: string): CraftingAttempt;
     getAllCraftingAttempts(): CraftingAttempt[];
     getSingletonCraftingAttempt(): CraftingAttempt;
 
@@ -41,7 +42,7 @@ class MultipleRecipeCraftingPrep implements RecipeCraftingPrep {
         return Array.from(this._craftingAttemptsByIngredientOptionName.values());
     }
 
-    getCraftingAttemptByIngredientOptionName(optionName: string): CraftingAttempt {
+    getCraftingAttemptByRequirementOptionName(optionName: string): CraftingAttempt {
         if (!this._craftingAttemptsByIngredientOptionName.has(optionName)) {
             throw new Error(`The ingredient option with the name ${optionName} has no prepared crafting attempt. `);
         }
@@ -84,7 +85,7 @@ class SingletonRecipeCraftingPrep implements RecipeCraftingPrep {
         throw new Error(`Cannot get multiple crafting attempts. The Recipe "${this._recipe.name}" has no ingredient options.`);
     }
 
-    getCraftingAttemptByIngredientOptionName(optionName: string): CraftingAttempt {
+    getCraftingAttemptByRequirementOptionName(optionName: string): CraftingAttempt {
         throw new Error(`Cannot get the crafting attempts for the ingredient option ${optionName}. The Recipe "${this._recipe.name}" has no ingredient options.`);
     }
 

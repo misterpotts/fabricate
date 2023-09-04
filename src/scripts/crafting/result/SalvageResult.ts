@@ -1,14 +1,15 @@
 import {Combination} from "../../common/Combination";
-import {ComponentReference} from "../component/ComponentReference";
+import {Component} from "../component/Component";
 
 interface SalvageResult {
 
+    readonly component: Component;
     readonly targetActorId: string;
     readonly sourceActorId: string;
     readonly description: string;
-    consumed: ComponentReference;
-    produced: Combination<ComponentReference>;
-    isSuccessful: boolean;
+    readonly consumed: Component | undefined;
+    readonly produced: Combination<Component>;
+    readonly isSuccessful: boolean;
 
 }
 
@@ -16,18 +17,38 @@ export { SalvageResult }
 
 class NoSalvageResult implements SalvageResult {
 
+    private readonly _component: Component;
     private readonly _description: string;
+    private readonly _sourceActorId: string;
+    private readonly _targetActorId: string;
 
-    constructor(description: string) {
+    constructor({
+        component,
+        description,
+        sourceActorId,
+        targetActorId,
+    }: {
+        component: Component;
+        description: string;
+        sourceActorId: string;
+        targetActorId: string;
+    }) {
+        this._component = component;
         this._description = description;
+        this._sourceActorId = sourceActorId;
+        this._targetActorId = targetActorId;
     }
 
-    get produced(): Combination<ComponentReference> {
+    get component(): Component {
+        return this._component;
+    }
+
+    get produced(): Combination<Component> {
         return Combination.EMPTY();
     }
 
-    get consumed(): ComponentReference {
-        return ComponentReference.NONE();
+    get consumed(): Component {
+        return undefined
     }
 
     get isSuccessful(): boolean {
@@ -35,11 +56,11 @@ class NoSalvageResult implements SalvageResult {
     }
 
     get targetActorId(): string {
-        return "";
+        return this._targetActorId;
     }
 
     get sourceActorId(): string {
-        return "";
+        return this._sourceActorId;
     }
 
     get description(): string {
@@ -48,29 +69,33 @@ class NoSalvageResult implements SalvageResult {
 
 }
 
-export {NoSalvageResult};
+export { NoSalvageResult };
 
 class SuccessfulSalvageResult implements SalvageResult {
 
+    private readonly _component: Component;
     private readonly _description: string;
     private readonly _sourceActorId: string;
     private readonly _targetActorId: string;
-    private readonly _consumed: ComponentReference;
-    private readonly _produced: Combination<ComponentReference>;
+    private readonly _consumed: Component;
+    private readonly _produced: Combination<Component>;
 
     constructor({
+        component,
         description,
         sourceActorId,
         targetActorId,
         consumed,
         produced,
     }: {
+        component: Component;
         description: string;
         sourceActorId: string;
         targetActorId: string;
-        consumed: ComponentReference;
-        produced: Combination<ComponentReference>;
+        consumed: Component;
+        produced: Combination<Component>;
     }) {
+        this._component = component;
         this._description = description;
         this._sourceActorId = sourceActorId;
         this._targetActorId = targetActorId;
@@ -78,11 +103,15 @@ class SuccessfulSalvageResult implements SalvageResult {
         this._produced = produced;
     }
 
-    get consumed(): ComponentReference {
+    get component(): Component {
+        return this._component;
+    }
+
+    get consumed(): Component {
         return this._consumed;
     }
 
-    get produced(): Combination<ComponentReference> {
+    get produced(): Combination<Component> {
         return this._produced;
     }
 
@@ -108,29 +137,38 @@ export { SuccessfulSalvageResult };
 
 class UnsuccessfulSalvageResult implements SalvageResult {
 
+    private readonly _component: Component;
     private readonly _description: string;
     private readonly _sourceActorId: string;
-    private readonly _consumed: ComponentReference;
+    private readonly _consumed: Component;
 
     constructor({
+        component,
         description,
         sourceActorId,
         consumed
     }: {
+        component: Component;
         description: string;
         sourceActorId: string;
-        consumed: ComponentReference;
+        consumed: Component;
     }) {
+        this._component = component;
         this._description = description;
         this._sourceActorId = sourceActorId;
         this._consumed = consumed;
     }
 
-    get produced(): Combination<ComponentReference> {
+
+    get component(): Component {
+        return this._component;
+    }
+
+    get produced(): Combination<Component> {
         return Combination.EMPTY();
     }
 
-    get consumed(): ComponentReference {
+    get consumed(): Component {
         return this._consumed;
     }
 

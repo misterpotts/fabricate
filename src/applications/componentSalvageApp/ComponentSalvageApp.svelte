@@ -18,7 +18,7 @@
     export let craftingAPI;
     export let componentAPI;
     export let localization;
-    export let closeApplication;
+    export let closeHook;
 
     let salvageAttempt;
     let amountOwned;
@@ -73,12 +73,12 @@
         }
         component = updatedComponent;
         if (!component.isSalvageable) {
-            closeApplication();
+            closeHook();
             return;
         }
         await loadSalvageAttempt();
         if (!salvageAttempt.isPossible()) {
-            closeApplication();
+            closeHook();
         }
     }
 
@@ -104,7 +104,7 @@
         }
         await loadSalvageAttempt();
         if (!salvageAttempt.isPossible()) {
-            closeApplication();
+            closeHook();
         }
     }
 

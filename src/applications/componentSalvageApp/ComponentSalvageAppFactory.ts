@@ -53,7 +53,7 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                         craftingAPI: this.craftingAPI,
                         componentAPI: this.componentAPI,
                         localization: this.localizationService,
-                        closeApplication: async () => {
+                        closeHook: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
                                 .find(w => w.id == appId);
                             await svelteApplication.close();

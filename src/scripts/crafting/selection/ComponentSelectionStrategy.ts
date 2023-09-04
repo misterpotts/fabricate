@@ -1,18 +1,18 @@
 import {Combination} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
 import {Component} from "../component/Component";
-import {Essence} from "../essence/Essence";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {EssenceSelection} from "../../actor/EssenceSelection";
 import {Identifiable} from "../../common/Identifiable";
 import {Unit} from "../../common/Unit";
+import {EssenceReference} from "../essence/EssenceReference";
 
 interface ComponentSelectionStrategy {
 
     perform(
         requiredCatalysts: Combination<Component>,
         requiredIngredients: Combination<Component>,
-        requiredEssences: Combination<Essence>,
+        requiredEssences: Combination<EssenceReference>,
         availableComponents: Combination<Component>
     ): ComponentSelection;
 
@@ -20,11 +20,11 @@ interface ComponentSelectionStrategy {
 
 export {ComponentSelectionStrategy}
 
-class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
+class ConservativeEssenceSourcingComponentSelectionStrategy implements ComponentSelectionStrategy {
 
     perform(requiredCatalysts: Combination<Component>,
             requiredIngredients: Combination<Component>,
-            requiredEssences: Combination<Essence>,
+            requiredEssences: Combination<EssenceReference>,
             availableComponents: Combination<Component>): ComponentSelection {
 
         const catalysts = this.selectCombination(requiredCatalysts, availableComponents)
@@ -63,4 +63,4 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
 }
 
-export {DefaultComponentSelectionStrategy};
+export {ConservativeEssenceSourcingComponentSelectionStrategy};

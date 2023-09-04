@@ -1,5 +1,7 @@
 import {SelectableOptions} from "../selection/SelectableOptions";
 import {SalvageOption, SalvageOptionJson} from "../component/SalvageOption";
+import {NoSalvageResult, SalvageResult, SuccessfulSalvageResult} from "../result/SalvageResult";
+import {ComponentReference} from "../component/ComponentReference";
 
 interface SalvageAttempt {
 
@@ -13,6 +15,7 @@ interface SalvageAttempt {
     selectNextOption(): void;
     selectPreviousOption(): void;
     readonly options: SelectableOptions<SalvageOptionJson, SalvageOption>;
+    perform(): SalvageResult;
 
 }
 
@@ -76,6 +79,10 @@ class ImpossibleSalvageAttempt implements SalvageAttempt {
 
     get options(): SelectableOptions<SalvageOptionJson, SalvageOption> {
         return SelectableOptions.EMPTY();
+    }
+
+    perform(): SalvageResult {
+        return new NoSalvageResult(this._description);
     }
 
 }
@@ -150,6 +157,16 @@ class DefaultSalvageAttempt implements SalvageAttempt {
 
     get options(): SelectableOptions<SalvageOptionJson, SalvageOption> {
         return this._options;
+    }
+
+    perform(): SalvageResult {
+        return new SuccessfulSalvageResult({
+            description: this._description,
+            sourceActorId: this._sourceActorId,
+            targetActorId: this._targetActorId,
+            consumed: new ComponentReference(this._componentId),
+            produced: this._options.selectedOption.results,
+        });
     }
 
 }

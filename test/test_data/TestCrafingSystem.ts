@@ -3,7 +3,7 @@ import {CraftingSystemDetails} from "../../src/scripts/system/CraftingSystemDeta
 
 const testCraftingSystemOne = new CraftingSystem({
     id: "c3d50462684c5d960f3fba9f953a93a1",
-    disabled: true,
+    disabled: false,
     craftingSystemDetails: new CraftingSystemDetails({
         name: "Test system one",
         summary: "Test system one is not an embedded system",
@@ -17,7 +17,7 @@ export { testCraftingSystemOne }
 
 const testCraftingSystemTwo = new CraftingSystem({
     id: "c3d50462684c5d960f3fba9f953a93a2",
-    disabled: true,
+    disabled: false,
     craftingSystemDetails: new CraftingSystemDetails({
         name: "Test system two",
         summary: "Test system two is an embedded system",

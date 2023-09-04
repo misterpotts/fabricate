@@ -123,18 +123,23 @@
       }
     },
     "crafting": {
-      "salvageAttempt": {
+      "craftingAttempt": {
+        "disabledRecipe": "The recipe {recipeName} is disabled and cannot be crafted.",
+        "disabledCraftingSystem": "The crafting system {craftingSystemName} is disabled and cannot be used."
+        "invalidItemData": "The recipe with ID \"{recipeId}\" has a problem with its item data. Caused by: {cause}"
+      },
+      "salvage": {
+        "actorNotFound": "The Actor with id {actorId} could not be found. ",
+        "componentNotFound": "The component with id {componentId} could not be found. ",
+        "componentNotOwned": "The component with name {componentName} is not owned by the Actor {actorName}. ",
         "disabledComponent": "The component {componentName} is disabled and cannot be salvaged.",
         "disabledCraftingSystem": "The component {componentName} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
         "unsalvageableComponent": "The component {componentName} has no usable salvage options.",
-        "prepared": "A salvage attempt Prepared for {componentName} in {craftingSystemName}.",
-        "invalidItemData": "The component with ID \"{componentId}\" has a problem with its item data. Caused by: {cause}"
-      },
-      "salvageResult": {
+        "invalidItemData": "The component with ID \"{componentId}\" has a problem with its item data. Caused by: {cause}",
         "multipleCraftingSystems": "This Salvage Result has components from multiple Crafting Systems. This is not supported, and possibly a bug. ",
-        "disabledCraftingSystem": "The crafting system {craftingSystemName} is disabled and cannot be used.",
-        "invalidItemData": "The components with IDs \"{componentIds}\" have problems with their item data. Resolve these before attempting this salvage again.",
-        "success": "Salvaged {componentName} in {craftingSystemName}."
+        "success": "Salvaged {componentName} in {craftingSystemName}.",
+        "salvageOptionIdRequired": "The component {componentName} has {salvageOptionCount} salvage options, but no salvage option ID was provided. The available salvage option ids are: {salvageOptionIds}. ",
+        "missingCatalysts": "Unable to salvage the component {componentName}. Missing required catalysts: {missingCatalystNames}. "
       },
       "inventory": {
         "error": {

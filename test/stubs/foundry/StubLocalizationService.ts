@@ -6,12 +6,12 @@ class StubLocalizationService implements LocalizationService {
 
     format(path: string, params: {}): string {
         this._invocations.push({ path, params });
-        return "Stub localization";
+        return `Stub localization: "${path}" with params ${JSON.stringify(params)}`;
     }
 
     localize(path: string): string {
         this._invocations.push({ path, params: {} });
-        return "Stub localization";
+        return `Stub localization: "${path}"`;
     }
 
     localizeAll(basePath: string, childPaths: string[], lineBreak: boolean): string {

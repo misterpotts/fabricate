@@ -23,6 +23,10 @@ interface InventoryAction {
      */
     rationalise(): InventoryAction;
 
+    withoutAdditions(): InventoryAction;
+
+    withoutRemovals(): InventoryAction;
+
 }
 
 export { InventoryAction }
@@ -66,6 +70,22 @@ class SimpleInventoryAction implements InventoryAction {
         return new SimpleInventoryAction({
             additions: rationalisedAdditions,
             removals: rationalisedRemovals,
+            activeEffects: this._activeEffects
+        });
+    }
+
+    withoutAdditions(): InventoryAction {
+        return new SimpleInventoryAction({
+            additions: Combination.EMPTY(),
+            removals: this._removals,
+            activeEffects: this._activeEffects
+        });
+    }
+
+    withoutRemovals(): InventoryAction {
+        return new SimpleInventoryAction({
+            additions: this._additions,
+            removals: Combination.EMPTY(),
             activeEffects: this._activeEffects
         });
     }

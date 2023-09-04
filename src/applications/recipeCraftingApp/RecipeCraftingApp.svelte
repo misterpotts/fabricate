@@ -1,4 +1,4 @@
-<!-- RecipeCraftingApp.svelte-->
+[<!-- RecipeCraftingApp.svelte-->
 <script lang="ts">
     import {onMount, setContext} from 'svelte';
     import eventBus from "../common/EventBus";
@@ -8,10 +8,8 @@
     import CraftingAttemptCarousel from "./CraftingAttemptCarousel.svelte";
     import CraftingAttemptGrid from "./CraftingAttemptGrid.svelte";
     import CraftingResultCarousel from "./CraftingResultCarousel.svelte";
-    import {RecipeCraftingPrepFactory} from "../../scripts/crafting/attempt/RecipeCraftingPrepFactory";
-    import {DefaultComponentSelectionStrategy} from "../../scripts/crafting/selection/ComponentSelectionStrategy";
     import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
-    import {DefaultCraftingResult} from "../../scripts/crafting/result/CraftingResult";
+    import {SuccessfulCraftingResult} from "../../scripts/crafting/result/CraftingResult";
 
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
@@ -20,8 +18,6 @@
     export let localization;
     export let closeHook;
 
-    // todo: create a store for this
-    const craftingPrepFactory = new RecipeCraftingPrepFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
     let craftingPrep;
     let craftingAttempt;
     let selectedRequirementOptionName;
@@ -68,9 +64,9 @@
             ui.notifications.warn(message);
             return;
         }
-        const craftingResult = new DefaultCraftingResult({
+        const craftingResult = new SuccessfulCraftingResult({
             recipe,
-            created: recipe.getSelectedResults().results,
+            produced: recipe.getSelectedResults().results,
             consumed: craftingAttempt.consumedComponents
         });
         await inventory.acceptCraftingResult(craftingResult);
@@ -122,7 +118,7 @@
     async function reIndex() {
         await inventory.index();
         craftingPrep = craftingPrepFactory.make(recipe, inventory.ownedComponents);
-        craftingAttempt = craftingPrep.isSingleton ? craftingPrep.getSingletonCraftingAttempt() : craftingPrep.getCraftingAttemptByIngredientOptionName(recipe.selectedRequirementOptionName);
+        craftingAttempt = craftingPrep.isSingleton ? craftingPrep.getSingletonCraftingAttempt() : craftingPrep.getCraftingAttemptByRequirementOptionName(recipe.selectedRequirementOptionName);
         selectedRequirementOptionName = recipe.selectedRequirementOptionName;
         loaded = true;
     }

@@ -1,8 +1,8 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
 import {DefaultRecipeAPI} from "../src/scripts/api/RecipeAPI"
-import {StubCraftingSystemApi} from "./stubs/api/StubCraftingSystemApi";
-import {StubEssenceApi} from "./stubs/api/StubEssenceApi";
-import {StubComponentApi} from "./stubs/api/StubComponentApi";
+import {StubCraftingSystemAPI} from "./stubs/api/StubCraftingSystemAPI";
+import {StubEssenceAPI} from "./stubs/api/StubEssenceAPI";
+import {StubComponentAPI} from "./stubs/api/StubComponentAPI";
 import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
@@ -45,10 +45,10 @@ import {StubRecipeValidator} from "./stubs/StubRecipeValidator";
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
 const notificationService = new StubNotificationService();
-const craftingSystemAPI = new StubCraftingSystemApi({
+const craftingSystemAPI = new StubCraftingSystemAPI({
     valuesById: new Map([[testCraftingSystemOne.id, testCraftingSystemOne]])
 });
-const componentAPI = new StubComponentApi({
+const componentAPI = new StubComponentAPI({
     valuesById: new Map([
         [testComponentOne.id, testComponentOne],
         [testComponentTwo.id, testComponentTwo],
@@ -59,7 +59,7 @@ const componentAPI = new StubComponentApi({
         [testComponentSeven.id, testComponentSeven]
     ])
 });
-const essenceAPI = new StubEssenceApi({
+const essenceAPI = new StubEssenceAPI({
     valuesById: new Map([
         [elementalEarth.id, elementalEarth],
         [elementalFire.id, elementalFire],
@@ -610,7 +610,7 @@ describe("Delete", () => {
 
     test("should delete a recipe by ID even if the crafting system does not exist", async () => {
 
-        const emptyCraftingSystemApi = new StubCraftingSystemApi();
+        const emptyCraftingSystemApi = new StubCraftingSystemAPI();
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",
             settingManager: new StubSettingManager<SerialisedEntityData<RecipeJson>>(defaultSettingValue()),
@@ -679,7 +679,7 @@ describe("Delete", () => {
 
     test("should delete recipes by crafting system ID even if the crafting system does not exist", async () => {
 
-        const emptyCraftingSystemApi = new StubCraftingSystemApi();
+        const emptyCraftingSystemApi = new StubCraftingSystemAPI();
 
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",

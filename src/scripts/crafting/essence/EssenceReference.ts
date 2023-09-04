@@ -25,8 +25,8 @@ class EssenceReference implements Identifiable, Serializable<EssenceReferenceJso
         };
     }
 
-    static fromEssenceId(componentId: string): EssenceReference {
-        return new EssenceReference(componentId);
+    static fromEssenceId(essenceId: string): EssenceReference {
+        return new EssenceReference(essenceId);
     }
 
 }

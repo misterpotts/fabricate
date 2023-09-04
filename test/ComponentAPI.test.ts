@@ -1,6 +1,5 @@
 import {beforeEach, describe, expect, test} from "@jest/globals";
-import {StubCraftingSystemApi} from "./stubs/api/StubCraftingSystemApi";
-import {StubEssenceApi} from "./stubs/api/StubEssenceApi";
+import {StubCraftingSystemAPI} from "./stubs/api/StubCraftingSystemAPI";
 import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
 import {StubDocumentManager} from "./stubs/StubDocumentManager";
@@ -34,14 +33,15 @@ import {DefaultComponentAPI} from "../src/scripts/api/ComponentAPI";
 import {Component} from "../src/scripts/crafting/component/Component";
 import {ComponentFactory} from "../src/scripts/crafting/component/ComponentFactory";
 import {ComponentCollectionManager} from "../src/scripts/repository/CollectionManager";
+import {StubEssenceAPI} from "./stubs/api/StubEssenceAPI";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
 const notificationService = new StubNotificationService();
-const craftingSystemAPI = new StubCraftingSystemApi({
+const craftingSystemAPI = new StubCraftingSystemAPI({
     valuesById: new Map([[testCraftingSystemOne.id, testCraftingSystemOne]])
 });
-const essenceAPI = new StubEssenceApi({
+const essenceAPI = new StubEssenceAPI({
     valuesById: new Map([
         [elementalEarth.id, elementalEarth],
         [elementalFire.id, elementalFire],

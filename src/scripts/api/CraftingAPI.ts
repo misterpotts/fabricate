@@ -4,7 +4,6 @@ import {ComponentAPI} from "./ComponentAPI";
 import {RecipeAPI} from "./RecipeAPI";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";
 import {NoSalvageResult, SalvageResult, SuccessfulSalvageResult} from "../crafting/result/SalvageResult";
-import {DefaultSalvageAttempt, ImpossibleSalvageAttempt, SalvageAttempt} from "../crafting/attempt/SalvageAttempt";
 import Properties from "../Properties";
 import {Combination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
@@ -13,6 +12,109 @@ import {InventoryFactory} from "../actor/InventoryFactory";
 import {Inventory} from "../actor/Inventory";
 import {NotificationService} from "../foundry/NotificationService";
 import {SimpleInventoryAction} from "../actor/InventoryAction";
+import {SalvageOption} from "../crafting/component/SalvageOption";
+import {CraftingResult, NoCraftingResult, SuccessfulCraftingResult} from "../crafting/result/CraftingResult";
+import {RequirementOption} from "../crafting/recipe/RequirementOption";
+import {ResultOption} from "../crafting/recipe/ResultOption";
+import {ComponentSelectionStrategy} from "../crafting/selection/ComponentSelectionStrategy";
+import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
+import {TrackedCombination} from "../common/TrackedCombination";
+import {EssenceReference} from "../crafting/essence/EssenceReference";
+import {Unit} from "../common/Unit";
+
+/**
+ * Options used when salvaging a component using the Crafting API.
+ */
+interface ComponentSalvageOptions {
+
+    /**
+     * The ID of the component to salvage.
+     */
+    componentId: string;
+
+    /**
+     * The ID of the Actor from which the component should be removed.
+     */
+    sourceActorId: string;
+
+    /**
+     * The optional ID of the Actor to which any produced components should be added. If not specified, the
+     * sourceActorId is used. Specify a different targetActorId when salvaging from a container or shared inventory to
+     * another character.
+     */
+    targetActorId?: string;
+
+    /**
+     * The optional ID of the Salvage Option to use. Not required if the component has only one Salvage Option. If the
+     * component has multiple Salvage Options this must be specified.
+     */
+    salvageOptionId?: string;
+
+}
+
+/**
+ * Options used when explicitly selecting components for crafting recipes
+ */
+interface UserSelectedComponents {
+
+    /**
+     * The IDs and quantities of the catalysts to use when crafting the recipe.
+     */
+    catalysts: Record<string, number>;
+
+    /**
+     * The IDs and quantities of the ingredients to use when crafting the recipe.
+     */
+    ingredients: Record<string, number>;
+
+    /**
+     * The IDs and quantities of the components to use as essence sources when crafting the recipe.
+     */
+    essenceSources: Record<string, number>;
+
+}
+
+interface RecipeCraftingOptions {
+
+    /**
+     * The ID of the recipe to attempt.
+     */
+    recipeId: string;
+
+    /**
+     * The ID of the Actor from which the components should be removed.
+     */
+    sourceActorId: string;
+
+    /**
+     * The optional ID of the Actor to which any produced components should be added. If not specified, the
+     * sourceActorId is used. Specify a different targetActorId when crafting from a container or shared inventory to
+     * another character.
+     */
+    targetActorId?: string;
+
+    /**
+     * The optional ID of the Requirement Option to use. Not required if the recipe has only one Requirement Option. If
+     * the recipe has multiple Requirement Options this must be specified.
+     */
+    requirementOptionId?: string;
+
+    /**
+     * The optional ID of the Result Option to use. Not required if the recipe has only one Result Option. If the recipe
+     * has multiple Result Options this must be specified.
+     */
+    resultOptionId?: string;
+
+    /**
+     * The optional IDs and quantities of the components to use when crafting the recipe. If not specified, the
+     * components and amounts will be selected automatically for the least wasteful essence sources (if any are
+     * required). This is useful when customising component selection for essences. However, if the Recipe also requires
+     * catalysts and named ingredients be sure to include them in the component selection. If an insufficient
+     * combination is specified crafting will not be attempted.
+     */
+    userSelectedComponents?: UserSelectedComponents;
+
+}
 
 interface CraftingAPI {
 
@@ -20,8 +122,8 @@ interface CraftingAPI {
      * Counts the number of components of a given type owned by the specified actor.
      *
      * @async
-     * @param actorId - The id of the actor to check.
-     * @param componentId - The id of the component to count.
+     * @param actorId - The ID of the actor to check.
+     * @param componentId - The ID of the component to count.
      * @returns A Promise that resolves with the number of components of this type owned by the actor.
      */
     countOwnedComponentsOfType(actorId: string, componentId: string): Promise<number>;
@@ -30,33 +132,29 @@ interface CraftingAPI {
      * Gets the components owned by the specified actor for the specified crafting system.
      *
      * @async
-     * @param actorId - The id of the actor whose inventory you want to search.
-     * @param craftingSystemId - The id of the crafting system to limit component matches to.
+     * @param actorId - The ID of the actor whose inventory you want to search.
+     * @param craftingSystemId - The ID of the crafting system to limit component matches to.
      * @returns A Promise that resolves with the components owned by the actor for the specified crafting system.
      */
     getOwnedComponentsForCraftingSystem(actorId: string, craftingSystemId: string): Promise<Combination<Component>>;
 
     /**
-     * Prepares a Salvage Attempt for the specified component.
+     * Attempts to salvage the specified component.
      *
      * @async
-     * @param componentId - The id of the component to salvage.
-     * @param sourceActorId - The id of the Actor from which the component should be removed. If not specified, the
-     *   targetActorId is used. Specify a different sourceActorId when salvaging from a container or shared inventory.
-     * @param targetActorId - The id of the Actor to which any produced components should be added.
-     * @returns A Promise that resolves with the prepared Salvage Attempt.
+     * @param componentSalvageOptions - The options to use when salvaging the component.
+     * @returns Promise<SalvageResult> A Promise that resolves with the Salvage Result
      */
-    prepareSalvageAttempt({ componentId, sourceActorId, targetActorId }: { componentId: string, sourceActorId: string, targetActorId: string }): Promise<SalvageAttempt>;
+    salvageComponent(componentSalvageOptions: ComponentSalvageOptions): Promise<SalvageResult>;
 
     /**
-     * Accepts the specified Salvage Result, applying changes to actors and their owned items as necessary.
+     * Attempts to craft the specified recipe.
      *
      * @async
-     * @param salvageResult - The Salvage Result to accept.
-     * @returns A Promise that resolves with the accepted Salvage Result.
+     * @param recipeCraftingOptions - The options to use when crafting the recipe.
+     * @returns Promise<CraftingResult> A Promise that resolves with the prepared Crafting Result.
      */
-    acceptSalvageResult(salvageResult: SalvageResult): Promise<SalvageResult>;
-
+    craftRecipe(recipeCraftingOptions: RecipeCraftingOptions): Promise<CraftingResult>;
 
 }
 
@@ -74,7 +172,7 @@ class DefaultCraftingAPI implements CraftingAPI {
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
-
+    private readonly _componentSelectionStrategy: ComponentSelectionStrategy;
 
     constructor({
         recipeAPI,
@@ -85,6 +183,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         craftingSystemAPI,
         notificationService,
         localizationService,
+        componentSelectionStrategy,
     }: {
         recipeAPI: RecipeAPI;
         essenceAPI: EssenceAPI;
@@ -94,6 +193,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         craftingSystemAPI: CraftingSystemAPI;
         notificationService: NotificationService;
         localizationService: LocalizationService;
+        componentSelectionStrategy: ComponentSelectionStrategy;
     }) {
         this.recipeAPI = recipeAPI;
         this.essenceAPI = essenceAPI;
@@ -103,6 +203,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.craftingSystemAPI = craftingSystemAPI;
         this.notificationService = notificationService;
         this.localizationService = localizationService;
+        this._componentSelectionStrategy = componentSelectionStrategy;
     }
 
     async countOwnedComponentsOfType(actorId: string, componentId: string): Promise<number> {
@@ -133,82 +234,192 @@ class DefaultCraftingAPI implements CraftingAPI {
         return this.inventoryFactory.make(gameSystemId, actor, knownComponentsBySourceItemUuid);
     }
 
-    async prepareSalvageAttempt({ componentId, sourceActorId, targetActorId }: { componentId: string, sourceActorId: string, targetActorId: string }): Promise<SalvageAttempt> {
+    async salvageComponent({
+        componentId,
+        sourceActorId,
+        targetActorId = sourceActorId,
+        salvageOptionId
+    }: ComponentSalvageOptions): Promise<SalvageResult> {
+
+        /**
+         * =============================================================================================================
+         * Check Source and Target Actors are valid
+         * =============================================================================================================
+         */
+
+        const sourceActor = await this.gameProvider.loadActor(sourceActorId);
+        if (!sourceActor) {
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.actorNotFound`, { actorId: sourceActorId });
+            throw new Error(message);
+        }
+
+        if (sourceActorId !== targetActorId) {
+            const targetActor = await this.gameProvider.loadActor(targetActorId);
+            if (!targetActor) {
+                const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.actorNotFound`, { actorId: targetActorId });
+                throw new Error(message);
+            }
+        }
+
+        /**
+         * =============================================================================================================
+         * Check component exists
+         * =============================================================================================================
+         */
 
         const component = await this.componentAPI.getById(componentId);
+
+        if (!component) {
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.componentNotFound`, { componentId });
+            throw new Error(message);
+        }
+
+        /**
+         * =============================================================================================================
+         * Check component is owned by Source Actor
+         * =============================================================================================================
+         */
+
+        const sourceInventory = await this.getInventory(targetActorId, component.craftingSystemId);
+        const ownedItems = sourceInventory.getContents();
+
+        if (!ownedItems.has(component)) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.componentNotOwned`,
+                {
+                    componentName: component.name,
+                    actorName: sourceActor.name
+                }
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check component has valid item data
+         * =============================================================================================================
+         */
+
         await component.load();
 
         if (component.itemData.hasErrors) {
-            return new ImpossibleSalvageAttempt({
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.invalidItemData`,
+                { componentId, cause: component.itemData.errors.join(", ") }
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
                 sourceActorId,
                 targetActorId,
-                componentId: component.id,
-                description: this.localizationService.format(
-                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.invalidItemData`,
-                    { componentId, cause: component.itemData.errors.join(", ") }
-                )
+                description: message
             });
         }
+
+        /**
+         * =============================================================================================================
+         * Check component is enabled
+         * =============================================================================================================
+         */
 
         if (component.isDisabled) {
-            return new ImpossibleSalvageAttempt({
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.disabledComponent`,
+                { componentName: component.name }
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
                 sourceActorId,
                 targetActorId,
-                componentId: component.id,
-                description: this.localizationService.format(
-                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.disabledComponent`,
-                    { componentName: component.name }
-                )
+                description: message
             });
         }
 
+        /**
+         * =============================================================================================================
+         * Check component is salvageable
+         * =============================================================================================================
+         */
+
         if (!component.isSalvageable) {
-            return new ImpossibleSalvageAttempt({
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.unsalvageableComponent`,
+                { componentName: component.name }
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
                 sourceActorId,
                 targetActorId,
-                componentId: component.id,
-                description: this.localizationService.format(
-                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.unsalvageableComponent`,
-                    { componentName: component.name }
-                )
+                description: message
             });
         }
+
+        /**
+         * =============================================================================================================
+         * Check salvage option ID ws provided if component has multiple salvage options
+         * =============================================================================================================
+         */
+
+        if (!salvageOptionId && component.salvageOptionsById.size > 1) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.salvageOptionIdRequired`,
+                {
+                    componentName: component.name,
+                    salvageOptionIds: Array.from(component.salvageOptionsById.keys()).join(", ") ,
+                    salvageOptionCount: component.salvageOptionsById.size
+                }
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check component's crafting system is enabled
+         * =============================================================================================================
+         */
 
         const craftingSystem = await this.craftingSystemAPI.getById(component.craftingSystemId);
 
         if (craftingSystem.isDisabled) {
-            return new ImpossibleSalvageAttempt({
-                sourceActorId,
-                targetActorId,
-                componentId: component.id,
-                description: this.localizationService.format(
-                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.disabledCraftingSystem`,
-                    {
-                        craftingSystemName: craftingSystem.details.name,
-                        componentName: component.name
-                    }
-                )
-            });
-        }
-
-        return new DefaultSalvageAttempt({
-            sourceActorId,
-            targetActorId,
-            componentId: component.id,
-            options: component.salvageOptions,
-            description: this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageAttempt.prepared`,
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.disabledCraftingSystem`,
                 {
                     craftingSystemName: craftingSystem.details.name,
                     componentName: component.name
                 }
-            )
-        });
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
 
-    }
+        /**
+         * =============================================================================================================
+         * Check all components in the salvage result are valid
+         * =============================================================================================================
+         */
 
-    async acceptSalvageResult(salvageResult: SalvageResult): Promise<SalvageResult> {
-        const salvageResultComponentReferences = salvageResult.produced.combineWith(Combination.of(salvageResult.consumed));
+        const selectedSalvageOption: SalvageOption = salvageOptionId ? component.salvageOptionsById.get(salvageOptionId) : component.salvageOptionsById.values().next().value;
+
+        const salvageResultComponentReferences = selectedSalvageOption.results.combineWith(selectedSalvageOption.catalysts);
         const includedComponentsById = await this.componentAPI.getAllById(salvageResultComponentReferences.members.map(component => component.id));
 
         const includedComponents = Array.from(includedComponentsById.values());
@@ -218,24 +429,16 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         if (craftingSystemIds.length > 1) {
             const message = this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.crafting.salvageResult.multipleCraftingSystems`,
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageResult.multipleCraftingSystems`,
                 { craftingSystemIds: craftingSystemIds.join(", ") }
             );
             this.notificationService.error(message);
-            return;
-        }
-
-        const craftingSystemId = craftingSystemIds[0];
-        const craftingSystem = await this.craftingSystemAPI.getById(craftingSystemId);
-        if (craftingSystem.isDisabled) {
-            const message = this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageResult.disabledCraftingSystem`,
-                {
-                    craftingSystemName: craftingSystem.details.name
-                }
-            );
-            this.notificationService.error(message);
-            return new NoSalvageResult(message);
+            return new NoSalvageResult({
+                component,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
         }
 
         await Promise.all(includedComponents.map(component => component.load()));
@@ -249,26 +452,526 @@ class DefaultCraftingAPI implements CraftingAPI {
                 }
             );
             this.notificationService.error(message);
-            return new NoSalvageResult(message);
+            return new NoSalvageResult({
+                component,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
         }
 
+        /**
+         * =============================================================================================================
+         * Check that the source actor has enough catalysts to perform the salvage
+         * =============================================================================================================
+         */
+
+        if (selectedSalvageOption.requiresCatalysts) {
+            const missingCatalysts = ownedItems.without(component.id, 1)
+                .units
+                .filter(unit => selectedSalvageOption.catalysts.has(unit.element.id))
+                .reduce((wantedCatalysts, ownedCatalyst) => {
+                    return wantedCatalysts.without(ownedCatalyst.element.id, ownedCatalyst.quantity);
+                }, selectedSalvageOption.catalysts);
+
+            if (!missingCatalysts.isEmpty()) {
+                const message = this.localizationService.format(
+                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.missingCatalysts`,
+                    {
+                        componentName: component.name,
+                        missingCatalystNames: missingCatalysts.map(unit => includedComponentsById.get(unit.element.id)).join(", ")
+                    }
+                );
+                this.notificationService.warn(message);
+                return new NoSalvageResult({
+                    component,
+                    sourceActorId,
+                    targetActorId,
+                    description: message
+                });
+            }
+        }
+
+        /**
+         * =============================================================================================================
+         * Perform the salvage
+         * =============================================================================================================
+         */
+
         const action = new SimpleInventoryAction({
-            additions: salvageResult.produced.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
-            removals: Combination.of(includedComponentsById.get(salvageResult.consumed.id)),
+            additions: selectedSalvageOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+            removals: Combination.of(component),
         });
-        const inventory = await this.getInventory(salvageResult.sourceActorId, craftingSystemId);
-        await inventory.perform(action);
+        await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);
         const description = this.localizationService.localize(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageResult.success`);
         return new SuccessfulSalvageResult({
+            component,
             description,
-            consumed: salvageResult.consumed,
-            produced: salvageResult.produced,
-            sourceActorId: salvageResult.sourceActorId,
-            targetActorId: salvageResult.targetActorId,
+            sourceActorId,
+            targetActorId,
+            consumed: component,
+            produced: action.additions,
         });
 
     }
 
+    async craftRecipe({
+        recipeId,
+        sourceActorId,
+        targetActorId = sourceActorId,
+        requirementOptionId,
+        resultOptionId,
+        userSelectedComponents = { catalysts: {}, ingredients: {}, essenceSources: {} }
+    }: RecipeCraftingOptions): Promise<CraftingResult> {
+
+        /**
+         * =============================================================================================================
+         * Check Source and Target Actors are valid
+         * =============================================================================================================
+         */
+
+        const sourceActor = await this.gameProvider.loadActor(sourceActorId);
+        if (!sourceActor) {
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.actorNotFound`, { actorId: sourceActorId });
+            throw new Error(message);
+        }
+
+        if (sourceActorId !== targetActorId) {
+            const targetActor = await this.gameProvider.loadActor(targetActorId);
+            if (!targetActor) {
+                const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.actorNotFound`, { actorId: targetActorId });
+                throw new Error(message);
+            }
+        }
+
+        /**
+         * =============================================================================================================
+         * Check recipe exists
+         * =============================================================================================================
+         */
+
+        const recipe = await this.recipeAPI.getById(recipeId);
+
+        if (!recipe) {
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.recipeNotFound`, { recipeId });
+            throw new Error(message);
+        }
+
+        /**
+         * =============================================================================================================
+         * Check recipe has valid item data
+         * =============================================================================================================
+         */
+
+        await recipe.load();
+
+        if (recipe.hasErrors) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidItemData`,
+                { recipeId: recipe.id, cause: recipe.errors.join(", ") }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check recipe is enabled
+         * =============================================================================================================
+         */
+
+        if (recipe.isDisabled) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.disabledRecipe`,
+                { recipeName: recipe.name }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check the recipe's crafting system is enabled
+         * =============================================================================================================
+         */
+
+        const craftingSystem = await this.craftingSystemAPI.getById(recipe.craftingSystemId);
+
+        if (craftingSystem.isDisabled) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.disabledCraftingSystem`,
+                { craftingSystemName: craftingSystem.details.name }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check requirement option ID ws provided if recipe has multiple requirement options
+         * =============================================================================================================
+         */
+
+        if (!requirementOptionId && recipe.requirementOptions.byId.size > 1) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.requirementOptionIdRequired`,
+                {
+                    recipeName: recipe.name,
+                    requirementOptionIds: Array.from(recipe.requirementOptions.byId.keys()).join(", ") ,
+                    requirementOptionCount: recipe.requirementOptions.byId.size
+                }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check result option ID ws provided if recipe has multiple result options
+         * =============================================================================================================
+         */
+
+        if (!resultOptionId && recipe.resultOptions.byId.size > 1) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.resultOptionIdRequired`,
+                {
+                    recipeName: recipe.name,
+                    resultOptionIds: Array.from(recipe.resultOptions.byId.keys()).join(", ") ,
+                    resultOptionCount: recipe.resultOptions.byId.size
+                }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check all components in the recipe are valid
+         * =============================================================================================================
+         */
+
+        const selectedRequirementOption: RequirementOption = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
+        const selectedResultOption: ResultOption = resultOptionId ? recipe.resultOptions.byId.get(resultOptionId) : recipe.resultOptions.byId.values().next().value;
+        const allComponentIds = selectedRequirementOption.ingredients
+            .combineWith(selectedRequirementOption.catalysts)
+            .combineWith(selectedResultOption.results)
+            .map(unit => unit.element.id);
+        const includedComponentsById = await this.componentAPI.getAllById(allComponentIds);
+
+        const includedComponents = Array.from(includedComponentsById.values());
+        const craftingSystemIds = includedComponents
+            .map(component => component.craftingSystemId)
+            .filter((value, index, self) => self.indexOf(value) === index);
+
+        if (craftingSystemIds.length > 1) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.multipleCraftingSystems`,
+                { craftingSystemIds: craftingSystemIds.join(", ") }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        await Promise.all(includedComponents.map(component => component.load()));
+
+        const componentsWithErrors = includedComponents.filter(component => component.itemData.hasErrors);
+        if (componentsWithErrors.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidComponentItemData`,
+                {
+                    componentIds: componentsWithErrors.map(component => component.id).join(", ")
+                }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message,
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check all essences in the recipe are valid
+         * =============================================================================================================
+         */
+
+        const allEssenceIds = Array.from(includedComponentsById.values())
+            .filter(component => component.hasEssences)
+            .map(component => component.essences)
+            .reduce((essences, componentEssences) => essences.combineWith(componentEssences), Combination.EMPTY())
+            .map(unit => unit.element.id);
+        const includedEssencesById = await this.essenceAPI.getAllById(allEssenceIds);
+
+        const includedEssences = Array.from(includedEssencesById.values());
+        const essenceCraftingSystemIds = includedEssences
+            .map(essence => essence.craftingSystemId)
+            .filter((value, index, self) => self.indexOf(value) === index);
+
+        if (essenceCraftingSystemIds.length > 1) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.multipleEssenceCraftingSystems`,
+                { craftingSystemIds: essenceCraftingSystemIds.join(", ") }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message,
+            });
+        }
+
+        await Promise.all(includedEssences.map(essence => essence.load()));
+
+        const essencesWithErrors = includedEssences.filter(essence => essence.activeEffectSource.hasErrors);
+        if (essencesWithErrors.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidEssenceItemData`,
+                {
+                    essenceIds: essencesWithErrors.map(essence => essence.id).join(", ")
+                }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message,
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check that other components in the source actor's inventory are valid
+         * =============================================================================================================
+         */
+
+        const sourceInventory = await this.getInventory(sourceActorId, craftingSystem.id);
+        const ownedComponents = sourceInventory.getContents();
+
+        const otherComponentsInInventory = ownedComponents.members
+            .filter(component => !includedComponentsById.has(component.id));
+        await Promise.all(otherComponentsInInventory.map(component => component.load()));
+        const otherComponentsInInventoryWithErrors = otherComponentsInInventory.filter(component => component.itemData.hasErrors);
+        if (otherComponentsInInventoryWithErrors.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidComponentItemData`,
+                {
+                    componentIds: otherComponentsInInventoryWithErrors.map(component => component.id).join(", ")
+                }
+            );
+            this.notificationService.error(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message,
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Select the components to use, if not specified
+         * =============================================================================================================
+         */
+
+        const allComponentsById = new Map(includedComponentsById);
+        otherComponentsInInventory.forEach(component => allComponentsById.set(component.id, component));
+
+        let selectedComponents: ComponentSelection;
+        if (recipe.hasRequirements) {
+            selectedComponents = new EmptyComponentSelection();
+        } else if (this.isEmptyUserSelection(userSelectedComponents)) {
+            selectedComponents  = this.makeSelections(
+                selectedRequirementOption,
+                ownedComponents,
+                allComponentsById
+            );
+        } else {
+            const userProvidedComponents = this.assignUserProvidedComponents(
+                selectedRequirementOption,
+                userSelectedComponents,
+                allComponentsById,
+                ownedComponents
+            );
+            if (!userProvidedComponents.selected.isSufficient) {
+                const message = this.localizationService.format(
+                    `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.insufficientUserComponents`,
+                    {
+                        recipeName: recipe.name,
+                        missingComponents: userProvidedComponents.missing.map(unit => unit.element.name).join(", ")
+                    }
+                );
+                this.notificationService.warn(message);
+                return new NoCraftingResult({
+                    recipe,
+                    sourceActorId,
+                    targetActorId,
+                    description: message,
+                });
+            }
+            selectedComponents = userProvidedComponents.selected;
+        }
+
+        /**
+         * =============================================================================================================
+         * Check the selection is sufficient to perform the crafting
+         * =============================================================================================================
+         */
+
+        if (!selectedComponents.isSufficient) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.insufficientComponents`,
+                {
+                    recipeName: recipe.name
+                }
+            );
+            this.notificationService.warn(message);
+            return new NoCraftingResult({
+                recipe,
+                sourceActorId,
+                targetActorId,
+                description: message,
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Perform the crafting
+         * =============================================================================================================
+         */
+
+        return new SuccessfulCraftingResult({
+            recipe,
+            sourceActorId,
+            targetActorId,
+            consumed: selectedComponents.ingredients.actual.combineWith(selectedComponents.essenceSources),
+            description: this.localizationService.localize(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.success`),
+            produced: selectedResultOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+        });
+
+    }
+
+    private async applyInventoryAction(sourceActorId: string, targetActorId: string, action: SimpleInventoryAction, craftingSystemId: string): Promise<void> {
+        if (sourceActorId === targetActorId) {
+            const inventory = await this.getInventory(targetActorId, craftingSystemId);
+            await inventory.perform(action);
+        } else {
+            const sourceInventory = await this.getInventory(sourceActorId, craftingSystemId);
+            const targetInventory = await this.getInventory(targetActorId, craftingSystemId);
+            await sourceInventory.perform(action.withoutAdditions());
+            await targetInventory.perform(action.withoutRemovals());
+        }
+    }
+
+    private makeSelections(selectedRequirementOption: RequirementOption,
+                           ownedComponents: Combination<Component>,
+                           allComponentsById: Map<string, Component>): ComponentSelection {
+        return this._componentSelectionStrategy.perform(
+            selectedRequirementOption.catalysts.convertElements(componentReference => allComponentsById.get(componentReference.id)),
+            selectedRequirementOption.ingredients.convertElements(componentReference => allComponentsById.get(componentReference.id)),
+            selectedRequirementOption.essences,
+            ownedComponents
+        );
+    }
+
+    private isEmptyUserSelection(userSelectedComponents: UserSelectedComponents) {
+        return Object.keys(userSelectedComponents.catalysts).length === 0
+            && Object.keys(userSelectedComponents.ingredients).length === 0
+            && Object.keys(userSelectedComponents.essenceSources).length === 0;
+    }
+
+    private assignUserProvidedComponents(selectedRequirementOption: RequirementOption,
+                                 userSelectedComponents: UserSelectedComponents,
+                                 allComponentsById: Map<string, Component>,
+                                 ownedComponents: Combination<Component>): { selected: ComponentSelection, missing: Combination<Component> } {
+
+        let availableComponents = ownedComponents;
+        let missingComponents = Combination.EMPTY<Component>();
+
+        // Select Catalysts from available components up to the required amount in the user selection
+
+        const assignComponentAmounts = (unit: Unit<Component>) => {
+            const component = unit.element;
+            const availableQuantity = Math.min(unit.quantity, availableComponents.amountFor(component));
+            if (availableQuantity < unit.quantity) {
+                missingComponents = missingComponents.with(component, unit.quantity - availableQuantity);
+            }
+            availableComponents = availableComponents.without(component.id, availableQuantity);
+            return new Unit<Component>(component, availableQuantity);
+        };
+
+        const actualCatalysts = Combination.fromRecord(userSelectedComponents.catalysts, componentId => allComponentsById.get(componentId))
+            .map(assignComponentAmounts)
+            .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+
+        const catalysts = new TrackedCombination<Component>({
+            target: selectedRequirementOption.catalysts.convertElements(componentReference => allComponentsById.get(componentReference.id)),
+            actual: actualCatalysts
+        });
+
+        // Select Ingredients from available components up to the required amount in the user selection
+
+        const actualIngredients = Combination.fromRecord(userSelectedComponents.ingredients, componentId => allComponentsById.get(componentId))
+            .map(assignComponentAmounts)
+            .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+
+        const ingredients = new TrackedCombination<Component>({
+            target: selectedRequirementOption.ingredients.convertElements(componentReference => allComponentsById.get(componentReference.id)),
+            actual: actualIngredients
+        });
+
+        // Select Essence Sources from available components up to the required amount in the user selection
+
+        const essenceSources = Combination.fromRecord<Component>(userSelectedComponents.essenceSources, componentId => allComponentsById.get(componentId))
+            .map(assignComponentAmounts)
+            .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+
+        const selectedComponents = new DefaultComponentSelection({
+            catalysts,
+            ingredients,
+            essenceSources,
+            essences: new TrackedCombination<EssenceReference>({
+                actual: essenceSources.explode(component => component.essences),
+                target: selectedRequirementOption.essences
+            })
+        });
+
+        return { selected: selectedComponents, missing: missingComponents };
+
+    }
 }
 
 export { DefaultCraftingAPI };

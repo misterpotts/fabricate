@@ -410,14 +410,48 @@ class Combination<T extends Identifiable> {
      * Removes the specified member from the original Combination without altering it and returns a new Combination
      * representing the result.
      *
-     * @param {T} member - The member to remove from the original Combination.
+     * @param {T} memberToRemove - The member to remove from the original Combination.
+     * @param {number} [amountToRemove] - The amount of the member to remove. If not specified, the member is removed
+     *  from the Combination regardless of its current quantity. If provided, the member is only removed if its current
+     *  quantity is equal to or less than the specified amount. Otherwise, the member's current quantity is reduced by
+     *  the specified amount.
      * @returns {Combination<T>} A new Combination with the specified member removed.
      */
-    without(member: T | string) {
-        const memberId = typeof member === "string" ? member : member.id;
-        const combination: Map<string, Unit<T>> = new Map(this._amounts);
-        combination.delete(memberId);
-        return new Combination<T>(combination);
+    without(memberToRemove: T | string, amountToRemove?: number): Combination<T> {
+        const memberId = typeof memberToRemove === "string" ? memberToRemove : memberToRemove.id;
+        const newAmounts: Map<string, Unit<T>> = new Map(this._amounts);
+        if (typeof amountToRemove === "number" && newAmounts.has(memberId)) {
+            const currentUnit: Unit<T> = newAmounts.get(memberId);
+            const updatedUnit: Unit<T> = currentUnit.minus(amountToRemove, 0);
+            if (updatedUnit.quantity <= 0) {
+                newAmounts.delete(memberId);
+            } else {
+                newAmounts.set(memberId, updatedUnit);
+            }
+        } else if (newAmounts.has(memberId)) {
+            newAmounts.delete(memberId);
+        }
+        return new Combination<T>(newAmounts);
+    }
+
+    /**
+     * Adds the specified member in the specified quantity to the combination without altering it and returns a new
+     *  Combination representing the result.
+     *
+     * @param memberToAdd - The member to add to the Combination.
+     * @param amountToAdd - The amount of the member to add.
+     * @returns {Combination<T>} A new Combination with the specified member added.
+     */
+    with(memberToAdd: T, amountToAdd: number = 1): Combination<T> {
+        const newAmounts: Map<string, Unit<T>> = new Map(this._amounts);
+        if (newAmounts.has(memberToAdd.id)) {
+            const currentUnit: Unit<T> = newAmounts.get(memberToAdd.id);
+            const updatedUnit: Unit<T> = currentUnit.add(amountToAdd);
+            newAmounts.set(memberToAdd.id, updatedUnit);
+        } else {
+            newAmounts.set(memberToAdd.id, new Unit(memberToAdd, amountToAdd));
+        }
+        return new Combination<T>(newAmounts);
     }
 
     /**
@@ -427,7 +461,7 @@ class Combination<T extends Identifiable> {
      * @param {number} factor - The factor by which to multiply the quantity of each member in the original Combination.
      * @returns {Combination<T>} A new Combination with updated quantities for each member, resulting from the multiplication.
      */
-    public multiply(factor: number) {
+    public multiply(factor: number): Combination<T> {
         const modifiedAmounts: Map<string, Unit<T>> = new Map(this._amounts);
         this.members.forEach((member: T) => {
             const unit: Unit<T> = modifiedAmounts.get(member.id);
@@ -442,7 +476,7 @@ class Combination<T extends Identifiable> {
      * @param {Combination<T>} other - The other Combination to check for intersection with the original Combination.
      * @returns {boolean} True if the original Combination and the provided Combination share any common members, otherwise false.
      */
-    intersects(other: Combination<T>) {
+    intersects(other: Combination<T>): boolean {
         return other.members.some((otherMember: T) => this.members.find(value => value.id === otherMember.id) !== undefined);
     }
 
@@ -458,7 +492,7 @@ class Combination<T extends Identifiable> {
      * @returns {Combination<R>} A new Combination of type R, resulting from the transformation and merging of the original
      *  Combination's members.
      */
-    explode <R extends Identifiable>(transformFunction: (thisType: T) => Combination<R>): Combination<R> {
+    explode<R extends Identifiable>(transformFunction: (thisType: T) => Combination<R>): Combination<R> {
         let exploded: Combination<R> = Combination.EMPTY<R>();
         this.amounts.forEach((unit: Unit<T>) => {
             exploded = exploded.combineWith(transformFunction(unit.element).multiply(unit.quantity));
@@ -473,7 +507,7 @@ class Combination<T extends Identifiable> {
      * @param {Combination<T>} other - The other Combination to compare with the original Combination.
      * @returns {boolean} True if the original Combination and the provided Combination are equal, otherwise false.
      */
-    equals(other: Combination<T>) {
+    equals(other: Combination<T>): boolean {
         if (!other) {
             return false;
         }
@@ -486,7 +520,8 @@ class Combination<T extends Identifiable> {
     /**
      * Converts the Combination to a JSON representation, mapping the member ID to its quantity.
      *
-     * @returns {Record<string, number>} A JSON object with member IDs as keys and their corresponding quantities as values.
+     * @returns {Record<string, number>} A JSON object with member IDs as keys and their corresponding quantities as
+     *  values.
      */
     public toJson(): Record<string, number> {
         return this.units
@@ -496,12 +531,29 @@ class Combination<T extends Identifiable> {
             }, {});
     }
 
+    /**
+     * Converts the combination to an Array of the specified type, by applying the provided mappingFunction to each
+     *  unit. The mappingFunction receives a copy of each unit within the original combination, so that it can be
+     *  safely modified without side effects.
+     *
+     * @param mappingFunction - The function to apply to each unit in the combination.
+     * @returns {R[]} An array of type R, resulting from the conversion of the original combination's units.
+     */
     map<R = any>(mappingFunction: (unit: Unit<T>) => R): R[] {
         return this.units
             .map(unit => unit.clone())
             .map(mappingFunction);
     }
 
+    /**
+     * Converts the Combination type to a new type by applying the provided conversionFunction to each unit.
+     *  The conversionFunction receives a copy of each unit within the original Combination, so that it can be safely
+     *  modified without side effects.
+     *
+     * @param conversionFunction - The function to apply to each unit in the Combination.
+     * @returns {Combination<R>} A new Combination of type R, resulting from the conversion of the original
+     *  Combination's units.
+     */
     convertUnits<R extends Identifiable>(conversionFunction: (unit: Unit<T>) => Unit<R>): Combination<R> {
         return this.units
             .map(unit => unit.clone())
@@ -509,6 +561,14 @@ class Combination<T extends Identifiable> {
             .reduce((left, right) => left.combineWith(Combination.ofUnit(right)), Combination.EMPTY<R>());
     }
 
+    /**
+     * Converts the Combination elements to a new type by applying the provided conversionFunction to each element
+     *  without modifying the quantity.
+     *
+     * @param conversionFunction - The function to apply to each element in the Combination.
+     * @returns {Combination<R>} A new Combination of type R, resulting from the conversion of the original
+     *  Combination's elements.
+     */
     convertElements<R extends Identifiable>(conversionFunction: (element: T) => R): Combination<R> {
         return this.units
             .map(unit => unit.clone())
