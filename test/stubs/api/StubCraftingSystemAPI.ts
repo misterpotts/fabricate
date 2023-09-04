@@ -39,7 +39,7 @@ class StubCraftingSystemAPI implements CraftingSystemAPI {
     }
 
     async deleteById(id: string): Promise<CraftingSystem | undefined> {
-        const value = await this.getById(id);;
+        const value = await this.getById(id);
         this._valuesById.delete(id);
         return value;
     }

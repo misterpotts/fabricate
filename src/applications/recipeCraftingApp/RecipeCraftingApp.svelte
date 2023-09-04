@@ -14,12 +14,10 @@
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
     export let recipe;
-    export let inventory;
+    export let craftingAPI;
     export let localization;
     export let closeHook;
 
-    let craftingPrep;
-    let craftingAttempt;
     let selectedRequirementOptionName;
 
     function resetSelections() {

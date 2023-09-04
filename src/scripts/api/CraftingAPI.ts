@@ -249,14 +249,14 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const sourceActor = await this.gameProvider.loadActor(sourceActorId);
         if (!sourceActor) {
-            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.actorNotFound`, { actorId: sourceActorId });
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.actorNotFound`, { actorId: sourceActorId });
             throw new Error(message);
         }
 
         if (sourceActorId !== targetActorId) {
             const targetActor = await this.gameProvider.loadActor(targetActorId);
             if (!targetActor) {
-                const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.actorNotFound`, { actorId: targetActorId });
+                const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.actorNotFound`, { actorId: targetActorId });
                 throw new Error(message);
             }
         }
@@ -396,7 +396,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         if (craftingSystem.isDisabled) {
             const message = this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.disabledCraftingSystem`,
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.disabledCraftingSystem`,
                 {
                     craftingSystemName: craftingSystem.details.name,
                     componentName: component.name
@@ -532,14 +532,14 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const sourceActor = await this.gameProvider.loadActor(sourceActorId);
         if (!sourceActor) {
-            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.actorNotFound`, { actorId: sourceActorId });
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.actorNotFound`, { actorId: sourceActorId });
             throw new Error(message);
         }
 
         if (sourceActorId !== targetActorId) {
             const targetActor = await this.gameProvider.loadActor(targetActorId);
             if (!targetActor) {
-                const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.actorNotFound`, { actorId: targetActorId });
+                const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.actorNotFound`, { actorId: targetActorId });
                 throw new Error(message);
             }
         }
@@ -609,7 +609,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         if (craftingSystem.isDisabled) {
             const message = this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.disabledCraftingSystem`,
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.disabledCraftingSystem`,
                 { craftingSystemName: craftingSystem.details.name }
             );
             this.notificationService.error(message);
@@ -691,7 +691,10 @@ class DefaultCraftingAPI implements CraftingAPI {
         if (craftingSystemIds.length > 1) {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.multipleCraftingSystems`,
-                { craftingSystemIds: craftingSystemIds.join(", ") }
+                {
+                    craftingSystemIds: craftingSystemIds.join(", "),
+                    recipeName: recipe.name
+                }
             );
             this.notificationService.error(message);
             return new NoCraftingResult({
@@ -709,6 +712,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidComponentItemData`,
                 {
+                    recipeName: recipe.name,
                     componentIds: componentsWithErrors.map(component => component.id).join(", ")
                 }
             );
@@ -789,6 +793,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidComponentItemData`,
                 {
+                    recipeName: recipe.name,
                     componentIds: otherComponentsInInventoryWithErrors.map(component => component.id).join(", ")
                 }
             );
@@ -831,7 +836,8 @@ class DefaultCraftingAPI implements CraftingAPI {
                     `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.insufficientUserComponents`,
                     {
                         recipeName: recipe.name,
-                        missingComponents: userProvidedComponents.missing.map(unit => unit.element.name).join(", ")
+                        actorName: sourceActor.name,
+                        missingComponentNames: userProvidedComponents.missing.map(unit => unit.element.name).join(", ")
                     }
                 );
                 this.notificationService.warn(message);
@@ -855,7 +861,8 @@ class DefaultCraftingAPI implements CraftingAPI {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.insufficientComponents`,
                 {
-                    recipeName: recipe.name
+                    recipeName: recipe.name,
+                    actorName: sourceActor.name,
                 }
             );
             this.notificationService.warn(message);
@@ -878,7 +885,13 @@ class DefaultCraftingAPI implements CraftingAPI {
             sourceActorId,
             targetActorId,
             consumed: selectedComponents.ingredients.actual.combineWith(selectedComponents.essenceSources),
-            description: this.localizationService.localize(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.success`),
+            description: this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.success`,
+                {
+                    recipeName: recipe.name,
+                    craftingSystemName: craftingSystem.details.name,
+                }
+            ),
             produced: selectedResultOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
         });
 

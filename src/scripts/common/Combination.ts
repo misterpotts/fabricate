@@ -487,8 +487,8 @@ class Combination<T extends Identifiable> {
      * Combination.
      *
      * @template R - The type of the resulting Combination.
-     * @param {(thisType: T) => Combination<R>} transformFunction - The function to transform the members of the original
-     * Combination into Combinations of the new type.
+     * @param transformFunction - The function to transform the members of the original Combination into Combinations of
+     *  the new type.
      * @returns {Combination<R>} A new Combination of type R, resulting from the transformation and merging of the original
      *  Combination's members.
      */
@@ -537,7 +537,7 @@ class Combination<T extends Identifiable> {
      *  safely modified without side effects.
      *
      * @param mappingFunction - The function to apply to each unit in the combination.
-     * @returns {R[]} An array of type R, resulting from the conversion of the original combination's units.
+     * @returns R[] An array of type R, resulting from the conversion of the original combination's units.
      */
     map<R = any>(mappingFunction: (unit: Unit<T>) => R): R[] {
         return this.units
@@ -551,8 +551,8 @@ class Combination<T extends Identifiable> {
      *  modified without side effects.
      *
      * @param conversionFunction - The function to apply to each unit in the Combination.
-     * @returns {Combination<R>} A new Combination of type R, resulting from the conversion of the original
-     *  Combination's units.
+     * @returns Combination<R> A new Combination of type R, resulting from the conversion of the original Combination's
+     *  units.
      */
     convertUnits<R extends Identifiable>(conversionFunction: (unit: Unit<T>) => Unit<R>): Combination<R> {
         return this.units
@@ -566,8 +566,8 @@ class Combination<T extends Identifiable> {
      *  without modifying the quantity.
      *
      * @param conversionFunction - The function to apply to each element in the Combination.
-     * @returns {Combination<R>} A new Combination of type R, resulting from the conversion of the original
-     *  Combination's elements.
+     * @returns Combination<R> A new Combination of type R, resulting from the conversion of the original Combination's
+     *  elements.
      */
     convertElements<R extends Identifiable>(conversionFunction: (element: T) => R): Combination<R> {
         return this.units

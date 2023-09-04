@@ -123,23 +123,32 @@
       }
     },
     "crafting": {
-      "craftingAttempt": {
-        "disabledRecipe": "The recipe {recipeName} is disabled and cannot be crafted.",
-        "disabledCraftingSystem": "The crafting system {craftingSystemName} is disabled and cannot be used."
-        "invalidItemData": "The recipe with ID \"{recipeId}\" has a problem with its item data. Caused by: {cause}"
-      },
+      "actorNotFound": "The Actor with id {actorId} could not be found. ",
+      "disabledCraftingSystem": "The component {componentName} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
       "salvage": {
-        "actorNotFound": "The Actor with id {actorId} could not be found. ",
         "componentNotFound": "The component with id {componentId} could not be found. ",
         "componentNotOwned": "The component with name {componentName} is not owned by the Actor {actorName}. ",
         "disabledComponent": "The component {componentName} is disabled and cannot be salvaged.",
-        "disabledCraftingSystem": "The component {componentName} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
         "unsalvageableComponent": "The component {componentName} has no usable salvage options.",
         "invalidItemData": "The component with ID \"{componentId}\" has a problem with its item data. Caused by: {cause}",
-        "multipleCraftingSystems": "This Salvage Result has components from multiple Crafting Systems. This is not supported, and possibly a bug. ",
+        "multipleCraftingSystems": "This Salvage Result has components from multiple Crafting Systems. This is not supported, and possibly a bug. The crafting system IDs are: {craftingSystemIds}. ",
         "success": "Salvaged {componentName} in {craftingSystemName}.",
         "salvageOptionIdRequired": "The component {componentName} has {salvageOptionCount} salvage options, but no salvage option ID was provided. The available salvage option ids are: {salvageOptionIds}. ",
         "missingCatalysts": "Unable to salvage the component {componentName}. Missing required catalysts: {missingCatalystNames}. "
+      },
+      "recipe": {
+        "recipeNotFound": "The recipe with id {recipeId} could not be found. ",
+        "invalidItemData": "The recipe with ID \"{recipeId}\" has a problem with its item data. Caused by: {cause}",
+        "disabledRecipe": "The recipe {recipeName} is disabled and cannot be crafted.",
+        "requirementOptionIdRequired": "The recipe {recipeName} has {requirementOptionCount} requirement options, but no requirement option ID was provided. The available requirement option ids are: {requirementOptionIds}. ",
+        "resultOptionIdRequired": "The recipe {recipeName} has {resultOptionCount} result options, but no result option ID was provided. The available result option ids are: {resultOptionIds}. ",
+        "multipleCraftingSystems": "The recipe {recipeName} has components from multiple Crafting Systems. This is not supported, and possibly a bug. The crafting system IDs are: {craftingSystemIds}. ",
+        "invalidComponentItemData": "The recipe {recipeName} has a problem with its component item data. The invalid component IDs are {invalidComponentIds}. ",
+        "multipleEssenceCraftingSystems": "The recipe {recipeName} has essences from multiple Crafting Systems. This is not supported, and possibly a bug. The crafting system IDs are: {craftingSystemIds}. ",
+        "invalidEssenceItemData": "The recipe {recipeName} has a problem with its essence item data. The invalid essence IDs are {essenceIds}. ",
+        "insufficientUserComponents": "The selected components for crafting {recipeName} are not all owned by the Actor {actorName}. The missing components are {missingComponentNames}. ",
+        "insufficientComponents": "The Actor {actorName} does not have enough of the required components to craft {recipeName}. ",
+        "success": "Crafted {recipeName} in {craftingSystemName}."
       },
       "inventory": {
         "error": {
