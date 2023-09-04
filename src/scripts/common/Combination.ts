@@ -217,10 +217,10 @@ class Combination<T extends Identifiable> {
      * Determines whether the current Combination is a subset of the specified Combination.
      * A Combination is a subset of another if all its Units are present in the other Combination with at least the same quantities.
      *
-     * @param {Combination<T>} other - The Combination to check against.
+     * @param {Combination<Identifiable>} other - The Combination to check against.
      * @returns {boolean} True if the current Combination is a subset of the specified Combination, otherwise false.
      */
-    public isIn(other: Combination<T>): boolean {
+    public isIn(other: Combination<Identifiable>): boolean {
         for (const unit of this.amounts.values()) {
             if (!other.has(unit.element)) {
                 return false;
@@ -237,10 +237,10 @@ class Combination<T extends Identifiable> {
      * Determines whether the current Combination is a superset of the specified Combination.
      * A Combination is a superset of another if it contains all the Units of the other Combination with at least the same quantities.
      *
-     * @param {Combination<T>} other - The Combination to check against.
+     * @param {Combination<Identifiable>} other - The Combination to check against.
      * @returns {boolean} True if the current Combination is a superset of the specified Combination, otherwise false.
      */
-    public contains(other: Combination<T>): boolean {
+    public contains(other: Combination<Identifiable>): boolean {
         return other.isIn(this);
     }
 

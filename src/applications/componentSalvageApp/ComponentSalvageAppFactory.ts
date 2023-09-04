@@ -5,6 +5,7 @@ import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
 import {LocalizationService} from "../common/LocalizationService";
 import {CraftingAPI} from "../../scripts/api/CraftingAPI";
 import {ComponentAPI} from "../../scripts/api/ComponentAPI";
+import {DefaultComponentSalvageManager} from "./ComponentSalvageManager";
 
 interface ComponentSalvageAppFactory {
 
@@ -42,16 +43,20 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
             height: 514
         };
 
+        const componentSalvageManager = new DefaultComponentSalvageManager({
+            actor,
+            craftingAPI: this.craftingAPI,
+            componentAPI: this.componentAPI,
+            componentToSalvage: component,
+        });
+
         return new SvelteApplication({
             applicationOptions,
             svelteConfig: {
                 componentType: ComponentSalvageApp,
                 options: {
                     props: {
-                        actor,
-                        component,
-                        craftingAPI: this.craftingAPI,
-                        componentAPI: this.componentAPI,
+                        componentSalvageManager,
                         localization: this.localizationService,
                         closeHook: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)

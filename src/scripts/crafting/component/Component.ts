@@ -250,7 +250,10 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._salvageOptions = new SelectableOptions({ options });
     }
 
-    async load() {
+    async load(forceCacheRefresh: boolean = false) {
+        if (this._itemData.loaded && !forceCacheRefresh) {
+            return;
+        }
         this.itemData = await this.itemData.load();
     }
 

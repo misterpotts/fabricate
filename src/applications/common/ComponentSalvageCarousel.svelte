@@ -1,46 +1,44 @@
 <!-- ComponentSalvageCarousel.svelte -->
 <script lang="ts">
     import CraftingComponentGrid from "./CraftingComponentGrid.svelte"
-    import {getContext} from "svelte";
+    import { getContext, createEventDispatcher } from "svelte";
     import {localizationKey} from "./LocalizationService";
     import Properties from "../../scripts/Properties";
 
     const { localization } = getContext(localizationKey);
     const localizationPath = `${Properties.module.id}.CraftingComponentCarousel`;
+    const dispatch = createEventDispatcher();
 
     export let columns;
-    export let salvageAttempt;
-    export let components;
-
-    let selectedOption = salvageAttempt.selectedSalvageOption;
+    export let selectedSalvageAttempt;
 
     function selectNextOption() {
-        salvageAttempt.selectNextOption();
-        selectedOption = salvageAttempt.selectedSalvageOption;
+        dispatch("nextSalvageOptionSelected", {});
     }
 
     function selectPreviousOption() {
-        salvageAttempt.selectPreviousOption();
-        selectedOption = salvageAttempt.selectedSalvageOption;
+        dispatch("previousSalvageOptionSelected", {});
     }
 
 </script>
 
-{#if salvageAttempt && components.size > 0}
+{#if selectedSalvageAttempt}
     <div class="fab-component-grid-carousel">
         <div class="fab-component-grid-carousel-item" >
             <div class="fab-carousel-nav">
                 <button class="fab-carousel-button fab-carousel-previous" on:click={selectPreviousOption}><i class="fa-solid fa-caret-left"></i> {localization.localize(`${localizationPath}.buttons.previous`)}</button>
-                <h3 class="fab-carousel-option-name">{selectedOption.name}</h3>
+                <h3 class="fab-carousel-option-name">{selectedSalvageAttempt.optionName}</h3>
                 <button class="fab-carousel-button fab-carousel-next" on:click={selectNextOption}>{localization.localize(`${localizationPath}.buttons.next`)} <i class="fa-solid fa-caret-right"></i></button>
             </div>
             <slot name="description"></slot>
             <div class="fab-component-grid-wrapper">
-                <CraftingComponentGrid columns={columns} componentCombination={selectedOption.results.convertElements(reference => components.get(reference.id))} />
+                <CraftingComponentGrid columns={columns} componentCombination={selectedSalvageAttempt.producedComponents} />
             </div>
-            <div class="fab-component-grid-wrapper">
-                <CraftingComponentGrid columns={columns} componentCombination={selectedOption.catalysts.convertElements(reference => components.get(reference.id))} />
-            </div>
+            {#if selectedSalvageAttempt.requiresCatalysts}
+                <div class="fab-component-grid-wrapper">
+                    <CraftingComponentGrid columns={columns} componentCombination={selectedSalvageAttempt.requiredCatalysts.target} />
+                </div>
+            {/if}
         </div>
     </div>
 {/if}
