@@ -1,21 +1,16 @@
-<!-- EssenceEditor.svelte -->
+<!-- EssenceEditorComponent.svelte -->
 <script lang="ts">
     import Properties from "../../../scripts/Properties";
     import {key} from "../CraftingSystemManagerApp";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
-    import {ICON_NAMES} from "../../FontAwesomeIcons";
-    import {clickOutside} from "../../common/ClickOutside";
     import {getContext} from "svelte";
-    import {EssenceEditor} from "./EssenceEditor";
     import EssenceIconSelectorModal from "./EssenceIconSelectorModal.svelte";
-    import {SvelteApplication} from "../../SvelteApplication";
     
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.essences`;
 
     const { 
         localization,
         selectedCraftingSystem,
-        craftingSystemEditor,
         essences,
         essenceEditor
     } = getContext(key);
@@ -66,18 +61,18 @@
     <div class="fab-hero-banner fab-row">
         <img src="{Properties.ui.banners.essenceEditor}" >
     </div>
-    {#if !$selectedCraftingSystem.isLocked}
+    {#if !$selectedCraftingSystem.isEmbedded}
         <div class="fab-row">
             <button class="fab-new-essence" on:click={createEssence}><i class="fa-solid fa-mortar-pestle"></i> {localization.localize(`${localizationPath}.buttons.create`)}</button>
         </div>
     {/if}
-    {#if $selectedCraftingSystem.hasEssences}
-        <div class="fab-essences" class:fab-locked={$selectedCraftingSystem.isLocked} class:fab-unlocked={!$selectedCraftingSystem.isLocked}>
-            {#each $selectedCraftingSystem.essences as essence}
+    {#if $essences.length > 0}
+        <div class="fab-essences" class:fab-locked={$selectedCraftingSystem.isEmbedded} class:fab-unlocked={!$selectedCraftingSystem.isEmbedded}>
+            {#each $essences as essence}
                 <div class="fab-essence-ae-source fab-column">
                     <div class="fab-row">
                         <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.activeEffectSource`)}:</p>
-                        {#if !$selectedCraftingSystem?.isLocked}
+                        {#if !$selectedCraftingSystem?.isEmbedded}
                             {#if essence.hasActiveEffectSource}
                                 <button on:auxclick={() => removeActiveEffectSource(essence)} on:click={openActiveEffectSourceItemSheet(essence)} on:drop|preventDefault={(e) => addActiveEffectSource(e, essence)}>
                                     <img class="fab-essence-ae-source-img" src="{essence.activeEffectSource.imageUrl}" data-tooltip="{essence.activeEffectSource.name}" />
@@ -97,7 +92,7 @@
                 <div class="fab-essence-icon fab-column">
                     <div class="fab-row" style="position:relative;">
                         <p class="fab-label">{localization.localize(`${localizationPath}.essence.labels.icon`)}: </p>
-                        {#if !$selectedCraftingSystem?.isLocked}
+                        {#if !$selectedCraftingSystem?.isEmbedded}
                             <button class="fab-essence-icon-btn" on:click={(e) => showEssenceIconModal(e, essence)}>
                                 <i class="{essence.iconCode}"></i>
                             </button>
@@ -109,7 +104,7 @@
                 <div class="fab-essence-name fab-column">
                     <div class="fab-row">
                         <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.name`)}: </p>
-                        {#if !$selectedCraftingSystem?.isLocked}
+                        {#if !$selectedCraftingSystem?.isEmbedded}
                             <div class="fab-editable" contenteditable="true" bind:textContent={essence.name} on:input={scheduleSave}>{essence.name}</div>
                         {:else}
                             <div class="fab-locked ">{essence.name}</div>
@@ -119,7 +114,7 @@
                 <div class="fab-essence-tooltip fab-column">
                     <div class="fab-row">
                         <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.tooltip`)}: </p>
-                        {#if !$selectedCraftingSystem?.isLocked}
+                        {#if !$selectedCraftingSystem?.isEmbedded}
                             <div class="fab-editable" contenteditable="true" bind:textContent={essence.tooltip} on:input={scheduleSave}>{essence.tooltip}</div>
                         {:else}
                             <div class="fab-locked ">{essence.tooltip}</div>
@@ -129,14 +124,14 @@
                 <div class="fab-essence-description fab-column">
                     <div class="fab-row">
                         <p class="fab-label ">{localization.localize(`${localizationPath}.essence.labels.description`)}: </p>
-                        {#if !$selectedCraftingSystem?.isLocked}
+                        {#if !$selectedCraftingSystem?.isEmbedded}
                             <div class="fab-editable" contenteditable="true" bind:textContent={essence.description} on:input={scheduleSave}>{essence.description}</div>
                         {:else}
                             <div class="fab-locked ">{essence.description}</div>
                         {/if}
                     </div>
                 </div>
-                {#if !$selectedCraftingSystem.isLocked}
+                {#if !$selectedCraftingSystem.isEmbedded}
                 <div class="fab-delete-essence fab-column">
                     <div class="fab-row">
                         <button class="fab-delete-essence" on:click={(e) => deleteEssence(e, essence)}><i class="fa-solid fa-trash"></i> {localization.localize(`${localizationPath}.essence.buttons.delete`)}</button>
@@ -151,7 +146,7 @@
     {:else}
         <div class="fab-no-essences">
             <p>{localization.localize(`${localizationPath}.essence.info.noEssences`)}</p>
-            {#if !$selectedCraftingSystem.isLocked}<p>{localization.localize(`${localizationPath}.essence.info.createFirst`)}</p>{/if}
+            {#if !$selectedCraftingSystem.isEmbedded}<p>{localization.localize(`${localizationPath}.essence.info.createFirst`)}</p>{/if}
         </div>
     {/if}
 </div>

@@ -22,6 +22,7 @@
     import {CraftingComponentEditor} from "./componentManager/CraftingComponentEditor";
     import {RecipeEditor} from "./recipeManager/RecipeEditor";
     import {EssencesStore} from "../stores/EssenceStore";
+    import EssenceEditorComponent from "./essenceManager/EssenceEditorComponent.svelte";
     import {EssenceEditor} from "./essenceManager/EssenceEditor";
 
     export let localization;
@@ -104,7 +105,7 @@
         </TabPanel>
 
         <TabPanel class="fab-scrollable fab-columns">
-            <EssenceEditor />
+            <EssenceEditorComponent />
         </TabPanel>
 
         <TabPanel class="fab-scrollable fab-columns">
