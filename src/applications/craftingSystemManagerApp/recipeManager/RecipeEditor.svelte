@@ -81,7 +81,7 @@
             return;
         }
         requirementOption.subtractEssence(essence.id);
-        if (requirementOption.isEmpty()) {
+        if (requirementOption.isEmpty) {
             await deleteRequirementOption(requirementOption);
             return;
         }
