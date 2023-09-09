@@ -32,6 +32,8 @@
         }
     }
 
+    onMount(loadAppData);
+
     function selectNextSalvageOption() {
         const currentIndex = salvageAttempts.findIndex((attempt) => attempt.optionId === selectedSalvageAttempt.optionId);
         if (currentIndex === salvageAttempts.length - 1) {
@@ -50,7 +52,6 @@
         }
     }
 
-    onMount(loadAppData);
 
     setContext(localizationKey, {
         localization,

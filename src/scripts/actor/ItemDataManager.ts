@@ -20,22 +20,22 @@ interface ItemDataManager {
      *
      * @param components - The components to add.
      * @param activeEffects - The active effects to apply to the added items.
-     * @param ownedItemsByComponent - The owned items for each component.
+     * @param ownedItemsByComponentId - The owned items for each component.
      * @returns The updates and creates to be applied to the inventory.
      */
     prepareAdditions(components: Combination<Component>,
                      activeEffects: ActiveEffect[],
-                     ownedItemsByComponent: Map<Component, any[]>
+                     ownedItemsByComponentId: Map<string, any[]>
     ): { updates: any[], creates: any[] };
 
     /**
      * Prepares the removals to be made from the inventory as item update or delete operations.
      *
      * @param components - The components to remove.
-     * @param ownedItemsByComponent - The owned items for each component.
+     * @param ownedItemsByComponentId - The owned items for each component.
      * @returns The updates and deletes to be applied to the inventory.
      */
-    prepareRemovals(components: Combination<Component>, ownedItemsByComponent: Map<Component, any[]>): { updates: any[], deletes: any[] };
+    prepareRemovals(components: Combination<Component>, ownedItemsByComponentId: Map<string, any[]>): { updates: any[], deletes: any[] };
 
 }
 
@@ -73,17 +73,17 @@ class SingletonItemDataManager implements ItemDataManager {
         return itemData;
     }
 
-    prepareRemovals(components: Combination<Component>, ownedItemsByComponent: Map<Component, any[]>): {
+    prepareRemovals(components: Combination<Component>, ownedItemsByComponentId: Map<string, any[]>): {
         updates: any[];
         deletes: any[]
     } {
         const deletes = components.units
             .map(unit => {
                 const craftingComponent: Component = unit.element;
-                if (!ownedItemsByComponent.has(craftingComponent)) {
+                if (!ownedItemsByComponentId.has(craftingComponent.id)) {
                     throw new InventoryContentsNotFoundError(unit, 0);
                 }
-                const ownedItemsForComponent = ownedItemsByComponent.get(craftingComponent);
+                const ownedItemsForComponent = ownedItemsByComponentId.get(craftingComponent.id);
                 if (unit.quantity > ownedItemsForComponent.length) {
                     throw new InventoryContentsNotFoundError(unit, ownedItemsForComponent.length);
                 }
@@ -121,17 +121,17 @@ class PropertyPathAwareItemDataManager implements ItemDataManager {
 
     prepareAdditions(components: Combination<Component>,
                      activeEffects: ActiveEffect[],
-                     ownedItemsByComponent: Map<Component, any[]>
+                     ownedItemsByComponentId: Map<string, any[]>
     ): { updates: any[]; creates: any[] } {
 
         const creates = components.units
-            .filter(unit => !ownedItemsByComponent.has(unit.element))
+            .filter(unit => !ownedItemsByComponentId.has(unit.element.id))
             .map(unit => this.buildItemData(unit, activeEffects));
 
         const updates: any[] = components.units
-            .filter(unit => ownedItemsByComponent.has(unit.element))
+            .filter(unit => ownedItemsByComponentId.has(unit.element.id))
             .map(unit => {
-                const items = ownedItemsByComponent.get(unit.element)
+                const items = ownedItemsByComponentId.get(unit.element.id)
                     .sort((left, right) => this.count(right) - this.count(left));
                 const highestQuantityItem = items[0];
                 const targetQuantity = unit.quantity + this.count(highestQuantityItem);
@@ -157,7 +157,7 @@ class PropertyPathAwareItemDataManager implements ItemDataManager {
         return itemData;
     }
 
-    prepareRemovals(components: Combination<Component>, sourceItemsByComponent: Map<Component, any[]>): {
+    prepareRemovals(components: Combination<Component>, sourceItemsByComponentId: Map<string, any[]>): {
         updates: any[];
         deletes: any[]
     } {
@@ -165,11 +165,11 @@ class PropertyPathAwareItemDataManager implements ItemDataManager {
             .map(unit => {
 
                 const craftingComponent: Component = unit.element;
-                if (!sourceItemsByComponent.has(craftingComponent)) {
+                if (!sourceItemsByComponentId.has(craftingComponent.id)) {
                     throw new InventoryContentsNotFoundError(unit, 0);
                 }
 
-                const ownedItemsForComponent = sourceItemsByComponent.get(craftingComponent);
+                const ownedItemsForComponent = sourceItemsByComponentId.get(craftingComponent.id);
                 const ownedQuantity = ownedItemsForComponent
                     .reduce((total, item) => total + this.count(item), 0);
                 const amountToRemove = unit.quantity;

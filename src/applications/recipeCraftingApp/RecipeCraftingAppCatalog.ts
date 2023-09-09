@@ -35,7 +35,7 @@ class DefaultRecipeCraftingAppCatalog implements RecipeCraftingAppCatalog {
             this._appIndex.delete(appId);
             await recipe.load();
         }
-        const app = this._recipeCraftingAppFactory.make(recipe, actor, appId);
+        const app = await this._recipeCraftingAppFactory.make(recipe, actor, appId);
         this._appIndex.set(appId, app);
         return app;
     }

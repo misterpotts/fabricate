@@ -42,6 +42,7 @@ import {SettingsMigrator} from "../repository/migration/SettingsMigrator";
 import {CraftingAPI, DefaultCraftingAPI} from "./CraftingAPI";
 import {V2ToV3SettingMigrationStep} from "../repository/migration/V2ToV3SettingMigrationStep";
 import {DefaultInventoryFactory} from "../actor/InventoryFactory";
+import {ConservativeEssenceSourcingComponentSelectionStrategy} from "../crafting/selection/ComponentSelectionStrategy";
 
 interface FabricateAPIFactory {
 
@@ -343,7 +344,8 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             craftingSystemAPI,
             localizationService,
             notificationService: new DefaultNotificationService(this.uiProvider),
-            inventoryFactory
+            inventoryFactory,
+            componentSelectionStrategy: new ConservativeEssenceSourcingComponentSelectionStrategy()
         });
     }
 }

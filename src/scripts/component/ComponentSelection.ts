@@ -1,14 +1,14 @@
 import {Component} from "../crafting/component/Component";
 import {TrackedCombination} from "../common/TrackedCombination";
 import {Combination} from "../common/Combination";
-import {EssenceReference} from "../crafting/essence/EssenceReference";
+import {Essence} from "../crafting/essence/Essence";
 
 interface ComponentSelection {
 
     isSufficient: boolean;
     catalysts: TrackedCombination<Component>;
     ingredients: TrackedCombination<Component>;
-    essences: TrackedCombination<EssenceReference>;
+    essences: TrackedCombination<Essence>;
     essenceSources: Combination<Component>;
 
 }
@@ -16,7 +16,7 @@ interface ComponentSelection {
 class DefaultComponentSelection implements ComponentSelection {
 
     private readonly _catalysts: TrackedCombination<Component>;
-    private readonly _essences: TrackedCombination<EssenceReference>;
+    private readonly _essences: TrackedCombination<Essence>;
     private readonly _ingredients: TrackedCombination<Component>;
     private readonly _essenceSources: Combination<Component>;
 
@@ -27,7 +27,7 @@ class DefaultComponentSelection implements ComponentSelection {
         essenceSources
     }: {
         catalysts: TrackedCombination<Component>;
-        essences: TrackedCombination<EssenceReference>;
+        essences: TrackedCombination<Essence>;
         ingredients: TrackedCombination<Component>;
         essenceSources: Combination<Component>;
     }) {
@@ -45,7 +45,7 @@ class DefaultComponentSelection implements ComponentSelection {
         return this._catalysts;
     }
 
-    get essences(): TrackedCombination<EssenceReference> {
+    get essences(): TrackedCombination<Essence> {
         return this._essences;
     }
 
@@ -70,7 +70,7 @@ class EmptyComponentSelection implements ComponentSelection {
             return TrackedCombination.EMPTY();
         }
 
-        get essences(): TrackedCombination<EssenceReference> {
+        get essences(): TrackedCombination<Essence> {
             return TrackedCombination.EMPTY();
         }
 

@@ -9,7 +9,7 @@ interface InventoryFactory {
 
     make(gameSystemId: string,
          actor: BaseActor,
-         knownComponentsBySourceItemUuid: Map<string, Component>,
+         knownComponents: Component[],
     ): Inventory;
 
 }
@@ -44,7 +44,7 @@ class DefaultInventoryFactory implements InventoryFactory {
 
     make(gameSystemId: string,
          actor: BaseActor,
-         knownComponentsBySourceItemUuid: Map<string, Component>,
+         knownComponents: Component[],
     ): Inventory {
 
         let itemDataManager: ItemDataManager;
@@ -61,7 +61,7 @@ class DefaultInventoryFactory implements InventoryFactory {
             actor,
             localization: this._localizationService,
             itemDataManager,
-            knownComponentsBySourceItemUuid,
+            knownComponents,
        });
 
     }

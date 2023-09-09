@@ -2,7 +2,6 @@ import {Component} from "../crafting/component/Component";
 import {Combination} from "../common/Combination";
 import {Unit} from "../common/Unit";
 import {InventoryAction} from "./InventoryAction";
-import * as console from "console";
 import EmbeddedCollection
     from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/embedded-collection.mjs";
 import {BaseActor, BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
@@ -63,23 +62,31 @@ class CraftingInventory implements Inventory {
      * @private
      */
     private readonly _knownComponentsByItemUuid: Map<string, Component>;
+    private readonly _knownComponentsById: Map<string, Component>;
 
     constructor({
         actor,
         localization,
         itemDataManager = new SingletonItemDataManager(),
-        knownComponentsBySourceItemUuid = new Map<string, Component>(),
+        knownComponents = [],
     }: {
         actor: BaseActor;
         localization: LocalizationService;
         knownEssencesById?: Map<string, Essence>;
         itemDataManager?: ItemDataManager;
-        knownComponentsBySourceItemUuid?: Map<string, Component>;
+        knownComponents?: Component[];
     }) {
         this._actor = actor;
         this._localization = localization;
         this._itemDataManager = itemDataManager;
-        this._knownComponentsByItemUuid = knownComponentsBySourceItemUuid;
+
+        this._knownComponentsByItemUuid = new Map();
+        this._knownComponentsById = new Map();
+
+        knownComponents.forEach(component => {
+            this._knownComponentsByItemUuid.set(component.itemUuid, component);
+            this._knownComponentsById.set(component.id, component);
+        });
     }
 
     get actor(): BaseActor {
@@ -98,16 +105,16 @@ class CraftingInventory implements Inventory {
         // @ts-ignore
         const contentsWithSourceItems = this.getContentsWithSourceItems();
         return Array.from(contentsWithSourceItems.entries())
-            .flatMap(([component, items]) => {
+            .flatMap(([componentId, items]) => {
                 return items.map((item: any) => {
                     const quantity = this._itemDataManager.count(item);
-                    return new Unit(component, quantity);
+                    return new Unit(this._knownComponentsById.get(componentId), quantity);
                 });
            })
            .reduce((contents, unit) => contents.addUnit(unit), Combination.EMPTY<Component>());
     }
 
-    private getContentsWithSourceItems(): Map<Component, any[]> {
+    private getContentsWithSourceItems(): Map<string, any[]> {
         const actor = this.actor;
         // @ts-ignore
         const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
@@ -119,13 +126,13 @@ class CraftingInventory implements Inventory {
                 return { component, item };
             })
             .reduce((contents, entry) => {
-                if (!contents.has(entry.component)) {
-                    contents.set(entry.component, []);
+                if (!contents.has(entry.component.id)) {
+                    contents.set(entry.component.id, []);
                 }
-                contents.get(entry.component)
+                contents.get(entry.component.id)
                     .push(entry.item);
                 return contents;
-            }, new Map<Component, any>());
+            }, new Map<string, any>());
     }
 
     async perform(action: InventoryAction): Promise<Combination<Component>> {
@@ -139,9 +146,9 @@ class CraftingInventory implements Inventory {
 
     async removeAll(components: Combination<Component>): Promise<void> {
 
-        const sourceItemsByComponent = this.getContentsWithSourceItems();
+        const sourceItemsByComponentId = this.getContentsWithSourceItems();
 
-        const itemData = this._itemDataManager.prepareRemovals(components, sourceItemsByComponent);
+        const itemData = this._itemDataManager.prepareRemovals(components, sourceItemsByComponentId);
 
         if (itemData.updates.length > 0) {
             await this.updateOwnedItems(this._actor, itemData.updates);
@@ -154,9 +161,9 @@ class CraftingInventory implements Inventory {
 
     async addAll(components: Combination<Component>, activeEffects: ActiveEffect[]): Promise<void> {
 
-        const sourceItemsByComponent = this.getContentsWithSourceItems();
+        const sourceItemsByComponentId = this.getContentsWithSourceItems();
 
-        const itemData = this._itemDataManager.prepareAdditions(components, activeEffects, sourceItemsByComponent);
+        const itemData = this._itemDataManager.prepareAdditions(components, activeEffects, sourceItemsByComponentId);
 
         if (itemData.updates.length > 0) {
             await this.updateOwnedItems(this._actor, itemData.updates);

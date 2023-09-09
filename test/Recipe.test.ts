@@ -39,9 +39,9 @@ describe("When creating a recipe", () => {
         expect(underTest.requirementOptions.all[0].essences.size).toEqual(4);
         expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
         expect(underTest.requirementOptions.all[0].essences.amountFor(elementalEarth.id)).toEqual(3);
-        expect(underTest.hasRequirementOptions).toEqual(false);
+        expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(false);
+        expect(underTest.hasResultChoices).toEqual(false);
     });
 
     test("should correctly assess requirements for a recipe with essences and catalysts", () => {
@@ -50,7 +50,7 @@ describe("When creating a recipe", () => {
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.hasRequirementOptions).toEqual(false);
+        expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.requirementOptions.all.length).toEqual(1);
         expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
         expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(false);
@@ -61,7 +61,7 @@ describe("When creating a recipe", () => {
         expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
         expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(false);
+        expect(underTest.hasResultChoices).toEqual(false);
     });
 
     test("should correctly assess requirements for a recipe with named ingredients and catalysts", () => {
@@ -70,7 +70,7 @@ describe("When creating a recipe", () => {
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.hasRequirementOptions).toEqual(false);
+        expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.requirementOptions.all.length).toEqual(1);
         expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
         expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(true);
@@ -79,7 +79,7 @@ describe("When creating a recipe", () => {
         expect(underTest.requirementOptions.all[0].ingredients.size).toEqual(1);
         expect(underTest.requirementOptions.all[0].ingredients.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(false);
+        expect(underTest.hasResultChoices).toEqual(false);
 
     });
 
@@ -88,9 +88,9 @@ describe("When creating a recipe", () => {
 
         expect(underTest.hasOptions).toEqual(true);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.hasRequirementOptions).toEqual(true);
+        expect(underTest.hasRequirementChoices).toEqual(true);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(true);
+        expect(underTest.hasResultChoices).toEqual(true);
         expect(underTest.requirementOptions.all.length).toEqual(2);
         expect(underTest.resultOptions.all.length).toEqual(2);
 

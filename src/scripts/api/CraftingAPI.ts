@@ -19,8 +19,8 @@ import {ResultOption} from "../crafting/recipe/ResultOption";
 import {ComponentSelectionStrategy} from "../crafting/selection/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {EssenceReference} from "../crafting/essence/EssenceReference";
 import {Unit} from "../common/Unit";
+import {Essence} from "../crafting/essence/Essence";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -116,6 +116,25 @@ interface RecipeCraftingOptions {
 
 }
 
+interface ComponentSelectionOptions {
+
+    /**
+     * The ID of the Actor whose inventory you want to select components from.
+     */
+    sourceActorId: string;
+
+    /**
+     * The optional ID of the Recipe Requirement Option to select components for. Not required if the recipe has only
+     * one Result Option. If the recipe has multiple requirement options this must be specified.
+     */
+    requirementOptionId?: string;
+
+    /**
+     * The ID of the Recipe to select components for.
+     */
+    recipeId: string;
+}
+
 interface CraftingAPI {
 
     /**
@@ -156,6 +175,17 @@ interface CraftingAPI {
      */
     craftRecipe(recipeCraftingOptions: RecipeCraftingOptions): Promise<CraftingResult>;
 
+    /**
+     * Selects components from the specified source Actor for the specified recipe requirement option. The Component
+     *  Selection will be insufficient if the source Actor's inventory does not contain enough components to satisfy the
+     *  requirement option.
+     *
+     * @async
+     * @param componentSelectionOptions - The options to use when selecting components.
+     * @returns Promise<ComponentSelection> A Promise that resolves with the selected components.
+     */
+    selectComponents(componentSelectionOptions: ComponentSelectionOptions): Promise<ComponentSelection>;
+
 }
 
 export { CraftingAPI };
@@ -172,7 +202,7 @@ class DefaultCraftingAPI implements CraftingAPI {
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
-    private readonly _componentSelectionStrategy: ComponentSelectionStrategy;
+    private readonly componentSelectionStrategy: ComponentSelectionStrategy;
 
     constructor({
         recipeAPI,
@@ -203,7 +233,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.craftingSystemAPI = craftingSystemAPI;
         this.notificationService = notificationService;
         this.localizationService = localizationService;
-        this._componentSelectionStrategy = componentSelectionStrategy;
+        this.componentSelectionStrategy = componentSelectionStrategy;
     }
 
     async countOwnedComponentsOfType(actorId: string, componentId: string): Promise<number> {
@@ -226,12 +256,8 @@ class DefaultCraftingAPI implements CraftingAPI {
         const actor = await this.gameProvider.loadActor(actorId);
         const gameSystemId = this.gameProvider.getGameSystemId();
         const componentsForCraftingSystem = await this.componentAPI.getAllByCraftingSystemId(craftingSystemId);
-        const knownComponentsBySourceItemUuid = Array.from(componentsForCraftingSystem.values())
-            .reduce((map, component) => {
-                map.set(component.itemUuid, component);
-                return map;
-            }, new Map<string, Component>());
-        return this.inventoryFactory.make(gameSystemId, actor, knownComponentsBySourceItemUuid);
+        const knownComponents = Array.from(componentsForCraftingSystem.values());
+        return this.inventoryFactory.make(gameSystemId, actor, knownComponents);
     }
 
     async salvageComponent({
@@ -814,9 +840,10 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const allComponentsById = new Map(includedComponentsById);
         otherComponentsInInventory.forEach(component => allComponentsById.set(component.id, component));
+        const allEssencesById = await this.essenceAPI.getAllByCraftingSystemId(craftingSystem.id);
 
         let selectedComponents: ComponentSelection;
-        if (recipe.hasRequirements) {
+        if (!recipe.hasRequirements) {
             selectedComponents = new EmptyComponentSelection();
         } else if (this.isEmptyUserSelection(userSelectedComponents)) {
             selectedComponents  = this.makeSelections(
@@ -829,6 +856,7 @@ class DefaultCraftingAPI implements CraftingAPI {
                 selectedRequirementOption,
                 userSelectedComponents,
                 allComponentsById,
+                allEssencesById,
                 ownedComponents
             );
             if (!userProvidedComponents.selected.isSufficient) {
@@ -880,11 +908,17 @@ class DefaultCraftingAPI implements CraftingAPI {
          * =============================================================================================================
          */
 
+        const action = new SimpleInventoryAction({
+            additions: selectedResultOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+            removals: selectedComponents.essenceSources.combineWith(selectedComponents.ingredients.target)
+        });
+        await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);
+
         return new SuccessfulCraftingResult({
             recipe,
             sourceActorId,
             targetActorId,
-            consumed: selectedComponents.ingredients.actual.combineWith(selectedComponents.essenceSources),
+            consumed: action.removals,
             description: this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.success`,
                 {
@@ -892,7 +926,7 @@ class DefaultCraftingAPI implements CraftingAPI {
                     craftingSystemName: craftingSystem.details.name,
                 }
             ),
-            produced: selectedResultOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+            produced: action.additions,
         });
 
     }
@@ -909,10 +943,60 @@ class DefaultCraftingAPI implements CraftingAPI {
         }
     }
 
+    async selectComponents({ recipeId, sourceActorId, requirementOptionId }: ComponentSelectionOptions): Promise<ComponentSelection> {
+
+        const recipe = await this.recipeAPI.getById(recipeId);
+
+        if (!recipe) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.recipeNotFound`,
+                { recipeId }
+            );
+            this.notificationService.error(message);
+            return new EmptyComponentSelection();
+        }
+
+        const sourceActor = await this.gameProvider.loadActor(sourceActorId);
+
+        if (!sourceActor) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.actorNotFound`,
+                { actorId: sourceActorId }
+            );
+            this.notificationService.error(message);
+            return new EmptyComponentSelection();
+        }
+
+        if (!requirementOptionId && recipe.requirementOptions.byId.size > 1) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.requirementOptionIdRequired`,
+                {
+                    recipeName: recipe.name,
+                    requirementOptionIds: Array.from(recipe.requirementOptions.byId.keys()).join(", ") ,
+                    requirementOptionCount: recipe.requirementOptions.byId.size
+                }
+            );
+            this.notificationService.error(message);
+            return new EmptyComponentSelection();
+        }
+
+        const requirementOption = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
+
+        const allCraftingSystemComponentsById = await this.componentAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
+        const sourceInventory = await this.getInventory(sourceActorId, recipe.craftingSystemId);
+        const ownedComponents = sourceInventory.getContents();
+
+        return this.makeSelections(
+            requirementOption,
+            ownedComponents,
+            allCraftingSystemComponentsById
+        );
+    }
+
     private makeSelections(selectedRequirementOption: RequirementOption,
                            ownedComponents: Combination<Component>,
                            allComponentsById: Map<string, Component>): ComponentSelection {
-        return this._componentSelectionStrategy.perform(
+        return this.componentSelectionStrategy.perform(
             selectedRequirementOption.catalysts.convertElements(componentReference => allComponentsById.get(componentReference.id)),
             selectedRequirementOption.ingredients.convertElements(componentReference => allComponentsById.get(componentReference.id)),
             selectedRequirementOption.essences,
@@ -929,6 +1013,7 @@ class DefaultCraftingAPI implements CraftingAPI {
     private assignUserProvidedComponents(selectedRequirementOption: RequirementOption,
                                  userSelectedComponents: UserSelectedComponents,
                                  allComponentsById: Map<string, Component>,
+                                 allEssencesById: Map<string, Essence>,
                                  ownedComponents: Combination<Component>): { selected: ComponentSelection, missing: Combination<Component> } {
 
         let availableComponents = ownedComponents;
@@ -976,9 +1061,12 @@ class DefaultCraftingAPI implements CraftingAPI {
             catalysts,
             ingredients,
             essenceSources,
-            essences: new TrackedCombination<EssenceReference>({
-                actual: essenceSources.explode(component => component.essences),
+            essences: new TrackedCombination<Essence>({
+                actual: essenceSources
+                    .explode(component => component.essences)
+                    .convertElements(essenceReference => allEssencesById.get(essenceReference.id)),
                 target: selectedRequirementOption.essences
+                    .convertElements(essenceReference => allEssencesById.get(essenceReference.id))
             })
         });
 

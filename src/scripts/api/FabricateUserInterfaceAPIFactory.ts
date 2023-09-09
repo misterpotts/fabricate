@@ -51,6 +51,7 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
         const recipeCraftingAppCatalog = new DefaultRecipeCraftingAppCatalog({
             recipeCraftingAppFactory: new DefaultRecipeCraftingAppFactory({
                 craftingAPI: this.fabricateAPI.crafting,
+                componentAPI: this.fabricateAPI.components,
                 localizationService
             })
         });

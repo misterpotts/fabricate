@@ -119,14 +119,14 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     }
 
     public get hasOptions(): boolean {
-        return this.hasRequirementOptions || this.hasResultOptions;
+        return this.hasRequirementChoices || this.hasResultChoices;
     }
 
-    public get hasRequirementOptions(): boolean {
+    public get hasRequirementChoices(): boolean {
         return this._requirementOptions.requiresUserChoice;
     }
 
-    public get hasResultOptions(): boolean {
+    public get hasResultChoices(): boolean {
         return this._resultOptions.requiresUserChoice
     }
 
@@ -167,32 +167,32 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._resultOptions.select(optionName);
     }
 
-    get selectedRequirementOptionName(): string {
-        return this._requirementOptions.selectedOption.name;
+    get selectedRequirementOption(): RequirementOption {
+        return this._requirementOptions.selectedOption;
     }
 
-    public selectNextRequirementOption(): string {
+    public selectNextRequirementOption(): RequirementOption {
         this._requirementOptions.selectNext();
-        return this.selectedRequirementOptionName;
+        return this.selectedRequirementOption;
     }
 
-    public selectPreviousRequirementOption(): string {
+    public selectPreviousRequirementOption(): RequirementOption {
         this._requirementOptions.selectPrevious();
-        return this.selectedRequirementOptionName;
+        return this.selectedRequirementOption;
     }
 
-    get selectedResultOptionName(): string {
-        return this._resultOptions.selectedOption.name;
+    get selectedResultOption(): ResultOption {
+        return this._resultOptions.selectedOption;
     }
 
-    public selectNextResultOption(): string {
+    public selectNextResultOption(): ResultOption {
         this._resultOptions.selectNext();
-        return this.selectedResultOptionName;
+        return this.selectedResultOption;
     }
 
-    public selectPreviousResultOption(): string {
+    public selectPreviousResultOption(): ResultOption {
         this._resultOptions.selectPrevious();
-        return this.selectedResultOptionName;
+        return this.selectedResultOption;
     }
 
     public makeDefaultSelections() {
