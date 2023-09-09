@@ -26,19 +26,23 @@
     <h3>{localization.localize(`${Properties.module.id}.typeNames.ingredient.plural`)}</h3>
     <div class="fab-component-grid fab-grid-{columns}">
         {#each ingredients.units as unit}
-            <div class="fab-component">
-                <div class="fab-component-name">
-                    <p>{truncate(unit.target.part.name, nameLength)}</p>
-                </div>
-                <div class="fab-component-preview" class:fab-insufficient={!unit.isSufficient}>
-                    <div class="fab-component-image" data-tooltip={unit.target.part.name}>
-                        <img src={unit.target.part.imageUrl} alt={unit.target.part.name} use:openItemSheet={unit.target.part.itemUuid}>
+            {#await Promise.all([unit.target.element.load(), unit.actual.element.load()])}
+                {:then nothing}
+                    <div class="fab-component">
+                        <div class="fab-component-name">
+                            <p>{truncate(unit.target.element.name, nameLength)}</p>
+                        </div>
+                        <div class="fab-component-preview" class:fab-insufficient={!unit.isSufficient}>
+                            <div class="fab-component-image" data-tooltip={unit.target.element.name}>
+                                <img src={unit.target.element.imageUrl} alt={unit.target.element.name} use:openItemSheet={unit.target.element.itemUuid}>
+                            </div>
+                        </div>
+                        <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
+                            <p>{formatQuantity(unit.actual.quantity, unit.target.quantity)}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
-                    <p>{formatQuantity(unit.actual.quantity, unit.target.quantity)}</p>
-                </div>
-            </div>
+                {:catch error}
+            {/await}
         {/each}
     </div>
 {/if}
@@ -46,19 +50,23 @@
     <h3>{localization.localize(`${Properties.module.id}.typeNames.catalyst.plural`)}</h3>
     <div class="fab-component-grid fab-grid-{columns}">
         {#each catalysts.units as unit}
-            <div class="fab-component">
-                <div class="fab-component-name">
-                    <p>{truncate(unit.target.part.name, nameLength)}</p>
-                </div>
-                <div class="fab-component-preview" class:fab-insufficient={!unit.isSufficient}>
-                    <div class="fab-component-image" data-tooltip={unit.target.part.name}>
-                        <img src={unit.target.part.imageUrl} alt={unit.target.part.name} use:openItemSheet={unit.target.part.itemUuid}>
+            {#await Promise.all([unit.target.element.load(), unit.actual.element.load()])}
+                {:then nothing}
+                    <div class="fab-component">
+                        <div class="fab-component-name">
+                            <p>{truncate(unit.target.element.name, nameLength)}</p>
+                        </div>
+                        <div class="fab-component-preview" class:fab-insufficient={!unit.isSufficient}>
+                            <div class="fab-component-image" data-tooltip={unit.target.element.name}>
+                                <img src={unit.target.element.imageUrl} alt={unit.target.element.name} use:openItemSheet={unit.target.element.itemUuid}>
+                            </div>
+                        </div>
+                        <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
+                            <p>{formatQuantity(unit.actual.quantity, unit.target.quantity)}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="fab-component-requirements" class:fab-insufficient={!unit.isSufficient}>
-                    <p>{formatQuantity(unit.actual.quantity, unit.target.quantity)}</p>
-                </div>
-            </div>
+                {:catch error}
+            {/await}
         {/each}
     </div>
 {/if}
@@ -66,19 +74,23 @@
     <h3>{localization.localize(`${Properties.module.id}.typeNames.essence.plural`)}</h3>
     <div class="fab-essence-grid fab-grid-{2}">
         {#each essences.units as unit}
-            <div class="fab-essence">
-                <div class="fab-essence-amount" class:fab-insufficient={!unit.isSufficient}>
-                    <span class="fab-essence-quantity">
-                        {formatQuantity(unit.actual.quantity, unit.target.quantity)}
-                    </span>
-                    <span class="fab-essence-icon">
-                        <i class="{unit.target.part.iconCode}"></i>
-                    </span>
-                    <span class="fab-essence-name">
-                        {unit.target.part.name}
-                    </span>
-                </div>
-            </div>
+            {#await Promise.all([unit.target.element.load(), unit.actual.element.load()])}
+                {:then nothing}
+                    <div class="fab-essence">
+                        <div class="fab-essence-amount" class:fab-insufficient={!unit.isSufficient}>
+                            <span class="fab-essence-quantity">
+                                {formatQuantity(unit.actual.quantity, unit.target.quantity)}
+                            </span>
+                            <span class="fab-essence-icon">
+                                <i class="{unit.target.element.iconCode}"></i>
+                            </span>
+                            <span class="fab-essence-name">
+                                {unit.target.element.name}
+                            </span>
+                        </div>
+                    </div>
+                {:catch error}
+            {/await}
         {/each}
     </div>
 {/if}

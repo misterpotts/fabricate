@@ -1,6 +1,6 @@
 import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Component} from "../../scripts/crafting/component/Component";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 const registeredNodes: Map<string, any[]> = new Map();
 const eventBus = function(node: any, eventTypes: string[] | string) {
@@ -43,7 +43,7 @@ function craftingSystemUpdated(craftingSystem: CraftingSystem) {
     dispatch(eventType, event);
 }
 
-function componentUpdated(craftingComponent: CraftingComponent) {
+function componentUpdated(craftingComponent: Component) {
     const eventType = "componentUpdated";
     const event = new CustomEvent(eventType, { bubbles: true, detail: craftingComponent });
     dispatch(eventType, event);

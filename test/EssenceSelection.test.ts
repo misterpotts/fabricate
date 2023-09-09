@@ -1,6 +1,6 @@
 import {describe, expect, test} from "@jest/globals";
 import {EssenceSelection} from "../src/scripts/actor/EssenceSelection";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
     testComponentFive,
@@ -8,14 +8,15 @@ import {
     testComponentSix,
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
+import {Unit} from "../src/scripts/common/Unit";
 
 describe("Essence selection", () => {
 
     test("Should produce closest incomplete selection", () => {
 
         const required = Combination.ofUnits([
-            new Unit(elementalWater, 2),
-            new Unit(elementalEarth, 4)
+            new Unit(elementalWater.toReference(), 2),
+            new Unit(elementalEarth.toReference(), 4)
         ]);
 
         const underTest = new EssenceSelection(required);
@@ -45,8 +46,8 @@ describe("Essence selection", () => {
     test("Should produce smallest complete selection", () => {
 
         const required = Combination.ofUnits([
-            new Unit(elementalFire, 3),
-            new Unit(elementalAir, 1)
+            new Unit(elementalFire.toReference(), 3),
+            new Unit(elementalAir.toReference(), 1)
         ]);
 
         const underTest = new EssenceSelection(required);

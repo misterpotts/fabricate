@@ -1,26 +1,90 @@
 import Properties from "./Properties";
-import {DefaultGameProvider, GameProvider} from "./foundry/GameProvider";
-import FabricateApplication from "./interface/FabricateApplication";
-import {
-    DefaultSettingManager,
-    FabricateSetting,
-    SettingManager,
-    SettingState
-} from "./settings/FabricateSetting";
-import {DefaultSystemRegistry} from "./registries/SystemRegistry";
-import {CraftingSystemFactory} from "./system/CraftingSystemFactory";
-import {CraftingSystemJson} from "./system/CraftingSystem";
-import {CraftingSystemManagerAppFactory} from "../applications/CraftingSystemManagerAppFactory";
-import {V2CraftingSystemSettingMigrator} from "./settings/migrators/V2CraftingSystemSettingMigrator";
-import {DefaultComponentSalvageAppCatalog} from "../applications/componentSalvageApp/ComponentSalvageAppCatalog";
-import {DefaultComponentSalvageAppFactory} from "../applications/componentSalvageApp/ComponentSalvageAppFactory";
+import {DefaultGameProvider} from "./foundry/GameProvider";
 import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
 import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
-import {DefaultRecipeCraftingAppCatalog} from "../applications/recipeCraftingApp/RecipeCraftingAppCatalog";
-import {DefaultRecipeCraftingAppFactory} from "../applications/recipeCraftingApp/RecipeCraftingAppFactory";
+import {DefaultFabricateAPIFactory, FabricateAPIFactory} from "./api/FabricateAPIFactory";
+import {FabricateAPI} from "./api/FabricateAPI";
+import {DefaultIdentityFactory} from "./foundry/IdentityFactory";
+import {DefaultDocumentManager} from "./foundry/DocumentManager";
+import {DefaultSettingsRegistry, SettingsRegistry} from "./repository/SettingsRegistry";
+import {DefaultFabricateUserInterfaceAPIFactory} from "./api/FabricateUserInterfaceAPIFactory";
+import {DefaultUIProvider} from "./foundry/UIProvider";
+import {FabricateUserInterfaceAPI} from "./api/FabricateUserInterfaceAPI";
+
+let fabricateAPI: FabricateAPI;
+let fabricateUserInterfaceAPI: FabricateUserInterfaceAPI;
+
+Hooks.once('ready', async () => {
+
+    const gameProvider = new DefaultGameProvider();
+    const uiProvider = new DefaultUIProvider();
+    const gameObject = gameProvider.get();
+
+    const settingsRegistry: SettingsRegistry = new DefaultSettingsRegistry({
+        gameProvider,
+        clientSettings: gameObject.settings,
+        settingKeys: [
+            Properties.settings.recipes.key,
+            Properties.settings.essences.key,
+            Properties.settings.components.key,
+            Properties.settings.craftingSystems.key,
+            Properties.settings.modelVersion.key
+        ],
+        defaultValuesBySettingKey: new Map<string, any>([
+            [Properties.settings.recipes.key, { entities: {}, collections: {} }],
+            [Properties.settings.essences.key, { entities: {}, collections: {} }],
+            [Properties.settings.components.key, { entities: {}, collections: {} }],
+            [Properties.settings.craftingSystems.key, { entities: {}, collections: {} }],
+            [Properties.settings.modelVersion.key, ""],
+        ])
+    });
+
+    settingsRegistry.registerAll();
+
+    const fabricateAPIFactory: FabricateAPIFactory = new DefaultFabricateAPIFactory({
+        gameProvider,
+        uiProvider,
+        settingsRegistry,
+        user: gameObject.user.name,
+        gameSystem: gameObject.system.id,
+        clientSettings: gameObject.settings,
+        identityFactory: new DefaultIdentityFactory(),
+        documentManager: new DefaultDocumentManager(),
+    });
+
+    fabricateAPI = fabricateAPIFactory.make();
+
+    const fabricateUserInterfaceAPIFactory = new DefaultFabricateUserInterfaceAPIFactory({
+        fabricateAPI,
+        gameProvider,
+    });
+
+    fabricateUserInterfaceAPI = fabricateUserInterfaceAPIFactory.make();
+
+    // Sets the default value of game.fabricate to an empty object
+    // @ts-ignore
+    gameObject[Properties.module.id] = {};
+    // Makes the Fabricate API available globally as game.fabricate.api
+    // @ts-ignore
+    gameObject[Properties.module.id].api = fabricateAPI;
+    // Makes the Fabricate User Interface API available globally as game.fabricate.ui
+    // @ts-ignore
+    gameObject[Properties.module.id].ui = fabricateUserInterfaceAPI;
+
+    Hooks.callAll(`${Properties.module.id}.ready`, fabricateAPI, fabricateUserInterfaceAPI);
+
+});
+
+Hooks.once(`${Properties.module.id}.ready`, async (fabricateAPI: FabricateAPI) => {
+
+    const migrationNeeded = await fabricateAPI.migration.isMigrationNeeded();
+    if (migrationNeeded) {
+        await fabricateAPI.migration.migrateAll();
+    }
+
+});
 
 Hooks.on("deleteItem", async (item: any) => {
-
     itemDeleted(item);
 });
 
@@ -44,58 +108,54 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
     if (!sourceItemUuid) {
         return;
     }
-    // todo: optimise by partially loading recipes/components/essences without fetching related item data or populating references
-    // this would allow for me to use the getItemSheetHeaderButtons hook, though I'd lose tooltips
-    // more importantly though I could load individual items only as needed
-    const allCraftingSystems = await FabricateApplication.systemRegistry.getAllCraftingSystems();
-    const loadedSystems = await Promise.all(Array.from(allCraftingSystems.values())
-        .filter(craftingSystem => craftingSystem.enabled)
-        .map(async craftingSystem => {
-            await craftingSystem.loadPartDictionary();
-            return craftingSystem;
-        }));
-    const headerButtonsToAdd = loadedSystems.filter(craftingSystem => craftingSystem.includesItemUuid(sourceItemUuid))
-        .flatMap(craftingSystem => {
-            const additionalHeaderButtons = [];
 
-            if (craftingSystem.includesRecipeByItemUuid(sourceItemUuid)) {
-                const recipe = craftingSystem.getRecipeByItemUuid(sourceItemUuid);
-                if (!recipe.isDisabled && !recipe.hasErrors && recipe.hasResults) {
-                    additionalHeaderButtons.push({
-                        label: "Craft",
-                        tooltip: craftingSystem.name,
-                        icon: "fa-solid fa-screwdriver-wrench",
-                        onclick: async () => {
-                            const app = await FabricateApplication.recipeCraftingAppCatalog.load(recipe, craftingSystem, document.actor);
-                            app.render(true);
-                        }
-                    });
-                }
-            }
+    const craftingSystemsById = await fabricateAPI.systems.getAll();
+    const componentsForSourceItem = await fabricateAPI.components.getAllByItemUuid(sourceItemUuid);
+    await Promise.all(Array.from(componentsForSourceItem.values()).map(component => component.load()));
+    const recipesForSourceItem = await fabricateAPI.recipes.getAllByItemUuid(sourceItemUuid);
+    await Promise.all(Array.from(recipesForSourceItem.values()).map(recipe => recipe.load()));
+    if (componentsForSourceItem.size === 0 && recipesForSourceItem.size === 0) {
+        return;
+    }
 
-            if (craftingSystem.includesComponentByItemUuid(sourceItemUuid)) {
-                const craftingComponent = craftingSystem.getComponentByItemUuid(sourceItemUuid);
-                if (!craftingComponent.isDisabled && !craftingComponent.hasErrors && craftingComponent.isSalvageable) {
-                    additionalHeaderButtons.push({
-                        label: "Salvage",
-                        tooltip: craftingSystem.name,
-                        class: "fab-item-sheet-header-button",
-                        icon: "fa-solid fa-recycle",
-                        onclick: async () => {
-                            const app = await FabricateApplication.componentSalvageAppCatalog.load(craftingComponent, craftingSystem, document.actor);
-                            app.render(true);
-                        }
-                    });
+    const additionalHeaderButtons = [];
+
+    const salvageButtons = Array.from(componentsForSourceItem.values())
+        .filter(component => !component.isDisabled && component.isSalvageable && !component.hasErrors)
+        .map(component => {
+            return {
+                label: "Salvage",
+                tooltip: craftingSystemsById.get(component.craftingSystemId).details.name,
+                class: "fab-item-sheet-header-button",
+                icon: "fa-solid fa-recycle",
+                onclick: async () => {
+                    await fabricateUserInterfaceAPI.renderComponentSalvageApp(document.actor.id, component.id);
                 }
-            }
-            return additionalHeaderButtons;
+            };
         });
+    additionalHeaderButtons.push(...salvageButtons);
+
+    const craftingButtons = Array.from(recipesForSourceItem.values())
+        .filter(recipe => !recipe.isDisabled && recipe.hasResults && !recipe.hasErrors)
+        .map(recipe => {
+            return {
+                label: "Craft",
+                tooltip: craftingSystemsById.get(recipe.craftingSystemId).details.name,
+                class: "fab-item-sheet-header-button",
+                icon: "fa-solid fa-screwdriver-wrench",
+                onclick: async () => {
+                    await fabricateUserInterfaceAPI.renderRecipeCraftingApp(document.actor.id, recipe.id);
+                }
+            };
+        });
+    additionalHeaderButtons.push(...craftingButtons);
+
     const header = html.find(".window-header");
     if (!header) {
         throw new Error("Fabricate was unable to render header buttons for the Item Sheet application");
     }
     let title = header.children(".window-title");
-    headerButtonsToAdd.forEach(headerButton => {
+    additionalHeaderButtons.forEach(headerButton => {
         const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
         button.click(() => headerButton.onclick());
         button.insertAfter(title);
@@ -113,100 +173,9 @@ Hooks.on("renderSidebarTab", async (app: any, html: any) => {
     const button = $(`<button class="${buttonClass}"><i class="fa-solid fa-flask-vial"></i> ${buttonText}</button>`);
 
     button.on('click', async (_event) => {
-        FabricateApplication.craftingSystemManagerApp.render(true);
+        await fabricateUserInterfaceAPI.renderCraftingSystemManagerApp();
+        fabricateAPI.suppressNotifications();
     });
 
     buttons.append(button);
-});
-
-function registerSettings(gameObject: Game, defaultSettingValue: FabricateSetting<Record<string, CraftingSystemJson>>) {
-    /*
-    * Register game settings for Fabricate
-    */
-    gameObject.settings.register(Properties.module.id, Properties.settings.craftingSystems.key, {
-        name: "",
-        hint: "",
-        scope: "world",
-        config: false,
-        type: Object,
-        default: defaultSettingValue
-    });
-}
-
-async function validateAndMigrateSettings(gameProvider: GameProvider, craftingSystemSettingManager: DefaultSettingManager<Record<string, CraftingSystemJson>>): Promise<SettingManager<Record<string, CraftingSystemJson>>> {
-
-    const checkResult = craftingSystemSettingManager.check()
-    const gameObject = gameProvider.get();
-
-    if (checkResult.state === SettingState.INVALID) {
-        const errorDetails = checkResult.validationCheck.errors
-            .map(errorKey => gameObject.i18n.localize(`fabricate.ui.notifications.settings.errors.${errorKey}`));
-        const errorSummary = gameObject.i18n.format(
-            "fabricate.ui.notifications.settings.errors.summary",
-            { settingKey: craftingSystemSettingManager.settingKey }
-        );
-        ui.notifications.error(`${errorSummary} ${errorDetails.join(", ")}`);
-    }
-
-    if (checkResult.state === SettingState.OUTDATED) {
-        ui.notifications.info(gameObject.i18n.localize("fabricate.ui.notifications.settings.migration.started"));
-        const migrationResult = await craftingSystemSettingManager.migrate();
-        if (migrationResult.isSuccessful) {
-            ui.notifications.info(gameObject.i18n.localize("fabricate.ui.notifications.settings.migration.finished"));
-        } else {
-            ui.notifications.error(gameObject.i18n.format(
-                "fabricate.ui.notifications.settings.errors.migration",
-                { settingKey: craftingSystemSettingManager.settingKey }
-            ));
-        }
-    }
-
-    return craftingSystemSettingManager;
-}
-
-Hooks.once('ready', async () => {
-
-    const gameProvider = new DefaultGameProvider();
-    const gameObject = gameProvider.get();
-
-    const v2settingMigrator = new V2CraftingSystemSettingMigrator();
-    const craftingSystemSettingManager = new DefaultSettingManager<Record<string, CraftingSystemJson>>({
-        gameProvider: gameProvider,
-        moduleId: Properties.module.id,
-        settingKey: Properties.settings.craftingSystems.key,
-        targetVersion: Properties.settings.craftingSystems.targetVersion,
-        settingsMigrators: [v2settingMigrator]
-    });
-
-    /*
-    * Create the Crafting System registry
-    */
-    const systemRegistry = new DefaultSystemRegistry({
-        settingManager: craftingSystemSettingManager,
-        gameSystem: gameObject.system.id,
-        craftingSystemFactory: new CraftingSystemFactory({})
-    });
-    FabricateApplication.systemRegistry = systemRegistry;
-
-    registerSettings(gameObject, systemRegistry.getDefaultSettingValue());
-    await validateAndMigrateSettings(gameProvider, craftingSystemSettingManager);
-
-    FabricateApplication.craftingSystemManagerApp = await CraftingSystemManagerAppFactory.make(systemRegistry);
-
-    FabricateApplication.componentSalvageAppCatalog = new DefaultComponentSalvageAppCatalog({
-        componentSalvageAppFactory: new DefaultComponentSalvageAppFactory(),
-        systemRegistry
-    });
-
-    FabricateApplication.recipeCraftingAppCatalog = new DefaultRecipeCraftingAppCatalog({
-        recipeCraftingAppFactory: new DefaultRecipeCraftingAppFactory(),
-        systemRegistry
-    });
-
-    // Makes the system registry externally available
-    // @ts-ignore
-    gameObject[Properties.module.id] = {};
-    // @ts-ignore
-    gameObject[Properties.module.id].SystemRegistry = systemRegistry;
-
 });

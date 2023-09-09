@@ -1,24 +1,24 @@
-import {CraftingComponent} from "../common/CraftingComponent";
+import {Component} from "../crafting/component/Component";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {Essence} from "../common/Essence";
 import {Combination} from "../common/Combination";
+import {Essence} from "../crafting/essence/Essence";
 
 interface ComponentSelection {
 
     isSufficient: boolean;
-    catalysts: TrackedCombination<CraftingComponent>;
-    ingredients: TrackedCombination<CraftingComponent>;
+    catalysts: TrackedCombination<Component>;
+    ingredients: TrackedCombination<Component>;
     essences: TrackedCombination<Essence>;
-    essenceSources: Combination<CraftingComponent>;
+    essenceSources: Combination<Component>;
 
 }
 
 class DefaultComponentSelection implements ComponentSelection {
 
-    private readonly _catalysts: TrackedCombination<CraftingComponent>;
+    private readonly _catalysts: TrackedCombination<Component>;
     private readonly _essences: TrackedCombination<Essence>;
-    private readonly _ingredients: TrackedCombination<CraftingComponent>;
-    private readonly _essenceSources: Combination<CraftingComponent>;
+    private readonly _ingredients: TrackedCombination<Component>;
+    private readonly _essenceSources: Combination<Component>;
 
     constructor({
         catalysts,
@@ -26,10 +26,10 @@ class DefaultComponentSelection implements ComponentSelection {
         ingredients,
         essenceSources
     }: {
-        catalysts: TrackedCombination<CraftingComponent>;
+        catalysts: TrackedCombination<Component>;
         essences: TrackedCombination<Essence>;
-        ingredients: TrackedCombination<CraftingComponent>;
-        essenceSources: Combination<CraftingComponent>;
+        ingredients: TrackedCombination<Component>;
+        essenceSources: Combination<Component>;
     }) {
         this._catalysts = catalysts;
         this._essences = essences;
@@ -41,7 +41,7 @@ class DefaultComponentSelection implements ComponentSelection {
         return this._catalysts.isSufficient && this._essences.isSufficient && this._ingredients.isSufficient;
     }
 
-    get catalysts(): TrackedCombination<CraftingComponent> {
+    get catalysts(): TrackedCombination<Component> {
         return this._catalysts;
     }
 
@@ -49,19 +49,47 @@ class DefaultComponentSelection implements ComponentSelection {
         return this._essences;
     }
 
-    get ingredients(): TrackedCombination<CraftingComponent> {
+    get ingredients(): TrackedCombination<Component> {
         return this._ingredients;
     }
 
-    get essenceSources(): Combination<CraftingComponent> {
+    get essenceSources(): Combination<Component> {
         return this._essenceSources;
     }
 
-    get selectedComponents(): Combination<CraftingComponent> {
+    get selectedComponents(): Combination<Component> {
         const namedIngredients = this._catalysts.target.combineWith(this._ingredients.target);
         return namedIngredients.combineWith(this._essenceSources);
     }
 
 }
 
-export { ComponentSelection, DefaultComponentSelection }
+class EmptyComponentSelection implements ComponentSelection {
+
+        get catalysts(): TrackedCombination<Component> {
+            return TrackedCombination.EMPTY();
+        }
+
+        get essences(): TrackedCombination<Essence> {
+            return TrackedCombination.EMPTY();
+        }
+
+        get ingredients(): TrackedCombination<Component> {
+            return TrackedCombination.EMPTY();
+        }
+
+        get essenceSources(): Combination<Component> {
+            return Combination.EMPTY();
+        }
+
+        get isSufficient(): boolean {
+            return false;
+        }
+
+        get selectedComponents(): Combination<Component> {
+            return Combination.EMPTY();
+        }
+
+}
+
+export { ComponentSelection, DefaultComponentSelection, EmptyComponentSelection }

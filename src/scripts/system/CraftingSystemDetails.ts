@@ -70,6 +70,30 @@ class CraftingSystemDetails {
         }
     }
 
+    clone(name?: string): CraftingSystemDetails {
+        return new CraftingSystemDetails({
+            name: name ?? this._name,
+            summary: this._summary,
+            description: this._description,
+            author: this._author
+        });
+    }
+
+    static fromJson(craftingSystemDetailsJson: CraftingSystemDetailsJson) {
+        return new CraftingSystemDetails({
+            name: craftingSystemDetailsJson.name,
+            summary: craftingSystemDetailsJson.summary,
+            description: craftingSystemDetailsJson.description,
+            author: craftingSystemDetailsJson.author
+        });
+    }
+
+    equals(other: CraftingSystemDetails) {
+        return this._name === other._name &&
+            this._summary === other._summary &&
+            this._description === other._description &&
+            this._author === other._author;
+    }
 }
 
 export { CraftingSystemDetails, CraftingSystemDetailsJson }

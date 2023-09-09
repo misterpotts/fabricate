@@ -1,4 +1,4 @@
-<!-- RecipeCraftingApp.svelte-->
+[<!-- RecipeCraftingApp.svelte-->
 <script lang="ts">
     import {onMount, setContext} from 'svelte';
     import eventBus from "../common/EventBus";
@@ -8,178 +8,143 @@
     import CraftingAttemptCarousel from "./CraftingAttemptCarousel.svelte";
     import CraftingAttemptGrid from "./CraftingAttemptGrid.svelte";
     import CraftingResultCarousel from "./CraftingResultCarousel.svelte";
-    import {RecipeCraftingPrepFactory} from "../../scripts/crafting/attempt/RecipeCraftingPrepFactory";
-    import {DefaultComponentSelectionStrategy} from "../../scripts/crafting/selection/ComponentSelectionStrategy";
     import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
-    import {DefaultCraftingResult} from "../../scripts/crafting/result/CraftingResult";
 
     const localizationPath = `${Properties.module.id}.RecipeCraftingApp`;
 
-    export let recipe;
-    export let inventory;
+    export let recipeCraftingManager;
+
     export let localization;
     export let closeHook;
 
-    // todo: create a store for this
-    const craftingPrepFactory = new RecipeCraftingPrepFactory({selectionStrategy: new DefaultComponentSelectionStrategy()});
-    let craftingPrep;
     let craftingAttempt;
-    let selectedIngredientOptionName;
 
-    function resetSelections() {
-        recipe.makeDefaultSelections();
+    async function loadAppData() {
+        craftingAttempt = await recipeCraftingManager.getCraftingAttempt();
     }
-    resetSelections();
+
+    onMount(loadAppData);
 
     setContext(localizationKey, {
         localization,
     });
 
-    onMount(async () => {
-        return reIndex();
-    });
-
     async function doCraftRecipe(event) {
         const skipDialog = event.detail.skipDialog;
         if (skipDialog) {
-            return craftRecipe(recipe);
+            return craftRecipe();
         }
         let confirm = false;
         await Dialog.confirm({
             title: localization.localize(`${localizationPath}.dialog.doCraftRecipe.title`),
-            content: `<p>${localization.format(`${localizationPath}.dialog.doCraftRecipe.content`, { recipeName: recipe.name})}</p>`,
+            content: `<p>${localization.format(`${localizationPath}.dialog.doCraftRecipe.content`, { recipeName: craftingAttempt.recipeToCraft.name })}</p>`,
             yes: async () => {
                 confirm = true;
             }
         });
         if (confirm) {
-            return craftRecipe(recipe);
+            return craftRecipe();
         }
     }
 
-    async function craftRecipe(recipe) {
-        if (!craftingAttempt) {
-            const message = localization.localize(`${localizationPath}.errors.noCraftingAttempt`);
-            ui.notifications.error(message);
-            return;
-        }
-        if (!craftingAttempt.isPossible) {
-            const message = localization.format(`${localizationPath}.errors.notPossible`, { recipeName: recipe.name });
-            ui.notifications.warn(message);
-            return;
-        }
-        const craftingResult = new DefaultCraftingResult({
-            recipe,
-            created: recipe.getSelectedResults().results,
-            consumed: craftingAttempt.consumedComponents
-        });
-        await inventory.acceptCraftingResult(craftingResult);
+    async function craftRecipe() {
+        await recipeCraftingManager.doCrafting(craftingAttempt);
     }
 
     async function handleRecipeUpdated(event) {
-        const { updatedRecipe } = event.detail;
-        if (updatedRecipe.id === recipe.id) {
-            recipe = updatedRecipe;
-            resetSelections();
-        }
+        console.log("not implemented: Recipes will not auto-update in the crafting app");
     }
 
-    async function handleItemUpdated(event) {
-        const { actor } = event.detail;
-        // If the modified item is not owned by the actor who owns this recipe
-        if (!actor?.id === inventory.actor.id) {
-            return; // do nothing
-        }
-        // if it is, we need to re-index the inventory to refresh the rendered application in the UI
-        return reIndex();
-    }
-
-    async function handleItemCreated(event) {
-        const {actor} = event.detail;
-        // If the modified item is not owned by the actor who owns this recipe
-        if (!actor?.id === inventory.actor.id) {
-            return; // do nothing
-        }
-        // if it is, we need to re-index the inventory to refresh the rendered application in the UI
-        return reIndex();
-    }
-
-    async function handleItemDeleted(event) {
+    async function reloadApplicableInventoryEvents(event) {
         const {sourceId, actor} = event.detail;
         // If the modified item is not owned by the actor who owns this recipe
-        if (!actor?.id === inventory.actor.id) {
+        if (!actor?.id === recipeCraftingManager.sourceActor.id) {
+            return; // do nothing
+        }
+        if (!sourceId) {
             return; // do nothing
         }
         // If this recipe was the item that was deleted, close the application
-        if (sourceId === recipe.itemUuid) {
+        if (sourceId === recipeCraftingManager.recipeToCraft.itemUuid) {
             return closeHook();
         }
         // Otherwise, we need to re-index the inventory to refresh the rendered application in the UI
-        await reIndex();
+        await loadAppData();
     }
 
-    let loaded = false;
-    async function reIndex() {
-        await inventory.index();
-        craftingPrep = craftingPrepFactory.make(recipe, inventory.ownedComponents);
-        craftingAttempt = craftingPrep.isSingleton ? craftingPrep.getSingletonCraftingAttempt() : craftingPrep.getCraftingAttemptByIngredientOptionName(recipe.selectedIngredientOptionName);
-        selectedIngredientOptionName = recipe.selectedIngredientOptionName;
-        loaded = true;
+    async function handleItemUpdated(event) {
+        await reloadApplicableInventoryEvents(event);
     }
 
-    function selectNextIngredientOption() {
-        selectedIngredientOptionName = recipe.selectNextIngredientOption();
-        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedIngredientOptionName);
+    async function handleItemCreated(event) {
+        await reloadApplicableInventoryEvents(event);
     }
 
-    function selectPreviousIngredientOption() {
-        selectedIngredientOptionName = recipe.selectPreviousIngredientOption();
-        craftingAttempt = craftingPrep.getCraftingAttemptByIngredientOptionName(selectedIngredientOptionName);
+    async function handleItemDeleted(event) {
+        await reloadApplicableInventoryEvents(event);
+    }
+
+    async function selectNextRequirementOption() {
+        craftingAttempt = await recipeCraftingManager.selectNextRequirementOption();
+    }
+
+    async function selectPreviousRequirementOption() {
+        craftingAttempt = await recipeCraftingManager.selectPreviousRequirementOption();
+    }
+
+    async function selectNextResultOption() {
+        craftingAttempt = await recipeCraftingManager.selectNextResultOption();
+    }
+
+    async function selectPreviousResultOption() {
+        craftingAttempt = await recipeCraftingManager.selectPreviousResultOption();
     }
 
 </script>
 
-<div class="fab-recipe-crafting-app fab-columns"
-     use:eventBus={["recipeUpdated", "itemUpdated", "itemCreated", "itemDeleted"]}
-     on:recipeUpdated={(e) => handleRecipeUpdated(e)}
-     on:itemUpdated={(e) => handleItemUpdated(e)}
-     on:itemCreated={(e) => handleItemCreated(e)}
-     on:itemDeleted={(e) => handleItemDeleted(e)}>
-    <div class="fab-column" style="height: 100%">
-        <CraftingHeader recipe={recipe} on:craftRecipe={(e) => doCraftRecipe(e)} />
-        {#if loaded}
+{#if craftingAttempt}
+    <div class="fab-recipe-crafting-app fab-columns"
+         use:eventBus={["recipeUpdated", "itemUpdated", "itemCreated", "itemDeleted"]}
+         on:recipeUpdated={(e) => handleRecipeUpdated(e)}
+         on:itemUpdated={(e) => handleItemUpdated(e)}
+         on:itemCreated={(e) => handleItemCreated(e)}
+         on:itemDeleted={(e) => handleItemDeleted(e)}>
+        <div class="fab-column" style="height: 100%">
+            <CraftingHeader recipe={recipeCraftingManager.recipeToCraft} on:craftRecipe={(e) => doCraftRecipe(e)} />
             <div class="fab-recipe-crafting-app-body fab-scrollable">
                 <p class="fab-recipe-crafting-hint">{localization.localize(`${localizationPath}.hints.doCrafting`)}</p>
                 <div class="fab-recipe-crafting-ingredients">
-                    {#if !craftingPrep.isSingleton}
+                    {#if recipeCraftingManager.hasRequirementChoices}
                         <CraftingAttemptCarousel columns={3}
                                                  craftingAttempt={craftingAttempt}
-                                                 selectedIngredientOptionName={selectedIngredientOptionName}
-                                                 on:nextIngredientOptionSelected={selectNextIngredientOption}
-                                                 on:previousIngredientOptionSelected={selectPreviousIngredientOption} />
+                                                 on:nextIngredientOptionSelected={selectNextRequirementOption()}
+                                                 on:previousIngredientOptionSelected={selectPreviousRequirementOption()} />
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <CraftingAttemptGrid
                                     columns={3}
-                                    ingredients={craftingAttempt.ingredientAmounts}
-                                    catalysts={craftingAttempt.catalystAmounts}
-                                    essences={craftingAttempt.essenceAmounts} />
+                                    ingredients={craftingAttempt.selectedComponents.ingredients}
+                                    catalysts={craftingAttempt.selectedComponents.catalysts}
+                                    essences={craftingAttempt.selectedComponents.essences} />
                         </div>
                     {/if}
                 </div>
                 <div class="fab-recipe-crafting-results">
-                    {#if recipe.hasResultOptions}
-                        <CraftingResultCarousel columns={3} recipe={recipe} selectedOptionName={recipe.selectedResultOptionName}>
+                    {#if recipeCraftingManager.hasResultChoices}
+                        <CraftingResultCarousel columns={3}
+                                                craftingAttempt={craftingAttempt}
+                                                on:nextResultOptionSelected={selectNextResultOption()}
+                                                on:previousResultOptionSelected={selectPreviousResultOption()}>
                             <h3 slot="description">{localization.localize(`${Properties.module.id}.typeNames.result.plural`)}</h3>
                         </CraftingResultCarousel>
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <h3>Results</h3>
-                            <CraftingComponentGrid columns={3} componentCombination={recipe.getSelectedResults().results} />
+                            <CraftingComponentGrid columns={3} componentCombination={craftingAttempt.producedComponents} />
                         </div>
                     {/if}
                 </div>
             </div>
-        {/if}
+        </div>
     </div>
-</div>
+{/if}

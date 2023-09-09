@@ -1,51 +1,50 @@
 import {RecipeCraftingAppFactory} from "./RecipeCraftingAppFactory";
-import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {SvelteApplication} from "../SvelteApplication";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 interface RecipeCraftingAppCatalog {
-    load(recipe: Recipe, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication>;
+
+    load(recipe: Recipe, actor: Actor): Promise<SvelteApplication>;
+
 }
 
 class DefaultRecipeCraftingAppCatalog implements RecipeCraftingAppCatalog {
 
     private readonly _recipeCraftingAppFactory: RecipeCraftingAppFactory;
-    private readonly _systemRegistry: SystemRegistry;
 
     private readonly _appIndex: Map<string, SvelteApplication> = new Map();
 
     constructor({
         recipeCraftingAppFactory,
-        systemRegistry,
         appIndex = new Map()
     }: {
         recipeCraftingAppFactory: RecipeCraftingAppFactory;
-        systemRegistry: SystemRegistry;
         appIndex?: Map<string, SvelteApplication>;
     }) {
         this._recipeCraftingAppFactory = recipeCraftingAppFactory;
-        this._systemRegistry = systemRegistry;
         this._appIndex = appIndex;
     }
 
-    async load(recipe: Recipe, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication> {
-        const appId = `fabricate-recipe-crafting-app-${recipe.id}`;
+    async load(recipe: Recipe, actor: Actor): Promise<SvelteApplication> {
+        const appId = this.getAppId(actor, recipe);
         if (this._appIndex.has(appId)) {
             const svelteApplication = this._appIndex.get(appId);
             if (svelteApplication.rendered) {
                 await svelteApplication.close();
             }
             this._appIndex.delete(appId);
-            craftingSystem = await this._systemRegistry.getCraftingSystemById(craftingSystem.id);
-            await craftingSystem.loadPartDictionary();
-            recipe = craftingSystem.getRecipeById(recipe.id);
+            await recipe.load();
         }
-        const app = this._recipeCraftingAppFactory.make(recipe, craftingSystem, actor, appId);
+        const app = await this._recipeCraftingAppFactory.make(recipe, actor, appId);
         this._appIndex.set(appId, app);
         return app;
     }
 
+    private getAppId(actor: Actor, recipe: Recipe) {
+        // @ts-ignore
+        const actorId = actor.id;
+        return `fabricate-recipe-crafting-app-${recipe.id}-${actorId}`;
+    }
 }
 
 export { RecipeCraftingAppCatalog, DefaultRecipeCraftingAppCatalog }

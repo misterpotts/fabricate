@@ -4,7 +4,7 @@
 
 <script>
 	import { setContext, onDestroy } from 'svelte';
-	import { writable } from 'svelte/store';
+	import {get, writable} from 'svelte/store';
 
 	const tabs = [];
 	const panels = [];
@@ -43,21 +43,28 @@
 			selectedPanel.set(panels[i]);
 		},
 
-		selectPreviousTab: () => {
-			const i = tabs.indexOf(selectedTab);
-			if (i === 0) {
+		selectTabAtIndex: (indexFn) => {
+			if (tabs.length === 0) return;
+			const i = indexFn(tabs.length);
+			if (i < 0) {
+				selectedTab.set(tabs[0]);
+				selectedPanel.set(panels[0]);
 				return;
 			}
-			const previous = i - 1;
-			selectedTab.set(tabs[previous]);
-			selectedPanel.set(panels[previous]);
+			if (i >= tabs.length) {
+				selectedTab.set(tabs[tabs.length - 1]);
+				selectedPanel.set(panels[panels.length - 1]);
+				return;
+			}
+			selectedTab.set(tabs[i]);
+			selectedPanel.set(panels[i]);
 		},
 
 		selectedTab,
 		selectedPanel
 	};
 
-	export const selectPreviousTab = tabOperations.selectPreviousTab;
+	export const selectTabAtIndex = tabOperations.selectTabAtIndex;
 	setContext(TABS, tabOperations);
 
 </script>

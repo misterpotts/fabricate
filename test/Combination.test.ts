@@ -1,51 +1,56 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
 
-import {Combination, Unit} from "../src/scripts/common/Combination";
-import {CraftingComponent, SalvageOption, SalvageOptionJson} from "../src/scripts/common/CraftingComponent";
+import {Combination} from "../src/scripts/common/Combination";
+import {Component} from "../src/scripts/crafting/component/Component";
 
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
-import {SelectableOptions} from "../src/scripts/common/SelectableOptions";
+import {SelectableOptions} from "../src/scripts/crafting/selection/SelectableOptions";
+import {Unit} from "../src/scripts/common/Unit";
+import {SalvageOption, SalvageOptionJson} from "../src/scripts/crafting/component/SalvageOption";
 
 beforeEach(() => {
     jest.resetAllMocks();
 });
 
 test('Should create an empty Combination',() => {
-    const underTest: Combination<CraftingComponent> = Combination.EMPTY();
+    const underTest: Combination<Component> = Combination.EMPTY();
 
     expect(underTest.size).toBe(0);
     expect(underTest.isEmpty()).toBe(true);
     expect(underTest.has(testComponentOne)).toBe(false);
-    expect(underTest.has(new CraftingComponent({
+    expect(underTest.has(new Component({
         id: 'XYZ345',
+        craftingSystemId: "ABC123",
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
         essences: Combination.EMPTY(),
         disabled: true,
         itemData: NoFabricateItemData.INSTANCE()
     }))).toBe(false);
 
-    const underTestAsUnits: Unit<CraftingComponent>[] = underTest.units;
+    const underTestAsUnits: Unit<Component>[] = underTest.units;
     expect(underTestAsUnits.length).toBe(0);
 });
 
 test('Should create a Combination from a single Unit',() => {
-    const underTest: Combination<CraftingComponent> = Combination.ofUnit(new Unit(testComponentOne, 1));
+    const underTest: Combination<Component> = Combination.ofUnit(new Unit(testComponentOne, 1));
 
     expect(underTest.size).toBe(1);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
-    let equivalentComponent = new CraftingComponent({
+    let equivalentComponent = new Component({
         id: testComponentOne.id,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({options: testComponentOne.salvageOptions}),
+        craftingSystemId: testComponentOne.craftingSystemId,
+        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.all }),
         essences: testComponentOne.essences,
         disabled: testComponentOne.isDisabled,
         itemData: testComponentOne.itemData
     });
     expect(underTest.has(equivalentComponent))
         .toBe(true);
-    let nonEquivalentComponent = new CraftingComponent({
+    let nonEquivalentComponent = new Component({
         id: 'XYZ345',
+        craftingSystemId: "ABC123",
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
         essences: Combination.EMPTY(),
         disabled: true,
@@ -58,7 +63,7 @@ test('Should create a Combination from a single Unit',() => {
 });
 
 test('Should create a Combination from a several Units',() => {
-    const underTest: Combination<CraftingComponent> = Combination.ofUnits([
+    const underTest: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentOne, 1),
         new Unit(testComponentTwo, 2),
@@ -73,15 +78,17 @@ test('Should create a Combination from a several Units',() => {
     expect(underTest.has(testComponentOne)).toBe(true);
     expect(underTest.has(testComponentTwo)).toBe(true);
     expect(underTest.has(testComponentThree)).toBe(true);
-    expect(underTest.has(new CraftingComponent({
+    expect(underTest.has(new Component({
         id: testComponentOne.id,
+        craftingSystemId: testComponentOne.craftingSystemId,
         itemData: testComponentOne.itemData,
         disabled: testComponentOne.isDisabled,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({options: testComponentOne.salvageOptions}),
+        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.all }),
         essences: testComponentOne.essences
     }))).toBe(true);
-    expect(underTest.has(new CraftingComponent({
+    expect(underTest.has(new Component({
         id: 'XYZ345',
+        craftingSystemId: "ABC123",
         salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
         essences: Combination.EMPTY(),
         disabled: true,
@@ -91,31 +98,31 @@ test('Should create a Combination from a several Units',() => {
 });
 
 test('Should convert a combination to Units',() => {
-    const underTest: Combination<CraftingComponent> = Combination.ofUnits([
+    const underTest: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentOne, 1),
         new Unit(testComponentTwo, 2),
         new Unit(testComponentThree, 3)
     ]);
 
-    const underTestAsUnits: Unit<CraftingComponent>[] = underTest.units;
+    const underTestAsUnits: Unit<Component>[] = underTest.units;
 
     expect(underTestAsUnits.length).toBe(3);
 });
 
 test('Should create a Combination from combining existing Combinations',() => {
-    const sourceA: Combination<CraftingComponent> = Combination.ofUnits([
+    const sourceA: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentTwo, 2),
         new Unit(testComponentThree, 3)
     ]);
 
-    const sourceB: Combination<CraftingComponent> = Combination.ofUnits([
+    const sourceB: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentFour, 4),
         new Unit(testComponentFive, 5)
     ]);
 
-    const testResultOne: Combination<CraftingComponent> = sourceA.combineWith(sourceB);
+    const testResultOne: Combination<Component> = sourceA.combineWith(sourceB);
     expect(testResultOne.size).toBe(15);
     expect(testResultOne.isEmpty()).toBe(false);
     expect(testResultOne.has(testComponentOne)).toBe(true);
@@ -125,12 +132,12 @@ test('Should create a Combination from combining existing Combinations',() => {
     expect(testResultOne.has(testComponentFive)).toBe(true);
     expect(testResultOne.members).toEqual(expect.arrayContaining([testComponentOne, testComponentTwo, testComponentThree, testComponentFour, testComponentFive]));
 
-    const sourceC: Combination<CraftingComponent> = Combination.ofUnits([
+    const sourceC: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentFour, 1),
         new Unit(testComponentFive, 1)
     ]);
 
-    const testResultTwo: Combination<CraftingComponent> = testResultOne.combineWith(sourceC);
+    const testResultTwo: Combination<Component> = testResultOne.combineWith(sourceC);
     expect(testResultTwo.size).toBe(17);
     expect(testResultTwo.isEmpty()).toBe(false);
     expect(testResultTwo.has(testComponentOne)).toBe(true);
@@ -142,13 +149,13 @@ test('Should create a Combination from combining existing Combinations',() => {
 });
 
 test('Should add one Combination to another', () => {
-    const source: Combination<CraftingComponent> = Combination.ofUnits([
+    const source: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 17),
         new Unit(testComponentTwo, 21),
         new Unit(testComponentThree, 36)
     ]);
 
-    const underTest: Combination<CraftingComponent> = source.add(new Unit(testComponentOne, 10));
+    const underTest: Combination<Component> = source.addUnit(new Unit(testComponentOne, 10));
     expect(underTest.size).toBe(84);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
@@ -163,7 +170,7 @@ test('Should add one Combination to another', () => {
 });
 
 test('Should determine when wne Combination contains another', () => {
-    const superset: Combination<CraftingComponent> = Combination.ofUnits([
+    const superset: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 1),
         new Unit(testComponentTwo, 2),
         new Unit(testComponentThree, 3),
@@ -171,7 +178,7 @@ test('Should determine when wne Combination contains another', () => {
     ]);
 
     const fourComponentFours = new Unit(testComponentFour, 4);
-    const subset: Combination<CraftingComponent> = Combination.ofUnits([
+    const subset: Combination<Component> = Combination.ofUnits([
         fourComponentFours
     ]);
 
@@ -181,7 +188,7 @@ test('Should determine when wne Combination contains another', () => {
     expect(superset.isIn(subset)).toBe(false);
 
     const fiveComponentFours = new Unit(testComponentFour, 5);
-    const excludedSubset: Combination<CraftingComponent> = Combination.ofUnits([
+    const excludedSubset: Combination<Component> = Combination.ofUnits([
         fiveComponentFours
     ]);
     expect(excludedSubset.isIn(superset)).toBe(false);
@@ -189,19 +196,19 @@ test('Should determine when wne Combination contains another', () => {
 })
 
 test('Should subtract one Combination from another', () => {
-    const largeCombination: Combination<CraftingComponent> = Combination.ofUnits([
+    const largeCombination: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 10),
         new Unit(testComponentTwo, 10),
         new Unit(testComponentThree, 10)
     ]);
 
-    const smallCombination: Combination<CraftingComponent> = Combination.ofUnits([
+    const smallCombination: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 2),
         new Unit(testComponentTwo, 7),
         new Unit(testComponentThree, 5)
     ]);
 
-    const testResultOne: Combination<CraftingComponent> = largeCombination.subtract(smallCombination);
+    const testResultOne: Combination<Component> = largeCombination.subtract(smallCombination);
     expect(testResultOne.size).toBe(16);
     expect(testResultOne.isEmpty()).toBe(false);
     expect(testResultOne.has(testComponentOne)).toBe(true);
@@ -211,18 +218,18 @@ test('Should subtract one Combination from another', () => {
     expect(testResultOne.amountFor(testComponentTwo.id)).toBe(3);
     expect(testResultOne.amountFor(testComponentThree.id)).toBe(5);
 
-    const largestCombination: Combination<CraftingComponent> = Combination.ofUnits([
+    const largestCombination: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 20),
         new Unit(testComponentTwo, 25),
         new Unit(testComponentThree, 50),
         new Unit(testComponentFour, 5)
     ]);
 
-    const testResultTwo: Combination<CraftingComponent> = largeCombination.subtract(largestCombination);
+    const testResultTwo: Combination<Component> = largeCombination.subtract(largestCombination);
     expect(testResultTwo.size).toBe(0);
     expect(testResultTwo.isEmpty()).toBe(true);
 
-    const testResultThree: Combination<CraftingComponent> = smallCombination.subtract(Combination.EMPTY());
+    const testResultThree: Combination<Component> = smallCombination.subtract(Combination.EMPTY());
     expect(testResultThree.size).toBe(14);
     expect(testResultThree.isEmpty()).toBe(false);
     expect(testResultThree.has(testComponentOne)).toBe(true);
@@ -234,13 +241,13 @@ test('Should subtract one Combination from another', () => {
 });
 
 test('Should multiply a Combination by a factor', () => {
-    const sourceCombination: Combination<CraftingComponent> = Combination.ofUnits([
+    const sourceCombination: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 10),
         new Unit(testComponentTwo, 8),
         new Unit(testComponentThree, 1)
     ]);
 
-    const underTest: Combination<CraftingComponent> = sourceCombination.multiply(3);
+    const underTest: Combination<Component> = sourceCombination.multiply(3);
     expect(underTest.size).toBe(57);
     expect(underTest.isEmpty()).toBe(false);
     expect(underTest.has(testComponentOne)).toBe(true);
@@ -252,13 +259,13 @@ test('Should multiply a Combination by a factor', () => {
 });
 
 test('Should determine when two Combinations intersect', () => {
-    const sourceCombinationA: Combination<CraftingComponent> = Combination.ofUnits([
+    const sourceCombinationA: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentOne, 10),
         new Unit(testComponentTwo, 8),
         new Unit(testComponentThree, 1)
     ]);
 
-    const sourceCombinationB: Combination<CraftingComponent> = Combination.ofUnits([
+    const sourceCombinationB: Combination<Component> = Combination.ofUnits([
         new Unit(testComponentThree, 3),
         new Unit(testComponentFour, 80),
         new Unit(testComponentFive, 17)

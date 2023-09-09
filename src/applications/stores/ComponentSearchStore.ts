@@ -1,5 +1,5 @@
 import {writable, Writable, Readable, derived, Subscriber} from "svelte/store";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/crafting/component/Component";
 
 interface ComponentSearchTerms {
     name?: string;
@@ -9,18 +9,18 @@ interface ComponentSearchTerms {
 
 class ComponentSearchStore {
 
-    private readonly _availableComponents: Readable<CraftingComponent[]>;
-    private readonly _searchResults: Readable<CraftingComponent[]>;
+    private readonly _availableComponents: Readable<Component[]>;
+    private readonly _searchResults: Readable<Component[]>;
     private readonly _searchTerms: Writable<ComponentSearchTerms>;
 
     constructor({
-        availableComponents,
+        components,
         searchTerms = {}
     }: {
-        availableComponents: Readable<CraftingComponent[]>;
+        components: Readable<Component[]>;
         searchTerms?: ComponentSearchTerms;
     }) {
-        this._availableComponents = availableComponents;
+        this._availableComponents = components;
         this._searchTerms = writable(searchTerms);
         this._searchResults = derived(
             [this._availableComponents, this._searchTerms],
@@ -31,11 +31,11 @@ class ComponentSearchStore {
         this.clearOnSystemSelection(this._availableComponents);
     }
 
-    private clearOnSystemSelection(availableComponents: Readable<CraftingComponent[]>) {
+    private clearOnSystemSelection(availableComponents: Readable<Component[]>) {
         availableComponents.subscribe(() => this.clear());
     }
 
-    private searchComponents(craftingComponents: CraftingComponent[], searchTerms: ComponentSearchTerms) {
+    private searchComponents(craftingComponents: Component[], searchTerms: ComponentSearchTerms) {
         return craftingComponents.filter((component) => {
             if (searchTerms.hasEssences && !component.hasEssences) {
                 return false;
@@ -50,7 +50,7 @@ class ComponentSearchStore {
         });
     }
 
-    public subscribe(subscriber: Subscriber<CraftingComponent[]>) {
+    public subscribe(subscriber: Subscriber<Component[]>) {
         return this._searchResults.subscribe(subscriber);
     }
 

@@ -4,6 +4,10 @@ interface ObjectUtility {
 
     merge<T extends object>(target: T, source: T): T;
 
+    getPropertyValue<T>(propertyPath: string, object: object): T;
+
+    setPropertyValue<T>(propertyPath: string, object: object, value: T): void;
+
 }
 
 class DefaultObjectUtility implements ObjectUtility {
@@ -14,6 +18,14 @@ class DefaultObjectUtility implements ObjectUtility {
 
     merge<T extends object>(target: T, source: T): T {
         return mergeObject(target, source) as T;
+    }
+
+    getPropertyValue<T>(propertyPath: string, object: object): T {
+        return getProperty(object, propertyPath) as T;
+    }
+
+    setPropertyValue<T>(propertyPath: string, object: object, value: T): void {
+        setProperty(object, propertyPath, value);
     }
 
 }

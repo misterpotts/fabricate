@@ -20,12 +20,8 @@
         $loading = false;
     }
 
-    async function importCraftingSystem() {
-        $loading = true;
-        await craftingSystemEditor.importCraftingSystem((craftingSystem) => {
-            $selectedCraftingSystem = craftingSystem;
-        });
-        $loading = false;
+    async function importCraftingSystem(targetCraftingSystemId) {
+        await craftingSystemEditor.importCraftingSystem(targetCraftingSystemId);
     }
 
 </script>

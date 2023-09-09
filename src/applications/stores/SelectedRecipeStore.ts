@@ -1,5 +1,5 @@
 import {get, Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 class SelectedRecipeStore {
 

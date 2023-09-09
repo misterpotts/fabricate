@@ -8,10 +8,7 @@
       "recipe": {
         "singular": "Recipe",
         "plural": "Recipes",
-        "ingredientOption": {
-          "name": "Option {number}"
-        },
-        "resultOption": {
+        "option": {
           "name": "Option {number}"
         }
       },
@@ -43,10 +40,136 @@
         "plural": "Active Effect Sources"
       }
     },
+    "settings": {
+      "settingDeleted": "The setting {settingPath} was deleted. ",
+      "craftingSystem": {
+        "deleted": "Deleted crafting system \"{systemName}\"",
+        "created": "Created crafting system \"{systemName}\"",
+        "updated": "Updated crafting system \"{systemName}\"",
+        "import": {
+          "invalidData": {
+            "summary": "The provided crafting system import data is not valid. Correct the following errors and try again: {errors}",
+            "invalidJson": "Invalid JSON. ",
+            "noData": "No data was provided to import. ",
+            "noVersion": "Missing required property \"version: string\". ",
+            "noSystem": "Missing required property \"system: CraftingSystemExportModel\". ",
+            "noEssences": "Missing required property \"essences: EssenceExportModel[]\". ",
+            "noComponents": "Missing required property \"components: ComponentExportModel[]\". ",
+            "noRecipes": "Missing required property \"recipes: RecipeExportModel[]\". "
+          },
+          "failure": "Failed to import crafting system \"{systemName}\"",
+          "success": "Successfully imported crafting system \"{systemName}\", with {essenceCount} essences, {componentCount} components, and {recipeCount} recipes. "
+        },
+        "duplicate": {
+            "failure": "Failed to duplicate crafting system with ID \"{systemId}\". Caused by: {cause}",
+            "success": "Successfully duplicated crafting system with \"{systemId}\". The clone's ID is \"{cloneId}\". "
+        },
+        "export": {
+          "craftingSystemNotFound": "The crafting system with ID {craftingSystemId} does not exist. "
+        }
+      },
+      "errors": {
+        "invalidRead": "The stored value for the setting {settingPath} is not valid, and could not be read. {errors}",
+        "invalidWrite": "The provided value for the setting {settingPath} is not valid, and could not be saved. {errors}",
+        "craftingSystem": {
+          "doesNotExist": "The crafting system with ID {craftingSystemId} does not exist. ",
+          "invalid": "The crafting system with ID {craftingSystemId} is not valid. Errors: {errors}. ",
+          "missingCraftingSystems": "The crafting systems with the IDs {craftingSystemIds} could not be found. ",
+          "cannotModifyEmbedded": "The crafting system {craftingSystemName} is an embedded system and cannot be modified. ",
+          "cannotDeleteEmbedded": "The crafting system {craftingSystemName} is an embedded system and cannot be deleted. "
+        },
+        "document": {
+          "notFound": "The document with UUID {documentUuid} could not be found. "
+        },
+        "recipe": {
+          "doesNotExist": "The recipe with ID {recipeId} does not exist. ",
+          "invalid": "The recipe with ID {recipeId} is not valid. Errors: {errors}. ",
+          "missingRecipes": "The recipes with the IDs {recipeIds} could not be found. ",
+          "noneSaved": "A problem occurred saving one or more recipes. No recipes were saved. "
+        },
+        "component": {
+          "doesNotExist": "The component with ID {componentId} does not exist. ",
+          "invalid": "The component with ID {componentId} is not valid. Errors: {errors}. ",
+          "missingComponents": "The components with the IDs {componentIds} could not be found. ",
+          "noneSaved": "A problem occurred saving one or more components. No components were saved."
+        },
+        "essence": {
+          "doesNotExist": "The essence with ID {essenceId} does not exist. ",
+          "invalid": "The essence with ID {essenceId} is not valid. Errors: {errors}. ",
+          "missingEssences": "The essences with the IDs {essenceIds} could not be found. ",
+          "noneSaved": "A problem occurred saving one or more essences. No essences were saved."
+        }
+      },
+      "migration": {
+        "notNeeded": "Fabricate settings are already up to date and don't not need to be migrated. ",
+        "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
+        "failed": "Fabricate was unable to migrate your crafting system settings. Please report this error to the module author. ",
+        "success": "Fabricate has finished migrating your crafting system settings!"
+      },
+      "recipe": {
+        "updated": "Updated recipe \"{recipeName}\"",
+        "created": "Created recipe \"{recipeName}\"",
+        "savedAll": "Saved {count} recipes"
+      },
+      "component": {
+        "updated": "Updated component \"{componentName}\"",
+        "created": "Created component \"{componentName}\"",
+        "savedAll": "Saved {count} components"
+      },
+      "essence": {
+        "updated": "Updated essence \"{essenceName}\"",
+        "created": "Created essence \"{essenceName}\"",
+        "savedAll": "Saved {count} essences"
+      }
+    },
+    "crafting": {
+      "actorNotFound": "The Actor with id {actorId} could not be found. ",
+      "disabledCraftingSystem": "The component {componentName} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
+      "salvage": {
+        "componentNotFound": "The component with id {componentId} could not be found. ",
+        "componentNotOwned": "The component with name {componentName} is not owned by the Actor {actorName}. ",
+        "disabledComponent": "The component {componentName} is disabled and cannot be salvaged.",
+        "unsalvageableComponent": "The component {componentName} has no usable salvage options.",
+        "invalidItemData": "The component with ID \"{componentId}\" has a problem with its item data. Caused by: {cause}",
+        "multipleCraftingSystems": "This Salvage Result has components from multiple Crafting Systems. This is not supported, and possibly a bug. The crafting system IDs are: {craftingSystemIds}. ",
+        "success": "Salvaged {componentName} in {craftingSystemName}.",
+        "salvageOptionIdRequired": "The component {componentName} has {salvageOptionCount} salvage options, but no salvage option ID was provided. The available salvage option ids are: {salvageOptionIds}. ",
+        "missingCatalysts": "Unable to salvage the component {componentName}. Missing required catalysts: {missingCatalystNames}. "
+      },
+      "recipe": {
+        "recipeNotFound": "The recipe with id {recipeId} could not be found. ",
+        "invalidItemData": "The recipe with ID \"{recipeId}\" has a problem with its item data. Caused by: {cause}",
+        "disabledRecipe": "The recipe {recipeName} is disabled and cannot be crafted.",
+        "requirementOptionIdRequired": "The recipe {recipeName} has {requirementOptionCount} requirement options, but no requirement option ID was provided. The available requirement option ids are: {requirementOptionIds}. ",
+        "resultOptionIdRequired": "The recipe {recipeName} has {resultOptionCount} result options, but no result option ID was provided. The available result option ids are: {resultOptionIds}. ",
+        "multipleCraftingSystems": "The recipe {recipeName} has components from multiple Crafting Systems. This is not supported, and possibly a bug. The crafting system IDs are: {craftingSystemIds}. ",
+        "invalidComponentItemData": "The recipe {recipeName} has a problem with its component item data. The invalid component IDs are {invalidComponentIds}. ",
+        "multipleEssenceCraftingSystems": "The recipe {recipeName} has essences from multiple Crafting Systems. This is not supported, and possibly a bug. The crafting system IDs are: {craftingSystemIds}. ",
+        "invalidEssenceItemData": "The recipe {recipeName} has a problem with its essence item data. The invalid essence IDs are {essenceIds}. ",
+        "insufficientUserComponents": "The selected components for crafting {recipeName} are not all owned by the Actor {actorName}. The missing components are {missingComponentNames}. ",
+        "insufficientComponents": "The Actor {actorName} does not have enough of the required components to craft {recipeName}. ",
+        "success": "Crafted {recipeName} in {craftingSystemName}."
+      },
+      "inventory": {
+        "error": {
+          "invalidActor": "The Actor this inventory was configured for is not valid.",
+          "componentNotFound": "The component with ID {componentId} could not be found."
+        }
+      }
+    },
     "CraftingComponentCarousel": {
       "buttons": {
         "next": "Next option",
         "previous": "Previous option"
+      }
+    },
+    "ComponentSalvageCarousel": {
+      "buttons": {
+        "next": "Next option",
+        "previous": "Previous option"
+      },
+      "hints": {
+        "requiresCatalysts": "This component requires these catalysts to salvaged."
       }
     },
     "CraftingResultCarousel": {
@@ -80,7 +203,8 @@
         "notSalvageable": "Something has gone wrong, and this component has zero salvage options."
       },
       "hints": {
-        "doSalvage": "Salvaging this component will add these items to your inventory"
+        "doSalvage": "Salvaging this component will add these items to your inventory",
+        "requiresCatalysts": "This component requires these catalysts to salvaged."
       },
       "dialog": {
         "doSalvage": {
@@ -124,8 +248,8 @@
           },
           "settings": {
             "title": "Settings",
-            "enabled": {
-              "label": "Enabled",
+            "disabled": {
+              "label": "Disabled",
               "description": "Disabled systems cannot be used. Their components cannot be salvaged. Their recipes cannot be crafted."
             }
           }
@@ -174,6 +298,8 @@
             "labels": {
               "salvageName": "Option name",
               "salvageHeading": "Salvage",
+              "resultsHeading": "Results",
+              "catalystsHeading": "Catalysts",
               "availableComponentsHeading": "Available Components",
               "essencesHeading": "Essences",
               "replaceItem": "Drop an item to replace",
@@ -235,7 +361,7 @@
               "catalystsHeading": "Catalysts",
               "resultsHeading": "Results",
               "availableComponentsHeading": "Available Components",
-              "essencesHeading": "Required essences",
+              "essencesHeading": "Essences",
               "replaceItem": "Drop an item to replace",
               "newIngredientOption": "New",
               "newResultOption": "New",
@@ -306,9 +432,6 @@
           "title": "Delete Crafting System",
           "content": "Are you sure you want to delete {systemName}? This action cannot be undone. "
         },
-        "deleteCraftingSystem": {
-          "success": "The Crafting System {systemName} was successfully deleted."
-        },
         "saveCraftingSystem": {
           "success": "The Crafting System {systemName} was successfully updated."
         },
@@ -316,7 +439,7 @@
           "success": "The Crafting System {systemName} was successfully exported to {fileName}."
         },
         "duplicateCraftingSystem": {
-          "success": "Duplicated {sourceSystemName} as {duplicatedSystemName}."
+          "complete": "Duplicated {sourceSystemName} as {duplicatedSystemName}."
         },
         "importCraftingSystem": {
           "title": "Import Crafting System",
@@ -349,24 +472,6 @@
       }
     },
     "ui": {
-      "notifications": {
-        "submissionError": {
-          "prefix": "There were some problems with your form"
-        },
-        "settings": {
-          "migration": {
-            "started": "Fabricate is migrating your crafting system settings. Please do close your browser or shut down the game world. ",
-            "finished": "Fabricate has finished migrating your crafting system settings!"
-          },
-          "errors": {
-            "summary": "Fabricate was unable to read the setting for the key {settingKey}. Caused by:",
-            "noValue": "Expected a non-null, non-empty setting value.",
-            "noVersion": "Expected a non-null, non-empty setting version.",
-            "notFound": "No Setting was registered for the provided setting key.",
-            "migration": "Unable to migrate the setting for the key {settingKey}."
-          }
-        }
-      },
       "sidebar": {
         "buttons": {
           "openCraftingSystemManager": "Crafting Systems"

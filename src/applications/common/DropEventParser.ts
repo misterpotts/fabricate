@@ -1,18 +1,18 @@
 import {DocumentManager, FabricateItemData} from "../../scripts/foundry/DocumentManager";
 import Properties from "../../scripts/Properties";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
+import {Component} from "../../scripts/crafting/component/Component";
 import {LocalizationService} from "./LocalizationService";
 
 class DropData {
     private readonly _itemData: FabricateItemData;
-    private readonly _component: CraftingComponent;
+    private readonly _component: Component;
 
     constructor({
         itemData,
         component
     }: {
         itemData?: FabricateItemData;
-        component?: CraftingComponent;
+        component?: Component;
     }) {
         this._itemData = itemData;
         this._component = component;
@@ -22,7 +22,7 @@ class DropData {
         return this._itemData;
     }
 
-    get component(): CraftingComponent {
+    get component(): Component {
         return this._component;
     }
 
@@ -42,8 +42,8 @@ class DropEventParser {
     private readonly _partType: string;
     private readonly _strict: boolean;
     private readonly _documentManager: DocumentManager;
-    private readonly _allowedCraftingComponentsById: Map<string, CraftingComponent>;
-    private readonly _allowedCraftingComponentsByItemUuid: Map<string, CraftingComponent>;
+    private readonly _allowedCraftingComponentsById: Map<string, Component>;
+    private readonly _allowedCraftingComponentsByItemUuid: Map<string, Component>;
 
     constructor({
         localizationService,
@@ -54,7 +54,7 @@ class DropEventParser {
     }: {
         localizationService: LocalizationService;
         partType: string;
-        allowedCraftingComponents?: CraftingComponent[];
+        allowedCraftingComponents?: Component[];
         documentManager: DocumentManager;
         strict?: boolean;
     }) {
@@ -86,7 +86,7 @@ class DropEventParser {
                 ui.notifications.warn(message);
                 return new DropData({});
             }
-            const itemData = await this._documentManager.getDocumentByUuid(dropData.uuid);
+            const itemData = await this._documentManager.loadItemDataByDocumentUuid(dropData.uuid);
             if (this._strict && ! this._allowedCraftingComponentsByItemUuid.has(itemData.uuid)) {
                 const message = this._localizationService.format(
                     `${Properties.module.id}.DropEventParser.errors.unrecognisedComponent`,
@@ -145,7 +145,7 @@ class DropEventParser {
         return new DropData({});
     }
 
-    public static serialiseComponentData(component: CraftingComponent): string {
+    public static serialiseComponentData(component: Component): string {
         return JSON.stringify({ componentId: component.id });
     }
 

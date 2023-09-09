@@ -1,7 +1,6 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
 import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
-import {testPartDictionary} from "./test_data/TestPartDictionary";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
 
 const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
@@ -18,21 +17,20 @@ describe('Create and configure', () => {
         const testSystemId = `fabricate-test-system`;
 
         const underTest = new CraftingSystem({
-            details: new CraftingSystemDetails({
+            craftingSystemDetails: new CraftingSystemDetails({
                 name: "Test System",
                 author: "",
                 summary: "",
                 description: ""
             }),
             id: testSystemId,
-            enabled: true,
-            locked: false,
-            partDictionary: testPartDictionary
+            disabled: true,
+            embedded: false
         });
 
         expect(underTest).not.toBeNull();
         expect(underTest.id).toEqual(testSystemId);
-        expect(underTest.enabled).toEqual(true);
+        expect(underTest.isDisabled).toEqual(true);
 
     });
 
@@ -40,21 +38,20 @@ describe('Create and configure', () => {
 
         const testSystemId = `fabricate-test-system`;
         const underTest = new CraftingSystem({
-            details: new CraftingSystemDetails({
+            craftingSystemDetails: new CraftingSystemDetails({
                 name: "Test System",
                 author: "",
                 summary: "",
                 description: ""
             }),
             id: testSystemId,
-            enabled: true,
-            locked: false,
-            partDictionary: testPartDictionary
+            disabled: true,
+            embedded: false
         });
 
         expect(underTest).not.toBeNull();
         expect(underTest.id).toEqual(testSystemId);
-        expect(underTest.enabled).toEqual(true);
+        expect(underTest.isDisabled).toEqual(true);
 
     });
 

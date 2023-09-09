@@ -1,45 +1,63 @@
 import {SvelteApplication} from "../SvelteApplication";
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
-import {DefaultGameProvider} from "../../scripts/foundry/GameProvider";
+import {Component} from "../../scripts/crafting/component/Component";
 import Properties from "../../scripts/Properties";
 import ComponentSalvageApp from "./ComponentSalvageApp.svelte";
-import {Combination} from "../../scripts/common/Combination";
-import {DefaultLocalizationService} from "../common/LocalizationService";
-import {DefaultInventoryFactory} from "../../scripts/actor/InventoryFactory";
+import {LocalizationService} from "../common/LocalizationService";
+import {CraftingAPI} from "../../scripts/api/CraftingAPI";
+import {ComponentAPI} from "../../scripts/api/ComponentAPI";
+import {DefaultComponentSalvageManager} from "./ComponentSalvageManager";
 
 interface ComponentSalvageAppFactory {
 
-    make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor, appId: string): SvelteApplication;
+    make(component: Component, actor: any, appId: string): SvelteApplication;
 
 }
 
 class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
 
-    make(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: any, appId: string): SvelteApplication {
+    private readonly localizationService: LocalizationService;
+    private readonly craftingAPI: CraftingAPI;
+    private readonly componentAPI: ComponentAPI;
 
-        const gameProvider = new DefaultGameProvider();
-        const GAME = gameProvider.get();
+    constructor({
+        craftingAPI,
+        componentAPI,
+        localizationService,
+    }: {
+        craftingAPI: CraftingAPI;
+        componentAPI: ComponentAPI;
+        localizationService: LocalizationService;
+    }) {
+        this.craftingAPI = craftingAPI;
+        this.componentAPI = componentAPI;
+        this.localizationService = localizationService;
+    }
+
+    make(component: Component, actor: any, appId: string): SvelteApplication {
 
         const applicationOptions = {
-            title: GAME.i18n.format(`${Properties.module.id}.ComponentSalvageApp.title`, { actorName: actor.name }),
+            title: this.localizationService.format(`${Properties.module.id}.ComponentSalvageApp.title`, { actorName: actor.name }),
             id: appId,
             resizable: false,
             width: 540,
             height: 514
-        }
+        };
 
-        const inventory = new DefaultInventoryFactory(gameProvider).make(actor, craftingSystem);
+        const componentSalvageManager = new DefaultComponentSalvageManager({
+            actor,
+            craftingAPI: this.craftingAPI,
+            componentAPI: this.componentAPI,
+            componentToSalvage: component,
+        });
 
         return new SvelteApplication({
             applicationOptions,
             svelteConfig: {
+                componentType: ComponentSalvageApp,
                 options: {
                     props: {
-                        craftingComponent,
-                        inventory,
-                        localization: new DefaultLocalizationService(gameProvider),
-                        ownedComponentsOfType: Combination.EMPTY(),
+                        componentSalvageManager,
+                        localization: this.localizationService,
                         closeHook: async () => {
                             const svelteApplication: SvelteApplication = <SvelteApplication>Object.values(ui.windows)
                                 .find(w => w.id == appId);
@@ -47,7 +65,6 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
                         }
                     }
                 },
-                componentType: ComponentSalvageApp
             }
         });
     }

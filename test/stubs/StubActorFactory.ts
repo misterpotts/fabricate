@@ -1,17 +1,17 @@
 import {StubItem} from "./StubItem";
 import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
+import {Combination} from "../../src/scripts/common/Combination";
+import {Component} from "../../src/scripts/crafting/component/Component";
 
 class StubActorFactory {
 
-    private readonly _ownedItems: Map<string, StubItem> ;
+    constructor() {}
 
-    constructor({ ownedItems = new Map() }: { ownedItems?: Map<string, StubItem> }) {
-        this._ownedItems = ownedItems;
-    }
-
-    public make(): BaseActor {
-        const items = new Map(this._ownedItems);
-        const result: BaseActor = <BaseActor><unknown>{
+    public make(ownedComponents: Combination<Component> = Combination.EMPTY(), additionalItemCount = 10): BaseActor {
+        const items = this.generateInventory(ownedComponents, additionalItemCount);
+        return <BaseActor><unknown>{
+            id: randomIdentifier(),
+            name: "Stub Actor",
             items,
             deleteEmbeddedDocuments: (type: string, ids: string[]) => {
                 if (type !== "Item") {
@@ -61,6 +61,28 @@ class StubActorFactory {
                 return itemData;
             }
         };
+    }
+
+    private generateInventory(ownedComponents: Combination<Component> = Combination.EMPTY(), additionalItemCount = 10): Map<string, StubItem> {
+        const result: Map<string, StubItem> = new Map();
+        for (let i = 0; i < additionalItemCount; i++) {
+            const id = randomIdentifier();
+            result.set(id, new StubItem({ id }));
+        }
+        ownedComponents.units.map(unit => {
+            const id = randomIdentifier();
+            result.set(id, new StubItem({
+                id: id,
+                flags: {
+                    core: {
+                        sourceId: unit.element.itemUuid
+                    }
+                },
+                system: {
+                    quantity: unit.quantity
+                }
+            }));
+        });
         return result;
     }
 

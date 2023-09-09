@@ -1,4 +1,5 @@
-import {Identifiable, Serializable} from "../common/Identity";
+import {Identifiable} from "../common/Identifiable";
+import {Serializable} from "../common/Serializable";
 
 export interface Dictionary<J, I extends Identifiable & Serializable<J>> {
 

@@ -1,13 +1,15 @@
 import {Combination} from "../../common/Combination";
-import {Recipe} from "../../common/Recipe";
-import {CraftingCheckResult, NoCraftingCheckResult} from "../check/CraftingCheckResult";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Recipe} from "../recipe/Recipe";
+import {Component} from "../component/Component";
 
 interface CraftingResult {
 
-    consumed: Combination<CraftingComponent>;
-    created: Combination<CraftingComponent>;
-    isSuccessful: boolean;
+    recipe: Recipe;
+    sourceActorId: string;
+    targetActorId: string;
+    description: string;
+    consumed: Combination<Component>;
+    produced: Combination<Component>;
 
 }
 
@@ -15,68 +17,112 @@ export { CraftingResult }
 
 class NoCraftingResult implements CraftingResult {
 
-    constructor() {}
-
-    get created(): Combination<CraftingComponent> {
-        return Combination.EMPTY();
-    }
-
-    get consumed(): Combination<CraftingComponent> {
-        return Combination.EMPTY();
-    }
-
-    get isSuccessful(): boolean {
-        return false;
-    }
-
-}
-
-export {NoCraftingResult};
-
-class DefaultCraftingResult implements CraftingResult {
-
     private readonly _recipe: Recipe;
-    private readonly _consumed: Combination<CraftingComponent>;
-    private readonly _created: Combination<CraftingComponent>;
-    private readonly _checkResult?: CraftingCheckResult;
+    private readonly _description: string;
+    private readonly _sourceActorId: string;
+    private readonly _targetActorId: string;
 
     constructor({
         recipe,
-        consumed = Combination.EMPTY(),
-        created = Combination.EMPTY(),
-        checkResult = new NoCraftingCheckResult()
+        description,
+        sourceActorId,
+        targetActorId,
     }: {
         recipe: Recipe;
-        consumed?: Combination<CraftingComponent>;
-        created?: Combination<CraftingComponent>;
-        checkResult?: CraftingCheckResult;
+        description: string;
+        sourceActorId: string;
+        targetActorId: string;
     }) {
         this._recipe = recipe;
-        this._consumed = consumed;
-        this._created = created;
-        this._checkResult = checkResult;
+        this._description = description;
+        this._sourceActorId = sourceActorId;
+        this._targetActorId = targetActorId;
     }
 
-    get consumed(): Combination<CraftingComponent> {
-        return this._consumed;
+    get description(): string {
+        return this._description;
     }
 
-    get created(): Combination<CraftingComponent> {
-        return this._created;
+    get produced(): Combination<Component> {
+        return Combination.EMPTY();
+    }
+
+    get consumed(): Combination<Component> {
+        return Combination.EMPTY();
     }
 
     get recipe(): Recipe {
         return this._recipe;
     }
 
-    get checkResult(): CraftingCheckResult {
-        return this._checkResult;
+    get sourceActorId(): string {
+        return this._sourceActorId;
     }
 
-    get isSuccessful(): boolean {
-        return this._checkResult.isSuccessful;
+    get targetActorId(): string {
+        return this._targetActorId;
     }
 
 }
 
-export {DefaultCraftingResult};
+export { NoCraftingResult };
+
+class SuccessfulCraftingResult implements CraftingResult {
+
+    private readonly _recipe: Recipe;
+    private readonly _consumed: Combination<Component>;
+    private readonly _produced: Combination<Component>;
+    private readonly _description: string;
+    private readonly _sourceActorId: string;
+    private readonly _targetActorId: string;
+
+    constructor({
+        recipe,
+        consumed = Combination.EMPTY(),
+        produced = Combination.EMPTY(),
+        description,
+        sourceActorId,
+        targetActorId,
+    }: {
+        recipe: Recipe;
+        consumed?: Combination<Component>;
+        produced?: Combination<Component>;
+        description: string;
+        sourceActorId: string;
+        targetActorId: string;
+    }) {
+        this._recipe = recipe;
+        this._consumed = consumed;
+        this._produced = produced;
+        this._description = description;
+        this._sourceActorId = sourceActorId;
+        this._targetActorId = targetActorId;
+    }
+
+    get description(): string {
+        return this._description;
+    }
+
+    get consumed(): Combination<Component> {
+        return this._consumed;
+    }
+
+    get produced(): Combination<Component> {
+        return this._produced;
+    }
+
+    get recipe(): Recipe {
+        return this._recipe;
+    }
+
+    get sourceActorId(): string {
+        return this._sourceActorId;
+    }
+
+    get targetActorId(): string {
+        return this._targetActorId;
+    }
+
+}
+
+export { SuccessfulCraftingResult };

@@ -1,5 +1,5 @@
 import {writable, Writable, Readable, derived, Subscriber} from "svelte/store";
-import {Recipe} from "../../scripts/common/Recipe";
+import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 interface RecipeSearchTerms {
     name?: string;
@@ -37,10 +37,10 @@ class RecipeSearchStore {
 
     private searchRecipes(recipes: Recipe[], searchTerms: RecipeSearchTerms) {
         return recipes.filter((recipe) => {
-            if (searchTerms.requiresEssences && !recipe.requiresEssences) {
+            if (searchTerms.requiresEssences && !recipe.hasEssenceRequirementOption()) {
                 return false;
             }
-            if (searchTerms.requiresNamedIngredients && !recipe.hasIngredients) {
+            if (searchTerms.requiresNamedIngredients && !recipe.hasRequirements) {
                 return false;
             }
             if (!searchTerms.name) {

@@ -1,6 +1,6 @@
 import {PartDictionary, PartDictionaryFactory} from "../../src/scripts/system/PartDictionary";
-import {CraftingComponentJson} from "../../src/scripts/common/CraftingComponent";
-import {RecipeJson} from "../../src/scripts/common/Recipe";
+import {ComponentJson} from "../../src/scripts/crafting/component/Component";
+import {RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";
 import {
     testComponentFive,
     testComponentFour,
@@ -18,6 +18,7 @@ import {
 } from "./TestRecipes";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import {StubDocumentManager} from "../stubs/StubDocumentManager";
+import {EssenceJson} from "../../src/scripts/crafting/essence/Essence";
 
 const components = {
     [testComponentOne.id]: testComponentOne,
@@ -28,7 +29,7 @@ const components = {
 };
 const componentsJson = Array.from(Object.values(components))
     .map(component => component.toJson())
-    .reduce((left: Record<string, CraftingComponentJson>, right) => {
+    .reduce((left: Record<string, ComponentJson>, right) => {
         left[right.itemUuid] = right;
         return left;
     }, {});
@@ -44,7 +45,7 @@ const recipes = {
 const recipesJson = Array.from(Object.values(recipes))
     .map(recipe => recipe.toJson())
     .reduce((left: Record<string, RecipeJson>, right) => {
-        left[right.itemUuid] = right;
+        left[right.id] = right;
         return left;
     }, {});
 const essences = {
@@ -53,16 +54,22 @@ const essences = {
     [elementalWater.id]: elementalWater,
     [elementalAir.id]: elementalAir
 };
+const essencesJson = Array.from(Object.values(essences))
+    .map(essence => essence.toJson())
+    .reduce((left: Record<string, EssenceJson>, right) => {
+        left[right.id] = right;
+        return left;
+    }, {});
 
 const testPartDictionaryFactory = new PartDictionaryFactory({
     documentManager: StubDocumentManager.forParts({
-        craftingComponents: Array.from(Object.values(components)),
+        components: Array.from(Object.values(components)),
         recipes: Array.from(Object.values(recipes))
     }),
 });
 
 const testPartDictionary: PartDictionary = testPartDictionaryFactory.make({
-    essences,
+    essences: essencesJson,
     components: componentsJson,
     recipes: recipesJson
 });

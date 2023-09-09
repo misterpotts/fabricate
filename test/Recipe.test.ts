@@ -1,9 +1,7 @@
 import {expect, jest, test, beforeEach, describe} from "@jest/globals";
 import {
-    RequirementOption,
-    RequirementOptionJson,
-    Recipe, ResultOption, ResultOptionJson
-} from "../src/scripts/common/Recipe";
+    Recipe
+} from "../src/scripts/crafting/recipe/Recipe";
 
 import {
     testComponentOne,
@@ -12,16 +10,19 @@ import {
     testComponentFour,
     testComponentFive
 } from "./test_data/TestCraftingComponents";
-import {Combination, Unit} from "../src/scripts/common/Combination";
+import {Combination} from "../src/scripts/common/Combination";
 import {elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {
-    testRecipeFive,
+    testRecipeFive, testRecipeFour, testRecipeOne, testRecipeSeven,
     testRecipeSix,
     testRecipeThree,
     testRecipeTwo
 } from "./test_data/TestRecipes";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
-import {SelectableOptions} from "../src/scripts/common/SelectableOptions";
+import {SelectableOptions} from "../src/scripts/crafting/selection/SelectableOptions";
+import {Unit} from "../src/scripts/common/Unit";
+import {RequirementOption, RequirementOptionJson} from "../src/scripts/crafting/recipe/RequirementOption";
+import {ResultOption, ResultOptionJson} from "../src/scripts/crafting/recipe/ResultOption";
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -32,38 +33,35 @@ describe("When creating a recipe", () => {
     test("should correctly assess requirements for a recipe with essences only", () => {
         const underTest = testRecipeThree;
 
-        expect(underTest.essences.size).toEqual(4);
-        expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
-        expect(underTest.essences.amountFor(elementalEarth.id)).toEqual(3);
-
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.requiresEssences).toEqual(true);
-        expect(underTest.hasIngredients).toEqual(false);
-        expect(underTest.hasIngredientOptions).toEqual(false);
+        expect(underTest.hasRequirements).toEqual(true);
+        expect(underTest.requirementOptions.all[0].essences.size).toEqual(4);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalEarth.id)).toEqual(3);
+        expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(false);
+        expect(underTest.hasResultChoices).toEqual(false);
     });
 
     test("should correctly assess requirements for a recipe with essences and catalysts", () => {
         const underTest = testRecipeFive;
 
-        expect(underTest.essences.size).toEqual(2);
-        expect(underTest.essences.amountFor(elementalFire.id)).toEqual(1);
-        expect(underTest.essences.amountFor(elementalWater.id)).toEqual(1);
-
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.requiresEssences).toEqual(true);
-        expect(underTest.hasIngredients).toEqual(true);
-        expect(underTest.hasIngredientOptions).toEqual(false);
-        expect(underTest.ingredientOptions.length).toEqual(1);
-        expect(underTest.ingredientOptions[0].requiresCatalysts).toEqual(true);
-        expect(underTest.ingredientOptions[0].requiresIngredients).toEqual(false);
-        expect(underTest.ingredientOptions[0].catalysts.size).toEqual(1);
-        expect(underTest.ingredientOptions[0].catalysts.amountFor(testComponentFour.id)).toEqual(1);
+        expect(underTest.hasRequirements).toEqual(true);
+        expect(underTest.hasRequirementChoices).toEqual(false);
+        expect(underTest.requirementOptions.all.length).toEqual(1);
+        expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
+        expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(false);
+        expect(underTest.requirementOptions.all[0].requiresEssences).toEqual(true);
+        expect(underTest.requirementOptions.all[0].essences.size).toEqual(2);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalWater.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(false);
+        expect(underTest.hasResultChoices).toEqual(false);
     });
 
     test("should correctly assess requirements for a recipe with named ingredients and catalysts", () => {
@@ -71,18 +69,17 @@ describe("When creating a recipe", () => {
 
         expect(underTest.hasOptions).toEqual(false);
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.requiresEssences).toEqual(false);
-        expect(underTest.hasIngredients).toEqual(true);
-        expect(underTest.hasIngredientOptions).toEqual(false);
-        expect(underTest.ingredientOptions.length).toEqual(1);
-        expect(underTest.ingredientOptions[0].requiresCatalysts).toEqual(true);
-        expect(underTest.ingredientOptions[0].requiresIngredients).toEqual(true);
-        expect(underTest.ingredientOptions[0].catalysts.size).toEqual(1);
-        expect(underTest.ingredientOptions[0].catalysts.amountFor(testComponentFive.id)).toEqual(1);
-        expect(underTest.ingredientOptions[0].ingredients.size).toEqual(1);
-        expect(underTest.ingredientOptions[0].ingredients.amountFor(testComponentFour.id)).toEqual(1);
+        expect(underTest.hasRequirements).toEqual(true);
+        expect(underTest.hasRequirementChoices).toEqual(false);
+        expect(underTest.requirementOptions.all.length).toEqual(1);
+        expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
+        expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(true);
+        expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFive.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].ingredients.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].ingredients.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(false);
+        expect(underTest.hasResultChoices).toEqual(false);
 
     });
 
@@ -90,14 +87,12 @@ describe("When creating a recipe", () => {
         const underTest = testRecipeSix;
 
         expect(underTest.hasOptions).toEqual(true);
-        expect(underTest.ready()).toEqual(false);
-        expect(underTest.requiresEssences).toEqual(true);
-        expect(underTest.hasIngredients).toEqual(true);
-        expect(underTest.hasIngredientOptions).toEqual(true);
+        expect(underTest.hasRequirements).toEqual(true);
+        expect(underTest.hasRequirementChoices).toEqual(true);
         expect(underTest.hasResults).toEqual(true);
-        expect(underTest.hasResultOptions).toEqual(true);
-        expect(underTest.ingredientOptions.length).toEqual(2);
-        expect(underTest.resultOptions.length).toEqual(2);
+        expect(underTest.hasResultChoices).toEqual(true);
+        expect(underTest.requirementOptions.all.length).toEqual(2);
+        expect(underTest.resultOptions.all.length).toEqual(2);
 
     });
 
@@ -107,28 +102,31 @@ describe("When selecting ingredients", () => {
 
     const id = "hq4F67hS";
 
-    test("should require choices from ingredient groups with options", () => {
+    test("should default to first choice from ingredient groups with options", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(testComponentOne, 1),
-            new Unit(testComponentTwo, 1)
+            new Unit(testComponentOne.toReference(), 1),
+            new Unit(testComponentTwo.toReference(), 1)
         ]);
 
         const combinationTwo = Combination.ofUnits([
-            new Unit(testComponentThree, 2)
+            new Unit(testComponentThree.toReference(), 2)
         ]);
 
         const underTest = new Recipe({
             id,
+            craftingSystemId: "acb123",
             disabled: false,
             itemData: NoFabricateItemData.INSTANCE(),
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
                     new RequirementOption({
+                        id: `${id}-requirement-1`,
                         name: "Option 1",
                         ingredients: combinationOne
                     }),
                     new RequirementOption({
+                        id: `${id}-requirement-2`,
                         name: "Option 2",
                         ingredients: combinationTwo
                     }),
@@ -136,7 +134,8 @@ describe("When selecting ingredients", () => {
             })
         });
 
-        expect(underTest.ready()).toEqual(false);
+        expect(underTest.ready()).toEqual(true);
+        expect(underTest.selectedRequirementOption.name).toEqual("Option 1");
 
         expect(underTest.getSelectedIngredients).toThrow(Error);
 
@@ -145,50 +144,54 @@ describe("When selecting ingredients", () => {
     test("should produce the correct selected ingredients when components in an ingredient group are re-selected", () => {
 
         const combinationOne = Combination.ofUnits([
-            new Unit(testComponentOne, 1),
-            new Unit(testComponentTwo, 1)
+            new Unit(testComponentOne.toReference(), 1),
+            new Unit(testComponentTwo.toReference(), 1)
         ]);
         const optionOneId = "1";
+        const optionOneName = "Option 1";
         const optionOne = new RequirementOption({
-            name: optionOneId,
+            id: optionOneId,
+            name: optionOneName,
             ingredients: combinationOne
         });
 
         const optionTwoId = "2";
+        const optionTwoName = "Option 2";
         const combinationTwo = Combination.ofUnits([
-            new Unit(testComponentThree, 2)
+            new Unit(testComponentThree.toReference(), 2)
         ]);
         const optionTwo = new RequirementOption({
-            name: optionTwoId,
+            id: optionTwoId,
+            name: optionTwoName,
             ingredients: combinationTwo
         });
 
         const underTest = new Recipe({
             id,
+            craftingSystemId: "acb123",
             itemData: NoFabricateItemData.INSTANCE(),
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [optionOne, optionTwo]
             })
         });
 
-        expect(underTest.ingredientOptions.length).toEqual(2);
-        expect(underTest.ready()).toEqual(false);
+        expect(underTest.requirementOptions.all.length).toEqual(2);
 
-        underTest.selectIngredientOption(optionOneId);
+        underTest.selectRequirementOption(optionOneId);
         expect(underTest.ready()).toEqual(true);
 
         let selectedIngredients = underTest.getSelectedIngredients();
 
         expect(selectedIngredients.ingredients.equals(combinationOne)).toEqual(true);
 
-        underTest.selectIngredientOption(optionTwoId);
+        underTest.selectRequirementOption(optionTwoId);
         expect(underTest.ready()).toEqual(true);
 
         selectedIngredients = underTest.getSelectedIngredients();
 
         expect(selectedIngredients.ingredients.equals(combinationTwo)).toEqual(true);
 
-        underTest.deselectIngredients();
+        underTest.deselectRequirements();
         expect(underTest.ready()).toEqual(false);
     });
 
@@ -201,28 +204,31 @@ describe("When selecting results", () => {
     test("should not require choice when there is only one option", () => {
 
         const singletonResult = Combination.ofUnits([
-            new Unit(testComponentFive, 3),
-            new Unit(testComponentOne, 1)
+            new Unit(testComponentFive.toReference(), 3),
+            new Unit(testComponentOne.toReference(), 1)
         ]);
 
         const singletonIngredient = Combination.ofUnits([
-            new Unit(testComponentFour, 2)
+            new Unit(testComponentFour.toReference(), 2)
         ]);
 
         const underTest = new Recipe({
             id,
+            craftingSystemId: "acb123",
             itemData: NoFabricateItemData.INSTANCE(),
             resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
                 options: [
                     new ResultOption({
+                        id: `${id}-result-1`,
                         name: "Option 1",
                         results: singletonResult
                     })
                 ]
             }),
-            ingredientOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+            requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
                 options: [
                     new RequirementOption({
+                        id: `${id}-requirement-1`,
                         name: "Option 1",
                         ingredients: singletonIngredient
                     })
@@ -241,26 +247,29 @@ describe("When selecting results", () => {
 
     });
 
-    test("should require choices from result groups with options", () => {
+    test("should use first option by default from result groups with options", () => {
 
         const resultCombinationOne = Combination.ofUnits([
-            new Unit(testComponentThree, 2)
+            new Unit(testComponentThree.toReference(), 2)
         ]);
 
         const resultCombinationTwo = Combination.ofUnits([
-            new Unit(testComponentFour, 2)
+            new Unit(testComponentFour.toReference(), 2)
         ]);
 
         const underTest = new Recipe({
             id,
+            craftingSystemId: "acb123",
             itemData: NoFabricateItemData.INSTANCE(),
             resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
                 options: [
                     new ResultOption({
+                        id: `${id}-result-1`,
                         name: "Option 1",
                         results: resultCombinationOne
                     }),
                     new ResultOption({
+                        id: `${id}-result-2`,
                         name: "Option 2",
                         results: resultCombinationTwo
                     })
@@ -268,7 +277,8 @@ describe("When selecting results", () => {
             })
         });
 
-        expect(underTest.ready()).toEqual(false);
+        expect(underTest.ready()).toEqual(true);
+        expect(underTest.selectedResultOption.name).toEqual("Option 1");
 
         expect(underTest.getSelectedResults).toThrow(Error);
 
@@ -277,34 +287,35 @@ describe("When selecting results", () => {
     test("should produce the correct selected results when components in a result group are re-selected", () => {
 
         const resultCombinationOne = Combination.ofUnits([
-            new Unit(testComponentOne, 1),
-            new Unit(testComponentTwo, 1)
+            new Unit(testComponentOne.toReference(), 1),
+            new Unit(testComponentTwo.toReference(), 1)
         ]);
 
         const resultCombinationTwo = Combination.ofUnits([
-            new Unit(testComponentThree, 2)
+            new Unit(testComponentThree.toReference(), 2)
         ]);
 
-        const optionOneId = "1";
-        const optionTwoId = "2";
+        const optionOneId = `${id}-result-1`;
+        const optionTwoId = `${id}-result-2`;
         const underTest = new Recipe({
             id,
+            craftingSystemId: "acb123",
             itemData: NoFabricateItemData.INSTANCE(),
             resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
                 options: [
                     new ResultOption({
-                        name: optionOneId,
+                        id: optionOneId,
+                        name: "Option 1",
                         results: resultCombinationOne
                     }),
                     new ResultOption({
-                        name: optionTwoId,
+                        id: optionTwoId,
+                        name: "Option 2",
                         results: resultCombinationTwo
                     })
                 ]
             })
         });
-
-        expect(underTest.ready()).toEqual(false);
 
         underTest.selectResultOption(optionOneId);
         expect(underTest.ready()).toEqual(true);
@@ -318,6 +329,65 @@ describe("When selecting results", () => {
 
         underTest.deselectResults();
         expect(underTest.ready()).toEqual(false);
+
+    });
+
+});
+
+describe("when describing a recipe", () => {
+
+    test("should correctly list the unique referenced essences for a recipe with no options with essences", () => {
+
+        const result = testRecipeOne.getUniqueReferencedEssences();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(0);
+
+    });
+
+    test("should correctly list the unique referenced essences for a recipe with one option with essences", () => {
+
+        const result = testRecipeFour.getUniqueReferencedEssences();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([elementalWater.toReference(), elementalEarth.toReference()]));
+
+    });
+
+    test("should correctly list the unique referenced essences for a recipe with two options with essences", () => {
+
+        const result = testRecipeSix.getUniqueReferencedEssences();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([elementalWater.toReference(), elementalEarth.toReference()]));
+
+    });
+
+    test("should correctly list the unique referenced components for a recipe with no options with components", () => {
+
+        const result = testRecipeThree.getUniqueReferencedComponents();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(1);
+        expect(result).toEqual(expect.arrayContaining([testComponentOne.toReference()]));
+
+    });
+
+    test("should correctly list the unique referenced components for a recipe with one option with catalysts", () => {
+
+        const result = testRecipeFive.getUniqueReferencedComponents();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([testComponentFour.toReference(), testComponentFive.toReference()]));
+
+
+    });
+
+    test("should correctly list the unique referenced components for a recipe with one option with ingredients", () => {
+
+        const result = testRecipeSeven.getUniqueReferencedComponents();
+        expect(result).not.toBeNull();
+        expect(result.length).toEqual(2);
+        expect(result).toEqual(expect.arrayContaining([testComponentFour.toReference(), testComponentTwo.toReference()]));
+
 
     });
 

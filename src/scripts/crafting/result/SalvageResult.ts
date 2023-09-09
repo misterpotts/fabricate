@@ -1,11 +1,15 @@
 import {Combination} from "../../common/Combination";
-import {CraftingComponent} from "../../common/CraftingComponent";
+import {Component} from "../component/Component";
 
 interface SalvageResult {
 
-    consumed: Combination<CraftingComponent>;
-    created: Combination<CraftingComponent>;
-    isSuccessful: boolean;
+    readonly component: Component;
+    readonly targetActorId: string;
+    readonly sourceActorId: string;
+    readonly description: string;
+    readonly consumed: Component | undefined;
+    readonly produced: Combination<Component>;
+    readonly isSuccessful: boolean;
 
 }
 
@@ -13,50 +17,118 @@ export { SalvageResult }
 
 class NoSalvageResult implements SalvageResult {
 
-    constructor() {}
+    private readonly _component: Component;
+    private readonly _description: string;
+    private readonly _sourceActorId: string;
+    private readonly _targetActorId: string;
 
-    get created(): Combination<CraftingComponent> {
+    constructor({
+        component,
+        description,
+        sourceActorId,
+        targetActorId,
+    }: {
+        component: Component;
+        description: string;
+        sourceActorId: string;
+        targetActorId: string;
+    }) {
+        this._component = component;
+        this._description = description;
+        this._sourceActorId = sourceActorId;
+        this._targetActorId = targetActorId;
+    }
+
+    get component(): Component {
+        return this._component;
+    }
+
+    get produced(): Combination<Component> {
         return Combination.EMPTY();
     }
 
-    get consumed(): Combination<CraftingComponent> {
-        return Combination.EMPTY();
+    get consumed(): Component {
+        return undefined
     }
 
     get isSuccessful(): boolean {
         return false;
     }
 
+    get targetActorId(): string {
+        return this._targetActorId;
+    }
+
+    get sourceActorId(): string {
+        return this._sourceActorId;
+    }
+
+    get description(): string {
+        return this._description;
+    }
+
 }
 
-export {NoSalvageResult};
+export { NoSalvageResult };
 
 class SuccessfulSalvageResult implements SalvageResult {
 
-    private readonly _consumed: Combination<CraftingComponent>;
-    private readonly _created: Combination<CraftingComponent>;
+    private readonly _component: Component;
+    private readonly _description: string;
+    private readonly _sourceActorId: string;
+    private readonly _targetActorId: string;
+    private readonly _consumed: Component;
+    private readonly _produced: Combination<Component>;
 
     constructor({
+        component,
+        description,
+        sourceActorId,
+        targetActorId,
         consumed,
-        created
+        produced,
     }: {
-        consumed: Combination<CraftingComponent>;
-        created: Combination<CraftingComponent>;
+        component: Component;
+        description: string;
+        sourceActorId: string;
+        targetActorId: string;
+        consumed: Component;
+        produced: Combination<Component>;
     }) {
+        this._component = component;
+        this._description = description;
+        this._sourceActorId = sourceActorId;
+        this._targetActorId = targetActorId;
         this._consumed = consumed;
-        this._created = created;
+        this._produced = produced;
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get component(): Component {
+        return this._component;
+    }
+
+    get consumed(): Component {
         return this._consumed;
     }
 
-    get created(): Combination<CraftingComponent> {
-        return this._created;
+    get produced(): Combination<Component> {
+        return this._produced;
     }
 
     get isSuccessful(): boolean {
         return true;
+    }
+
+    get targetActorId(): string {
+        return this._targetActorId;
+    }
+
+    get sourceActorId(): string {
+        return this._sourceActorId;
+    }
+
+    get description(): string {
+        return this._description;
     }
 
 }
@@ -65,26 +137,55 @@ export { SuccessfulSalvageResult };
 
 class UnsuccessfulSalvageResult implements SalvageResult {
 
-    private readonly _consumed: Combination<CraftingComponent>;
+    private readonly _component: Component;
+    private readonly _description: string;
+    private readonly _sourceActorId: string;
+    private readonly _consumed: Component;
 
     constructor({
+        component,
+        description,
+        sourceActorId,
         consumed
     }: {
-        consumed: Combination<CraftingComponent>;
+        component: Component;
+        description: string;
+        sourceActorId: string;
+        consumed: Component;
     }) {
+        this._component = component;
+        this._description = description;
+        this._sourceActorId = sourceActorId;
         this._consumed = consumed;
     }
 
-    get created(): Combination<CraftingComponent> {
+
+    get component(): Component {
+        return this._component;
+    }
+
+    get produced(): Combination<Component> {
         return Combination.EMPTY();
     }
 
-    get consumed(): Combination<CraftingComponent> {
+    get consumed(): Component {
         return this._consumed;
     }
 
     get isSuccessful(): boolean {
         return false;
+    }
+
+    get sourceActorId(): string {
+        return this._sourceActorId;
+    }
+
+    get targetActorId(): string {
+        return "";
+    }
+
+    get description(): string {
+        return this._description;
     }
 
 }

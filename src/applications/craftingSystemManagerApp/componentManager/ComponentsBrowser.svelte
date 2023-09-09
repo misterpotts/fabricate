@@ -6,16 +6,16 @@
     import {ComponentSearchStore} from "../../stores/ComponentSearchStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
+
     const {
         selectedCraftingSystem,
-        craftingComponents,
+        components,
         localization,
-        craftingComponentEditor,
-        selectedComponent,
-        loading
+        componentEditor,
+        selectedComponent
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({availableComponents: craftingComponents});
+    const componentSearchResults = new ComponentSearchStore({ components });
     const searchTerms = componentSearchResults.searchTerms;
 
     function clearSearch() {
@@ -23,9 +23,7 @@
     }
 
     async function importComponent(event) {
-        $loading = true;
-        await craftingComponentEditor.importComponent(event, $selectedCraftingSystem);
-        $loading = false;
+        await componentEditor.importComponent(event, $selectedCraftingSystem);
     }
 
     function selectComponent(component) {
@@ -33,15 +31,12 @@
     }
 
     async function deleteComponent(event, component) {
-        $loading = true;
-        await craftingComponentEditor.deleteComponent(event, component, $selectedCraftingSystem);
-        $loading = false;
+        await componentEditor.deleteComponent(event, component, $selectedCraftingSystem);
     }
 
     async function disableComponent(component) {
         component.isDisabled = true;
-        $loading = true;
-        await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
+        await componentEditor.saveComponent(component, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.component.disabled`,
             {
@@ -49,13 +44,11 @@
             }
         );
         ui.notifications.info(message);
-        $loading = false;
     }
 
     async function enableComponent(component) {
         component.isDisabled = false;
-        $loading = true;
-        await craftingComponentEditor.saveComponent(component, $selectedCraftingSystem);
+        await componentEditor.saveComponent(component, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.component.enabled`,
             {
@@ -63,7 +56,6 @@
             }
         );
         ui.notifications.info(message);
-        $loading = false;
     }
 
     async function toggleComponentDisabled(component) {
@@ -71,13 +63,11 @@
     }
 
     async function duplicateComponent(component) {
-        $loading = true;
-        await craftingComponentEditor.duplicateComponent(component, $selectedCraftingSystem);
-        $loading = false;
+        await componentEditor.duplicateComponent(component);
     }
 
     async function openItemSheet(component) {
-        const document = await new DefaultDocumentManager().getDocumentByUuid(component.itemUuid);
+        const document = await new DefaultDocumentManager().loadItemDataByDocumentUuid(component.itemUuid);
         await document.sourceDocument.sheet.render(true);
     }
 
@@ -85,18 +75,18 @@
 {#if $selectedCraftingSystem}
 <div class="fab-system-components fab-column">
     <div class="fab-hero-banner fab-row">
-        <img src="{Properties.ui.banners.componentEditor}" >
+        <img src="{Properties.ui.banners.componentEditor}"  alt="An Artificer's workbench">
     </div>
-    {#if !$selectedCraftingSystem.isLocked}
+    {#if !$selectedCraftingSystem.isEmbedded}
         <div class="fab-tab-header fab-row">
-            <h2>{localization.format(`${localizationPath}.addNew`, { systemName: $selectedCraftingSystem?.name })}</h2>
+            <h2>{localization.format(`${localizationPath}.addNew`, { systemName: $selectedCraftingSystem?.details.name })}</h2>
         </div>
         <div class="fab-drop-zone fab-add-component" on:drop|preventDefault={importComponent}>
             <i class="fa-solid fa-plus"></i>
         </div>
     {/if}
     <div class="fab-tab-header fab-row">
-        <h2>{localization.format(`${localizationPath}.search.title`, { systemName: $selectedCraftingSystem?.name })}</h2>
+        <h2>{localization.format(`${localizationPath}.search.title`, { systemName: $selectedCraftingSystem?.details.name })}</h2>
     </div>
     <div class="fab-row fab-columns fab-component-search">
         <div class="fab-column fab-row fab-search fab-component-name">
@@ -113,34 +103,48 @@
             <input type="checkbox" bind:checked={$searchTerms.hasSalvage} />
         </div>
     </div>
-    {#if $craftingComponents.length > 0}
+    {#if $components.length > 0}
         <div class="fab-row">
             <div class="fab-component-grid fab-grid-4">
                 {#each $componentSearchResults as component}
                     <div class="fab-component" class:fab-disabled={component.isDisabled} class:fab-error={component.hasErrors}>
-                        <div class="fab-component-name">
-                            <p>{component.name}</p>
-                            {#if component.hasErrors}<i class="fa-solid fa-circle-exclamation"></i>{/if}
-                        </div>
-                        <div class="fab-columns fab-component-preview">
-                            {#if !component.hasErrors}
-                                <div class="fab-column fab-component-image" data-tooltip="{localization.localize(`${localizationPath}.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
-                                    <img src={component.imageUrl} alt={component.name} />
+                        {#await component.load()}
+                            {:then nothing}
+                                <div class="fab-component-name">
+                                    <p>{component.name}</p>
                                 </div>
-                            {:else}
-                                <div class="fab-column fab-component-image" data-tooltip="{localization.localizeAll(`${localizationPath}.component.errors`, component.errorCodes)}">
-                                    <img src={component.imageUrl} alt={component.name} />
+                                <div class="fab-columns fab-component-preview">
+                                    <div class="fab-column fab-component-image" data-tooltip="{localization.localize(`${localizationPath}.component.buttons.openSheet`)}" on:click={openItemSheet(component)}>
+                                        <img src={component.imageUrl} alt={component.name} />
+                                    </div>
+                                    {#if !$selectedCraftingSystem.isEmbedded}
+                                        <div class="fab-column fab-component-editor-buttons">
+                                            <button class="fab-edit-component" on:click|preventDefault={selectComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                        </div>
+                                    {/if}
                                 </div>
-                            {/if}
-                            {#if !$selectedCraftingSystem.isLocked}
-                            <div class="fab-column fab-component-editor-buttons">
-                                <button class="fab-edit-component" on:click|preventDefault={selectComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
-                                <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
-                                <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
-                                <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                            {:catch error}
+                                <div class="fab-component-name">
+                                    <p>{component.name}</p>
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                </div>
+                                <div class="fab-columns fab-component-preview">
+                                    <div class="fab-column fab-component-image" data-tooltip="{localization.localizeAll(`${localizationPath}.component.errors`, component.errorCodes)}">
+                                        <img src={component.imageUrl} alt={component.name} />
+                                    </div>
+                                    {#if !$selectedCraftingSystem.isEmbedded}
+                                        <div class="fab-column fab-component-editor-buttons">
+                                            <button class="fab-edit-component" on:click|preventDefault={selectComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.edit`)}"><i class="fa-solid fa-file-pen"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={event => deleteComponent(event, component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.delete`)}"><i class="fa-solid fa-trash fa-fw"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={toggleComponentDisabled(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.disable`)}"><i class="fa-solid fa-ban"></i></button>
+                                            <button class="fab-edit-component" on:click|preventDefault={duplicateComponent(component)} data-tooltip="{localization.localize(`${localizationPath}.component.buttons.duplicate`)}"><i class="fa-solid fa-paste fa-fw"></i></button>
+                                        </div>
+                                    {/if}
                             </div>
-                            {/if}
-                        </div>
+                        {/await}
                     </div>
                 {/each}
             </div>
@@ -151,7 +155,7 @@
     {:else}
         <div class="fab-no-components">
             <p>{localization.localize(`${localizationPath}.noneFound`)}</p>
-            {#if !$selectedCraftingSystem.isLocked}<p>{localization.localize(`${localizationPath}.create`)}</p>{/if}
+            {#if !$selectedCraftingSystem.isEmbedded}<p>{localization.localize(`${localizationPath}.create`)}</p>{/if}
         </div>
     {/if}
 </div>

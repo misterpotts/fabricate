@@ -1,258 +1,193 @@
-import {CraftingComponent} from "../common/CraftingComponent";
-import {Combination, Unit} from "../common/Combination";
-import {ObjectUtility} from "../foundry/ObjectUtility";
-import {CraftingResult} from "../crafting/result/CraftingResult";
-import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
-import {AlchemyResult} from "../crafting/alchemy/AlchemyResult";
-import {GameProvider} from "../foundry/GameProvider";
-import {DocumentManager, FabricateItemData} from "../foundry/DocumentManager";
+import {Component} from "../crafting/component/Component";
+import {Combination} from "../common/Combination";
+import {Unit} from "../common/Unit";
+import {InventoryAction} from "./InventoryAction";
 import EmbeddedCollection
     from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/embedded-collection.mjs";
-import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
+import {BaseActor, BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {ActorData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
-import {
-    AlwaysOneItemQuantityReader,
-    ItemQuantityReader,
-    ItemQuantityWriter,
-    NoItemQuantityWriter
-} from "./ItemQuantity";
-import {SalvageResult} from "../crafting/result/SalvageResult";
+import {LocalizationService} from "../../applications/common/LocalizationService";
+import Properties from "../Properties";
+import {Essence} from "../crafting/essence/Essence";
+import {ItemDataManager, SingletonItemDataManager} from "./ItemDataManager";
 
 interface Inventory {
-    actor: any;
-    ownedComponents: Combination<CraftingComponent>;
-    acceptCraftingResult(craftingResult: CraftingResult): Promise<void>;
-    acceptSalvageResult(salvageResult: SalvageResult): Promise<void>;
-    acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<void>;
-    index(): Promise<void>;
-    contains(craftingComponent: CraftingComponent, quantity: number): boolean;
-    size: number
-    amountFor(craftingComponent: CraftingComponent): number;
-}
 
-interface InventoryActions {
-    additions: Combination<CraftingComponent>;
-    removals: Combination<CraftingComponent>;
-}
+    /**
+     * The actor to which this inventory belongs.
+     */
+    readonly actor: BaseActor;
 
-interface InventoryRecord {
-    item: any;
-    quantity: number;
+    /**
+     * The components in this inventory.
+     *
+     * @returns A Promise that resolves with the components in this inventory.
+     * @throws Error if the actor does not exist.
+     */
+    getContents(): Combination<Component>;
+
+    /**
+     * Perform the specified action on this inventory, adding and removing components as necessary. Additions and
+     *  removals are performed separately. If one fails, the other will be rolled back, or aborted. They are reconciled
+     *  before being applied.
+     *
+     * @param action - The action to perform.
+     * @returns A Promise that resolves with the new contents of this inventory.
+     * @throws Error if the inventory does not contain the required components, or if the actor does not exist.
+     */
+    perform(action: InventoryAction): Promise<Combination<Component>>;
+
+    /**
+     * Determines whether this inventory contains the specified component in the specified quantity.
+     *
+     * @param craftingComponent - The component to check for.
+     * @param quantity - The quantity of the component to check for. Defaults to 1.
+     * @returns A Promise that resolves with true if the inventory contains the specified component in the specified
+     *  quantity, false otherwise.
+     * @throws Error if the actor does not exist.
+     */
+    contains(craftingComponent: Component, quantity?: number): boolean;
+
 }
 
 class CraftingInventory implements Inventory {
 
-    private readonly _documentManager: DocumentManager;
-    private readonly _objectUtils: ObjectUtility;
-    private readonly _actor: any;
-    private readonly _knownComponentsByItemUuid: Map<string, CraftingComponent>;
-    private _managedItems: Map<CraftingComponent, InventoryRecord[]>;
-    private readonly _itemQuantityReader: ItemQuantityReader;
-    private readonly _itemQuantityWriter: ItemQuantityWriter;
+    private readonly _actor: BaseActor;
+    private readonly _localization: LocalizationService;
+    private readonly _itemDataManager: ItemDataManager;
+
+    /**
+     * A Map of source item UUIDs to the Component that uses it. An inventory expects to be initialised with a complete
+     * set of components for a single crafting system. Item UUIDs must therefore map to a single component.
+     * @private
+     */
+    private readonly _knownComponentsByItemUuid: Map<string, Component>;
+    private readonly _knownComponentsById: Map<string, Component>;
 
     constructor({
         actor,
-        documentManager,
-        objectUtils,
-        managedItems = new Map(),
-        knownComponentsByItemUuid = new Map(),
-        itemQuantityReader = new AlwaysOneItemQuantityReader(),
-        itemQuantityWriter = new NoItemQuantityWriter()
+        localization,
+        itemDataManager = new SingletonItemDataManager(),
+        knownComponents = [],
     }: {
-        actor: any;
-        gameProvider: GameProvider;
-        documentManager: DocumentManager;
-        objectUtils: ObjectUtility;
-        knownComponentsByItemUuid?: Map<string, CraftingComponent>;
-        ownedComponents?: Combination<CraftingComponent>;
-        managedItems?: Map<CraftingComponent, InventoryRecord[]>;
-        itemQuantityReader?: ItemQuantityReader;
-        itemQuantityWriter?: ItemQuantityWriter;
+        actor: BaseActor;
+        localization: LocalizationService;
+        knownEssencesById?: Map<string, Essence>;
+        itemDataManager?: ItemDataManager;
+        knownComponents?: Component[];
     }) {
         this._actor = actor;
-        this._knownComponentsByItemUuid = knownComponentsByItemUuid;
-        this._documentManager = documentManager;
-        this._objectUtils = objectUtils;
-        this._managedItems = managedItems;
-        this._itemQuantityReader = itemQuantityReader;
-        this._itemQuantityWriter = itemQuantityWriter;
+        this._localization = localization;
+        this._itemDataManager = itemDataManager;
 
+        this._knownComponentsByItemUuid = new Map();
+        this._knownComponentsById = new Map();
+
+        knownComponents.forEach(component => {
+            this._knownComponentsByItemUuid.set(component.itemUuid, component);
+            this._knownComponentsById.set(component.id, component);
+        });
     }
 
-    get actor(): any {
+    get actor(): BaseActor {
+        if (!this._actor) {
+            throw new Error(this._localization.localize(`${Properties.module.id}.inventory.error.invalidActor`));
+        }
         return this._actor;
     }
 
-    contains(craftingComponent: CraftingComponent, quantity: number = 1): boolean {
-        if (!this._managedItems.has(craftingComponent)) {
-            return false;
-        }
-        return quantity <= this.amountFor(craftingComponent);
+    contains(craftingComponent: Component, quantity: number = 1): boolean {
+        const contents = this.getContents();
+        return contents.has(craftingComponent, quantity);
     }
 
-    amountFor(craftingComponent: CraftingComponent) {
-        if (!this._managedItems.has(craftingComponent)) {
-            return 0;
-        }
-        return this._managedItems.get(craftingComponent).reduce((previousValue, currentValue) => {
-            return previousValue + currentValue.quantity;
-        }, 0);
-    }
-
-    async removeAll(components: Combination<CraftingComponent>): Promise<void> {
-        const updates: any[] = [];
-        const deletes: any[] = [];
-        for (const unit of components.units) {
-            const craftingComponent: CraftingComponent = unit.part;
-            if (!this.contains(craftingComponent)) {
-                throw new InventoryContentsNotFoundError(unit, 0, this._actor.id);
-            }
-            const amountOwned = this.amountFor(craftingComponent);
-            if (unit.quantity > amountOwned) {
-                throw new InventoryContentsNotFoundError(unit, amountOwned, this._actor.id);
-            }
-            const records = this._managedItems.get(craftingComponent)
-                .sort((left, right) => left.quantity - right.quantity);
-            let outstandingRemovalAmount: number = unit.quantity;
-            let currentRecordIndex: number = 0;
-            while (outstandingRemovalAmount > 0) {
-                const currentRecord = records[currentRecordIndex];
-                const quantity: number = currentRecord.quantity;
-                const itemData: any = currentRecord.item;
-                if (quantity <= outstandingRemovalAmount) {
-                    deletes.push(itemData);
-                    outstandingRemovalAmount -= quantity;
-                } else {
-                    const remainingQuantity = quantity - outstandingRemovalAmount;
-                    const itemData = await this.prepareItemUpdate(currentRecord, remainingQuantity);
-                    updates.push(itemData);
-                    outstandingRemovalAmount = 0;
-                }
-                currentRecordIndex++;
-            }
-        }
-        const results: any[] = [];
-        if (updates.length > 0) {
-            const updatedItems: any[] = await this.updateOwnedItems(this._actor, updates);
-            results.push(...updatedItems);
-        }
-        if (deletes.length > 0) {
-            const createdItems: any[] = await this.deleteOwnedItems(this._actor, deletes);
-            results.push(...createdItems);
-        }
-
-    }
-
-    async addAll(components: Combination<CraftingComponent>, activeEffects: ActiveEffect[]): Promise<void> {
-
-        const creates: any[] = await Promise.all(components.units
-            .filter(unit => !this.contains(unit.part))
-            .map(unit => {
-                return this.buildItemData(unit, activeEffects);
-            })
-        );
-
-        const updates: any[] = await Promise.all(components.units
-            .filter(unit => this.contains(unit.part))
-            .map(unit => {
-                const records = this._managedItems.get(unit.part)
-                    .sort((left, right) => right.quantity - left.quantity);
-                const inventoryRecord: InventoryRecord = records[0];
-                const targetQuantity = unit.quantity + inventoryRecord.quantity;
-                return this.prepareItemUpdate(inventoryRecord, targetQuantity);
-            })
-        );
-
-        if (updates.length > 0) {
-            await this.updateOwnedItems(this._actor, updates);
-        }
-        if (creates.length > 0) {
-            await this.createOwnedItems(this._actor, creates);
-        }
-
-        console.log(`Fabricate | Created ${creates.length} items and updated ${updates.length} items for actor "${this._actor.name}". `);
-    }
-
-    private async prepareItemUpdate(inventoryRecord: InventoryRecord, targetQuantity: number): Promise<any> {
-        const newItemData: any = this._objectUtils.duplicate(inventoryRecord.item);
-        await this._itemQuantityWriter.write(targetQuantity, newItemData);
-        return newItemData;
-    }
-
-    private async buildItemData(unit: Unit<CraftingComponent>, activeEffects: ActiveEffect[]): Promise<any> {
-        const sourceData: FabricateItemData = unit.part.itemData;
-        const itemData: any = this._objectUtils.duplicate(sourceData.sourceDocument);
-        itemData.effects = [...itemData.effects, ...activeEffects];
-        itemData.flags.core = {sourceId: sourceData.uuid};
-        await this._itemQuantityWriter.write(unit.quantity, itemData);
-        return itemData;
-    }
-
-    async acceptCraftingResult(craftingResult: CraftingResult): Promise<void> {
-        return this.acceptResult(craftingResult.created, craftingResult.consumed);
-    }
-
-    async acceptSalvageResult(salvageResult: SalvageResult): Promise<void> {
-        return this.acceptResult(salvageResult.created, salvageResult.consumed);
-    }
-
-    private async acceptResult(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): Promise<void> {
-        await this.index();
-
-        const activeEffects = consumed
-            .explode(craftingComponent => craftingComponent.essences)
-            .members
-            .filter(essence => essence.hasActiveEffectSource)
-            .flatMap(essence => essence.activeEffectSource.sourceDocument.effects.contents)
-            .map(activeEffect => this._objectUtils.duplicate(activeEffect));
-
-        const inventoryActions: InventoryActions = this.rationalise(created, consumed);
-        await Promise.all([
-            this.addAll(inventoryActions.additions, activeEffects),
-            this.removeAll(inventoryActions.removals)
-        ]);
-        await this.index();
-    }
-
-    async acceptAlchemyResult(alchemyResult: AlchemyResult): Promise<void> {
-        const baseItem = await this._documentManager.getDocumentByUuid(alchemyResult.baseComponent.itemUuid)
-        const baseItemData = this._objectUtils.duplicate(baseItem);
-        // todo: implement once types and process are known
+    getContents(): Combination<Component> {
         // @ts-ignore
-        const createdItemData: Entity.Data = await this._actor.createEmbeddedEntity('OwnedItem', baseItemData);
-        return null;
+        const contentsWithSourceItems = this.getContentsWithSourceItems();
+        return Array.from(contentsWithSourceItems.entries())
+            .flatMap(([componentId, items]) => {
+                return items.map((item: any) => {
+                    const quantity = this._itemDataManager.count(item);
+                    return new Unit(this._knownComponentsById.get(componentId), quantity);
+                });
+           })
+           .reduce((contents, unit) => contents.addUnit(unit), Combination.EMPTY<Component>());
     }
 
-    private rationalise(created: Combination<CraftingComponent>, consumed: Combination<CraftingComponent>): InventoryActions {
-        if (!consumed.intersects(created)) {
-            return ({
-                additions: created,
-                removals: consumed
-            });
+    private getContentsWithSourceItems(): Map<string, any[]> {
+        const actor = this.actor;
+        // @ts-ignore
+        const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
+        return Array.from(ownedItems.values())
+            .filter((item: any) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
+            .flatMap((item: BaseItem) => {
+                const sourceItemUuid: string = <string> item.getFlag("core", "sourceId");
+                const component = this._knownComponentsByItemUuid.get(sourceItemUuid);
+                return { component, item };
+            })
+            .reduce((contents, entry) => {
+                if (!contents.has(entry.component.id)) {
+                    contents.set(entry.component.id, []);
+                }
+                contents.get(entry.component.id)
+                    .push(entry.item);
+                return contents;
+            }, new Map<string, any>());
+    }
+
+    async perform(action: InventoryAction): Promise<Combination<Component>> {
+        const rationalisedAction = action.rationalise();
+        if (rationalisedAction.additions.isEmpty() && rationalisedAction.removals.isEmpty()) {
+            return this.getContents();
         }
-        let rationalisedCreated: Combination<CraftingComponent> = created;
-        let rationalisedConsumed: Combination<CraftingComponent> = Combination.EMPTY();
-        consumed.units.forEach(consumedUnit => {
-            if (!created.has(consumedUnit.part)) {
-                rationalisedConsumed = rationalisedCreated.add(consumedUnit);
-            }
-            if (created.containsAll(consumedUnit)) {
-                rationalisedCreated = rationalisedCreated.minus(consumedUnit);
-            } else {
-                const updatedConsumedUnit: Unit<CraftingComponent> = rationalisedCreated.amounts.get(consumedUnit.part.id)
-                    .minus(consumedUnit.quantity);
-                rationalisedCreated = rationalisedCreated.minus(consumedUnit);
-                rationalisedConsumed = rationalisedConsumed.add(updatedConsumedUnit.invert());
-            }
-        });
-        return ({
-            additions: rationalisedCreated,
-            removals: rationalisedConsumed
-        });
+        await this.apply(action);
+        return this.getContents();
+    }
+
+    async removeAll(components: Combination<Component>): Promise<void> {
+
+        const sourceItemsByComponentId = this.getContentsWithSourceItems();
+
+        const itemData = this._itemDataManager.prepareRemovals(components, sourceItemsByComponentId);
+
+        if (itemData.updates.length > 0) {
+            await this.updateOwnedItems(this._actor, itemData.updates);
+        }
+        if (itemData.deletes.length > 0) {
+            await this.deleteOwnedItems(this._actor, itemData.deletes);
+        }
+
+    }
+
+    async addAll(components: Combination<Component>, activeEffects: ActiveEffect[]): Promise<void> {
+
+        const sourceItemsByComponentId = this.getContentsWithSourceItems();
+
+        const itemData = this._itemDataManager.prepareAdditions(components, activeEffects, sourceItemsByComponentId);
+
+        if (itemData.updates.length > 0) {
+            await this.updateOwnedItems(this._actor, itemData.updates);
+        }
+        if (itemData.creates.length > 0) {
+            await this.createOwnedItems(this._actor, itemData.creates);
+        }
+
+        // @ts-ignore - TODO: FVTT Types are wrong and `actor.name` is missing
+        console.log(`Fabricate | Created ${itemData.creates.length} items and updated ${itemData.updates.length} items for actor "${this._actor.name}". `);
+    }
+
+    private async apply(action: InventoryAction): Promise<void> {
+        await this.addAll(action.additions, action.activeEffects);
+        await this.removeAll(action.removals);
     }
 
     async deleteOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
-        const ids: string[] = itemsData.map((itemData: any) => itemData._id);
+        const ids: string[] = itemsData.map((itemData: any) => {
+            if (!itemData.id) {
+                throw new Error("Cannot delete item without ID. ");
+            }
+            return itemData.id;
+        });
         return actor.deleteEmbeddedDocuments("Item", ids);
     }
 
@@ -262,37 +197,6 @@ class CraftingInventory implements Inventory {
 
     async updateOwnedItems(actor: any, itemsData: any[]): Promise<any[]> {
         return actor.updateEmbeddedDocuments("Item", itemsData);
-    }
-
-    async index(): Promise<void> {
-        const actor: any = this.actor;
-        const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
-        const itemsByComponentType: Map<CraftingComponent, InventoryRecord[]> = new Map();
-        await Promise.all(Array.from(ownedItems.values())
-            .filter((item: any) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
-            .map(async (item: BaseItem) => {
-                const sourceItemUuid: string = <string>item.getFlag("core", "sourceId");
-                const component = this._knownComponentsByItemUuid.get(sourceItemUuid);
-                const quantity = await this._itemQuantityReader.read(item);
-                if (itemsByComponentType.has(component)) {
-                    itemsByComponentType.get(component).push({ item, quantity });
-                } else {
-                    itemsByComponentType.set(component, [{ item, quantity }]);
-                }
-            }))
-        this._managedItems = itemsByComponentType;
-    }
-
-    get size(): number {
-        return Array.from(this._managedItems.keys())
-            .map(component => this.amountFor(component))
-            .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
-    }
-
-    get ownedComponents(): Combination<CraftingComponent> {
-        return Array.from(this._managedItems.keys())
-            .flatMap(component => this._managedItems.get(component).map(itemRecord => Combination.of(component, itemRecord.quantity)))
-            .reduce((previousValue, currentValue) => previousValue.combineWith(currentValue), Combination.EMPTY());
     }
 
 }

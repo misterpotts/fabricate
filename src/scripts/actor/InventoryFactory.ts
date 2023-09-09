@@ -1,66 +1,68 @@
 import {CraftingInventory, Inventory} from "./Inventory";
-import {
-    AlwaysOneItemQuantityReader,
-    DnD5EItemQuantityReader,
-    DnD5EItemQuantityWriter,
-    ItemQuantityReader,
-    ItemQuantityWriter, NoItemQuantityWriter
-} from "./ItemQuantity";
-import {DefaultDocumentManager} from "../foundry/DocumentManager";
-import {DefaultObjectUtility} from "../foundry/ObjectUtility";
-import {GameProvider} from "../foundry/GameProvider";
-import {CraftingSystem} from "../system/CraftingSystem";
+import {DefaultObjectUtility, ObjectUtility} from "../foundry/ObjectUtility";
+import {Component} from "../crafting/component/Component";
+import {ItemDataManager, PropertyPathAwareItemDataManager, SingletonItemDataManager} from "./ItemDataManager";
+import {LocalizationService} from "../../applications/common/LocalizationService";
+import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 
 interface InventoryFactory {
 
-    make(actor: any, craftingSystem: CraftingSystem): Inventory;
+    make(gameSystemId: string,
+         actor: BaseActor,
+         knownComponents: Component[],
+    ): Inventory;
 
 }
+
 class DefaultInventoryFactory implements InventoryFactory {
 
-    private static readonly _itemQuantityIoByGameSystem: Map<string, { reader: ItemQuantityReader, writer: ItemQuantityWriter }> = new Map([
-        ["dnd5e", {
-            reader: new DnD5EItemQuantityReader(),
-            writer: new DnD5EItemQuantityWriter()
-        }]
+    private static readonly _KNOWN_GAME_SYSTEM_ITEM_QUANTITY_PROPERTY_PATHS: Map<string, string> = new Map([
+        ["dnd5e", "system.quantity"]
     ]);
 
-    private readonly _gameProvider: GameProvider;
+    private readonly _localizationService: LocalizationService;
+    private readonly _objectUtility: ObjectUtility;
+    private readonly _gameSystemItemQuantityPropertyPaths: Map<string, string>;
 
-    constructor(gameProvider: GameProvider) {
-        this._gameProvider = gameProvider;
+    constructor({
+        localizationService,
+        objectUtility = new DefaultObjectUtility(),
+        gameSystemItemQuantityPropertyPaths = DefaultInventoryFactory._KNOWN_GAME_SYSTEM_ITEM_QUANTITY_PROPERTY_PATHS,
+    }: {
+        localizationService: LocalizationService;
+        objectUtility?: ObjectUtility;
+        gameSystemItemQuantityPropertyPaths?: Map<string, string>;
+    }) {
+        this._localizationService = localizationService;
+        this._objectUtility = objectUtility;
+        this._gameSystemItemQuantityPropertyPaths = gameSystemItemQuantityPropertyPaths;
     }
 
-    public static registerItemReader(gameSystem: string, itemQuantityReader: ItemQuantityReader) {
-        if (!DefaultInventoryFactory._itemQuantityIoByGameSystem.has(gameSystem)) {
-            DefaultInventoryFactory._itemQuantityIoByGameSystem.set(gameSystem, { writer: null, reader: null });
+    public registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string) {
+        this._gameSystemItemQuantityPropertyPaths.set(gameSystem, propertyPath);
+    }
+
+    make(gameSystemId: string,
+         actor: BaseActor,
+         knownComponents: Component[],
+    ): Inventory {
+
+        let itemDataManager: ItemDataManager;
+        if (this._gameSystemItemQuantityPropertyPaths.has(gameSystemId)) {
+            itemDataManager = new PropertyPathAwareItemDataManager({
+                objectUtils: this._objectUtility,
+                propertyPath: this._gameSystemItemQuantityPropertyPaths.get(gameSystemId),
+            });
+        } else {
+            itemDataManager = new SingletonItemDataManager({ objectUtils: this._objectUtility } );
         }
-        DefaultInventoryFactory._itemQuantityIoByGameSystem.get(gameSystem).reader = itemQuantityReader;
-    }
 
-    public static registerItemWriter(gameSystem: string, itemQuantityWriter: ItemQuantityWriter) {
-        if (!DefaultInventoryFactory._itemQuantityIoByGameSystem.has(gameSystem)) {
-            DefaultInventoryFactory._itemQuantityIoByGameSystem.set(gameSystem, { writer: null, reader: null });
-        }
-        DefaultInventoryFactory._itemQuantityIoByGameSystem.get(gameSystem).writer = itemQuantityWriter;
-    }
-
-    make(actor: any, craftingSystem: CraftingSystem): Inventory {
-        const GAME = this._gameProvider.get();
-
-        const itemQuantityIo = DefaultInventoryFactory._itemQuantityIoByGameSystem.get(GAME.system.id);
-        const itemQuantityReader = itemQuantityIo ? itemQuantityIo.reader : new AlwaysOneItemQuantityReader();
-        const itemQuantityWriter = itemQuantityIo ? itemQuantityIo.writer : new NoItemQuantityWriter();
-
-       return new CraftingInventory({
+        return new CraftingInventory({
             actor,
-            documentManager: new DefaultDocumentManager(),
-            objectUtils: new DefaultObjectUtility(),
-            gameProvider: this._gameProvider,
-            knownComponentsByItemUuid: craftingSystem.craftingComponentsByItemUuid,
-            itemQuantityReader,
-            itemQuantityWriter
-        });
+            localization: this._localizationService,
+            itemDataManager,
+            knownComponents,
+       });
 
     }
 

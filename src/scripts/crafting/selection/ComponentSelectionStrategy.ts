@@ -1,30 +1,31 @@
-import {Combination, Unit} from "../../common/Combination";
+import {Combination} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
-import {CraftingComponent} from "../../common/CraftingComponent";
-import {Essence} from "../../common/Essence";
+import {Component} from "../component/Component";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {EssenceSelection} from "../../actor/EssenceSelection";
-import {Identifiable} from "../../common/Identity";
+import {Identifiable} from "../../common/Identifiable";
+import {Unit} from "../../common/Unit";
+import {EssenceReference} from "../essence/EssenceReference";
 
 interface ComponentSelectionStrategy {
 
     perform(
-        requiredCatalysts: Combination<CraftingComponent>,
-        requiredIngredients: Combination<CraftingComponent>,
-        requiredEssences: Combination<Essence>,
-        availableComponents: Combination<CraftingComponent>
+        requiredCatalysts: Combination<Component>,
+        requiredIngredients: Combination<Component>,
+        requiredEssences: Combination<EssenceReference>,
+        availableComponents: Combination<Component>
     ): ComponentSelection;
 
 }
 
 export {ComponentSelectionStrategy}
 
-class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
+class ConservativeEssenceSourcingComponentSelectionStrategy implements ComponentSelectionStrategy {
 
-    perform(requiredCatalysts: Combination<CraftingComponent>,
-            requiredIngredients: Combination<CraftingComponent>,
-            requiredEssences: Combination<Essence>,
-            availableComponents: Combination<CraftingComponent>): ComponentSelection {
+    perform(requiredCatalysts: Combination<Component>,
+            requiredIngredients: Combination<Component>,
+            requiredEssences: Combination<EssenceReference>,
+            availableComponents: Combination<Component>): ComponentSelection {
 
         const catalysts = this.selectCombination(requiredCatalysts, availableComponents)
 
@@ -37,7 +38,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
         const componentsForEssences = componentsForIngredients.subtract(ingredientAmountToSubtract);
 
         const essenceSelectionAlgorithm = new EssenceSelection(requiredEssences);
-        const essenceSources: Combination<CraftingComponent> = essenceSelectionAlgorithm.perform(componentsForEssences);
+        const essenceSources: Combination<Component> = essenceSelectionAlgorithm.perform(componentsForEssences);
         const actualEssences = essenceSources.explode(component => component.essences);
         const essences = new TrackedCombination({ target: requiredEssences, actual: actualEssences })
 
@@ -52,7 +53,7 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
     private selectCombination<T extends Identifiable>(target: Combination<T>, pool: Combination<T>): TrackedCombination<T> {
         const actualUnits = target.units
-            .map(unit => new Unit(unit.part, pool.amountFor(unit.part)));
+            .map(unit => new Unit(unit.element, pool.amountFor(unit.element)));
         const actual = Combination.ofUnits(actualUnits);
         return new TrackedCombination({
             target: target,
@@ -62,4 +63,4 @@ class DefaultComponentSelectionStrategy implements ComponentSelectionStrategy {
 
 }
 
-export {DefaultComponentSelectionStrategy};
+export {ConservativeEssenceSourcingComponentSelectionStrategy};

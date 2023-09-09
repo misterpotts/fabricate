@@ -1,52 +1,48 @@
 import {ComponentSalvageAppFactory} from "./ComponentSalvageAppFactory";
-import {SystemRegistry} from "../../scripts/registries/SystemRegistry";
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
-import {CraftingComponent} from "../../scripts/common/CraftingComponent";
 import {SvelteApplication} from "../SvelteApplication";
+import {Component} from "../../scripts/crafting/component/Component";
 
 interface ComponentSalvageAppCatalog {
-    load(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication>;
+
+    load(actor: Actor, component: Component): Promise<SvelteApplication>;
+
 }
 
 class DefaultComponentSalvageAppCatalog implements ComponentSalvageAppCatalog {
 
-    private readonly _componentSalvageAppFactory: ComponentSalvageAppFactory;
-    private readonly _systemRegistry: SystemRegistry;
-
     private readonly _appIndex: Map<string, SvelteApplication> = new Map();
+    private readonly _componentSalvageAppFactory: ComponentSalvageAppFactory;
 
     constructor({
+        appIndex = new Map(),
         componentSalvageAppFactory,
-        systemRegistry,
-        appIndex = new Map()
     }: {
-        componentSalvageAppFactory: ComponentSalvageAppFactory;
-        systemRegistry: SystemRegistry;
         appIndex?: Map<string, SvelteApplication>;
+        componentSalvageAppFactory: ComponentSalvageAppFactory;
     }) {
-        this._componentSalvageAppFactory = componentSalvageAppFactory;
-        this._systemRegistry = systemRegistry;
         this._appIndex = appIndex;
+        this._componentSalvageAppFactory = componentSalvageAppFactory;
     }
 
-    async load(craftingComponent: CraftingComponent, craftingSystem: CraftingSystem, actor: Actor): Promise<SvelteApplication> {
-        const appId = `fabricate-component-salvage-app-${craftingComponent.id}`;
+    async load(actor: Actor, component: Component): Promise<SvelteApplication> {
+        const appId = this.getAppId(actor, component);
         if (this._appIndex.has(appId)) {
             const svelteApplication = this._appIndex.get(appId);
             if (svelteApplication.rendered) {
                 await svelteApplication.close();
             }
             this._appIndex.delete(appId);
-            craftingSystem = await this._systemRegistry.getCraftingSystemById(craftingSystem.id);
-            await craftingSystem.loadPartDictionary();
-            craftingComponent = craftingSystem.getComponentById(craftingComponent.id);
         }
-
-        const app = this._componentSalvageAppFactory.make(craftingComponent, craftingSystem, actor, appId);
+        const app = this._componentSalvageAppFactory.make(component, actor, appId);
         this._appIndex.set(appId, app);
         return app;
     }
 
+    private getAppId(actor: Actor, component: Component) {
+        //@ts-ignore
+        const actorId = actor.id;
+        return `fabricate-component-salvage-app-${component.id}-${actorId}`;
+    }
 }
 
 export { ComponentSalvageAppCatalog, DefaultComponentSalvageAppCatalog }

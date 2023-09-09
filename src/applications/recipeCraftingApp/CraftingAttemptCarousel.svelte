@@ -12,14 +12,13 @@
 
     export let columns;
     export let craftingAttempt;
-    export let selectedIngredientOptionName;
 
     function selectNextOption() {
-        dispatch("nextIngredientOptionSelected", {});
+        dispatch("nextRequirementOptionSelected", {});
     }
 
     function selectPreviousOption() {
-        dispatch("previousIngredientOptionSelected", {});
+        dispatch("previousRequirementOptionSelected", {});
     }
 
 </script>
@@ -28,14 +27,14 @@
     <div class="fab-component-grid-carousel-item" >
         <div class="fab-carousel-nav">
             <button class="fab-carousel-button fab-carousel-previous" on:click={selectPreviousOption}><i class="fa-solid fa-caret-left"></i> {localization.localize(`${localizationPath}.buttons.previous`)}</button>
-            <h3 class="fab-carousel-option-name">{selectedIngredientOptionName}</h3>
+            <h3 class="fab-carousel-option-name">{craftingAttempt.requirementOption.name}</h3>
             <button class="fab-carousel-button fab-carousel-next" on:click={selectNextOption}>{localization.localize(`${localizationPath}.buttons.next`)} <i class="fa-solid fa-caret-right"></i></button>
         </div>
         <div class="fab-component-grid-wrapper">
             <CraftingAttemptGrid columns={columns}
-                                 ingredients={craftingAttempt.ingredientAmounts}
-                                 catalysts={craftingAttempt.catalystAmounts}
-                                 essences={craftingAttempt.essenceAmounts} />
+                                 ingredients={craftingAttempt.ingredients}
+                                 catalysts={craftingAttempt.catalysts}
+                                 essences={craftingAttempt.essences} />
         </div>
     </div>
 </div>

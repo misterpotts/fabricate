@@ -13,18 +13,7 @@ class SelectedCraftingSystemStore {
         selectedSystem?: CraftingSystem;
     }) {
         this._selectedCraftingSystem = writable(selectedSystem);
-        this.loadWhenSelected(this._selectedCraftingSystem);
         this.shadowCraftingSystemUpdates(craftingSystems);
-    }
-
-    public async reload() {
-        const selectedSystem = get(this._selectedCraftingSystem);
-        if (!selectedSystem) {
-            return;
-        }
-        await selectedSystem.reload();
-        this._selectedCraftingSystem.set(selectedSystem);
-        return selectedSystem;
     }
 
     private shadowCraftingSystemUpdates(craftingSystems: Readable<CraftingSystem[]>) {
@@ -36,26 +25,12 @@ class SelectedCraftingSystemStore {
                 this._selectedCraftingSystem.set(null);
             }
             const selectedSystem = get(this._selectedCraftingSystem);
-            const found = value.find(system => system === selectedSystem);
+            const found = value.find(system => system.id === selectedSystem?.id);
             if (!found) {
                 this._selectedCraftingSystem.set(value[0]);
                 return;
             }
-            Promise.resolve(this.reload())
-                .catch(e => console.error(`Unable to reload crafting system. ${e instanceof Error ? e.stack : e}`));
-        });
-    }
-
-    private loadWhenSelected(selectedCraftingSystem: Writable<CraftingSystem>) {
-        selectedCraftingSystem.subscribe((value) => {
-            if (!value) {
-                return;
-            }
-            if (!value.isLoaded) {
-                Promise
-                    .resolve(value.loadPartDictionary())
-                    .then(() => selectedCraftingSystem.set(value));
-            }
+            this._selectedCraftingSystem.set(found);
         });
     }
 

@@ -1,3 +1,5 @@
+import {SettingVersion} from "./repository/migration/SettingVersion";
+
 const Properties = {
     module: {
         id: "fabricate",
@@ -7,15 +9,31 @@ const Properties = {
         },
         documents: {
             supportedTypes: ["Item"]
-        }
+        },
     },
     ui: {
         defaults: {
-            essenceIconCode: "fa-solid fa-mortar-pestle",
+            essence: {
+                name: "My new essence",
+                tooltip: "A new essence",
+                iconCode: "fa-solid fa-mortar-pestle",
+                description: "A magical essence that can be used to craft items",
+            },
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
             noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",
             erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",
-            recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp"
+            recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp",
+            craftingSystem: {
+                name: "My New Crafting System",
+                description: "This crafting system is a collection of recipes and components that can be used to craft items.",
+                author: (user?: string) => {
+                    if (!user) {
+                        return "Author";
+                    }
+                    return user
+                },
+                summary: "Summary"
+            }
         },
         banners: {
             componentEditor: "modules/fabricate/assets/components-hero-banner.webp",
@@ -36,24 +54,30 @@ const Properties = {
         }
     },
     flags: {
-        keys: {
-            actor: {
-                hopperForSystem: (systemId: string) => `craftingSystems.${systemId}.hopper`,
-                knownRecipesForSystem: (systemId: string) => `craftingSystems.${systemId}.knownRecipes`,
-            },
-            item: {
-                id: "id",
-                type: (systemId: string) => `craftingSystemData.${systemId}.type`,
-                recipe: (systemId: string) => `craftingSystemData.${systemId}.recipeData`,
-                componentData: (systemId: string) => `craftingSystemData.${systemId}.componentData`,
-            }
-        }
+
     },
     settings: {
+        collectionNames: {
+            craftingSystem: "CraftingSystem",
+            item: "Item",
+            gameSystem: "Game System"
+        },
         craftingSystems: {
             key: "craftingSystems",
-            targetVersion: "2"
-        }
+        },
+        essences: {
+            key: "essences",
+        },
+        components: {
+            key: "components",
+        },
+        recipes: {
+            key: "recipes",
+        },
+        modelVersion: {
+            key: "modelVersion",
+            targetValue: SettingVersion.V3
+        },
     }
 };
 

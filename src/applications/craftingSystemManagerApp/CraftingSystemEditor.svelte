@@ -1,78 +1,79 @@
 <!-- CraftingSystemEditor.svelte -->
 <script lang="ts">
-    import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs.ts';
-    import Properties from "../../scripts/Properties.ts";
+    import { Tabs, TabList, TabPanel, Tab } from '../common/FabricateTabs';
+    import Properties from "../../scripts/Properties";
     import CraftingSystemNavbar from "./CraftingSystemNavbar.svelte";
     import CraftingSystemDetails from "./detailsManager/CraftingSystemDetails.svelte";
-    import {key} from "./CraftingSystemManagerApp.ts";
+    import {key} from "./CraftingSystemManagerApp";
     import ComponentsTab from "./componentManager/ComponentsTab.svelte";
-    import EssenceEditor from "./essenceManager/EssenceEditor.svelte";
-    import {CraftingSystemsStore} from "../stores/CraftingSystemsStore.ts";
-    import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore.ts";
-    import {RecipesStore} from "../stores/RecipesStore.ts";
-    import {CraftingComponentsStore} from "../stores/CraftingComponentsStore.ts";
-    import {SelectedRecipeStore} from "../stores/SelectedRecipeStore.ts";
-    import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore.ts";
-    import {CraftingSystemEditor} from "./CraftingSystemEditor.ts";
-    import {LoadingStore} from "../common/LoadingStore.ts";
+    import {CraftingSystemsStore} from "../stores/CraftingSystemsStore";
+    import {SelectedCraftingSystemStore} from "../stores/SelectedCraftingSystemStore";
+    import {RecipesStore} from "../stores/RecipesStore";
+    import {ComponentsStore} from "../stores/ComponentsStore";
+    import {SelectedRecipeStore} from "../stores/SelectedRecipeStore";
+    import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore";
+    import {LoadingStore} from "../common/LoadingStore";
     import LoadingModal from "../common/LoadingModal.svelte";
-    import {CraftingComponentManager} from "./componentManager/CraftingComponentManager.ts";
 
-    import eventBus from "../common/EventBus.ts";
+    import eventBus from "../common/EventBus";
     import {onMount, setContext} from "svelte";
     import RecipesTab from "./recipeManager/RecipesTab.svelte";
-    import {RecipeManager} from "./recipeManager/RecipeManager";
+    import {CraftingSystemEditor} from "./CraftingSystemEditor";
+    import {CraftingComponentEditor} from "./componentManager/CraftingComponentEditor";
+    import {RecipeEditor} from "./recipeManager/RecipeEditor";
+    import {EssencesStore} from "../stores/EssenceStore";
+    import EssenceEditorComponent from "./essenceManager/EssenceEditorComponent.svelte";
+    import {EssenceEditor} from "./essenceManager/EssenceEditor";
 
-    export let systemRegistry;
-    export let gameProvider;
     export let localization;
+    export let fabricateAPI;
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
     const loading = new LoadingStore({});
 
     const craftingSystems = new CraftingSystemsStore({});
-    const selectedCraftingSystem = new SelectedCraftingSystemStore({craftingSystems});
-    const recipes = new RecipesStore({selectedCraftingSystem});
-    const craftingComponents = new CraftingComponentsStore({selectedCraftingSystem});
-    const selectedRecipe = new SelectedRecipeStore({recipes});
-    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents});
+    const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
 
-    const craftingSystemEditor = new CraftingSystemEditor({
-        craftingSystems,
-        systemRegistry,
-        game: gameProvider.get(),
-        localization
-    });
+    const essences = new EssencesStore({ selectedCraftingSystem, fabricateAPI });
+    const essenceEditor = new EssenceEditor({ fabricateAPI, essences, localization });
 
-    const craftingComponentEditor = new CraftingComponentManager({ craftingSystemEditor, localization });
-    const recipeEditor = new RecipeManager({ craftingSystemEditor, localization });
+    const components = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
+    const componentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization });
+
+    const recipes = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
+    const recipeEditor = new RecipeEditor({ fabricateAPI, recipes, components, localization });
+
+    const selectedRecipe = new SelectedRecipeStore({recipes: recipes});
+    const selectedComponent = new SelectedCraftingComponentStore({craftingComponents: components});
+
+    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization, components: components });
 
     setContext(key, {
         craftingSystems,
         selectedCraftingSystem,
-        recipes,
-        craftingComponents,
-        selectedRecipe,
-        selectedComponent,
         craftingSystemEditor,
-        localization,
-        loading,
-        craftingComponentEditor,
-        recipeEditor
+        essences,
+        essenceEditor,
+        recipes,
+        selectedRecipe,
+        recipeEditor,
+        components,
+        selectedComponent,
+        componentEditor,
+        localization
     });
 
     onMount(async () => {
-        const allSystemsById = await systemRegistry.getAllCraftingSystems();
-        $craftingSystems = Array.from(allSystemsById.values());
+        const craftingSystemsById = await fabricateAPI.systems.getAll();
+        $craftingSystems = Array.from(craftingSystemsById.values());
     });
 
-    async function handleItemDeleted(event) {
-        if ($selectedCraftingSystem && $selectedCraftingSystem.includesComponentByItemUuid(event.detail.item.uuid)) {
-            await selectedCraftingSystem.reload();
-        }
+    async function handleItemDeleted(_event) {
+
     }
 
 </script>
+
 
 <svelte:window on:itemDeleted={(e) => handleItemDeleted(e)} use:eventBus='{"itemDeleted"}'></svelte:window>
 
@@ -104,7 +105,7 @@
         </TabPanel>
 
         <TabPanel class="fab-scrollable fab-columns">
-            <EssenceEditor />
+            <EssenceEditorComponent />
         </TabPanel>
 
         <TabPanel class="fab-scrollable fab-columns">
