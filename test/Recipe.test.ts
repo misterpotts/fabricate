@@ -135,7 +135,7 @@ describe("When selecting ingredients", () => {
         });
 
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.selectedRequirementOptionName).toEqual("Option 1");
+        expect(underTest.selectedRequirementOption.name).toEqual("Option 1");
 
         expect(underTest.getSelectedIngredients).toThrow(Error);
 
@@ -278,7 +278,7 @@ describe("When selecting results", () => {
         });
 
         expect(underTest.ready()).toEqual(true);
-        expect(underTest.selectedResultOptionName).toEqual("Option 1");
+        expect(underTest.selectedResultOption.name).toEqual("Option 1");
 
         expect(underTest.getSelectedResults).toThrow(Error);
 
