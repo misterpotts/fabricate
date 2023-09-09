@@ -1,7 +1,7 @@
 {
   "id": "fabricate",
   "title": "Fabricate",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A system-agnostic, flexible crafting module for FoundryVTT",
   "authors": [
     {
@@ -13,7 +13,7 @@
   ],
   "compatibility": {
     "minimum": "10",
-    "verified": "10.290.0"
+    "verified": "11.308.0"
   },
   "url": "https://github.com/misterpotts/fabricate",
   "manifest": "",
