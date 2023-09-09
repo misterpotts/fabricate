@@ -65,16 +65,34 @@ type ExportModelVersion = "V2";
 
 export { ExportModelVersion }
 
+/**
+ * The model used to export and import a crafting system.
+ */
 interface FabricateExportModel {
 
+    /**
+     * The version of the export model.
+     */
     version: ExportModelVersion;
 
+    /**
+     * The exported crafting system.
+     */
     craftingSystem: CraftingSystemExportModel;
 
+    /**
+     * The exported essences.
+     */
     essences: EssenceExportModel[];
 
+    /**
+     * The exported components.
+     */
     components: ComponentExportModel[];
 
+    /**
+     * The exported recipes.
+     */
     recipes: RecipeExportModel[];
 
 }

@@ -53,6 +53,10 @@ interface EssenceCreationOptions {
 
 export { EssenceCreationOptions };
 
+
+/**
+ * An API for managing essences.
+ */
 interface EssenceAPI {
 
     /**

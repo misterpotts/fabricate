@@ -12,8 +12,6 @@ import {RecipeExportModel} from "../repository/import/FabricateExportModel";
 
 /**
  * A value object representing a Requirement option
- *
- * @interface
  */
 interface RequirementOptionValue {
 
@@ -62,8 +60,6 @@ interface ResultOptionValue {
 
 /**
  * Options for creating a new recipe.
- *
- * @interface
  */
 interface RecipeOptions {
 
@@ -104,8 +100,6 @@ export { RecipeOptions }
 
 /**
  * An API for managing recipes.
- *
- * @interface
  */
 interface RecipeAPI {
 

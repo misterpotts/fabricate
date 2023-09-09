@@ -74,6 +74,9 @@ interface UserSelectedComponents {
 
 }
 
+/**
+ * Options used when crafting a recipe.
+ */
 interface RecipeCraftingOptions {
 
     /**
@@ -116,6 +119,9 @@ interface RecipeCraftingOptions {
 
 }
 
+/**
+ * Options used when selecting components from an actor's inventory for use when crafting recipes
+ */
 interface ComponentSelectionOptions {
 
     /**
@@ -135,6 +141,9 @@ interface ComponentSelectionOptions {
     recipeId: string;
 }
 
+/**
+ * The Crafting API provides methods for crafting recipes and salvaging components.
+ */
 interface CraftingAPI {
 
     /**

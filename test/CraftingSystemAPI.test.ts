@@ -6,7 +6,7 @@ import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
 import Properties from "../src/scripts/Properties";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
 import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
-import {CraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
+import {DefaultCraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import {testCraftingSystemOne, testCraftingSystemTwo} from "./test_data/TestCrafingSystem";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";
@@ -29,7 +29,7 @@ const settingManager = new StubSettingManager<SerialisedEntityData<CraftingSyste
 const craftingSystemValidator = new CraftingSystemValidator();
 const localizationService = new StubLocalizationService();
 const notificationService = new StubNotificationService();
-const stubCraftingSystemFactory = new StubEntityFactory<CraftingSystemJson, CraftingSystem>(
+const stubCraftingSystemFactory = new StubEntityFactory<CraftingSystemJson, DefaultCraftingSystem>(
     {
         valuesById: new Map([
             [testCraftingSystemOne.id, testCraftingSystemOne],
@@ -227,7 +227,7 @@ describe("Update", () => {
         });
 
         await expect(underTest.save(
-            new CraftingSystem({
+            new DefaultCraftingSystem({
                 id: testCraftingSystemTwo.id,
                 craftingSystemDetails: new CraftingSystemDetails({
                     name: "Any name",

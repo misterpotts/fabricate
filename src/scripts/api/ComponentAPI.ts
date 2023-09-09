@@ -35,8 +35,6 @@ interface SalvageOptionValue {
 
 /**
  * Options for creating a new component.
- *
- * @interface
  */
 interface ComponentCreationOptions {
 
@@ -72,8 +70,6 @@ export { ComponentCreationOptions };
 
 /**
  * A service for managing components.
- *
- * @interface
  */
 interface ComponentAPI {
 

@@ -1,6 +1,6 @@
 import {LocalizationService} from "../../common/LocalizationService";
 import {Essence} from "../../../scripts/crafting/essence/Essence";
-import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../../scripts/system/CraftingSystem";
 import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
@@ -29,14 +29,14 @@ class EssenceEditor {
         this._localization = localization;
     }
 
-    public async create(selectedCraftingSystem: CraftingSystem) {
+    public async create(selectedCraftingSystem: DefaultCraftingSystem) {
         const essence = await this._fabricateAPI.essences.create({
             craftingSystemId: selectedCraftingSystem.id
         });
         this._essences.insert(essence);
     }
 
-    public async deleteEssence(event: any, essence: Essence, selectedCraftingSystem: CraftingSystem) {
+    public async deleteEssence(event: any, essence: Essence, selectedCraftingSystem: DefaultCraftingSystem) {
         let doDelete;
         if (event.shiftKey) {
             doDelete = true;

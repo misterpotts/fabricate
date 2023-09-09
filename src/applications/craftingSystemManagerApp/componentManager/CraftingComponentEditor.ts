@@ -3,7 +3,7 @@ import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundr
 import Properties from "../../../scripts/Properties";
 import {Component} from "../../../scripts/crafting/component/Component";
 import {LocalizationService} from "../../common/LocalizationService";
-import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../../scripts/system/CraftingSystem";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {ComponentsStore} from "../../stores/ComponentsStore";
 
@@ -28,7 +28,7 @@ class CraftingComponentEditor {
         this._components = components;
     }
 
-    public async importComponent(event: any, selectedSystem: CraftingSystem) {
+    public async importComponent(event: any, selectedSystem: DefaultCraftingSystem) {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),
@@ -41,7 +41,7 @@ class CraftingComponentEditor {
         await this.createComponent(dropData.itemData, selectedSystem);
     }
 
-    public async createComponent(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<Component> {
+    public async createComponent(itemData: FabricateItemData, selectedSystem: DefaultCraftingSystem): Promise<Component> {
         const component = await this._fabricateAPI.components.create({
             craftingSystemId: selectedSystem.id,
             itemUuid: itemData.uuid
@@ -50,7 +50,7 @@ class CraftingComponentEditor {
         return component;
     }
 
-    public async deleteComponent(event: any, component: Component, selectedSystem: CraftingSystem): Promise<Component | undefined> {
+    public async deleteComponent(event: any, component: Component, selectedSystem: DefaultCraftingSystem): Promise<Component | undefined> {
         let doDelete;
         if (event.shiftKey) {
             doDelete = true;

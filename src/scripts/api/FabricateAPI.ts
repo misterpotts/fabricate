@@ -7,58 +7,107 @@ import {CraftingAPI} from "./CraftingAPI";
 import {Recipe} from "../crafting/recipe/Recipe";
 import {Component} from "../crafting/component/Component";
 import {Essence} from "../crafting/essence/Essence";
-import {CraftingSystem} from "../system/CraftingSystem";
+import {DefaultCraftingSystem} from "../system/CraftingSystem";
 import {FabricateExportModel} from "../repository/import/FabricateExportModel";
 import Properties from "../Properties";
 import {V2Component, V2CraftingSystem, V2Essence, V2Recipe} from "../repository/migration/V2SettingsModel";
 import {NotificationService} from "../foundry/NotificationService";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 
+/**
+ * Contains summary statistics about an Entity type in the Fabricate database.
+ */
 interface EntityCountStatistics {
 
+    /**
+     * The number of the Entity type in the Fabricate database.
+     */
     count: number;
 
+    /**
+     * The IDs of the Entity type in the Fabricate database.
+     */
     ids: string[];
 
 }
 
 export { EntityCountStatistics }
 
+/**
+ * Contains summary statistics about an Entity type in the Fabricate database, grouped by Crafting System ID.
+ */
 interface EntityCountStatisticsByCraftingSystem extends EntityCountStatistics {
 
+    /**
+     * The number and IDs of the Entity type in the Fabricate database, grouped by Crafting System ID.
+     */
     byCraftingSystem: Record<string, EntityCountStatistics>;
 
 }
 
 export { EntityCountStatisticsByCraftingSystem }
 
+/**
+ * Contains summary statistics about the Crafting Systems, Essences, Components, and Recipes in the Fabricate database.
+ */
 interface FabricateStatistics {
 
+    /**
+     * The number and IDs of Crafting Systems in the Fabricate database.
+     */
     craftingSystems: EntityCountStatistics;
 
+    /**
+     * The number and IDs of Essences in the Fabricate database.
+     */
     essences: EntityCountStatisticsByCraftingSystem;
 
+    /**
+     * The number and IDs of Components in the Fabricate database.
+     */
     components: EntityCountStatisticsByCraftingSystem;
 
+    /**
+     * The number and IDs of Recipes in the Fabricate database.
+     */
     recipes: EntityCountStatisticsByCraftingSystem;
 
 }
 
 export { FabricateStatistics }
 
+
+/**
+ * Contains all the entities in a Crafting System.
+ */
 interface CraftingSystemData {
-    craftingSystem: CraftingSystem;
+
+    /**
+     * The Crafting System to which all other entities in this `CraftingSystemData` instance belong.
+     */
+    craftingSystem: DefaultCraftingSystem;
+
+    /**
+     * The Essences in the Crafting System.
+     */
     essences: Essence[];
+
+    /**
+     * The Components in the Crafting System.
+     */
     components: Component[];
+
+    /**
+     * The Recipes in the Crafting System.
+     */
     recipes: Recipe[];
+
 }
 
 export { CraftingSystemData }
 
 /**
  * Represents an API for managing crafting systems, components, essences, and recipes.
- *
- * @interface
  */
 interface FabricateAPI {
 
@@ -156,6 +205,7 @@ interface FabricateAPI {
     export(craftingSystemId: string): Promise<FabricateExportModel>;
 
 }
+
 export { FabricateAPI }
 
 class DefaultFabricateAPI implements FabricateAPI {
@@ -207,11 +257,11 @@ class DefaultFabricateAPI implements FabricateAPI {
     }
 
     private setNotificationsSuppressed(value: boolean): void {
-        this.notificationService.suppressed = value;
-        this.componentAPI.notifications.suppressed = value;
-        this.essenceAPI.notifications.suppressed = value;
-        this.craftingSystemAPI.notifications.suppressed = value;
-        this.recipeAPI.notifications.suppressed = value;
+        this.notificationService.isSuppressed = value;
+        this.componentAPI.notifications.isSuppressed = value;
+        this.essenceAPI.notifications.isSuppressed = value;
+        this.craftingSystemAPI.notifications.isSuppressed = value;
+        this.recipeAPI.notifications.isSuppressed = value;
     }
 
     get systems(): CraftingSystemAPI {
