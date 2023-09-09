@@ -27,7 +27,7 @@ interface NotificationService {
      * If true, all notification messages will print only to the console. If false, notification messages will be
      *   displayed in both the console and the UI.
      */
-    suppressed: boolean;
+    isSuppressed: boolean;
 
 }
 
@@ -49,10 +49,10 @@ class DefaultNotificationService implements NotificationService {
         return DefaultNotificationService._CONSOLE_MESSAGE_FORMATTER(message);
     }
 
-    get suppressed(): boolean {
+    get isSuppressed(): boolean {
         return this._suppressed;
     }
-    set suppressed(value: boolean) {
+    set isSuppressed(value: boolean) {
         this._suppressed = value;
     }
 

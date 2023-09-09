@@ -1,6 +1,6 @@
 import {
-    CraftingSystem,
-    CraftingSystemJson
+    DefaultCraftingSystem,
+    CraftingSystemJson, CraftingSystem
 } from "../system/CraftingSystem";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {LocalizationService} from "../../applications/common/LocalizationService";
@@ -236,7 +236,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
     }
 
     async insert(craftingSystemData: CraftingSystemImportData): Promise<CraftingSystem> {
-        const craftingSystem = CraftingSystem.fromJson({
+        const craftingSystem = DefaultCraftingSystem.fromJson({
             ...craftingSystemData,
             embedded: false
         });
@@ -257,7 +257,7 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
         const assignedIds = await this.craftingSystemStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
         const craftingSystemDetails = new CraftingSystemDetails({name, summary, description, author});
-        const created = new CraftingSystem({
+        const created = new DefaultCraftingSystem({
             id,
             disabled: true,
             craftingSystemDetails,

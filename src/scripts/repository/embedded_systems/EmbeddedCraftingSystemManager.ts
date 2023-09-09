@@ -4,7 +4,7 @@ import {EntityDataStore} from "../EntityDataStore";
 import {Recipe, RecipeJson} from "../../crafting/recipe/Recipe";
 import {Component, ComponentJson} from "../../crafting/component/Component";
 import {Essence, EssenceJson} from "../../crafting/essence/Essence";
-import {CraftingSystem, CraftingSystemJson} from "../../system/CraftingSystem";
+import {DefaultCraftingSystem, CraftingSystemJson} from "../../system/CraftingSystem";
 import Properties from "../../Properties";
 
 interface EmbeddedCraftingSystemManager {
@@ -24,7 +24,7 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
     private readonly _recipeStore: EntityDataStore<RecipeJson, Recipe>;
     private readonly _essenceStore: EntityDataStore<EssenceJson, Essence>;
     private readonly _componentStore: EntityDataStore<ComponentJson, Component>;
-    private readonly _craftingSystemStore: EntityDataStore<CraftingSystemJson, CraftingSystem>;
+    private readonly _craftingSystemStore: EntityDataStore<CraftingSystemJson, DefaultCraftingSystem>;
     private readonly _embeddedCraftingSystems: EmbeddedCraftingSystemDefinition[];
 
     constructor({
@@ -37,7 +37,7 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
         recipeStore: EntityDataStore<RecipeJson, Recipe>;
         essenceStore: EntityDataStore<EssenceJson, Essence>;
         componentStore: EntityDataStore<ComponentJson, Component>;
-        craftingSystemStore: EntityDataStore<CraftingSystemJson, CraftingSystem>;
+        craftingSystemStore: EntityDataStore<CraftingSystemJson, DefaultCraftingSystem>;
         embeddedCraftingSystems?: EmbeddedCraftingSystemDefinition[];
     }) {
         this._recipeStore = recipeStore;
@@ -66,7 +66,7 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
         await this._restoreRecipes(embeddedSystemDefinition.recipes);
     }
 
-    private async _restoreCraftingSystem(craftingSystem: CraftingSystem): Promise<void> {
+    private async _restoreCraftingSystem(craftingSystem: DefaultCraftingSystem): Promise<void> {
         await this._craftingSystemStore.insert(craftingSystem);
     }
 

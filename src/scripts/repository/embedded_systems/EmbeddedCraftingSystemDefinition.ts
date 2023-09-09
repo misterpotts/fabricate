@@ -1,4 +1,4 @@
-import {CraftingSystem} from "../../system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../system/CraftingSystem";
 import {Recipe} from "../../crafting/recipe/Recipe";
 import {Component} from "../../crafting/component/Component";
 import {Essence} from "../../crafting/essence/Essence";
@@ -6,7 +6,7 @@ import {Essence} from "../../crafting/essence/Essence";
 interface EmbeddedCraftingSystemDefinition {
 
     readonly supportedGameSystem: string;
-    readonly craftingSystem: CraftingSystem;
+    readonly craftingSystem: DefaultCraftingSystem;
     readonly essences: Essence[];
     readonly components: Component[];
     readonly recipes: Recipe[];

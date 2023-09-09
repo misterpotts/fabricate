@@ -1,30 +1,30 @@
 import {CraftingSystemAPI, CraftingSystemImportData} from "../../../src/scripts/api/CraftingSystemAPI";
-import {CraftingSystem} from "../../../src/scripts/system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../../src/scripts/system/CraftingSystem";
 import {NotificationService} from "../../../src/scripts/foundry/NotificationService";
 
 class StubCraftingSystemAPI implements CraftingSystemAPI {
 
     private static readonly _USE_REAL_INSTEAD_MESSAGE = "Complex operations with real behaviour are not implemented by stubs. Should you be using the real thing instead?";
 
-    private readonly _valuesById: Map<string, CraftingSystem>;
+    private readonly _valuesById: Map<string, DefaultCraftingSystem>;
 
     constructor({
         valuesById = new Map()
     }: {
-        valuesById?: Map<string, CraftingSystem>;
+        valuesById?: Map<string, DefaultCraftingSystem>;
     } = {}) {
         this._valuesById = valuesById;
     }
 
-    cloneById(_craftingSystemId: string): Promise<CraftingSystem> {
+    cloneById(_craftingSystemId: string): Promise<DefaultCraftingSystem> {
         throw new Error(StubCraftingSystemAPI._USE_REAL_INSTEAD_MESSAGE)
     }
 
-    insert(_craftingSystemData: CraftingSystemImportData): Promise<CraftingSystem> {
+    insert(_craftingSystemData: CraftingSystemImportData): Promise<DefaultCraftingSystem> {
         throw new Error(StubCraftingSystemAPI._USE_REAL_INSTEAD_MESSAGE)
     }
 
-    async create(craftingSystemConfig: { name?: string, summary?: string, description?: string, author?: string }): Promise<CraftingSystem> {
+    async create(craftingSystemConfig: { name?: string, summary?: string, description?: string, author?: string }): Promise<DefaultCraftingSystem> {
         const result = Array.from(this._valuesById.values())
             .find(craftingSystem => craftingSystem.details.name === craftingSystemConfig.name
                 && craftingSystem.details.author === craftingSystemConfig.author);
@@ -38,25 +38,25 @@ class StubCraftingSystemAPI implements CraftingSystemAPI {
         throw new Error("This is a stub. Stubs do not provide user interface notifications. ");
     }
 
-    async deleteById(id: string): Promise<CraftingSystem | undefined> {
+    async deleteById(id: string): Promise<DefaultCraftingSystem | undefined> {
         const value = await this.getById(id);
         this._valuesById.delete(id);
         return value;
     }
 
-    async getAllForGameSystem(): Promise<Map<string, CraftingSystem>> {
+    async getAllForGameSystem(): Promise<Map<string, DefaultCraftingSystem>> {
         return new Map(this._valuesById);
     }
 
-    async getById(id: string): Promise<CraftingSystem | undefined> {
+    async getById(id: string): Promise<DefaultCraftingSystem | undefined> {
         return this._valuesById.get(id);
     }
 
-    async getAll(): Promise<Map<string, CraftingSystem>> {
+    async getAll(): Promise<Map<string, DefaultCraftingSystem>> {
         return new Map(this._valuesById);
     }
 
-    async save(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
+    async save(craftingSystem: DefaultCraftingSystem): Promise<DefaultCraftingSystem> {
         this._valuesById.set(craftingSystem.id, craftingSystem);
         return craftingSystem;
     }

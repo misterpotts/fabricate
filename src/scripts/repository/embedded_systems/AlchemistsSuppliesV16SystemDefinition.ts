@@ -1,5 +1,5 @@
 import {EmbeddedCraftingSystemDefinition} from "./EmbeddedCraftingSystemDefinition";
-import {CraftingSystem} from "../../system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../system/CraftingSystem";
 import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
 import {Essence} from "../../crafting/essence/Essence";
 import {Component} from "../../crafting/component/Component";
@@ -32,8 +32,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
         return "dnd5e";
     }
 
-    get craftingSystem(): CraftingSystem {
-        return new CraftingSystem({
+    get craftingSystem(): DefaultCraftingSystem {
+        return new DefaultCraftingSystem({
             id: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
             embedded: true,
             craftingSystemDetails: new CraftingSystemDetails({

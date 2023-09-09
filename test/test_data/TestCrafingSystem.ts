@@ -1,7 +1,7 @@
-import {CraftingSystem} from "../../src/scripts/system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../src/scripts/system/CraftingSystem";
 import {CraftingSystemDetails} from "../../src/scripts/system/CraftingSystemDetails";
 
-const testCraftingSystemOne = new CraftingSystem({
+const testCraftingSystemOne = new DefaultCraftingSystem({
     id: "c3d50462684c5d960f3fba9f953a93a1",
     disabled: false,
     craftingSystemDetails: new CraftingSystemDetails({
@@ -15,7 +15,7 @@ const testCraftingSystemOne = new CraftingSystem({
 
 export { testCraftingSystemOne }
 
-const testCraftingSystemTwo = new CraftingSystem({
+const testCraftingSystemTwo = new DefaultCraftingSystem({
     id: "c3d50462684c5d960f3fba9f953a93a2",
     disabled: false,
     craftingSystemDetails: new CraftingSystemDetails({

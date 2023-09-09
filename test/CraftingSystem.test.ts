@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, jest, test} from "@jest/globals";
-import {CraftingSystem} from "../src/scripts/system/CraftingSystem";
+import {DefaultCraftingSystem} from "../src/scripts/system/CraftingSystem";
 import * as Sinon from "sinon";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
 
@@ -16,7 +16,7 @@ describe('Create and configure', () => {
 
         const testSystemId = `fabricate-test-system`;
 
-        const underTest = new CraftingSystem({
+        const underTest = new DefaultCraftingSystem({
             craftingSystemDetails: new CraftingSystemDetails({
                 name: "Test System",
                 author: "",
@@ -37,7 +37,7 @@ describe('Create and configure', () => {
     test('Should create a new Crafting System with checks and support for alchemy',() => {
 
         const testSystemId = `fabricate-test-system`;
-        const underTest = new CraftingSystem({
+        const underTest = new DefaultCraftingSystem({
             craftingSystemDetails: new CraftingSystemDetails({
                 name: "Test System",
                 author: "",

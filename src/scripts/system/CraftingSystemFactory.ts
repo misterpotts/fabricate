@@ -1,12 +1,12 @@
-import {CraftingSystem, CraftingSystemJson} from "./CraftingSystem";
+import {DefaultCraftingSystem, CraftingSystemJson} from "./CraftingSystem";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
 import {EntityFactory} from "../repository/EntityFactory";
 
-class CraftingSystemFactory implements EntityFactory<CraftingSystemJson, CraftingSystem> {
+class CraftingSystemFactory implements EntityFactory<CraftingSystemJson, DefaultCraftingSystem> {
 
-    public async make(craftingSystemJson: CraftingSystemJson): Promise<CraftingSystem> {
+    public async make(craftingSystemJson: CraftingSystemJson): Promise<DefaultCraftingSystem> {
 
-        return new CraftingSystem({
+        return new DefaultCraftingSystem({
             id: craftingSystemJson.id,
             embedded: craftingSystemJson.embedded,
             gameSystem: craftingSystemJson.gameSystem,

@@ -9,7 +9,61 @@ interface CraftingSystemJson {
 
 export { CraftingSystemJson }
 
-class CraftingSystem {
+/**
+ * A crafting system is a set of rules that define how items can be crafted. Crafting systems contain additional
+ *   details that can be used to display information about the crafting system to the user.
+ */
+interface CraftingSystem {
+
+    /**
+     * The unique identifier for the crafting system.
+     */
+    readonly id: string;
+
+    /**
+     * Whether the crafting system is embedded with Fabricate. Embedded crafting systems are not editable, except
+     *   for the `isDisabled` property.
+     */
+    readonly isEmbedded: boolean;
+
+    /**
+     * Whether the crafting system is disabled. Disabled crafting systems are not available for use in Fabricate.
+     *   Their components cannot be salvaged, and their recipes cannot be crafted.
+     */
+    isDisabled: boolean;
+
+    /**
+     * The details of the crafting system.
+     */
+    details: CraftingSystemDetails;
+
+    /**
+     * Converts the crafting system to a JSON object.
+     */
+    toJson(): CraftingSystemJson;
+
+    /**
+     * Creates a clone of the crafting system.
+     *
+     * @param id - The unique identifier for the new crafting system.
+     * @param name - The name of the new crafting system.
+     * @param embedded - Whether the new crafting system should be embedded with Fabricate. Defaults to `false`.
+     */
+    clone({id, name, embedded}: { name?: string; id: string; embedded?: boolean }): CraftingSystem;
+
+    /**
+     * Determines whether the crafting system is equal to another crafting system.
+     *
+     * @param other - The other crafting system to compare to this one.
+     * @param excludeDisabled - Whether to exclude the `isDisabled` property from the comparison. Defaults to `false`.
+     */
+    equals(other: CraftingSystem, excludeDisabled: boolean): boolean;
+
+}
+
+export { CraftingSystem }
+
+class DefaultCraftingSystem implements CraftingSystem {
 
     private readonly _id: string;
     private readonly _embedded: boolean;
@@ -67,8 +121,8 @@ class CraftingSystem {
         };
     }
 
-    clone({id, name, embedded = false}: { name?: string; id: string; embedded?: boolean }): CraftingSystem {
-        return new CraftingSystem({
+    clone({id, name, embedded = false}: { name?: string; id: string; embedded?: boolean }): DefaultCraftingSystem {
+        return new DefaultCraftingSystem({
             id,
             embedded,
             craftingSystemDetails: this._details.clone(name),
@@ -77,7 +131,7 @@ class CraftingSystem {
     }
 
     static fromJson(craftingSystemJson: CraftingSystemJson) {
-        return new CraftingSystem({
+        return new DefaultCraftingSystem({
             id: craftingSystemJson.id,
             embedded: craftingSystemJson.embedded,
             craftingSystemDetails: CraftingSystemDetails.fromJson(craftingSystemJson.details),
@@ -86,12 +140,12 @@ class CraftingSystem {
     }
 
     equals(other: CraftingSystem, excludeDisabled: boolean = false): boolean {
-        return this._id === other._id
-            && this._embedded === other._embedded
-            && this._details.equals(other._details)
-            && (excludeDisabled || this._disabled === other._disabled);
+        return this._id === other.id
+            && this._embedded === other.isEmbedded
+            && this._details.equals(other.details)
+            && (excludeDisabled || this._disabled === other.isDisabled);
     }
 
 }
 
-export { CraftingSystem }
+export { DefaultCraftingSystem }
