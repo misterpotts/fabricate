@@ -12,12 +12,15 @@ interface InventoryFactory {
          knownComponents: Component[],
     ): Inventory;
 
+    registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
+
 }
 
 class DefaultInventoryFactory implements InventoryFactory {
 
     private static readonly _KNOWN_GAME_SYSTEM_ITEM_QUANTITY_PROPERTY_PATHS: Map<string, string> = new Map([
-        ["dnd5e", "system.quantity"]
+        ["dnd5e", "system.quantity"],
+        ["pf2e", "system.quantity"],
     ]);
 
     private readonly _localizationService: LocalizationService;
@@ -38,8 +41,9 @@ class DefaultInventoryFactory implements InventoryFactory {
         this._gameSystemItemQuantityPropertyPaths = gameSystemItemQuantityPropertyPaths;
     }
 
-    public registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string) {
+    registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][] {
         this._gameSystemItemQuantityPropertyPaths.set(gameSystem, propertyPath);
+        return Array.from(this._gameSystemItemQuantityPropertyPaths.entries());
     }
 
     make(gameSystemId: string,

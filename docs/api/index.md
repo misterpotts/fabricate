@@ -348,3 +348,15 @@ interface FabricateExportModel {
 ```
 
 </details>
+
+## Important operations
+
+### Add item quantity support for your world's game system
+
+Fabricate knows how to read and write item quantities for the following game systems:
+
+- D&D 5th Edition
+- Pathfinder 2nd Edition
+
+Fabricate needs to be told where to find item quantity information for your world's game system.
+See the [example in the Crafting API documentation](./crafting#setting-the-game-system-item-quantity-property-path) for details.

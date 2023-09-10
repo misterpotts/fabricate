@@ -84,6 +84,24 @@ interface CraftingAPI {
      */
     selectComponents(componentSelectionOptions: ComponentSelectionOptions): Promise<ComponentSelection>;
 
+    /**
+     * Configure Fabricate to read from and write to the JSON property path when considering item quantity in your game
+     *   world. You can find the game system ID by printing `game.system.id` to the console. For example, `dnd5e` is the
+     *   Dungeons and Dragons 5th Edition game system ID. 5th Edition manages item quantity in the `system.quantity`
+     *   property. Fabricate supports the following game systems out of the box:
+     *   - Dungeons and Dragons 5th Edition (`dnd5e`)
+     *   - Pathfinder 2nd Edition (`pf2e`)
+     *   If you are using a different game system, you will need to find the correct property path for your
+     *   game system. This value is currently not stored in settings, so you will need to call this method every time
+     *   you start Foundry VTT.
+     *
+     * @param gameSystem - The ID of the game system to configure.
+     * @param propertyPath - The JSON property path to use when reading and writing item quantity.
+     * @returns {[string, string][]} - An array containing all configured game systems and their item quantity property
+     *   paths.
+     */
+    setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): void;
+
 }
 ```
 
@@ -209,6 +227,32 @@ interface ComponentSalvageOptions {
     salvageOptionId?: string;
 
 }
+```
+
+</details>
+
+## Examples
+
+The examples below illustrate how to use the crafting API to craft recipes and salvage components.
+
+### Setting the game system item quantity property path
+
+Fabricate treats items in unknown game systems as having a quantity of 1.
+You'll need to configure this property if your game system of choice supports item quantities and is not known to Fabricate.
+You can do this by making Fabricate aware of the item quantity property path for your game system.
+It's really easy to do this, just call `CraftingAPI#setGameSystemItemQuantityPropertyPath`, passing in the game system ID and the property path to use.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+// Replace gameSystemId with the ID of the game system to configure, e.g. "dnd5e"
+const gameSystemId = "gameSystemId"; 
+// Replace itemQuantityPropertyPath with the JSON property path to use when reading and writing item quantity in this game system, e.g. "system.quantity"
+const itemQuantityPropertyPath = "property.path"; 
+game.fabricate.api.crafting.setGameSystemItemQuantityPropertyPath(gameSystemId, itemQuantityPropertyPath);
 ```
 
 </details>

@@ -195,6 +195,24 @@ interface CraftingAPI {
      */
     selectComponents(componentSelectionOptions: ComponentSelectionOptions): Promise<ComponentSelection>;
 
+    /**
+     * Configure Fabricate to read from and write to the JSON property path when considering item quantity in your game
+     *   world. You can find the game system ID by printing `game.system.id` to the console. For example, `dnd5e` is the
+     *   Dungeons and Dragons 5th Edition game system ID. 5th Edition manages item quantity in the `system.quantity`
+     *   property. Fabricate supports the following game systems out of the box:
+     *   - Dungeons and Dragons 5th Edition (`dnd5e`)
+     *   - Pathfinder 2nd Edition (`pf2e`)
+     *   If you are using a different game system, you will need to find the correct property path for your
+     *   game system. This value is currently not stored in settings, so you will need to call this method every time
+     *   you start Foundry VTT.
+     *
+     * @param gameSystem - The ID of the game system to configure.
+     * @param propertyPath - The JSON property path to use when reading and writing item quantity.
+     * @returns {[string, string][]} - An array containing all configured game systems and their item quantity property
+     *   paths.
+     */
+    setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
+
 }
 
 export { CraftingAPI };
@@ -243,6 +261,10 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.notificationService = notificationService;
         this.localizationService = localizationService;
         this.componentSelectionStrategy = componentSelectionStrategy;
+    }
+
+    setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][] {
+        return this.inventoryFactory.registerGameSystemItemQuantityPropertyPath(gameSystem, propertyPath);
     }
 
     async countOwnedComponentsOfType(actorId: string, componentId: string): Promise<number> {

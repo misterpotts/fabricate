@@ -1,4 +1,4 @@
-import {DefaultCraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {Component} from "../../scripts/crafting/component/Component";
 import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
@@ -37,7 +37,7 @@ const eventBus = function(node: any, eventTypes: string[] | string) {
 
 }
 
-function craftingSystemUpdated(craftingSystem: DefaultCraftingSystem) {
+function craftingSystemUpdated(craftingSystem: CraftingSystem) {
     const eventType = "craftingSystemUpdated";
     const event = new CustomEvent(eventType, { bubbles: false, detail: craftingSystem });
     dispatch(eventType, event);

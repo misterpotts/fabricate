@@ -7,7 +7,7 @@ import {CraftingAPI} from "./CraftingAPI";
 import {Recipe} from "../crafting/recipe/Recipe";
 import {Component} from "../crafting/component/Component";
 import {Essence} from "../crafting/essence/Essence";
-import {DefaultCraftingSystem} from "../system/CraftingSystem";
+import {CraftingSystem} from "../system/CraftingSystem";
 import {FabricateExportModel} from "../repository/import/FabricateExportModel";
 import Properties from "../Properties";
 import {V2Component, V2CraftingSystem, V2Essence, V2Recipe} from "../repository/migration/V2SettingsModel";
@@ -85,7 +85,7 @@ interface CraftingSystemData {
     /**
      * The Crafting System to which all other entities in this `CraftingSystemData` instance belong.
      */
-    craftingSystem: DefaultCraftingSystem;
+    craftingSystem: CraftingSystem;
 
     /**
      * The Essences in the Crafting System.

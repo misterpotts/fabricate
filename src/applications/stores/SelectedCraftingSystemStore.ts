@@ -1,22 +1,22 @@
-import {DefaultCraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {get, Readable, Subscriber, Updater, writable, Writable} from "svelte/store";
 
 class SelectedCraftingSystemStore {
 
-    private readonly _selectedCraftingSystem: Writable<DefaultCraftingSystem>;
+    private readonly _selectedCraftingSystem: Writable<CraftingSystem>;
 
     constructor({
         craftingSystems,
         selectedSystem
     }: {
-        craftingSystems: Readable<DefaultCraftingSystem[]>;
-        selectedSystem?: DefaultCraftingSystem;
+        craftingSystems: Readable<CraftingSystem[]>;
+        selectedSystem?: CraftingSystem;
     }) {
         this._selectedCraftingSystem = writable(selectedSystem);
         this.shadowCraftingSystemUpdates(craftingSystems);
     }
 
-    private shadowCraftingSystemUpdates(craftingSystems: Readable<DefaultCraftingSystem[]>) {
+    private shadowCraftingSystemUpdates(craftingSystems: Readable<CraftingSystem[]>) {
         craftingSystems.subscribe(value => {
             if (!value) {
                 throw new Error("Crafting systems may not be null");
@@ -34,15 +34,15 @@ class SelectedCraftingSystemStore {
         });
     }
 
-    public subscribe(subscriber: Subscriber<DefaultCraftingSystem>) {
+    public subscribe(subscriber: Subscriber<CraftingSystem>) {
         return this._selectedCraftingSystem.subscribe(subscriber);
     }
 
-    public set(value: DefaultCraftingSystem) {
+    public set(value: CraftingSystem) {
         return this._selectedCraftingSystem.set(value);
     }
 
-    public update(updater: Updater<DefaultCraftingSystem>) {
+    public update(updater: Updater<CraftingSystem>) {
         this._selectedCraftingSystem.update(updater);
     }
 

@@ -1,5 +1,5 @@
 import {Writable} from "svelte/store";
-import {DefaultCraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import Properties from "../../scripts/Properties";
 import {LocalizationService} from "../common/LocalizationService";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
@@ -8,7 +8,7 @@ import {Component} from "../../scripts/crafting/component/Component";
 
 class CraftingSystemEditor {
 
-    private readonly _craftingSystems: Writable<DefaultCraftingSystem[]>;
+    private readonly _craftingSystems: Writable<CraftingSystem[]>;
     private readonly _components: Writable<Component[]>;
     private readonly _localization: LocalizationService;
     private readonly _fabricateAPI: FabricateAPI;
@@ -21,7 +21,7 @@ class CraftingSystemEditor {
         localization,
         fabricateAPI,
     }: {
-        craftingSystems: Writable<DefaultCraftingSystem[]>;
+        craftingSystems: Writable<CraftingSystem[]>;
         components: Writable<Component[]>;
         localization: LocalizationService;
         fabricateAPI: FabricateAPI;
@@ -32,7 +32,7 @@ class CraftingSystemEditor {
         this._localization = localization;
     }
 
-    public async createNewCraftingSystem(): Promise<DefaultCraftingSystem> {
+    public async createNewCraftingSystem(): Promise<CraftingSystem> {
         const result = await this._fabricateAPI.systems.create();
         this._craftingSystems.update((craftingSystems) => {
             craftingSystems.push(result);
@@ -41,7 +41,7 @@ class CraftingSystemEditor {
         return result;
     }
 
-    async deleteCraftingSystem(craftingSystemToDelete: DefaultCraftingSystem) {
+    async deleteCraftingSystem(craftingSystemToDelete: CraftingSystem) {
         await Dialog.confirm({
             title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.deleteSystemConfirm.title`),
             content: `<p>${this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.deleteSystemConfirm.content`, {systemName: craftingSystemToDelete.details.name})}</p>`,
@@ -54,7 +54,7 @@ class CraftingSystemEditor {
         });
     }
 
-    async importCraftingSystem(targetCraftingSystem?: DefaultCraftingSystem): Promise<void> {
+    async importCraftingSystem(targetCraftingSystem?: CraftingSystem): Promise<void> {
         const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
         const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
         const content = await renderTemplate("templates/apps/import-data.html", {
@@ -126,7 +126,7 @@ class CraftingSystemEditor {
         }).render(true);
     }
 
-    public async exportCraftingSystem(craftingSystem: DefaultCraftingSystem) {
+    public async exportCraftingSystem(craftingSystem: CraftingSystem) {
         const exportData = await this._fabricateAPI.export(craftingSystem.id);
         const fileContents = JSON.stringify(exportData, null, 2);
         const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
@@ -135,7 +135,7 @@ class CraftingSystemEditor {
         ui.notifications.info(message);
     }
 
-    async duplicateCraftingSystem(sourceCraftingSystem: DefaultCraftingSystem): Promise<DefaultCraftingSystem> {
+    async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
 
         let duplicatedCraftingSystemData = await this._fabricateAPI.duplicateCraftingSystem(sourceCraftingSystem.id);
 
@@ -159,7 +159,7 @@ class CraftingSystemEditor {
 
     }
 
-    async saveCraftingSystem(craftingSystem: DefaultCraftingSystem): Promise<DefaultCraftingSystem> {
+    async saveCraftingSystem(craftingSystem: CraftingSystem): Promise<CraftingSystem> {
         const updatedCraftingSystem = await this._fabricateAPI.systems.save(craftingSystem);
         this._craftingSystems.update((craftingSystems) => {
             const filtered = craftingSystems.filter(craftingSystem => craftingSystem.id !== updatedCraftingSystem.id);
@@ -173,7 +173,7 @@ class CraftingSystemEditor {
         return this._fabricateAPI.components.deleteById(component.id);
     }
 
-    async saveComponent(craftingComponent: Component) {
+    async saveComponent(craftingComponent: Component): Promise<Component> {
         const updatedComponent = await this._fabricateAPI.components.save(craftingComponent);
         this._components.update((components) => {
             const filtered = components.filter(component => component.id !== updatedComponent.id);
