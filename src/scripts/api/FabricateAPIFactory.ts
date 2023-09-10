@@ -8,7 +8,7 @@ import {CraftingSystemAPI, DefaultCraftingSystemAPI} from "./CraftingSystemAPI";
 import {DefaultNotificationService} from "../foundry/NotificationService";
 import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
 import {EntityDataStore, SerialisedEntityData} from "../repository/EntityDataStore";
-import {DefaultCraftingSystem, CraftingSystemJson} from "../system/CraftingSystem";
+import {CraftingSystemJson, CraftingSystem} from "../system/CraftingSystem";
 import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
 import {
     ComponentCollectionManager,
@@ -187,7 +187,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
     }
 
     private makeCraftingSystemStore(craftingSystemSettingManager: SettingManager<SerialisedEntityData<CraftingSystemJson>>) {
-        return new EntityDataStore<CraftingSystemJson, DefaultCraftingSystem>({
+        return new EntityDataStore<CraftingSystemJson, CraftingSystem>({
             entityName: "Crafting System",
             entityFactory: new CraftingSystemFactory(),
             collectionManager: new CraftingSystemCollectionManager(),
@@ -283,7 +283,7 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
         });
     }
 
-    private makeEmbeddedCraftingSystemManager(craftingSystemStore: EntityDataStore<CraftingSystemJson, DefaultCraftingSystem>,
+    private makeEmbeddedCraftingSystemManager(craftingSystemStore: EntityDataStore<CraftingSystemJson, CraftingSystem>,
                                               essenceStore: EntityDataStore<EssenceJson, Essence>,
                                               componentStore: EntityDataStore<ComponentJson, Component>,
                                               recipeStore: EntityDataStore<RecipeJson, Recipe>) {

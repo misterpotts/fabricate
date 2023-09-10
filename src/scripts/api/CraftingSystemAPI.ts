@@ -1,6 +1,7 @@
 import {
     DefaultCraftingSystem,
-    CraftingSystemJson, CraftingSystem
+    CraftingSystemJson,
+    CraftingSystem
 } from "../system/CraftingSystem";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {LocalizationService} from "../../applications/common/LocalizationService";

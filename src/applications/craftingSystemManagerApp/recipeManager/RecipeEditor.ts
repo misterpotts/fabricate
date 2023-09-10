@@ -2,7 +2,7 @@ import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
-import {DefaultCraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
 import {Recipe} from "../../../scripts/crafting/recipe/Recipe";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {RecipesStore} from "../../stores/RecipesStore";
@@ -37,7 +37,7 @@ class RecipeEditor {
         this._localization = localization;
     }
 
-    public async importRecipe(event: any, selectedSystem: DefaultCraftingSystem) {
+    public async importRecipe(event: any, selectedSystem: CraftingSystem) {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),
@@ -50,7 +50,7 @@ class RecipeEditor {
         await this.createRecipe(dropData.itemData, selectedSystem);
     }
 
-    public async createRecipe(itemData: FabricateItemData, selectedSystem: DefaultCraftingSystem): Promise<Recipe> {
+    public async createRecipe(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<Recipe> {
         const recipe = await this._fabricateAPI.recipes.create({
             craftingSystemId: selectedSystem.id,
             itemUuid: itemData.uuid
@@ -59,7 +59,7 @@ class RecipeEditor {
         return recipe;
     }
 
-    public async deleteRecipe(event: any, recipe: Recipe, selectedSystem: DefaultCraftingSystem) {
+    public async deleteRecipe(event: any, recipe: Recipe, selectedSystem: CraftingSystem) {
         let doDelete;
         if (event.shiftKey) {
             doDelete = true;

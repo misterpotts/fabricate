@@ -12,7 +12,7 @@ interface InventoryFactory {
          knownComponents: Component[],
     ): Inventory;
 
-    registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): void;
+    registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
 
 }
 

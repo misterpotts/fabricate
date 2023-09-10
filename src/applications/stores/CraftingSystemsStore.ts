@@ -1,37 +1,37 @@
-import {DefaultCraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {get, Subscriber, Updater, writable, Writable} from "svelte/store";
 
 class CraftingSystemsStore {
 
-    private readonly _craftingSystems: Writable<DefaultCraftingSystem[]>;
+    private readonly _craftingSystems: Writable<CraftingSystem[]>;
 
     constructor({
         craftingSystems = []
     }: {
-        craftingSystems?: DefaultCraftingSystem[];
+        craftingSystems?: CraftingSystem[];
     }) {
         this._craftingSystems = writable(this.sort(craftingSystems));
     }
 
-    public subscribe(subscriber: Subscriber<DefaultCraftingSystem[]>) {
+    public subscribe(subscriber: Subscriber<CraftingSystem[]>) {
         return this._craftingSystems.subscribe(subscriber);
     }
 
-    public set(value: DefaultCraftingSystem[]) {
+    public set(value: CraftingSystem[]) {
         return this._craftingSystems.set(this.sort(value));
     }
 
-    public update(updater: Updater<DefaultCraftingSystem[]>) {
+    public update(updater: Updater<CraftingSystem[]>) {
         return this._craftingSystems.update((value) => {
             return this.sort(updater(value));
         });
     }
 
-    public read(): DefaultCraftingSystem[] {
+    public read(): CraftingSystem[] {
         return get(this._craftingSystems);
     }
 
-    private sort(craftingSystems: DefaultCraftingSystem[]): DefaultCraftingSystem[] {
+    private sort(craftingSystems: CraftingSystem[]): CraftingSystem[] {
         return craftingSystems.sort((left, right) => {
             if (left.isEmbedded && !right.isEmbedded) {
                 return -1;

@@ -21,7 +21,6 @@ import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} 
 import {TrackedCombination} from "../common/TrackedCombination";
 import {Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
-import {self} from "svelte/internal";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -264,8 +263,8 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.componentSelectionStrategy = componentSelectionStrategy;
     }
 
-    setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): void {
-        this.inventoryFactory.registerGameSystemItemQuantityPropertyPath(gameSystem, propertyPath);
+    setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][] {
+        return this.inventoryFactory.registerGameSystemItemQuantityPropertyPath(gameSystem, propertyPath);
     }
 
     async countOwnedComponentsOfType(actorId: string, componentId: string): Promise<number> {

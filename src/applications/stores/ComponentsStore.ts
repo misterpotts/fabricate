@@ -1,4 +1,4 @@
-import {DefaultCraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/system/CraftingSystem";
 import {Readable, Subscriber, Updater, writable, Writable, get} from "svelte/store";
 import {Component} from "../../scripts/crafting/component/Component";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
@@ -14,7 +14,7 @@ class ComponentsStore implements Writable<Component[]> {
         initialValue = [],
     }: {
         fabricateAPI: FabricateAPI;
-        selectedCraftingSystem: Readable<DefaultCraftingSystem>;
+        selectedCraftingSystem: Readable<CraftingSystem>;
         initialValue?: Component[];
     }) {
         this._fabricateAPI = fabricateAPI;
@@ -22,7 +22,7 @@ class ComponentsStore implements Writable<Component[]> {
         this.watchSelectedCraftingSystem(selectedCraftingSystem);
     }
 
-    private watchSelectedCraftingSystem(selectedCraftingSystem: Readable<DefaultCraftingSystem>) {
+    private watchSelectedCraftingSystem(selectedCraftingSystem: Readable<CraftingSystem>) {
         selectedCraftingSystem.subscribe((craftingSystem) => {
             if (!craftingSystem) {
                 this._craftingComponents.set([]);
