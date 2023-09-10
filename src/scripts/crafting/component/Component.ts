@@ -4,9 +4,16 @@ import {SelectableOptions} from "../selection/SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
 import {ComponentReference} from "./ComponentReference";
-import {SalvageOption, SalvageOptionConfig, SalvageOptionJson} from "./SalvageOption";
+import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
 import {EssenceReference} from "../essence/EssenceReference";
 import {Unit} from "../../common/Unit";
+
+interface SalvageOptionConfig {
+    id: string;
+    name: string;
+    results: Record<string, number>;
+    catalysts: Record<string, number>;
+}
 
 interface ComponentJson {
     id: string;
@@ -197,13 +204,6 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         this._essences = value;
     }
 
-    public addSalvageOption(value: SalvageOption) {
-        if (this._salvageOptions.has(value.id)) {
-            throw new Error(`Result option ${value.id} already exists in this recipe. `);
-        }
-        this._salvageOptions.set(value);
-    }
-
     set salvageOptions(options: SelectableOptions<SalvageOptionJson, SalvageOption>) {
         this._salvageOptions = options
     }
@@ -261,13 +261,20 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this.itemData.loaded;
     }
 
-    public setSalvageOption(value: SalvageOptionConfig) {
-        const optionId = this._salvageOptions.nextId();
-        const salvageOption = SalvageOption.fromJson({
+    public setSalvageOption(salvageOption: SalvageOptionConfig | SalvageOption) {
+        if (salvageOption instanceof SalvageOption) {
+            this._salvageOptions.set(salvageOption);
+            return;
+        }
+        if (salvageOption.id && !this._salvageOptions.has(salvageOption.id)) {
+            throw new Error(`Unable to find salvage option with id ${salvageOption.id}`);
+        }
+        const optionId = salvageOption.id ?? this._salvageOptions.nextId();
+        const created = SalvageOption.fromJson({
             id: optionId,
-            ...value
+            ...salvageOption
         });
-        this._salvageOptions.set(salvageOption);
+        this._salvageOptions.set(created);
     }
 
     public saveSalvageOption(value: SalvageOption) {

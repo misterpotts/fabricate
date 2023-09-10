@@ -4,14 +4,6 @@ import {Combination} from "../../common/Combination";
 import {ComponentReference} from "./ComponentReference";
 import {Unit} from "../../common/Unit";
 
-interface SalvageOptionConfig {
-    name: string;
-    results: Record<string, number>;
-    catalysts: Record<string, number>;
-}
-
-export { SalvageOptionConfig };
-
 interface SalvageOptionJson {
     id: string;
     name: string;
