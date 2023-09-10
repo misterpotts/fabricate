@@ -33,6 +33,10 @@ Read on below to find out more about this module and how to support its developm
 
 ### Items with existing source IDs
 
+{: .highlight }
+> **Status**: Fixed in Foundry VTT Version 11
+> Update from V10 to V11 and re-import your items to Fabricate to fix this issue, or use the fix below
+
 **Impact**: Fabricate does not recognise your items when they are owned by actors
 
 **Discovered when:** Users were importing items from compendiums. 
@@ -53,14 +57,8 @@ want to use with Fabricate.
 game.packs.get("myCompendiumId").contents.forEach(item => item.unsetFlag("core", "sourceId"));
 ```
 
-**The long-term fix:** I've [submitted an Issue to Foundry](https://github.com/foundryvtt/foundryvtt/issues/9097).
-To make Fabricate work more seamlessly _now_, I'm going to:
-
-1. Add a module config option, on by default, to clean your data when you import items into Fabricate
-2. Clean core.sourceId flag data in compendiums and items when they are imported into Fabricate
-3. Warn you when you import an item from a locked compendium if the core.sourceId flag is set to a value other than the Compendium item UUID
-
-You can track my progress on the fix in this [GitHub Issue](https://github.com/misterpotts/fabricate/issues/115).
+**The long-term fix:** [The Foundry team fixed the Issue in V11](https://github.com/foundryvtt/foundryvtt/issues/9097).
+The fix is included in V11, so you can update to V11 and re-import your items into Fabricate to fix this issue.
 
 ## Embedded crafting systems
 

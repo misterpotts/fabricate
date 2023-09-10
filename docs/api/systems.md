@@ -236,3 +236,20 @@ const craftingSystemAfterSave = await game.fabricate.api.systems.save(craftingSy
 ``` 
 
 </details>
+
+### Delete a crafting system
+
+You can delete a crafting system by calling `game.fabricate.api.systems.deleteById()`, passing in the ID of the crafting system to delete.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const myCraftingSystemId = "my-crafting-system-id"; // <-- You'll need to replace this with the ID of your crafting system
+const craftingSystem = await game.fabricate.api.systems.deleteById(myCraftingSystemId);
+console.log(`Deleted crafting system with ID "${craftingSystem.id}"`);
+```
+
+</details>
