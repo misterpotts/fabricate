@@ -16,7 +16,9 @@ import {SalvageOption} from "../crafting/component/SalvageOption";
 import {CraftingResult, NoCraftingResult, SuccessfulCraftingResult} from "../crafting/result/CraftingResult";
 import {RequirementOption} from "../crafting/recipe/RequirementOption";
 import {ResultOption} from "../crafting/recipe/ResultOption";
-import {ComponentSelectionStrategy} from "../crafting/selection/ComponentSelectionStrategy";
+import {
+    ComponentSelectionStrategyFactory
+} from "../crafting/selection/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
 import {Unit} from "../common/Unit";
@@ -229,7 +231,7 @@ class DefaultCraftingAPI implements CraftingAPI {
     private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly notificationService: NotificationService;
     private readonly localizationService: LocalizationService;
-    private readonly componentSelectionStrategy: ComponentSelectionStrategy;
+    private readonly componentSelectionStrategyFactory: ComponentSelectionStrategyFactory;
 
     constructor({
         recipeAPI,
@@ -240,7 +242,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         craftingSystemAPI,
         notificationService,
         localizationService,
-        componentSelectionStrategy,
+        componentSelectionStrategyFactory,
     }: {
         recipeAPI: RecipeAPI;
         essenceAPI: EssenceAPI;
@@ -250,7 +252,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         craftingSystemAPI: CraftingSystemAPI;
         notificationService: NotificationService;
         localizationService: LocalizationService;
-        componentSelectionStrategy: ComponentSelectionStrategy;
+        componentSelectionStrategyFactory: ComponentSelectionStrategyFactory;
     }) {
         this.recipeAPI = recipeAPI;
         this.essenceAPI = essenceAPI;
@@ -260,7 +262,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.craftingSystemAPI = craftingSystemAPI;
         this.notificationService = notificationService;
         this.localizationService = localizationService;
-        this.componentSelectionStrategy = componentSelectionStrategy;
+        this.componentSelectionStrategyFactory = componentSelectionStrategyFactory;
     }
 
     setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][] {
@@ -880,7 +882,8 @@ class DefaultCraftingAPI implements CraftingAPI {
             selectedComponents  = this.makeSelections(
                 selectedRequirementOption,
                 ownedComponents,
-                allComponentsById
+                allComponentsById,
+                allEssencesById
             );
         } else {
             const userProvidedComponents = this.assignUserProvidedComponents(
@@ -1014,20 +1017,24 @@ class DefaultCraftingAPI implements CraftingAPI {
         const requirementOption = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
 
         const allCraftingSystemComponentsById = await this.componentAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
+        const allCraftingSystemEssencesById = await this.essenceAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
         const sourceInventory = await this.getInventory(sourceActorId, recipe.craftingSystemId);
         const ownedComponents = sourceInventory.getContents();
 
         return this.makeSelections(
             requirementOption,
             ownedComponents,
-            allCraftingSystemComponentsById
+            allCraftingSystemComponentsById,
+            allCraftingSystemEssencesById
         );
     }
 
     private makeSelections(selectedRequirementOption: RequirementOption,
                            ownedComponents: Combination<Component>,
-                           allComponentsById: Map<string, Component>): ComponentSelection {
-        return this.componentSelectionStrategy.perform(
+                           allComponentsById: Map<string, Component>,
+                           allCraftingSystemEssencesById: Map<string, Essence>): ComponentSelection {
+        const componentSelectionStrategy = this.componentSelectionStrategyFactory.make(allCraftingSystemEssencesById);
+        return componentSelectionStrategy.perform(
             selectedRequirementOption.catalysts.convertElements(componentReference => allComponentsById.get(componentReference.id)),
             selectedRequirementOption.ingredients.convertElements(componentReference => allComponentsById.get(componentReference.id)),
             selectedRequirementOption.essences,

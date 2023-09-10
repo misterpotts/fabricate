@@ -100,6 +100,6 @@ function make(stubActors: Map<string, BaseActor> = new Map()): CraftingAPI {
         gameProvider: new StubGameProvider({
             stubActors,
         }),
-        componentSelectionStrategy: new ConservativeEssenceSourcingComponentSelectionStrategy()
+        componentSelectionStrategyFactory: new ConservativeEssenceSourcingComponentSelectionStrategy()
     });
 }

@@ -6,6 +6,62 @@ import {EssenceSelection} from "../../actor/EssenceSelection";
 import {Identifiable} from "../../common/Identifiable";
 import {Unit} from "../../common/Unit";
 import {EssenceReference} from "../essence/EssenceReference";
+import {Essence} from "../essence/Essence";
+
+type SelectionStrategyName = "CONSERVATIVE_ESSENCE_SOURCING";
+
+interface ComponentSelectionStrategyFactory {
+
+    /**
+     * Creates a new component selection strategy.
+     *
+     * @param craftingSystemEssencesById - Map of all essences in the crafting system, keyed by their ID
+     * @returns ComponentSelectionStrategy The new component selection strategy
+     */
+    make(craftingSystemEssencesById: Map<string, Essence>): ComponentSelectionStrategy;
+
+    /**
+     * The name of the selection strategy to use. Defaults to "CONSERVATIVE_ESSENCE_SOURCING"
+     */
+    selectionStrategyName: string;
+
+}
+
+export { ComponentSelectionStrategyFactory }
+
+class DefaultComponentSelectionStrategyFactory implements ComponentSelectionStrategyFactory {
+
+    private static readonly _DEFAULT_SELECTION_STRATEGY_NAME = "CONSERVATIVE_ESSENCE_SOURCING";
+
+    private static readonly _SELECTION_STRATEGY_FACTORIES_BY_NAME: Map<SelectionStrategyName, (craftingSystemEssencesById: Map<string, Essence>) => ComponentSelectionStrategy> = new Map([
+        ["CONSERVATIVE_ESSENCE_SOURCING", DefaultComponentSelectionStrategyFactory.makeConservativeEssenceSourcingStrategy]
+    ]);
+
+    private _selectionStrategyName: SelectionStrategyName;
+
+    constructor(selectionStrategyName?: SelectionStrategyName) {
+        this._selectionStrategyName = selectionStrategyName ?? DefaultComponentSelectionStrategyFactory._DEFAULT_SELECTION_STRATEGY_NAME;
+    }
+
+    get selectionStrategyName(): SelectionStrategyName {
+        return this._selectionStrategyName;
+    }
+
+    set selectionStrategyName(selectionStrategyName: SelectionStrategyName) {
+        this._selectionStrategyName = selectionStrategyName;
+    }
+
+    make(craftingSystemEssencesById: Map<string, Essence>): ComponentSelectionStrategy {
+        return DefaultComponentSelectionStrategyFactory._SELECTION_STRATEGY_FACTORIES_BY_NAME.get(this.selectionStrategyName ?? DefaultComponentSelectionStrategyFactory._DEFAULT_SELECTION_STRATEGY_NAME)(craftingSystemEssencesById);
+    }
+
+    private static makeConservativeEssenceSourcingStrategy(craftingSystemEssencesById: Map<string, Essence>): ComponentSelectionStrategy {
+        return new ConservativeEssenceSourcingComponentSelectionStrategy(craftingSystemEssencesById);
+    }
+
+}
+
+export { DefaultComponentSelectionStrategyFactory }
 
 interface ComponentSelectionStrategy {
 
@@ -22,9 +78,15 @@ export {ComponentSelectionStrategy}
 
 class ConservativeEssenceSourcingComponentSelectionStrategy implements ComponentSelectionStrategy {
 
+    private readonly _craftingSystemEssencesById: Map<string, Essence>;
+
+    constructor(craftingSystemEssencesById: Map<string, Essence>) {
+        this._craftingSystemEssencesById = craftingSystemEssencesById;
+    }
+
     perform(requiredCatalysts: Combination<Component>,
             requiredIngredients: Combination<Component>,
-            requiredEssences: Combination<EssenceReference>,
+            requiredEssencesByReference: Combination<EssenceReference>,
             availableComponents: Combination<Component>): ComponentSelection {
 
         const catalysts = this.selectCombination(requiredCatalysts, availableComponents)
@@ -37,10 +99,15 @@ class ConservativeEssenceSourcingComponentSelectionStrategy implements Component
         const ingredientAmountToSubtract = ingredients.isSufficient ? ingredients.target : ingredients.actual;
         const componentsForEssences = componentsForIngredients.subtract(ingredientAmountToSubtract);
 
-        const essenceSelectionAlgorithm = new EssenceSelection(requiredEssences);
+        const essenceSelectionAlgorithm = new EssenceSelection(requiredEssencesByReference);
         const essenceSources: Combination<Component> = essenceSelectionAlgorithm.perform(componentsForEssences);
-        const actualEssences = essenceSources.explode(component => component.essences);
-        const essences = new TrackedCombination({ target: requiredEssences, actual: actualEssences })
+        const actualEssences = essenceSources
+            .explode(component => component.essences)
+            .convertElements(essenceReference => this._craftingSystemEssencesById.get(essenceReference.id));
+        const essences = new TrackedCombination({
+            target: requiredEssencesByReference.convertElements(essenceReference => this._craftingSystemEssencesById.get(essenceReference.id)),
+            actual: actualEssences
+        });
 
         return new DefaultComponentSelection({
             catalysts,
