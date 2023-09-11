@@ -1,17 +1,19 @@
+import {NotificationService} from "../../../src/scripts/foundry/NotificationService";
+
 class StubNotificationService implements NotificationService {
 
     private _suppressed: boolean;
     private _invocations: { level: string, message: string; }[] = [];
 
-    constructor(suppressed: boolean = false) {
-        this._suppressed = suppressed;
+    constructor(isSuppressed: boolean = false) {
+        this._suppressed = isSuppressed;
     }
 
-    get suppressed(): boolean {
+    get isSuppressed(): boolean {
         return this._suppressed;
     }
 
-    set suppressed(value: boolean) {
+    set isSuppressed(value: boolean) {
         this._suppressed = value;
     }
 
@@ -35,6 +37,7 @@ class StubNotificationService implements NotificationService {
         this._invocations = [];
         this._suppressed = false;
     }
+
 }
 
 export  { StubNotificationService }
