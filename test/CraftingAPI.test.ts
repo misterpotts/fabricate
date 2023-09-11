@@ -16,7 +16,9 @@ import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {StubActorFactory} from "./stubs/StubActorFactory";
 import {Combination} from "../src/scripts/common/Combination";
-import {ConservativeEssenceSourcingComponentSelectionStrategy} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
+import {
+    DefaultComponentSelectionStrategyFactory
+} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
 
 
 describe("Crafting API", () => {
@@ -100,6 +102,6 @@ function make(stubActors: Map<string, BaseActor> = new Map()): CraftingAPI {
         gameProvider: new StubGameProvider({
             stubActors,
         }),
-        componentSelectionStrategyFactory: new ConservativeEssenceSourcingComponentSelectionStrategy()
+        componentSelectionStrategyFactory: new DefaultComponentSelectionStrategyFactory()
     });
 }

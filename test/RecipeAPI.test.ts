@@ -31,7 +31,7 @@ import {
 } from "./test_data/TestCraftingComponents";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
-import {Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
+import {DefaultRecipe, Recipe, RecipeJson} from "../src/scripts/crafting/recipe/Recipe";
 import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
 import {RecipeCollectionManager} from "../src/scripts/repository/CollectionManager";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";
@@ -142,7 +142,7 @@ describe("Create", () => {
             imageUrl: "path/to/image",
             name: "Test Item",
         });
-        const createdRecipe = new Recipe({
+        const createdRecipe = new DefaultRecipe({
             id: "3456abcd",
             itemData: new PendingFabricateItemData(itemUuid, () => Promise.resolve(loadedFabricateItemData)),
             craftingSystemId: craftingSystemId
@@ -274,7 +274,7 @@ describe("Create", () => {
             identityFactory: new StubIdentityFactory()
         });
 
-        const modified = new Recipe({
+        const modified = new DefaultRecipe({
             id: identityFactory.make(),
             craftingSystemId: "notAValidCraftingSystemId",
             itemData: testRecipeOne.itemData,
@@ -504,7 +504,7 @@ describe("Edit", () => {
     test("should clone a recipe by ID", async () => {
 
         const factoryFunction = async (recipeJson: RecipeJson) => {
-            return Recipe.fromJson(recipeJson);
+            return DefaultRecipe.fromJson(recipeJson);
         };
         const recipeDataStore = new EntityDataStore({
             entityName: "recipe",

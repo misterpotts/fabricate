@@ -8,6 +8,7 @@ import {Combination} from "../../common/Combination";
 import {Unit} from "../../common/Unit";
 import {EssenceReference} from "../../crafting/essence/EssenceReference";
 import {
+    DefaultRecipe,
     Recipe
 } from "../../crafting/recipe/Recipe";
 import {SelectableOptions} from "../../crafting/selection/SelectableOptions";
@@ -455,7 +456,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
 
     get recipes(): Recipe[] {
         return [
-            new Recipe({
+            new DefaultRecipe({
                 id: "instant-rope",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -486,7 +487,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "zaebelles-torpor",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -517,7 +518,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "flash-pellet",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -548,7 +549,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "titan-gum",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -579,7 +580,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "gashglue",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -610,7 +611,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "dust-of-dryness",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -641,7 +642,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "firesnuff",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -672,7 +673,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "snappowder",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -703,7 +704,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "alchemists-fire",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -736,7 +737,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "melt-powder",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -767,7 +768,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "tanglefoot-bag",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -798,7 +799,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "breath-bottle",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -828,7 +829,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "smokestick",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -859,7 +860,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "night-eyes",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -891,7 +892,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     ]
                 })
             }),
-            new Recipe({
+            new DefaultRecipe({
                 id: "noxious-smokestick",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(

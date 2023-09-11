@@ -311,5 +311,5 @@ function recipeInArray(expected: Recipe, known: Recipe[]): boolean {
     if (!known || known.length === 0) {
         return false;
     }
-    return !!known.find(candidate => expected.equalsNotLoaded(candidate));
+    return !!known.find(candidate => expected.equals(candidate));
 }

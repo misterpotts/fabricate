@@ -13,7 +13,6 @@ import {
 } from "./test_data/TestCraftingComponents";
 import {Unit} from "../src/scripts/common/Unit";
 import {SimpleInventoryAction} from "../src/scripts/actor/InventoryAction";
-import {Component} from "../src/scripts/crafting/component/Component";
 
 describe("Crafting Inventory", () => {
 
@@ -27,7 +26,7 @@ describe("Crafting Inventory", () => {
         test("should index actor's inventory without fabricate items and without known components", () => {
 
             const stubActor = new StubActorFactory().make();
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, new Map());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, []);
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
             expect(contents.size).toBe(0);
@@ -37,7 +36,7 @@ describe("Crafting Inventory", () => {
         test("should index actor's inventory without fabricate items with known components", () => {
 
             const stubActor = new StubActorFactory().make();
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
             expect(contents.size).toBe(0);
@@ -53,7 +52,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
             expect(contents.size).toBe(5);
@@ -71,7 +70,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = dnd5eInventoryFactory.make("notDnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("notDnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
             expect(contents.size).toBe(2);
@@ -96,7 +95,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = inventoryFactory.make("dnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = inventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
             expect(contents.size).toBe(5);
@@ -118,7 +117,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const addOneTestComponentThreeOnly = new SimpleInventoryAction({
                 additions: Combination.ofUnits([new Unit(testComponentThree, 1)])
             });
@@ -141,7 +140,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTwoOnly = new SimpleInventoryAction({
                 removals: Combination.ofUnits([new Unit(testComponentTwo, 2)])
             });
@@ -163,7 +162,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor,allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTwoAndTestComponentFiveAndAddTwoTestComponentThree = new SimpleInventoryAction({
                 removals: Combination.ofUnits([
                     new Unit(testComponentTwo, 2),
@@ -191,7 +190,7 @@ describe("Crafting Inventory", () => {
                         new Unit(testComponentFive, 2),
                     ])
                 );
-            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, allTestComponentsByItemUuid());
+            const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTFourAndAddTwoTestComponentFour = new SimpleInventoryAction({
                 removals: Combination.ofUnits([new Unit(testComponentFour, 2)]),
                 additions: Combination.ofUnits([new Unit(testComponentFour, 2)]),
@@ -209,10 +208,6 @@ describe("Crafting Inventory", () => {
 
 });
 
-function allTestComponentsByItemUuid() {
-    return Array.from(allTestComponents.values())
-        .reduce((map, component) => {
-            map.set(component.itemUuid, component);
-            return map;
-        }, new Map<string, Component>());
+function getAllTestComponents() {
+    return Array.from(allTestComponents.values());
 }

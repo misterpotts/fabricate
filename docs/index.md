@@ -33,7 +33,7 @@ Read on below to find out more about this module and how to support its developm
 
 ### Items with existing source IDs
 
-{: .highlight }
+{: .new }
 > **Status**: Fixed in Foundry VTT Version 11
 > Update from V10 to V11 and re-import your items to Fabricate to fix this issue, or use the fix below
 

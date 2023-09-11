@@ -5,14 +5,19 @@ import {ComponentReference} from "../component/ComponentReference";
 import {Unit} from "../../common/Unit";
 
 export interface ResultOptionConfig {
+
+    id?: string;
     name: string;
     results: Record<string, number>;
+
 }
 
 interface ResultOptionJson {
+
     id: string;
     name: string;
     results: Record<string, number>;
+
 }
 
 class ResultOption implements Identifiable, Serializable<ResultOptionJson> {

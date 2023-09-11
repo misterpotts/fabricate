@@ -6,6 +6,7 @@ import {EssenceReference} from "../essence/EssenceReference";
 import {Unit} from "../../common/Unit";
 
 interface RequirementOptionConfig {
+    id?: string,
     name: string,
     catalysts?: Record<string, number>;
     ingredients?: Record<string, number>;
