@@ -27,15 +27,6 @@ interface ComponentJson {
 
 class Component implements Identifiable, Serializable<ComponentJson> {
 
-    private static readonly _NONE: Component = new Component({
-        id: "NO_ID",
-        craftingSystemId: "NO_CRAFTING_SYSTEM_ID",
-        itemData: NoFabricateItemData.INSTANCE(),
-        disabled: true,
-        essences: Combination.EMPTY(),
-        salvageOptions: new SelectableOptions({})
-    });
-
     private readonly _id: string;
     private readonly _embedded: boolean;
     private readonly _craftingSystemId: string;
@@ -95,10 +86,6 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this._itemData.uuid;
     }
 
-    public static NONE() {
-        return this._NONE;
-    }
-
     get name(): string {
         return this._itemData.name;
     }
@@ -109,26 +96,6 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     get essences(): Combination<EssenceReference> {
         return this._essences;
-    }
-
-    get selectedSalvage(): Combination<ComponentReference> {
-        return this._salvageOptions.selectedOption.results;
-    }
-
-    get selectedSalvageOptionName(): string {
-        return this._salvageOptions.selectedOptionId;
-    }
-
-    public selectSalvageOption(combinationId: string) {
-        this._salvageOptions.select(combinationId);
-    }
-
-    public selectNextSalvageOption(): void {
-        this._salvageOptions.selectNext();
-    }
-
-    public selectPreviousSalvageOption(): void {
-        this._salvageOptions.selectPrevious();
     }
 
     get isDisabled(): boolean {
@@ -212,10 +179,6 @@ class Component implements Identifiable, Serializable<ComponentJson> {
         return this._salvageOptions;
     }
 
-    public selectFirstOption(): void {
-        this._salvageOptions.selectFirst()
-    }
-
     get salvageOptionsById(): Map<string, SalvageOption> {
         return this._salvageOptions.byId;
     }
@@ -234,10 +197,6 @@ class Component implements Identifiable, Serializable<ComponentJson> {
 
     get errorCodes(): string[] {
         return this._itemData.errors.map(error => error.code);
-    }
-
-    deselectSalvage() {
-        this._salvageOptions.deselect();
     }
 
     removeEssence(essenceIdToDelete: string) {
@@ -275,10 +234,6 @@ class Component implements Identifiable, Serializable<ComponentJson> {
             ...salvageOption
         });
         this._salvageOptions.set(created);
-    }
-
-    public saveSalvageOption(value: SalvageOption) {
-        this._salvageOptions.set(value);
     }
 
     addEssence(essenceId: string, quantity: number = 1) {

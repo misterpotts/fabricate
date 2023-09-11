@@ -10,14 +10,11 @@
         craftingSystems,
         craftingSystemEditor,
         selectedCraftingSystem,
-        localization,
-        loading
+        localization
     } = getContext(key);
 
     async function createCraftingSystem() {
-        $loading = true;
         $selectedCraftingSystem = await craftingSystemEditor.createNewCraftingSystem();
-        $loading = false;
     }
 
     async function importCraftingSystem(targetCraftingSystemId) {

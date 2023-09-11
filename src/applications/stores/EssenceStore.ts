@@ -63,6 +63,16 @@ class EssencesStore implements Writable<Essence[]> {
         });
     }
 
+    insertAll(essences: Essence[]) {
+        this._essences.update((existingEssences) => {
+            const essencesById = new Map(existingEssences.map((essence) => [essence.id, essence]));
+            essences.forEach((essence) => {
+                essencesById.set(essence.id, essence);
+            });
+            return Array.from(essencesById.values());
+        });
+    }
+
     remove(essence: Essence) {
         this._essences.update((components) => {
             const index = components.findIndex((candidate) => candidate.id === essence.id);

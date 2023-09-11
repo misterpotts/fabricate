@@ -91,6 +91,11 @@ class EssenceEditor {
         return essence;
     }
 
+    public async saveAll(essences: Essence[]) {
+        await this._fabricateAPI.essences.saveAll(essences);
+        this._essences.insertAll(essences);
+    }
+
 }
 
 export { EssenceEditor }
