@@ -1,4 +1,4 @@
-import {Combination} from "../../common/Combination";
+import {DefaultCombination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
 import {SelectableOptions} from "../selection/SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
@@ -479,12 +479,12 @@ class DefaultRecipe implements Recipe {
             .map(resultOption => resultOption.results)
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
-            }, Combination.EMPTY<ComponentReference>());
+            }, DefaultCombination.EMPTY<ComponentReference>());
         const componentFromRequirements = this.requirementOptions.all
             .map(requirementOption => requirementOption.ingredients.combineWith(requirementOption.catalysts))
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
-            }, Combination.EMPTY<ComponentReference>());
+            }, DefaultCombination.EMPTY<ComponentReference>());
         return componentFromRequirements.combineWith(componentsFromResults).members;
     }
 

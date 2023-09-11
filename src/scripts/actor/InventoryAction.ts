@@ -1,4 +1,4 @@
-import {Combination} from "../common/Combination";
+import {Combination, DefaultCombination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
 
 interface InventoryAction {
@@ -38,8 +38,8 @@ class SimpleInventoryAction implements InventoryAction {
     private readonly _activeEffects: ActiveEffect[];
 
     constructor({
-        additions = Combination.EMPTY(),
-        removals = Combination.EMPTY(),
+        additions = DefaultCombination.EMPTY(),
+        removals = DefaultCombination.EMPTY(),
         activeEffects = [],
     }: {
         additions?: Combination<Component>;
@@ -76,7 +76,7 @@ class SimpleInventoryAction implements InventoryAction {
 
     withoutAdditions(): InventoryAction {
         return new SimpleInventoryAction({
-            additions: Combination.EMPTY(),
+            additions: DefaultCombination.EMPTY(),
             removals: this._removals,
             activeEffects: this._activeEffects
         });
@@ -85,7 +85,7 @@ class SimpleInventoryAction implements InventoryAction {
     withoutRemovals(): InventoryAction {
         return new SimpleInventoryAction({
             additions: this._additions,
-            removals: Combination.EMPTY(),
+            removals: DefaultCombination.EMPTY(),
             activeEffects: this._activeEffects
         });
     }

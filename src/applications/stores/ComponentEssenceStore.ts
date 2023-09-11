@@ -1,7 +1,7 @@
 import {derived, Readable, Subscriber} from "svelte/store";
 import {Essence} from "../../scripts/crafting/essence/Essence";
 import {Component} from "../../scripts/crafting/component/Component";
-import {Unit} from "../../scripts/common/Unit";
+import {DefaultUnit, Unit} from "../../scripts/common/Unit";
 
 /**
  * This store provides the current and available essences for the selected component by combining the essences of the
@@ -32,7 +32,7 @@ class ComponentEssenceStore implements Readable<Unit<Essence>[]> {
                 }
                 const essences = $allEssences
                     .map(essence => {
-                        return new Unit(essence, $selectedComponent.essences.amountFor(essence.id));
+                        return new DefaultUnit(essence, $selectedComponent.essences.amountFor(essence.id));
                     });
                 set(essences);
             });

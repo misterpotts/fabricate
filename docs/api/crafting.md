@@ -231,6 +231,37 @@ interface ComponentSalvageOptions {
 
 </details>
 
+<details markdown="block">
+<summary>
+UserSelectedComponents Interface
+</summary>
+
+```typescript
+/**
+ * Options used when explicitly selecting components for crafting recipes
+ */
+interface UserSelectedComponents {
+
+    /**
+     * The IDs and quantities of the catalysts to use when crafting the recipe.
+     */
+    catalysts: Record<string, number>;
+
+    /**
+     * The IDs and quantities of the ingredients to use when crafting the recipe.
+     */
+    ingredients: Record<string, number>;
+
+    /**
+     * The IDs and quantities of the components to use as essence sources when crafting the recipe.
+     */
+    essenceSources: Record<string, number>;
+
+}
+```
+
+</details>
+
 ## Examples
 
 The examples below illustrate how to use the crafting API to craft recipes and salvage components.
@@ -253,6 +284,142 @@ const gameSystemId = "gameSystemId";
 // Replace itemQuantityPropertyPath with the JSON property path to use when reading and writing item quantity in this game system, e.g. "system.quantity"
 const itemQuantityPropertyPath = "property.path"; 
 game.fabricate.api.crafting.setGameSystemItemQuantityPropertyPath(gameSystemId, itemQuantityPropertyPath);
+```
+
+</details>
+
+### Counting how much of a component an actor owns
+
+You can use the `CraftingAPI#countOwnedComponentsOfType` method to count how many components of a given type an actor owns.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const actorId = "actorId"; // <-- Replace actorId with the ID of the actor to check.
+const componentId = "componentId"; // <-- Replace componentId with the ID of the component to count.
+const count = await game.fabricate.api.crafting.countOwnedComponentsOfType(actorId, componentId);
+```
+
+</details>
+
+### Getting the components owned by an actor for a crafting system
+
+You can use the `CraftingAPI#getOwnedComponentsForCraftingSystem` method to get the components owned by an actor for a given crafting system.
+Functionally, this gives you the contents of the actor's inventory for the specified crafting system.
+The method produces a [Combination](../types#combination) of Component objects, which acts as a powerful set-like data structure for use in supporting crafting operations.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const actorId = "actorId"; // <-- Replace actorId with the ID of the actor whose inventory you want to search.
+const craftingSystemId = "craftingSystemId"; // <-- Replace craftingSystemId with the ID of the crafting system to limit component matches to.
+const componentCombination = await game.fabricate.api.crafting.getOwnedComponentsForCraftingSystem(actorId, craftingSystemId);
+componentCombination.units.forEach(unit => {
+    const component = unit.element;
+    const quantity = unit.quantity;
+    console.log(`Actor ${actorId} owns ${quantity} of component ${component.id}`);
+});
+```
+
+</details>
+
+### Selecting components for a recipe
+
+You can use the `CraftingAPI#selectComponents` method to select components from an actor's inventory for use when crafting recipes.
+Fabricate will automatically select the least wasteful essence sources (if any are required) for the recipe, as well as any catalysts and named ingredients.
+The returned [Component Selection](../types#componentselection) will be insufficient if the actor's inventory does not contain enough components to satisfy the recipe requirement option.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const componentSelectionOptions = {
+    sourceActorId: "actorId", // <-- Replace actorId with the ID of the actor whose inventory you want to select components from.
+    requirementOptionId: "requirementOptionId", // <-- Replace requirementOptionId with the ID of the Recipe Requirement Option to select components for. Not required if the recipe has only one Requirement Option.
+    recipeId: "recipeId" // <-- Replace recipeId with the ID of the Recipe to select components for.
+};
+const componentSelection = await game.fabricate.api.crafting.selectComponents(componentSelectionOptions);
+```
+
+</details>
+
+### Salvaging a component
+
+You can use the `CraftingAPI#salvageComponent` method to salvage a component.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const componentSalvageOptions = {
+    componentId: "componentId", // <-- Replace componentId with the ID of the component to salvage.
+    sourceActorId: "actorId", // <-- Replace actorId with the ID of the actor from which the component should be removed.
+    targetActorId: "actorId", // <-- Replace actorId with the ID of the actor to which any produced components should be added. If not specified, the sourceActorId is used.
+    salvageOptionId: "salvageOptionId" // <-- Replace salvageOptionId with the ID of the Salvage Option to use. Not required if the component has only one Salvage Option.
+};
+const salvageResult = await game.fabricate.api.crafting.salvageComponent(componentSalvageOptions);
+```
+
+</details>
+
+### Crafting a recipe
+
+You can use the `CraftingAPI#craftRecipe` method to craft a recipe.
+The method will automatically select the least wasteful essence sources (if any are required) for the recipe, as well as any catalysts and named ingredients.
+
+<details markdown="block">
+<summary>
+Example #1 - Crafting a recipe by letting Fabricate select components automatically
+</summary>
+
+```typescript
+const recipeCraftingOptions = {
+    recipeId: "recipeId", // <-- Replace recipeId with the ID of the recipe to attempt.
+    sourceActorId: "actorId", // <-- Replace actorId with the ID of the actor from which the components should be removed.
+    targetActorId: "actorId", // <-- Replace actorId with the ID of the actor to which any produced components should be added. If not specified, the sourceActorId is used.
+    requirementOptionId: "requirementOptionId", // <-- Replace requirementOptionId with the ID of the Requirement Option to use. Not required if the recipe has only one Requirement Option.
+    resultOptionId: "resultOptionId", // <-- Replace resultOptionId with the ID of the Result Option to use. Not required if the recipe has only one Result Option.
+};
+const craftingResult = await game.fabricate.api.crafting.craftRecipe(recipeCraftingOptions);
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+Example #2 - Crafting a recipe by specifying the components to use
+</summary>
+
+```typescript
+const recipeCraftingOptions = {
+    recipeId: "recipeId", // <-- Replace recipeId with the ID of the recipe to attempt.
+    sourceActorId: "actorId", // <-- Replace actorId with the ID of the actor from which the components should be removed.
+    targetActorId: "actorId", // <-- Replace actorId with the ID of the actor to which any produced components should be added. If not specified, the sourceActorId is used.
+    requirementOptionId: "requirementOptionId", // <-- Replace requirementOptionId with the ID of the Requirement Option to use. Not required if the recipe has only one Requirement Option.
+    resultOptionId: "resultOptionId", // <-- Replace resultOptionId with the ID of the Result Option to use. Not required if the recipe has only one Result Option.
+    userSelectedComponents: {
+        catalysts: { // <-- Replace the keys and values in this object with the IDs and quantities of the catalysts to use when crafting the recipe.
+            "componentId": 1 
+        },
+        ingredients: { // <-- Replace the keys and values in this object with the IDs and quantities of the ingredients to use when crafting the recipe.
+            "componentId": 1 
+        },
+        essenceSources: { // <-- Replace the keys and values in this object with the IDs and quantities of the components to use as essence sources when crafting the recipe.
+            "componentId": 1 
+        }
+    }
+};
+const craftingResult = await game.fabricate.api.crafting.craftRecipe(recipeCraftingOptions);
 ```
 
 </details>

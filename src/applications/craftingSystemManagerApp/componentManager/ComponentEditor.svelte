@@ -3,7 +3,6 @@
     import Properties from "../../../scripts/Properties.js";
     import {DropEventParser} from "../../common/DropEventParser";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
-    import {Combination} from "../../../scripts/common/Combination";
     import truncate from "../../common/Truncate";
     import {Tab, Tabs} from "../../common/FabricateTabs.js";
     import TabList from "../../common/TabList.svelte";
@@ -12,8 +11,7 @@
     import {getContext, onDestroy} from "svelte";
     import {SalvageSearchStore} from "../../stores/SalvageSearchStore";
     import {ComponentEssenceStore} from "../../stores/ComponentEssenceStore";
-    import {Unit} from "../../../scripts/common/Unit";
-    import {SalvageOption} from "../../../scripts/crafting/component/SalvageOption";
+    import {DefaultUnit} from "../../../scripts/common/Unit";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectSalvageTab;
@@ -46,12 +44,12 @@
     }
     
     async function incrementEssence(essence) {
-        $selectedComponent.essences = $selectedComponent.essences.addUnit(new Unit(essence.toReference(), 1));
+        $selectedComponent.essences = $selectedComponent.essences.addUnit(new DefaultUnit(essence.toReference(), 1));
         await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
     }
 
     async function decrementEssence(essence) {
-        $selectedComponent.essences = $selectedComponent.essences.subtractUnit(new Unit(essence.toReference(), 1));
+        $selectedComponent.essences = $selectedComponent.essences.subtractUnit(new DefaultUnit(essence.toReference(), 1));
         await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
     }
 
@@ -168,7 +166,7 @@
 
     function dereferenceComponentCombination(componentReferenceCombination) {
         return componentReferenceCombination
-            .map(componentReferenceUnit => new Unit(dereferenceComponent(componentReferenceUnit.element), componentReferenceUnit.quantity));
+            .map(componentReferenceUnit => new DefaultUnit(dereferenceComponent(componentReferenceUnit.element), componentReferenceUnit.quantity));
     }
 
     function dereferenceComponent(componentReference) {

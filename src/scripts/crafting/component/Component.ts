@@ -1,4 +1,4 @@
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
 import {SelectableOptions} from "../selection/SelectableOptions";
 import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
@@ -6,7 +6,7 @@ import {Serializable} from "../../common/Serializable";
 import {ComponentReference} from "./ComponentReference";
 import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
 import {EssenceReference} from "../essence/EssenceReference";
-import {Unit} from "../../common/Unit";
+import {DefaultUnit} from "../../common/Unit";
 
 interface SalvageOptionConfig {
 
@@ -240,7 +240,7 @@ class DefaultComponent implements Component {
         disabled = false,
         embedded = false,
         itemData = NoFabricateItemData.INSTANCE(),
-        essences = Combination.EMPTY<EssenceReference>(),
+        essences = DefaultCombination.EMPTY<EssenceReference>(),
         salvageOptions = new SelectableOptions({})
     }: {
         id: string;
@@ -348,9 +348,9 @@ class DefaultComponent implements Component {
                     return essenceUnit;
                 }
                 const substituteId = substituteEssenceIds.get(essenceUnit.element.id);
-                return new Unit(new EssenceReference(substituteId), essenceUnit.quantity);
+                return new DefaultUnit(new EssenceReference(substituteId), essenceUnit.quantity);
             })
-            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<EssenceReference>());
+            .reduce((left, right) => left.addUnit(right), DefaultCombination.EMPTY<EssenceReference>());
         return new DefaultComponent({
             id,
             embedded: false,
@@ -437,17 +437,17 @@ class DefaultComponent implements Component {
     }
 
     addEssence(essenceId: string, quantity: number = 1) {
-        this._essences = this._essences.addUnit(new Unit(new EssenceReference(essenceId), quantity));
+        this._essences = this._essences.addUnit(new DefaultUnit(new EssenceReference(essenceId), quantity));
     }
 
     subtractEssence(essenceId: string, quantity: number = 1) {
-        this._essences = this._essences.subtractUnit(new Unit(new EssenceReference(essenceId), quantity));
+        this._essences = this._essences.subtractUnit(new DefaultUnit(new EssenceReference(essenceId), quantity));
     }
 
     getUniqueReferencedComponents(): ComponentReference[] {
         return this._salvageOptions.all
             .map(salvageOption => salvageOption.results.combineWith(salvageOption.catalysts))
-            .reduce((left, right) => left.combineWith(right), Combination.EMPTY<ComponentReference>())
+            .reduce((left, right) => left.combineWith(right), DefaultCombination.EMPTY<ComponentReference>())
             .members;
     }
 

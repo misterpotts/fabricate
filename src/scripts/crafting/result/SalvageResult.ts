@@ -1,4 +1,4 @@
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {Component} from "../component/Component";
 
 interface SalvageResult {
@@ -44,7 +44,7 @@ class NoSalvageResult implements SalvageResult {
     }
 
     get produced(): Combination<Component> {
-        return Combination.EMPTY();
+        return DefaultCombination.EMPTY();
     }
 
     get consumed(): Component {
@@ -165,7 +165,7 @@ class UnsuccessfulSalvageResult implements SalvageResult {
     }
 
     get produced(): Combination<Component> {
-        return Combination.EMPTY();
+        return DefaultCombination.EMPTY();
     }
 
     get consumed(): Component {

@@ -1,6 +1,6 @@
 import {Component} from "../crafting/component/Component";
-import {Combination} from "../common/Combination";
-import {Unit} from "../common/Unit";
+import {Combination, DefaultCombination} from "../common/Combination";
+import {DefaultUnit} from "../common/Unit";
 import {InventoryAction} from "./InventoryAction";
 import EmbeddedCollection
     from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/embedded-collection.mjs";
@@ -108,10 +108,10 @@ class CraftingInventory implements Inventory {
             .flatMap(([componentId, items]) => {
                 return items.map((item: any) => {
                     const quantity = this._itemDataManager.count(item);
-                    return new Unit(this._knownComponentsById.get(componentId), quantity);
+                    return new DefaultUnit(this._knownComponentsById.get(componentId), quantity);
                 });
            })
-           .reduce((contents, unit) => contents.addUnit(unit), Combination.EMPTY<Component>());
+           .reduce((contents, unit) => contents.addUnit(unit), DefaultCombination.EMPTY<Component>());
     }
 
     private getContentsWithSourceItems(): Map<string, any[]> {

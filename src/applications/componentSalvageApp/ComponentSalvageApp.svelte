@@ -9,7 +9,6 @@
     import { localizationKey } from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
     import ComponentSalvageCarousel from "../common/ComponentSalvageCarousel.svelte";
-    import CraftingAttemptCarousel from "../recipeCraftingApp/CraftingAttemptCarousel.svelte";
     import TrackedCraftingComponentGrid from "../common/TrackedCraftingComponentGrid.svelte";
 
     const localizationPath = `${Properties.module.id}.ComponentSalvageApp`;
@@ -29,6 +28,12 @@
         }
         if (selectedSalvageAttempt && salvageAttempts.length > 0) {
             selectedSalvageAttempt = salvageAttempts.find((attempt) => attempt.optionId === selectedSalvageAttempt.optionId);
+        }
+        const atLeastOneAttemptIsPossible = salvageAttempts
+            .map(salvageAttempt => salvageAttempt.isPossible)
+            .reduce((left, right) => left || right, false);
+        if (!atLeastOneAttemptIsPossible) {
+            closeHook();
         }
     }
 
@@ -77,7 +82,6 @@
 
     async function salvageComponent() {
         await componentSalvageManager.doSalvage(selectedSalvageAttempt.optionId);
-        await loadAppData();
     }
 
     async function handleComponentUpdated(event) {
@@ -106,7 +110,7 @@
             return;
         }
         // if it is, we need to re-index the inventory
-        return loadAppData();
+        await loadAppData();
     }
 
     async function handleItemUpdated(event) {

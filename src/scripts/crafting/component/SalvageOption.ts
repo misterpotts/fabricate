@@ -1,8 +1,8 @@
 import {Identifiable} from "../../common/Identifiable";
 import {Serializable} from "../../common/Serializable";
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {ComponentReference} from "./ComponentReference";
-import {Unit} from "../../common/Unit";
+import {DefaultUnit} from "../../common/Unit";
 
 interface SalvageOptionJson {
     id: string;
@@ -24,7 +24,7 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         id,
         name,
         results,
-        catalysts = Combination.EMPTY()
+        catalysts = DefaultCombination.EMPTY()
     }: {
         id: string;
         name: string;
@@ -91,8 +91,8 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
             return new SalvageOption({
                 id: salvageOptionJson.id,
                 name: salvageOptionJson.name,
-                results: Combination.fromRecord(salvageOptionJson.results, ComponentReference.fromComponentId),
-                catalysts: Combination.fromRecord(salvageOptionJson.catalysts, ComponentReference.fromComponentId)
+                results: DefaultCombination.fromRecord(salvageOptionJson.results, ComponentReference.fromComponentId),
+                catalysts: DefaultCombination.fromRecord(salvageOptionJson.catalysts, ComponentReference.fromComponentId)
             });
         } catch (e: any) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
@@ -110,19 +110,19 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
     }
 
     addResult(componentId: string, quantity: number = 1) {
-        this._results = this._results.addUnit(new Unit(new ComponentReference(componentId), quantity));
+        this._results = this._results.addUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
     }
 
     subtractResult(componentId: string, quantity: number = 1) {
-        this._results = this._results.subtractUnit(new Unit(new ComponentReference(componentId), quantity));
+        this._results = this._results.subtractUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
     }
 
     addCatalyst(componentId: string, number: number = 1) {
-        this._catalysts = this._catalysts.addUnit(new Unit(new ComponentReference(componentId), number));
+        this._catalysts = this._catalysts.addUnit(new DefaultUnit(new ComponentReference(componentId), number));
     }
 
     subtractCatalyst(componentId: string, number: number = 1) {
-        this._catalysts = this._catalysts.subtractUnit(new Unit(new ComponentReference(componentId), number));
+        this._catalysts = this._catalysts.subtractUnit(new DefaultUnit(new ComponentReference(componentId), number));
     }
 
 }

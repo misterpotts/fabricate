@@ -1,4 +1,4 @@
-import {Combination} from "../common/Combination";
+import {Combination, DefaultCombination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
 import {ComponentCombinationGenerator, ComponentEssenceCombination} from "./ComponentCombinationGenerator";
 import {TrackedCombination} from "../common/TrackedCombination";
@@ -14,7 +14,7 @@ export class EssenceSelection {
 
     perform(contents: Combination<Component>): Combination<Component> {
         if (this._essences.isEmpty()) {
-            return Combination.EMPTY();
+            return DefaultCombination.EMPTY();
         }
         let availableComponents = contents.clone();
         contents.members.forEach(((thisComponent: Component) => {
@@ -32,7 +32,7 @@ export class EssenceSelection {
 
     private selectBestMatch(combinations: ComponentEssenceCombination[]): Combination<Component> {
         if (combinations.length === 0) {
-            return Combination.EMPTY();
+            return DefaultCombination.EMPTY();
         }
         const sortedCombinations = combinations
             .sort((left, right) => {
@@ -47,7 +47,7 @@ export class EssenceSelection {
 
     private selectClosestMatch(combinations: ComponentEssenceCombination[], requiredEssences: Combination<EssenceReference>): Combination<Component> {
         if (combinations.length === 0) {
-            return Combination.EMPTY();
+            return DefaultCombination.EMPTY();
         }
         const sortedComponentEssenceCombinations = combinations.map(combination => {
                 const essenceComparison = new TrackedCombination({ target: requiredEssences, actual: combination.essences });

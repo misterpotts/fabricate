@@ -1,6 +1,6 @@
-import {Combination} from "./Combination";
+import {Combination, DefaultCombination} from "./Combination";
 import {Identifiable} from "./Identifiable";
-import {Unit} from "./Unit";
+import {DefaultUnit, Unit} from "./Unit";
 
 class TrackedUnit<T extends Identifiable> {
 
@@ -39,7 +39,7 @@ class TrackedCombination<T extends Identifiable> {
 
     constructor({
         target,
-        actual = Combination.EMPTY()
+        actual = DefaultCombination.EMPTY()
     }: {
         target: Combination<T>,
         actual?: Combination<T>
@@ -50,8 +50,8 @@ class TrackedCombination<T extends Identifiable> {
 
     public static EMPTY<T extends Identifiable>() {
         return new TrackedCombination<T>({
-            actual: Combination.EMPTY(),
-            target: Combination.EMPTY()
+            actual: DefaultCombination.EMPTY(),
+            target: DefaultCombination.EMPTY()
         });
     }
 
@@ -79,7 +79,7 @@ class TrackedCombination<T extends Identifiable> {
         return this._target.units
             .map(target => new TrackedUnit<T>({
                 target,
-                actual: new Unit(target.element, this._actual.amountFor(target.element.id))
+                actual: new DefaultUnit(target.element, this._actual.amountFor(target.element.id))
             }));
     }
 

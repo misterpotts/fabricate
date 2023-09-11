@@ -4,8 +4,7 @@ import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
 import {DefaultEssence, Essence} from "../../crafting/essence/Essence";
 import {Component, DefaultComponent} from "../../crafting/component/Component";
 import {FabricateItemData, LoadedFabricateItemData, PendingFabricateItemData} from "../../foundry/DocumentManager";
-import {Combination} from "../../common/Combination";
-import {Unit} from "../../common/Unit";
+import {DefaultUnit} from "../../common/Unit";
 import {EssenceReference} from "../../crafting/essence/EssenceReference";
 import {
     DefaultRecipe,
@@ -15,6 +14,7 @@ import {SelectableOptions} from "../../crafting/selection/SelectableOptions";
 import {ComponentReference} from "../../crafting/component/ComponentReference";
 import {RequirementOption, RequirementOptionJson} from "../../crafting/recipe/RequirementOption";
 import {ResultOption, ResultOptionJson} from "../../crafting/recipe/ResultOption";
+import {DefaultCombination} from "../../common/Combination";
 
 class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDefinition {
 
@@ -133,8 +133,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("water"), 2),
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("water"), 2),
                 ]),
             }),
             new DefaultComponent({
@@ -186,9 +186,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("earth"), 1),
-                    new Unit(new EssenceReference("fire"), 1),
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("earth"), 1),
+                    new DefaultUnit(new EssenceReference("fire"), 1),
                 ]),
             }),
             new DefaultComponent({
@@ -220,9 +220,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("air"), 1),
-                    new Unit(new EssenceReference("fire"), 1),
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("air"), 1),
+                    new DefaultUnit(new EssenceReference("fire"), 1),
                 ]),
             }),
             new DefaultComponent({
@@ -264,8 +264,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("negative-energy"), 1),
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("negative-energy"), 1),
                 ]),
             }),
             new DefaultComponent({
@@ -287,9 +287,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("water"), 1),
-                    new Unit(new EssenceReference("air"), 1),
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("water"), 1),
+                    new DefaultUnit(new EssenceReference("air"), 1),
                 ]),
             }),
             new DefaultComponent({
@@ -301,8 +301,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("fire"), 2)
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("fire"), 2)
                 ]),
             }),
             new DefaultComponent({
@@ -324,8 +324,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("earth"), 2)
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("earth"), 2)
                 ]),
             }),
             new DefaultComponent({
@@ -337,8 +337,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("water"), 1)
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("water"), 1)
                 ]),
             }),
             new DefaultComponent({
@@ -350,8 +350,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("earth"), 1)
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("earth"), 1)
                 ]),
             }),
             new DefaultComponent({
@@ -393,8 +393,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                   new Unit(new EssenceReference("air"), 2)
+                essences: DefaultCombination.ofUnits([
+                   new DefaultUnit(new EssenceReference("air"), 2)
                 ]),
             }),
             new DefaultComponent({
@@ -436,9 +436,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 ),
                 embedded: true,
                 disabled: false,
-                essences: Combination.ofUnits([
-                    new Unit(new EssenceReference("earth"), 1),
-                    new Unit(new EssenceReference("water"), 1),
+                essences: DefaultCombination.ofUnits([
+                    new DefaultUnit(new EssenceReference("earth"), 1),
+                    new DefaultUnit(new EssenceReference("water"), 1),
                 ]),
             }),
             new DefaultComponent({
@@ -468,9 +468,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("water"), 2),
-                                new Unit(new EssenceReference("earth"), 2),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("water"), 2),
+                                new DefaultUnit(new EssenceReference("earth"), 2),
                             ])
                         }),
                     ],
@@ -480,8 +480,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("instant-rope"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("instant-rope"), 1),
                             ])
                         }),
                     ]
@@ -499,9 +499,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("air"), 2),
-                                new Unit(new EssenceReference("negative-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("air"), 2),
+                                new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
                     ],
@@ -511,8 +511,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("zaebelles-torpor"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("zaebelles-torpor"), 1),
                             ])
                         }),
                     ]
@@ -530,9 +530,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("fire"), 2),
-                                new Unit(new EssenceReference("positive-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("fire"), 2),
+                                new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
                     ],
@@ -542,8 +542,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("flash-pellet"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("flash-pellet"), 1),
                             ])
                         }),
                     ]
@@ -561,9 +561,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("earth"), 2),
-                                new Unit(new EssenceReference("positive-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("earth"), 2),
+                                new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
                     ],
@@ -573,8 +573,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("titan-gum"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("titan-gum"), 1),
                             ])
                         }),
                     ]
@@ -592,9 +592,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("water"), 2),
-                                new Unit(new EssenceReference("positive-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("water"), 2),
+                                new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
                     ],
@@ -604,8 +604,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("gashglue"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("gashglue"), 1),
                             ])
                         }),
                     ]
@@ -623,9 +623,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("earth"), 3),
-                                new Unit(new EssenceReference("negative-energy"), 2 ),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("earth"), 3),
+                                new DefaultUnit(new EssenceReference("negative-energy"), 2 ),
                             ])
                         }),
                     ],
@@ -635,8 +635,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("dust-of-dryness"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("dust-of-dryness"), 1),
                             ])
                         }),
                     ]
@@ -654,9 +654,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("fire"), 1),
-                                new Unit(new EssenceReference("negative-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("fire"), 1),
+                                new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
                     ],
@@ -666,8 +666,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("firesnuff"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("firesnuff"), 1),
                             ])
                         }),
                     ]
@@ -685,9 +685,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("earth"), 2),
-                                new Unit(new EssenceReference("positive-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("earth"), 2),
+                                new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
                     ],
@@ -697,8 +697,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("snappowder"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("snappowder"), 1),
                             ])
                         }),
                     ]
@@ -716,11 +716,11 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("fire"), 2),
-                                new Unit(new EssenceReference("earth"), 1),
-                                new Unit(new EssenceReference("water"), 1),
-                                new Unit(new EssenceReference("positive-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("fire"), 2),
+                                new DefaultUnit(new EssenceReference("earth"), 1),
+                                new DefaultUnit(new EssenceReference("water"), 1),
+                                new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
                     ],
@@ -730,8 +730,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("alchemists-fire"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("alchemists-fire"), 1),
                             ])
                         }),
                     ]
@@ -749,9 +749,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("earth"), 1),
-                                new Unit(new EssenceReference("fire"), 2),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("earth"), 1),
+                                new DefaultUnit(new EssenceReference("fire"), 2),
                             ])
                         }),
                     ],
@@ -761,8 +761,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("melt-powder"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("melt-powder"), 1),
                             ])
                         }),
                     ]
@@ -780,9 +780,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("water"), 2),
-                                new Unit(new EssenceReference("earth"), 2),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("water"), 2),
+                                new DefaultUnit(new EssenceReference("earth"), 2),
                             ])
                         }),
                     ],
@@ -792,8 +792,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("tanglefoot-bag"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("tanglefoot-bag"), 1),
                             ])
                         }),
                     ]
@@ -811,8 +811,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("air"), 3),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("air"), 3),
                             ])
                         }),
                     ],
@@ -822,8 +822,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("breath-bottle"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("breath-bottle"), 1),
                             ])
                         }),
                     ]
@@ -841,9 +841,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("air"), 2),
-                                new Unit(new EssenceReference("fire"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("air"), 2),
+                                new DefaultUnit(new EssenceReference("fire"), 1),
                             ])
                         }),
                     ],
@@ -853,8 +853,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("smokestick"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("smokestick"), 1),
                             ])
                         }),
                     ]
@@ -872,10 +872,10 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("water"), 1),
-                                new Unit(new EssenceReference("fire"), 1),
-                                new Unit(new EssenceReference("negative-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("water"), 1),
+                                new DefaultUnit(new EssenceReference("fire"), 1),
+                                new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
                     ],
@@ -885,8 +885,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("night-eyes"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("night-eyes"), 1),
                             ])
                         }),
                     ]
@@ -904,10 +904,10 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new RequirementOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: Combination.ofUnits([
-                                new Unit(new EssenceReference("air"), 2),
-                                new Unit(new EssenceReference("fire"), 2),
-                                new Unit(new EssenceReference("negative-energy"), 1),
+                            essences: DefaultCombination.ofUnits([
+                                new DefaultUnit(new EssenceReference("air"), 2),
+                                new DefaultUnit(new EssenceReference("fire"), 2),
+                                new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
                     ],
@@ -917,8 +917,8 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         new ResultOption({
                             id: "option-1",
                             name: "Option 1",
-                            results: Combination.ofUnits([
-                                new Unit(new ComponentReference("noxious-smokestick"), 1),
+                            results: DefaultCombination.ofUnits([
+                                new DefaultUnit(new ComponentReference("noxious-smokestick"), 1),
                             ])
                         }),
                     ]

@@ -1,12 +1,12 @@
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
 import {Component} from "../component/Component";
 import {TrackedCombination} from "../../common/TrackedCombination";
 import {EssenceSelection} from "../../actor/EssenceSelection";
 import {Identifiable} from "../../common/Identifiable";
-import {Unit} from "../../common/Unit";
 import {EssenceReference} from "../essence/EssenceReference";
 import {Essence} from "../essence/Essence";
+import {DefaultUnit} from "../../common/Unit";
 
 type SelectionStrategyName = "CONSERVATIVE_ESSENCE_SOURCING";
 
@@ -120,8 +120,8 @@ class ConservativeEssenceSourcingComponentSelectionStrategy implements Component
 
     private selectCombination<T extends Identifiable>(target: Combination<T>, pool: Combination<T>): TrackedCombination<T> {
         const actualUnits = target.units
-            .map(unit => new Unit(unit.element, pool.amountFor(unit.element)));
-        const actual = Combination.ofUnits(actualUnits);
+            .map(unit => new DefaultUnit(unit.element, pool.amountFor(unit.element)));
+        const actual = DefaultCombination.ofUnits(actualUnits);
         return new TrackedCombination({
             target: target,
             actual

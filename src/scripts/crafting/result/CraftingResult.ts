@@ -1,4 +1,4 @@
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {Recipe} from "../recipe/Recipe";
 import {Component} from "../component/Component";
 
@@ -44,11 +44,11 @@ class NoCraftingResult implements CraftingResult {
     }
 
     get produced(): Combination<Component> {
-        return Combination.EMPTY();
+        return DefaultCombination.EMPTY();
     }
 
     get consumed(): Combination<Component> {
-        return Combination.EMPTY();
+        return DefaultCombination.EMPTY();
     }
 
     get recipe(): Recipe {
@@ -78,8 +78,8 @@ class SuccessfulCraftingResult implements CraftingResult {
 
     constructor({
         recipe,
-        consumed = Combination.EMPTY(),
-        produced = Combination.EMPTY(),
+        consumed = DefaultCombination.EMPTY(),
+        produced = DefaultCombination.EMPTY(),
         description,
         sourceActorId,
         targetActorId,
