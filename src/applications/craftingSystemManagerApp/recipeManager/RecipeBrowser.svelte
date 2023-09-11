@@ -11,7 +11,6 @@
         recipes,
         selectedRecipe,
         selectedCraftingSystem,
-        loading,
         recipeEditor
     } = getContext(key);
 
@@ -19,9 +18,7 @@
     const searchTerms = recipeSearchResults.searchTerms;
 
     async function importRecipe(event) {
-        $loading = true;
         await recipeEditor.importRecipe(event, $selectedCraftingSystem);
-        $loading = false;
     }
 
     function clearSearch() {
@@ -33,14 +30,11 @@
     }
 
     async function deleteRecipe(event, recipe) {
-        $loading = true;
         await recipeEditor.deleteRecipe(event, recipe, $selectedCraftingSystem);
-        $loading = false;
     }
 
     async function disableRecipe(recipe) {
         recipe.isDisabled = true;
-        $loading = true;
         await recipeEditor.saveRecipe(recipe, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.recipe.disabled`,
@@ -49,12 +43,10 @@
             }
         );
         ui.notifications.info(message);
-        $loading = false;
     }
 
     async function enableRecipe(recipe) {
         recipe.isDisabled = false;
-        $loading = true;
         await recipeEditor.saveRecipe(recipe, $selectedCraftingSystem);
         const message = localization.format(
             `${localizationPath}.recipe.enabled`,
@@ -63,7 +55,6 @@
             }
         );
         ui.notifications.info(message);
-        $loading = false;
     }
 
     function toggleRecipeDisabled(recipe) {
@@ -71,9 +62,7 @@
     }
 
     async function duplicateRecipe(recipe) {
-        $loading = true;
         await recipeEditor.duplicateRecipe(recipe, $selectedCraftingSystem);
-        $loading = false;
     }
 
     async function openItemSheet(recipe) {

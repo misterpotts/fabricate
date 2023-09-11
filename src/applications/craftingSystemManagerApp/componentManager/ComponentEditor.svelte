@@ -136,7 +136,7 @@
         } else {
             salvageOption.addResult(component.id);
         }
-        $selectedComponent.saveSalvageOption(salvageOption);
+        $selectedComponent.setSalvageOption(salvageOption);
         await componentEditor.saveComponent($selectedComponent);
     }
 

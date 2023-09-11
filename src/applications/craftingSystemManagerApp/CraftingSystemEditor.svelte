@@ -12,8 +12,6 @@
     import {ComponentsStore} from "../stores/ComponentsStore";
     import {SelectedRecipeStore} from "../stores/SelectedRecipeStore";
     import {SelectedCraftingComponentStore} from "../stores/SelectedCraftingComponentStore";
-    import {LoadingStore} from "../common/LoadingStore";
-    import LoadingModal from "../common/LoadingModal.svelte";
 
     import eventBus from "../common/EventBus";
     import {onMount, setContext} from "svelte";
@@ -29,7 +27,6 @@
     export let fabricateAPI;
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
-    const loading = new LoadingStore({});
 
     const craftingSystems = new CraftingSystemsStore({});
     const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
@@ -76,8 +73,6 @@
 
 
 <svelte:window on:itemDeleted={(e) => handleItemDeleted(e)} use:eventBus='{"itemDeleted"}'></svelte:window>
-
-<LoadingModal loading={$loading} />
 
 <CraftingSystemNavbar />
 
