@@ -70,6 +70,12 @@ interface FabricateAPI {
     readonly crafting: CraftingAPI;
 
     /**
+     * Gets an instance of the Fabricate Document manager, used for loading Foundry Documents and extracting the data
+     *   they contain that is relevant to Fabricate.
+     */
+    readonly documentManager: DocumentManager;
+
+    /**
      * Suppresses notifications from Fabricate for all operations. Use {@link FabricateAPI#activateNotifications} to
      * re-enable notifications.
      */

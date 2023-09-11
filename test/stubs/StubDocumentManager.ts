@@ -2,7 +2,7 @@ import {
     DocumentManager,
     FabricateItemData,
     ItemNotFoundError,
-    LoadedFabricateItemData, PendingFabricateItemData
+    LoadedFabricateItemData, NoFabricateItemData, PendingFabricateItemData
 } from "../../src/scripts/foundry/DocumentManager";
 import {Component, ComponentJson} from "../../src/scripts/crafting/component/Component";
 import {Recipe, RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";
@@ -154,6 +154,9 @@ class StubDocumentManager implements DocumentManager {
     }
 
     prepareItemDataByDocumentUuid(uuid: string): FabricateItemData {
+        if (!uuid || uuid === NoFabricateItemData.UUID()) {
+            return new NoFabricateItemData();
+        }
         return new PendingFabricateItemData(uuid, () => this.loadItemDataByDocumentUuid(uuid))
     }
 

@@ -457,6 +457,22 @@ const components = await game.fabricate.api.components.getAllByItemUuid(myItemUu
 
 </details>
 
+### Deleting a component by ID
+
+You can delete a component by calling `game.fabricate.api.components.deleteById()`, passing in the ID of the component to delete.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const myComponentId = "my-component-id"; // <-- Replace this with the ID of your component
+const deletedComponent = game.fabricate.api.components.deleteById(myComponentId); 
+```
+
+</details>
+
 ### Adding essences to a component
 
 You can add essences to a component by fetching it, setting the essences then calling `game.fabricate.api.components.save()`, passing in the modified component.
@@ -499,13 +515,13 @@ const componentAfterSave = await game.fabricate.api.components.save(component);
 
 </details>
 
-### Setting the salvage options for a component
+### Modifying the salvage options for a component
 
-You can add salvage options to a component by fetching it, setting the salvage option (or options) then calling `game.fabricate.api.components.save()`, passing in the modified component.
+You can add salvage options to a component by fetching it, modifying the salvage option (or options) then calling `game.fabricate.api.components.save()`, passing in the modified component.
 
 <details markdown="block">
 <summary>
-Example
+Example #1 - Adding a salvage option with catalysts
 </summary>
 
 ```typescript
@@ -524,26 +540,74 @@ const mySalvageOptionWithCatalysts = {
     }
 };
 component.setSalvageOption(mySalvageOptionWithCatalysts);
+// Save the component
+const componentAfterSave = await game.fabricate.api.components.save(component);
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+Example #2 - Adding a salvage option without catalysts
+</summary>
+
+```typescript
+// Get the component
+const myComponentId = "my-component-id"; // <-- Replace this with the ID of your component
+const component = await game.fabricate.api.components.getById(myComponentId);
 
 // Create a new salvage option that doesn't require catalysts
 const mySalvageOptionWithoutCatalysts = {
-    name: "My other salvage option", // <-- Same here with naming your salvage options
-    results: { // <-- Same here with configuring the salvage results
+    name: "My other salvage option", // <-- Replace this with the name of your salvage option
+    results: { // <-- Replace the keys with the IDs of the components you want to produce when the component is salvaged and the values with the quantity to produce
         "my-salvage-id": 1
     }
 };
 component.setSalvageOption(mySalvageOptionWithoutCatalysts);
 
+// Save the component
+const componentAfterSave = await game.fabricate.api.components.save(component);
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+Example #3 - Overwriting an existing salvage option
+</summary>
+
+```typescript
+// Get the component
+const myComponentId = "my-component-id"; // <-- Replace this with the ID of your component
+const component = await game.fabricate.api.components.getById(myComponentId);
+
 // You can overwrite an existing salvage option by adding the ID of the salvage option to overwrite
 // If the ID you provide doesn't match an existing salvage option, this will cause the `setSalvageOption` method to throw an error
 const mySalvageOptionToOverwrite = {
     id: "my-salvage-option-id-1", // <-- Replace this with the ID of the salvage option to overwite
-    name: "My existing salvage option to replace", // <-- Same here with naming your salvage options
-    results: { // <-- Same here with configuring the salvage results
+    name: "My existing salvage option to replace", // <-- Replace this with the name of your salvage option
+    results: { // <-- Replace the keys with the IDs of the components you want to produce when the component is salvaged and the values with the quantity to produce
         "my-salvage-id": 1
     }
+    // You can also overwrite the catalysts for an existing salvage option. Omitting them will cause them to be removed.
 };
 component.setSalvageOption(mySalvageOptionToOverwrite);
+
+// Save the component
+const componentAfterSave = await game.fabricate.api.components.save(component);
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+Example #4 - Removing a salvage option
+</summary>
+
+```typescript
+// Get the component
+const myComponentId = "my-component-id"; // <-- Replace this with the ID of your component
+const component = await game.fabricate.api.components.getById(myComponentId);
 
 // You can also delete a salvage option by passing in the ID of the salvage option to delete
 component.deleteSalvageOptionById("my-salvage-option-id-2"); // <-- Replace this with the ID of the salvage option to delete
@@ -554,3 +618,28 @@ const componentAfterSave = await game.fabricate.api.components.save(component);
 
 </details>
 
+### Changing the item associated with a component
+
+You can change the item associated with a component (with a bit of a workaround) by first loading the item data using the document manager.
+Just like with other modifications, you will need to save the modified component after changing the source item data by calling `game.fabricate.api.components.save()`.
+In a later release of Fabricate, this will be simplified to allow you to simply assign the item UUID to a property on the component.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+// Get the component
+const myComponentId = "my-component-id"; // <-- Replace this with the ID of your component
+const component = await game.fabricate.api.components.getById(myComponentId);
+// Change the item data:
+//   Currently, Fabricate requires that you load the item using its document manager before assigning it to the component.
+//   This is likely to change in a future release to simplify things for API users.
+const itemUuid = "myNewItemUuid"; // <-- Replace with the UUID of the new source item
+component.itemData = await game.fabricate.api.documentManager.loadItemDataByDocumentUuid(itemUuid);
+// Save the component
+const componentAfterSave = await game.fabricate.api.components.save(component);
+```
+
+</details>

@@ -112,7 +112,6 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._activeEffectSource;
     }
 
-
     get name(): string {
         return this._name;
     }

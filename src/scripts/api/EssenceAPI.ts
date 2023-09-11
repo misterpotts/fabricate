@@ -131,17 +131,10 @@ interface EssenceAPI {
      * Creates a new essence with the given details.
      *
      * @async
-     * @param {object} options - The options to use when creating the essence
-     * @param {string} [options.name] - The name of the essence
-     * @param {string} [options.tooltip] - The tooltip text to display when the essence is hovered over
-     * @param {string} [options.iconCode] - The FontAwesome icon code for the essence icon
-     * @param {string} [options.description] - A more detailed description of the essence
-     * @param {string} [options.activeEffectSourceItemUuid] - The UUID of the item that is the source of the active
-     *   effect for this essence, if present
-     * @param {string} options.craftingSystemId - The ID of the crafting system to which this essence belongs
+     * @param {EssenceCreationOptions} essenceCreationOptions - The details of the essence to create.
      * @returns {Promise<Essence>} A Promise that resolves to the created essence.
      */
-    create({ name, tooltip, iconCode, description, activeEffectSourceItemUuid, craftingSystemId }: EssenceCreationOptions): Promise<Essence>;
+    create(essenceCreationOptions: EssenceCreationOptions): Promise<Essence>;
 
     /**
      * Saves the given essence.
@@ -265,6 +258,7 @@ class DefaultEssenceAPI implements EssenceAPI {
     async create({
         name = Properties.ui.defaults.essence.name,
         tooltip = Properties.ui.defaults.essence.tooltip,
+        disabled = false,
         iconCode = Properties.ui.defaults.essence.iconCode,
         description = Properties.ui.defaults.essence.description,
         activeEffectSourceItemUuid,
@@ -272,17 +266,19 @@ class DefaultEssenceAPI implements EssenceAPI {
    }: EssenceCreationOptions): Promise<Essence> {
         const assignedIds = await this.essenceStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
-        return this.essenceStore.create({
+        const essenceJson: EssenceJson = {
             id,
             name,
             tooltip,
+            disabled,
             iconCode,
             description,
-            disabled: false,
             embedded: false,
             craftingSystemId,
             activeEffectSourceItemUuid,
-        });
+        };
+        const essence = await this.essenceStore.buildEntity(essenceJson);
+        return this.save(essence);
     }
 
     async deleteById(id: string): Promise<Essence | undefined> {
