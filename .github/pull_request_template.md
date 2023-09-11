@@ -1,42 +1,20 @@
-# Status
+## Description
 
-- [ ] **NOT READY**
-- [ ] **READY FOR REVIEW**
+<!-- Describe the changes you made and why you made them -->
+<!-- If you have resolved an open Issue, please link to it here (e.g. "Closes #487") -->
+<!-- If you are fixing a bug that doesn't have an associated Issue, please include the steps to reproduce the bug so that your fix can be tested -->
 
-[//]: # (Check the right box to reflect the status of this PR)
+## Benefit(s)
 
-# Description
+<!-- Describe the benefits of your changes: who does the change impact and how, why should this change be accepted, etc. -->
 
-Please include a summary of the change and which issue is fixed. 
-Please also include relevant motivation and context. 
-List any dependencies that are required for this change.
+## Changes in this PR
 
-Closes # (issue)
+<!-- Describe the changes you made in this PR, and how they address the Issue or benefit the module -->
+<!-- Ideally, include them as a bulleted list below, e.g. -->
+<!-- - Added a new setting to allow users to configure "X" -->
+<!-- - Removed an incorrect test assertion about "K" in test "Y" -->
 
-## Type of change
+## Screenshots (if appropriate)
 
-Please delete options that are not relevant.
-
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
-
-# How Has This Been Tested?
-
-Please describe the tests that you ran to verify your changes. 
-Provide instructions so we can reproduce. 
-Please also list any relevant details for your test configuration.
-
-- [ ] Test A
-- [ ] Test B
-
-# Checklist:
-
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
+<!-- If your changes include a visual component, please include a screenshot or screenshots here -->
