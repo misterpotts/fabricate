@@ -352,7 +352,7 @@ The examples below illustrate how to use the essence API to create, modify and d
 
 ### Creating an essence
 
-Once you've created a crafting system, you can create essences for it by calling `game.fabricate.api.essences.create()` and passing in the essence details.
+Once you've [created a crafting system](../systems#create-a-crafting-system), you can create essences for it by calling `game.fabricate.api.essences.create()` and passing in the essence details.
 To create an essence, you must provide the ID of the crafting system to which it belongs.
 In addition to the basic details for the Essence, you can optionally provide the UUID of an item to use as a source of active effects for the essence.
 Don't worry though, you can always add or remove the source item later.

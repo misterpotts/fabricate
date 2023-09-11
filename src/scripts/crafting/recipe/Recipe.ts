@@ -12,6 +12,7 @@ import {ResultOptionConfig} from "./ResultOption";
 import {EssenceReference} from "../essence/EssenceReference";
 
 interface RecipeJson {
+
     id: string;
     embedded: boolean;
     itemUuid: string;
@@ -19,9 +20,241 @@ interface RecipeJson {
     craftingSystemId: string;
     resultOptions: Record<string, ResultOptionJson>;
     requirementOptions: Record<string, RequirementOptionJson>;
+
 }
 
-class Recipe implements Identifiable, Serializable<RecipeJson> {
+export { RecipeJson }
+
+interface Recipe extends Identifiable, Serializable<RecipeJson> {
+
+    /**
+     * The unique ID of the recipe
+     */
+    readonly id: string;
+
+    /**
+     * The unique ID of the item this recipe is associated with
+     */
+    readonly itemUuid: string;
+
+    /**
+     * The unique ID of the crafting system this recipe belongs to
+     */
+    readonly craftingSystemId: string;
+
+    /**
+     * Whether this recipe is embedded with Fabricate
+     */
+    readonly embedded: boolean;
+
+    /**
+     * Whether this recipe is disabled
+     */
+    isDisabled: boolean;
+
+    /**
+     * The name of the item this recipe is associated with
+     */
+    readonly name: string;
+
+    /**
+     * The URL of the image of the item this recipe is associated with
+     */
+    readonly imageUrl: string;
+
+    /**
+     * The data of the item this recipe is associated with
+     */
+    itemData: FabricateItemData;
+
+    /**
+     * The options for the requirements of this recipe. May be empty.
+     */
+    readonly requirementOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
+
+    /**
+     * The options for the results of this recipe. May be empty.
+     */
+    readonly resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
+
+    /**
+     * Whether this recipe has any requirement options. This is a convenience function for checking if the requirement
+     *  options are empty.
+     */
+    readonly hasRequirements: boolean;
+
+    /**
+     * Whether this recipe has any result options. This is a convenience function for checking if the result options
+     *  are empty.
+     */
+    readonly hasResults: boolean;
+
+    /**
+     * Whether this recipe requires any choices to be made by the user. This is a convenience function for checking if
+     *  either the requirement options or the result options require choices.
+     */
+    readonly hasChoices: boolean;
+
+    /**
+     * Whether this recipe requires any choices to be made by the user for the requirements. This is a convenience
+     *   function for checking if there are multiple requirement options.
+     */
+    readonly hasRequirementChoices: boolean;
+
+    /**
+     * Whether this recipe requires any choices to be made by the user for the results. This is a convenience function
+     *  for checking if there are multiple result options.
+     */
+    readonly hasResultChoices: boolean;
+
+    /**
+     * Whether this recipe has any errors in its item data. This is a convenience function for checking if the item data
+     *  has any errors.
+     */
+    readonly hasErrors: boolean;
+
+    /**
+     * The codes for the errors that occurred while loading the item data, if any. May be an empty array.
+     */
+    readonly errorCodes: string[];
+
+    /**
+     * The errors that occurred while loading the item data, if any. May be an empty array.
+     */
+    readonly errors: ItemLoadingError[];
+
+    /**
+     * Indicates whether this recipe's item data has been loaded
+     */
+    readonly loaded: boolean;
+
+    /**
+     * Sets the result option for this recipe. If the result option has an ID, it will be used to attempt to overwrite
+     * an existing result option. Otherwise, a new result option will be created with a new ID.
+     *
+     * @param {ResultOptionConfig | ResultOption} resultOption - The result option to set. Accepts a ResultOption
+     *  instance or a ResultOptionConfig object.
+     */
+    setResultOption(resultOption: ResultOptionConfig | ResultOption): void;
+
+    /**
+     * Sets the requirement option for this recipe. If the requirement option has an ID, it will be used to attempt to
+     * overwrite an existing requirement option. Otherwise, a new requirement option will be created with a new ID.
+     *
+     * @param {RequirementOptionConfig | RequirementOption} requirementOption - The requirement option to set. Accepts
+     * a RequirementOption instance or a RequirementOptionConfig object.
+     */
+    setRequirementOption(requirementOption: RequirementOptionConfig | RequirementOption): void;
+
+    /**
+     * Deletes the result option with the given ID from this recipe
+     *
+     * @param id - The ID of the result option to delete
+     */
+    deleteResultOptionById(id: string): void;
+
+    /**
+     * Deletes the requirement option with the given ID from this recipe
+     *
+     * @param id - The ID of the requirement option to delete
+     */
+    deleteRequirementOptionById(id: string): void;
+
+    /**
+     * Clones this recipe, optionally with a new ID, crafting system ID, and/or substitute essence and component IDs
+     *
+     * @param id - The ID for the cloned recipe. Must not be the ID of this recipe.
+     * @param embedded - Whether the cloned recipe should be embedded with Fabricate. Defaults to false.
+     * @param craftingSystemId - The ID of the crafting system for the cloned recipe. Defaults to the ID of this
+     *  recipe's crafting system.
+     * @param substituteEssenceIds - A map of essence IDs to substitute with new IDs. Defaults to an empty map. This is
+     *  used when cloning a recipe into a new crafting system, to ensure that the cloned recipe's essences are
+     *  unique to the new crafting system.
+     * @param substituteComponentIds - A map of component IDs to substitute with new IDs. Defaults to an empty map.
+     *  This is used when cloning a recipe into a new crafting system, to ensure that the cloned recipe's components
+     *  are unique to the new crafting system.
+     */
+    clone({
+        id,
+        craftingSystemId,
+        substituteEssenceIds,
+        substituteComponentIds,
+      }: {
+        id: string;
+        craftingSystemId?: string;
+        substituteEssenceIds?: Map<string, string>;
+        substituteComponentIds?: Map<string, string>;
+    }): Recipe;
+
+    /**
+     * Lists all the components referenced by this recipe. May be an empty array.
+     *
+     * @returns {ComponentReference[]} - An array of all the components referenced by this recipe
+     */
+    getUniqueReferencedComponents(): ComponentReference[];
+
+    /**
+     * Lists all the essences referenced by this recipe. May be an empty array.
+     *
+     * @returns {EssenceReference[]} - An array of all the essences referenced by this recipe
+     */
+    getUniqueReferencedEssences(): EssenceReference[];
+
+    /**
+     * Loads the item data for this recipe
+     *
+     * @param forceReload - Whether to reload the item data. Defaults to false.
+     * @returns {Promise<Component>} - A promise that resolves to this recipe, once the item data has been loaded
+     */
+    load(forceReload?: boolean): Promise<Recipe>;
+
+    /**
+     * Performs an equality check between this recipe and another recipe. If excludeDisabled is true, the disabled
+     *  status of the recipes will be ignored. Works regardless of whether the recipes are loaded.
+     *
+     * @param other - The other recipe to compare to
+     * @param excludeDisabled - Whether to ignore the disabled status of the recipes. Defaults to false.
+     */
+    equals(other: Recipe, excludeDisabled?: boolean): boolean;
+
+    /**
+     * Indicates whether this recipe has a requirement option that requires essences
+     */
+    hasEssenceRequirementOption(): boolean;
+
+    /**
+     * Indicates whether this recipe has a component with the given ID in any of its requirement or result options
+     *
+     * @param componentId - The ID of the component to check for
+     */
+    hasComponent(componentId: string): boolean;
+
+    /**
+     * Removes the component with the given ID from any of the requirement or result options
+     *
+     * @param componentId - The ID of the component to remove
+     */
+    removeComponent(componentId: string): void;
+
+    /**
+     * Indicates whether this recipe has an essence with the given ID in any of its requirement options
+     *
+     * @param essenceIdToRemove - The ID of the essence to check for
+     */
+    removeEssence(essenceIdToRemove: string): void;
+
+    /**
+     * Indicates whether this recipe has an essence with the given ID in any of its requirement options
+     *
+     * @param essenceId - The ID of the essence to check for
+     */
+    hasEssence(essenceId: string): any;
+
+}
+
+export { Recipe }
+
+class DefaultRecipe implements Recipe {
 
     /* ===========================
     *  Instance members
@@ -98,16 +331,8 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._itemData;
     }
 
-    set itemData(value: FabricateItemData) {
-        this._itemData = value;
-    }
-
     get requirementOptions(): SelectableOptions<RequirementOptionJson, RequirementOption> {
         return this._requirementOptions;
-    }
-
-    set isDisabled(value: boolean) {
-        this._disabled = value;
     }
 
     get isDisabled(): boolean {
@@ -118,139 +343,24 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._resultOptions;
     }
 
-    public get hasOptions(): boolean {
+    get hasChoices(): boolean {
         return this.hasRequirementChoices || this.hasResultChoices;
     }
 
-    public get hasRequirementChoices(): boolean {
+    get hasRequirementChoices(): boolean {
         return this._requirementOptions.requiresUserChoice;
     }
 
-    public get hasResultChoices(): boolean {
+    get hasResultChoices(): boolean {
         return this._resultOptions.requiresUserChoice
     }
 
-    public ready(): boolean {
-        if (!this.hasOptions) {
-            return true;
-        }
-        return this._requirementOptions.isReady && this._resultOptions.isReady;
-    }
-
-    public getSelectedIngredients(): RequirementOption {
-        if (this._requirementOptions.isReady) {
-            return this._requirementOptions.selectedOption;
-        }
-        throw new Error("You must select an ingredient group. ");
-    }
-
-    public getSelectedResults(): ResultOption {
-        if (this._resultOptions.isReady) {
-            return this._resultOptions.selectedOption;
-        }
-        throw new Error("You must select a result group. ");
-    }
-
-    public get hasRequirements() {
+    get hasRequirements() {
         return !this._requirementOptions.isEmpty;
     }
 
-    public get hasResults(): boolean {
+    get hasResults(): boolean {
         return !this._resultOptions.isEmpty;
-    }
-    
-    public selectRequirementOption(optionName: string) {
-        return this._requirementOptions.select(optionName);
-    }
-
-    public selectResultOption(optionName: string) {
-        return this._resultOptions.select(optionName);
-    }
-
-    get selectedRequirementOption(): RequirementOption {
-        return this._requirementOptions.selectedOption;
-    }
-
-    public selectNextRequirementOption(): RequirementOption {
-        this._requirementOptions.selectNext();
-        return this.selectedRequirementOption;
-    }
-
-    public selectPreviousRequirementOption(): RequirementOption {
-        this._requirementOptions.selectPrevious();
-        return this.selectedRequirementOption;
-    }
-
-    get selectedResultOption(): ResultOption {
-        return this._resultOptions.selectedOption;
-    }
-
-    public selectNextResultOption(): ResultOption {
-        this._resultOptions.selectNext();
-        return this.selectedResultOption;
-    }
-
-    public selectPreviousResultOption(): ResultOption {
-        this._resultOptions.selectPrevious();
-        return this.selectedResultOption;
-    }
-
-    public makeDefaultSelections() {
-        this._requirementOptions.selectFirst();
-        this._resultOptions.selectFirst();
-    }
-
-    public editRequirementOption(requirementOption: RequirementOption) {
-        if (!this._requirementOptions.has(requirementOption.id)) {
-            throw new Error(`Cannot edit Ingredient Option "${requirementOption.id}". It does not exist in this Recipe.`);
-        }
-        this._requirementOptions.set(requirementOption);
-    }
-
-    set resultOptions(value: SelectableOptions<ResultOptionJson, ResultOption>) {
-        this._resultOptions = value;
-    }
-
-    saveRequirementOption(value: RequirementOption) {
-        this._requirementOptions.set(value);
-    }
-
-    saveResultOption(value: ResultOption) {
-        this._resultOptions.set(value);
-    }
-
-    setResultOption(value: ResultOptionConfig) {
-        const optionId = this._resultOptions.nextId();
-        const resultOption = ResultOption.fromJson({
-            id: optionId,
-            ...value
-        });
-        this._resultOptions.set(resultOption);
-    }
-
-    setRequirementOption({
-         name,
-         catalysts = {},
-         ingredients = {},
-         essences = {}
-     }: RequirementOptionConfig) {
-        const optionId = this._requirementOptions.nextId();
-        const salvageOption = RequirementOption.fromJson({
-            id: optionId,
-            name,
-            catalysts,
-            ingredients,
-            essences
-        });
-        this._requirementOptions.set(salvageOption);
-    }
-
-    deleteResultOptionById(id: string) {
-        this._resultOptions.deleteById(id);
-    }
-
-    deleteRequirementOptionById(id: string) {
-        this._requirementOptions.deleteById(id);
     }
 
     get hasErrors(): boolean {
@@ -265,32 +375,89 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return this._itemData.errors;
     }
 
-    deselectRequirements() {
-        this._requirementOptions.deselect();
+    get loaded(): boolean {
+        return this.itemData.loaded;
     }
 
-    deselectResults() {
-        this._resultOptions.deselect();
+    /* ===========================
+    *  Setters
+    *  =========================== */
+
+    set itemData(value: FabricateItemData) {
+        this._itemData = value;
     }
 
-    public clone({
-         id,
-         embedded = false,
-         craftingSystemId = this._craftingSystemId,
-         substituteEssenceIds = new Map<string, string>(),
-         substituteComponentIds = new Map<string, string>(),
-     }: {
+    set isDisabled(value: boolean) {
+        this._disabled = value;
+    }
+
+    /* ===========================
+    *  Methods
+    *  =========================== */
+
+    setResultOption(resultOption: ResultOptionConfig | ResultOption): void {
+        if (resultOption instanceof ResultOption) {
+            this._resultOptions.set(resultOption);
+            return;
+        }
+        if (resultOption.id && !this._resultOptions.has(resultOption.id)) {
+            throw new Error(`Unable to find result option with id ${resultOption.id}`);
+        }
+        const optionId = this._resultOptions.nextId();
+        const value = ResultOption.fromJson({
+            id: optionId,
+            ...resultOption
+        });
+        this._resultOptions.set(value);
+    }
+
+    setRequirementOption(requirementOption: RequirementOptionConfig | RequirementOption): void {
+        if (requirementOption instanceof RequirementOption) {
+            this._requirementOptions.set(requirementOption);
+            return;
+        }
+        if (requirementOption.id && !this._requirementOptions.has(requirementOption.id)) {
+            throw new Error(`Unable to find requirement option with id ${requirementOption.id}`);
+        }
+        const optionId = this._requirementOptions.nextId();
+        const value = RequirementOption.fromJson({
+            id: optionId,
+            name: requirementOption.name,
+            catalysts: requirementOption.catalysts,
+            ingredients: requirementOption.ingredients,
+            essences: requirementOption.essences
+        });
+        this._requirementOptions.set(value);
+    }
+
+    deleteResultOptionById(id: string) {
+        this._resultOptions.deleteById(id);
+    }
+
+    deleteRequirementOptionById(id: string) {
+        this._requirementOptions.deleteById(id);
+    }
+
+    clone({
+              id,
+              craftingSystemId = this._craftingSystemId,
+              substituteEssenceIds = new Map<string, string>(),
+              substituteComponentIds = new Map<string, string>(),
+          }: {
         id: string;
-        embedded?: boolean;
         craftingSystemId?: string;
         substituteEssenceIds?: Map<string, string>;
         substituteComponentIds?: Map<string, string>;
     }): Recipe {
+        if (id === this._id) {
+            throw new Error(`Cannot clone recipe with ID "${this._id}" using the same ID`);
+        }
+        craftingSystemId = craftingSystemId || this._craftingSystemId;
         const itemData = craftingSystemId === this._craftingSystemId ? NoFabricateItemData.INSTANCE() : this._itemData;
-        return new Recipe({
+        return new DefaultRecipe({
             id,
             itemData,
-            embedded,
+            embedded: false,
             craftingSystemId,
             disabled: this._disabled,
             resultOptions: this._resultOptions.clone((resultOption) => {
@@ -321,12 +488,12 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         return componentFromRequirements.combineWith(componentsFromResults).members;
     }
 
-    async load() {
+    async load(forceReload = false): Promise<Recipe> {
+        if (this.loaded && !forceReload) {
+            return this;
+        }
         this.itemData = await this.itemData.load();
-    }
-
-    get loaded(): boolean {
-        return this.itemData.loaded;
+        return this;
     }
 
     public toJson(): RecipeJson {
@@ -341,25 +508,26 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
         };
     }
 
-    equals(other: Recipe) {
-        if (!this.equalsNotLoaded(other)) {
-            return false;
-        }
-        return this._craftingSystemId === other.craftingSystemId
-            && this.isDisabled === other.isDisabled
-            && this._itemData.equals(other.itemData)
-            && this._requirementOptions.equals(other.requirementOptions)
-            && this._resultOptions.equals(other.resultOptions);
-    }
-
-    public equalsNotLoaded(other: Recipe): boolean {
+    equals(other: Recipe, excludeDisabled = false): boolean {
         if (!other) {
             return false;
         }
-        if (this === other ) {
-            return true;
+        if (!this.loaded || !other.loaded) {
+            return this.id === other.id
+                && this.craftingSystemId === other.craftingSystemId
+                && this.embedded === other.embedded
+                && this.itemUuid === other.itemUuid
+                && (excludeDisabled || this.isDisabled === other.isDisabled);
         }
-        return this._id === other.id;
+        return this.id === other.id
+            && this.craftingSystemId === other.craftingSystemId
+            && this.embedded === other.embedded
+            && this.itemData.equals(other.itemData)
+            && (excludeDisabled || this.isDisabled === other.isDisabled)
+            && this.requirementOptions.equals(other.requirementOptions)
+            && this.resultOptions.equals(other.resultOptions)
+            && this.name === other.name
+            && this.imageUrl === other.imageUrl;
     }
 
     hasEssenceRequirementOption() {
@@ -396,7 +564,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
                 ingredients
             });
         });
-        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({ options: modifiedRequirementOptions });
+        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({options: modifiedRequirementOptions});
         const modifiedResultOptions = this.resultOptions.all.map(option => {
             const results = option.results.without(componentId);
             return new ResultOption({
@@ -405,7 +573,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
                 results
             });
         });
-        this._resultOptions = new SelectableOptions<ResultOptionJson, ResultOption>({ options: modifiedResultOptions });
+        this._resultOptions = new SelectableOptions<ResultOptionJson, ResultOption>({options: modifiedResultOptions});
     }
 
     removeEssence(essenceIdToRemove: string) {
@@ -419,7 +587,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
                 ingredients: option.ingredients
             });
         });
-        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({ options: modifiedRequirementOptions });
+        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({options: modifiedRequirementOptions});
     }
 
     hasEssence(essenceId: string) {
@@ -435,7 +603,7 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
     static fromJson(recipeJson: RecipeJson) {
         const resultOptions = SelectableOptions.fromJson<ResultOptionJson, ResultOption>(recipeJson.resultOptions, ResultOption.fromJson);
         const requirementOptions = SelectableOptions.fromJson<RequirementOptionJson, RequirementOption>(recipeJson.requirementOptions, RequirementOption.fromJson);
-        return new Recipe({
+        return new DefaultRecipe({
             id: recipeJson.id,
             embedded: recipeJson.embedded,
             craftingSystemId: recipeJson.craftingSystemId,
@@ -448,4 +616,4 @@ class Recipe implements Identifiable, Serializable<RecipeJson> {
 
 }
 
-export { Recipe, RecipeJson }
+export { DefaultRecipe }

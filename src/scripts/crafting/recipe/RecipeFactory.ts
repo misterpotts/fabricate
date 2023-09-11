@@ -1,4 +1,4 @@
-import {Recipe, RecipeJson} from "./Recipe";
+import {DefaultRecipe, Recipe, RecipeJson} from "./Recipe";
 import {DefaultDocumentManager, DocumentManager} from "../../foundry/DocumentManager";
 import {SelectableOptions} from "../selection/SelectableOptions";
 import {EntityFactory} from "../../repository/EntityFactory";
@@ -21,7 +21,7 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
         const { id, craftingSystemId, disabled, itemUuid } = recipeJson;
         const itemData = this.documentManager.prepareItemDataByDocumentUuid(itemUuid);
         try {
-            return new Recipe({
+            return new DefaultRecipe({
                 id,
                 craftingSystemId,
                 itemData,

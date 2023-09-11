@@ -178,8 +178,8 @@ class DefaultRecipeCraftingManager implements RecipeCraftingManager {
             recipeId: this._recipeToCraft.id,
             sourceActorId: this._sourceActor.id,
             targetActorId: this._targetActor.id,
-            resultOptionId: this.recipeToCraft.selectedResultOption.id,
-            requirementOptionId: this.recipeToCraft.selectedRequirementOption.id,
+            resultOptionId: craftingAttempt.resultOption.id,
+            requirementOptionId: craftingAttempt.requirementOption.id,
             userSelectedComponents: {
                 catalysts: craftingAttempt.selectedComponents.catalysts.actual.toJson(),
                 essenceSources: craftingAttempt.selectedComponents.essenceSources.toJson(),
@@ -189,21 +189,21 @@ class DefaultRecipeCraftingManager implements RecipeCraftingManager {
     }
 
     async getCraftingAttempt(): Promise<CraftingAttempt> {
-        const producedComponents = this._recipeToCraft.selectedResultOption.results
+        const producedComponents = this._recipeToCraft.resultOptions.selectedOption.results
             .convertElements(reference => this._allCraftingSystemComponentsById.get(reference.id));
         const selectedComponents = await this._craftingAPI.selectComponents({
             recipeId: this._recipeToCraft.id,
             sourceActorId: this._sourceActor.id,
-            requirementOptionId: this._recipeToCraft.selectedRequirementOption.id,
+            requirementOptionId: this._recipeToCraft.requirementOptions.selectedOption.id,
         });
         return new DefaultCraftingAttempt({
             resultOption: {
-                id: this._recipeToCraft.selectedResultOption.id,
-                name: this._recipeToCraft.selectedResultOption.name,
+                id: this._recipeToCraft.resultOptions.selectedOption.id,
+                name: this._recipeToCraft.resultOptions.selectedOption.name,
             },
             requirementOption: {
-                id: this._recipeToCraft.selectedRequirementOption.id,
-                name: this._recipeToCraft.selectedRequirementOption.name,
+                id: this._recipeToCraft.requirementOptions.selectedOption.id,
+                name: this._recipeToCraft.requirementOptions.selectedOption.name,
             },
             recipeToCraft: this._recipeToCraft,
             producedComponents,
@@ -212,19 +212,23 @@ class DefaultRecipeCraftingManager implements RecipeCraftingManager {
     }
 
     selectNextRequirementOption(): Promise<CraftingAttempt> {
-        return Promise.resolve(undefined);
+        this.recipeToCraft.requirementOptions.selectNext();
+        return this.getCraftingAttempt();
     }
 
     selectNextResultOption(): Promise<CraftingAttempt> {
-        return Promise.resolve(undefined);
+        this.recipeToCraft.resultOptions.selectNext();
+        return this.getCraftingAttempt();
     }
 
     selectPreviousRequirementOption(): Promise<CraftingAttempt> {
-        return Promise.resolve(undefined);
+        this.recipeToCraft.requirementOptions.selectPrevious();
+        return this.getCraftingAttempt();
     }
 
     selectPreviousResultOption(): Promise<CraftingAttempt> {
-        return Promise.resolve(undefined);
+        this.recipeToCraft.resultOptions.selectPrevious();
+        return this.getCraftingAttempt();
     }
 
 }

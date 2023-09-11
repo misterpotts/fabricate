@@ -1,4 +1,4 @@
-import {Recipe} from "../../src/scripts/crafting/recipe/Recipe";
+import {DefaultRecipe, Recipe} from "../../src/scripts/crafting/recipe/Recipe";
 import {Combination} from "../../src/scripts/common/Combination";
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./TestCraftingComponents";
 import {elementalEarth, elementalFire, elementalWater} from "./TestEssences";
@@ -26,7 +26,7 @@ function buildPendingItemData(name: string, itemUuid: string) {
 * Ingredient Options: 2
 * Result Options: 1
 * */
-const testRecipeOne: Recipe = new Recipe({
+const testRecipeOne: Recipe = new DefaultRecipe({
     id: "z2ixo2m312l",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe One", "Compendium.module.compendium-name.z2ixo2m312l"),
@@ -61,7 +61,7 @@ const testRecipeOne: Recipe = new Recipe({
 * Ingredient Options: 1
 * Result Options: 1
 * */
-const testRecipeTwo: Recipe = new Recipe({
+const testRecipeTwo: Recipe = new DefaultRecipe({
     id: "fzv66f90sd",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Two", "Compendium.module.compendium-name.fzv66f90sd"),
@@ -92,7 +92,7 @@ const testRecipeTwo: Recipe = new Recipe({
 * Ingredient Options: None
 * Result Options: 1
 * */
-const testRecipeThree: Recipe = new Recipe({
+const testRecipeThree: Recipe = new DefaultRecipe({
     id: "5pux8ghlct",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Three", "Compendium.module.compendium-name.5pux8ghlct"),
@@ -125,7 +125,7 @@ const testRecipeThree: Recipe = new Recipe({
 * Ingredient Options: 1
 * Result Options: 1
 * */
-const testRecipeFour: Recipe = new Recipe({
+const testRecipeFour: Recipe = new DefaultRecipe({
     id: "3lieym2gjef",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Four", "Compendium.module.compendium-name.3lieym2gjef"),
@@ -160,7 +160,7 @@ const testRecipeFour: Recipe = new Recipe({
 * Ingredient Options: 1 Catalyst only
 * Result Options: 1
 * */
-const testRecipeFive: Recipe = new Recipe({
+const testRecipeFive: Recipe = new DefaultRecipe({
     id: "fequ5qvoqh",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Five", "Compendium.module.compendium-name.fequ5qvoqh"),
@@ -194,7 +194,7 @@ const testRecipeFive: Recipe = new Recipe({
 * Ingredient Options: 2
 * Result Options: 1
 * */
-const testRecipeSix: Recipe = new Recipe({
+const testRecipeSix: Recipe = new DefaultRecipe({
     id: "bx8luu4cpd",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Six", "Compendium.module.compendium-name.bx8luu4cpd"),
@@ -245,7 +245,7 @@ const testRecipeSix: Recipe = new Recipe({
 * Ingredient Options: 1
 * Result Options: 1
 * */
-const testRecipeSeven: Recipe = new Recipe({
+const testRecipeSeven: Recipe = new DefaultRecipe({
     id: "8kimdf8z83",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: buildPendingItemData("Test Recipe Seven", "Compendium.module.compendium-name.8kimdf8z83"),
