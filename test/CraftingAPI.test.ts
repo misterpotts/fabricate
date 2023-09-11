@@ -15,7 +15,7 @@ import {allTestEssences} from "./test_data/TestEssences";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
 import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {StubActorFactory} from "./stubs/StubActorFactory";
-import {Combination} from "../src/scripts/common/Combination";
+import {DefaultCombination} from "../src/scripts/common/Combination";
 import {
     DefaultComponentSelectionStrategyFactory
 } from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
@@ -27,7 +27,7 @@ describe("Crafting API", () => {
 
         test("should salvage a component with one salvage option", async () => {
 
-            const stubActor = new StubActorFactory().make(Combination.of(testComponentFour));
+            const stubActor = new StubActorFactory().make(DefaultCombination.of(testComponentFour));
 
             const underTest = make(new Map([ [stubActor.id, stubActor] ]));
             const result = await underTest.salvageComponent({

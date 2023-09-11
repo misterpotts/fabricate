@@ -1,7 +1,7 @@
 import {ComponentCombinationNode} from "./ComponentCombinationNode";
-import {Combination} from "../common/Combination";
+import {Combination, DefaultCombination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
-import {Unit} from "../common/Unit";
+import {DefaultUnit} from "../common/Unit";
 import {EssenceReference} from "../crafting/essence/EssenceReference";
 
 interface ComponentEssenceCombination {
@@ -101,7 +101,7 @@ class ComponentCombinationGenerator {
     constructor(availableComponents: Combination<Component>, requiredEssences: Combination<EssenceReference>) {
         this._requiredEssences = requiredEssences;
         this._roots = availableComponents.members
-            .map((component) => Combination.ofUnit(new Unit(component, 1)))
+            .map((component) => DefaultCombination.ofUnit(new DefaultUnit(component, 1)))
             .map((combination) => new ComponentCombinationNode(requiredEssences, combination, availableComponents.subtract(combination)));
     }
 

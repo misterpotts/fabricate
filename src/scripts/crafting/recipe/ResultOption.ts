@@ -1,8 +1,8 @@
 import {Identifiable} from "../../common/Identifiable";
 import {Serializable} from "../../common/Serializable";
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {ComponentReference} from "../component/ComponentReference";
-import {Unit} from "../../common/Unit";
+import {DefaultUnit} from "../../common/Unit";
 
 export interface ResultOptionConfig {
 
@@ -65,11 +65,11 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
     }
 
     public add(componentId: string, amount = 1) {
-        this._results = this._results.addUnit(new Unit<ComponentReference>(new ComponentReference(componentId), amount));
+        this._results = this._results.addUnit(new DefaultUnit<ComponentReference>(new ComponentReference(componentId), amount));
     }
 
     public subtract(componentId: string, amount = 1) {
-        this._results = this._results.subtractUnit(new Unit<ComponentReference>(new ComponentReference(componentId), amount));
+        this._results = this._results.subtractUnit(new DefaultUnit<ComponentReference>(new ComponentReference(componentId), amount));
     }
 
     toJson(): ResultOptionJson {
@@ -85,7 +85,7 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
             return new ResultOption({
                 id: resultOptionJson.id,
                 name: resultOptionJson.name,
-                results: Combination.fromRecord(resultOptionJson.results, ComponentReference.fromComponentId)
+                results: DefaultCombination.fromRecord(resultOptionJson.results, ComponentReference.fromComponentId)
             });
         } catch (e: any) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
@@ -100,9 +100,9 @@ class ResultOption implements Identifiable, Serializable<ResultOptionJson> {
                     return resultUnit;
                 }
                 const substituteId = substituteComponentIds.get(resultUnit.element.id);
-                return new Unit<ComponentReference>(new ComponentReference(substituteId), resultUnit.quantity);
+                return new DefaultUnit<ComponentReference>(new ComponentReference(substituteId), resultUnit.quantity);
             })
-            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<ComponentReference>());
+            .reduce((left, right) => left.addUnit(right), DefaultCombination.EMPTY<ComponentReference>());
         return new ResultOption({
             results,
             id: this._id,

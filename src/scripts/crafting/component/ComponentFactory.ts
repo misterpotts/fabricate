@@ -1,10 +1,10 @@
 import {Component, ComponentJson, DefaultComponent} from "./Component";
 import {DocumentManager} from "../../foundry/DocumentManager";
-import {Combination} from "../../common/Combination";
 import {SelectableOptions} from "../selection/SelectableOptions";
 import {EntityFactory} from "../../repository/EntityFactory";
 import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
 import {EssenceReference} from "../essence/EssenceReference";
+import {DefaultCombination} from "../../common/Combination";
 
 class ComponentFactory implements EntityFactory<ComponentJson, Component> {
 
@@ -28,7 +28,7 @@ class ComponentFactory implements EntityFactory<ComponentJson, Component> {
             embedded: componentJson.embedded,
             disabled: componentJson.disabled,
             craftingSystemId: componentJson.craftingSystemId,
-            essences: Combination.fromRecord(componentJson.essences, EssenceReference.fromEssenceId),
+            essences: DefaultCombination.fromRecord(componentJson.essences, EssenceReference.fromEssenceId),
             salvageOptions: this.buildSalvageOptions(componentJson.salvageOptions)
         });
 

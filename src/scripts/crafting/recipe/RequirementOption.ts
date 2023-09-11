@@ -1,9 +1,9 @@
 import {Identifiable} from "../../common/Identifiable";
 import {Serializable} from "../../common/Serializable";
-import {Combination} from "../../common/Combination";
+import {Combination, DefaultCombination} from "../../common/Combination";
 import {ComponentReference} from "../component/ComponentReference";
 import {EssenceReference} from "../essence/EssenceReference";
-import {Unit} from "../../common/Unit";
+import {DefaultUnit} from "../../common/Unit";
 
 interface RequirementOptionConfig {
     id?: string,
@@ -32,9 +32,9 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
     constructor({
         id,
         name,
-        essences = Combination.EMPTY(),
-        catalysts = Combination.EMPTY(),
-        ingredients = Combination.EMPTY(),
+        essences = DefaultCombination.EMPTY(),
+        catalysts = DefaultCombination.EMPTY(),
+        ingredients = DefaultCombination.EMPTY(),
     }: {
         id: string;
         name: string;
@@ -102,27 +102,27 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
     }
 
     public addCatalyst(componentId: string, amount = 1) {
-        this._catalysts = this._catalysts.addUnit(new Unit<ComponentReference>(new ComponentReference(componentId), amount));
+        this._catalysts = this._catalysts.addUnit(new DefaultUnit<ComponentReference>(new ComponentReference(componentId), amount));
     }
 
     public subtractCatalyst(componentId: string, amount = 1) {
-        this._catalysts = this._catalysts.subtractUnit(new Unit<ComponentReference>(new ComponentReference(componentId), amount));
+        this._catalysts = this._catalysts.subtractUnit(new DefaultUnit<ComponentReference>(new ComponentReference(componentId), amount));
     }
 
     public addIngredient(componentId: string, amount = 1) {
-        this._ingredients = this._ingredients.addUnit(new Unit<ComponentReference>(new ComponentReference(componentId), amount));
+        this._ingredients = this._ingredients.addUnit(new DefaultUnit<ComponentReference>(new ComponentReference(componentId), amount));
     }
 
     public subtractIngredient(componentId: string, amount = 1) {
-        this._ingredients = this._ingredients.subtractUnit(new Unit<ComponentReference>(new ComponentReference(componentId), amount));
+        this._ingredients = this._ingredients.subtractUnit(new DefaultUnit<ComponentReference>(new ComponentReference(componentId), amount));
     }
 
     public addEssence(essenceId: string, amount = 1) {
-        this._essences = this._essences.addUnit(new Unit<EssenceReference>(new EssenceReference(essenceId), amount));
+        this._essences = this._essences.addUnit(new DefaultUnit<EssenceReference>(new EssenceReference(essenceId), amount));
     }
 
     public subtractEssence(essenceId: string, amount = 1) {
-        this._essences = this._essences.subtractUnit(new Unit<EssenceReference>(new EssenceReference(essenceId), amount));
+        this._essences = this._essences.subtractUnit(new DefaultUnit<EssenceReference>(new EssenceReference(essenceId), amount));
     }
 
     toJson(): RequirementOptionJson {
@@ -140,9 +140,9 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
             return new RequirementOption({
                 id: requirementOptionJson.id,
                 name: requirementOptionJson.name,
-                catalysts: Combination.fromRecord(requirementOptionJson.catalysts, ComponentReference.fromComponentId),
-                ingredients: Combination.fromRecord(requirementOptionJson.ingredients, ComponentReference.fromComponentId),
-                essences: Combination.fromRecord(requirementOptionJson.essences, EssenceReference.fromEssenceId)
+                catalysts: DefaultCombination.fromRecord(requirementOptionJson.catalysts, ComponentReference.fromComponentId),
+                ingredients: DefaultCombination.fromRecord(requirementOptionJson.ingredients, ComponentReference.fromComponentId),
+                essences: DefaultCombination.fromRecord(requirementOptionJson.essences, EssenceReference.fromEssenceId)
             });
         } catch (e: any) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
@@ -164,9 +164,9 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
                     return catalystUnit;
                 }
                 const substituteId = substituteComponentIds.get(catalystUnit.element.id);
-                return new Unit<ComponentReference>(new ComponentReference(substituteId), catalystUnit.quantity);
+                return new DefaultUnit<ComponentReference>(new ComponentReference(substituteId), catalystUnit.quantity);
             })
-            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<ComponentReference>());
+            .reduce((left, right) => left.addUnit(right), DefaultCombination.EMPTY<ComponentReference>());
 
         const ingredients = this._ingredients
             .map((ingredientUnit) => {
@@ -174,9 +174,9 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
                     return ingredientUnit;
                 }
                 const substituteId = substituteComponentIds.get(ingredientUnit.element.id);
-                return new Unit<ComponentReference>(new ComponentReference(substituteId), ingredientUnit.quantity);
+                return new DefaultUnit<ComponentReference>(new ComponentReference(substituteId), ingredientUnit.quantity);
             })
-            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<ComponentReference>());
+            .reduce((left, right) => left.addUnit(right), DefaultCombination.EMPTY<ComponentReference>());
 
         const essences = this._essences
             .map((essenceUnit) => {
@@ -184,9 +184,9 @@ class RequirementOption implements Identifiable, Serializable<RequirementOptionJ
                     return essenceUnit;
                 }
                 const substituteId = substituteEssenceIds.get(essenceUnit.element.id);
-                return new Unit<EssenceReference>(new EssenceReference(substituteId), essenceUnit.quantity);
+                return new DefaultUnit<EssenceReference>(new EssenceReference(substituteId), essenceUnit.quantity);
             })
-            .reduce((left, right) => left.addUnit(right), Combination.EMPTY<EssenceReference>());
+            .reduce((left, right) => left.addUnit(right), DefaultCombination.EMPTY<EssenceReference>());
 
         return new RequirementOption({
             essences,

@@ -1,5 +1,4 @@
 import {describe, expect, test} from '@jest/globals';
-import {Combination} from "../src/scripts/common/Combination";
 import {DefaultInventoryFactory} from "../src/scripts/actor/InventoryFactory";
 import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubObjectUtility} from "./stubs/StubObjectUtility";
@@ -11,8 +10,9 @@ import {
     testComponentThree,
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
-import {Unit} from "../src/scripts/common/Unit";
+import {DefaultUnit, Unit} from "../src/scripts/common/Unit";
 import {SimpleInventoryAction} from "../src/scripts/actor/InventoryAction";
+import {DefaultCombination} from "../src/scripts/common/Combination";
 
 describe("Crafting Inventory", () => {
 
@@ -47,9 +47,9 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
@@ -65,9 +65,9 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = dnd5eInventoryFactory.make("notDnd5e", stubActor, getAllTestComponents());
@@ -90,9 +90,9 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = inventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
@@ -112,14 +112,14 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const addOneTestComponentThreeOnly = new SimpleInventoryAction({
-                additions: Combination.ofUnits([new Unit(testComponentThree, 1)])
+                additions: DefaultCombination.ofUnits([new DefaultUnit(testComponentThree, 1)])
             });
 
             const result = await underTest.perform(addOneTestComponentThreeOnly);
@@ -135,14 +135,14 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTwoOnly = new SimpleInventoryAction({
-                removals: Combination.ofUnits([new Unit(testComponentTwo, 2)])
+                removals: DefaultCombination.ofUnits([new DefaultUnit(testComponentTwo, 2)])
             });
 
             const result = await underTest.perform(removeTwoTestComponentTwoOnly);
@@ -157,19 +157,19 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTwoAndTestComponentFiveAndAddTwoTestComponentThree = new SimpleInventoryAction({
-                removals: Combination.ofUnits([
-                    new Unit(testComponentTwo, 2),
-                    new Unit(testComponentFive, 2),
+                removals: DefaultCombination.ofUnits([
+                    new DefaultUnit(testComponentTwo, 2),
+                    new DefaultUnit(testComponentFive, 2),
                 ]),
-                additions: Combination.ofUnits([
-                    new Unit(testComponentThree, 2),
+                additions: DefaultCombination.ofUnits([
+                    new DefaultUnit(testComponentThree, 2),
                 ]),
             });
 
@@ -185,15 +185,15 @@ describe("Crafting Inventory", () => {
 
             const stubActor = new StubActorFactory()
                 .make(
-                    Combination.ofUnits([
-                        new Unit(testComponentTwo, 3),
-                        new Unit(testComponentFive, 2),
+                    DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
                     ])
                 );
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTFourAndAddTwoTestComponentFour = new SimpleInventoryAction({
-                removals: Combination.ofUnits([new Unit(testComponentFour, 2)]),
-                additions: Combination.ofUnits([new Unit(testComponentFour, 2)]),
+                removals: DefaultCombination.ofUnits([new DefaultUnit(testComponentFour, 2)]),
+                additions: DefaultCombination.ofUnits([new DefaultUnit(testComponentFour, 2)]),
             });
 
             const result = await underTest.perform(removeTwoTestComponentTFourAndAddTwoTestComponentFour);

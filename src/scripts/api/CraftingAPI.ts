@@ -5,7 +5,7 @@ import {RecipeAPI} from "./RecipeAPI";
 import {CraftingSystemAPI} from "./CraftingSystemAPI";
 import {NoSalvageResult, SalvageResult, SuccessfulSalvageResult} from "../crafting/result/SalvageResult";
 import Properties from "../Properties";
-import {Combination} from "../common/Combination";
+import {Combination, DefaultCombination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
 import {GameProvider} from "../foundry/GameProvider";
 import {InventoryFactory} from "../actor/InventoryFactory";
@@ -21,7 +21,7 @@ import {
 } from "../crafting/selection/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {Unit} from "../common/Unit";
+import {DefaultUnit, Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
 
 /**
@@ -559,7 +559,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const action = new SimpleInventoryAction({
             additions: selectedSalvageOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
-            removals: Combination.of(component),
+            removals: DefaultCombination.of(component),
         });
         await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);
         const description = this.localizationService.localize(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageResult.success`);
@@ -793,7 +793,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         const allEssenceIds = Array.from(includedComponentsById.values())
             .filter(component => component.hasEssences)
             .map(component => component.essences)
-            .reduce((essences, componentEssences) => essences.combineWith(componentEssences), Combination.EMPTY())
+            .reduce((essences, componentEssences) => essences.combineWith(componentEssences), DefaultCombination.EMPTY())
             .map(unit => unit.element.id);
         const includedEssencesById = await this.essenceAPI.getAllById(allEssenceIds);
 
@@ -1055,7 +1055,7 @@ class DefaultCraftingAPI implements CraftingAPI {
                                  ownedComponents: Combination<Component>): { selected: ComponentSelection, missing: Combination<Component> } {
 
         let availableComponents = ownedComponents;
-        let missingComponents = Combination.EMPTY<Component>();
+        let missingComponents = DefaultCombination.EMPTY<Component>();
 
         // Select Catalysts from available components up to the required amount in the user selection
 
@@ -1066,12 +1066,12 @@ class DefaultCraftingAPI implements CraftingAPI {
                 missingComponents = missingComponents.with(component, unit.quantity - availableQuantity);
             }
             availableComponents = availableComponents.without(component.id, availableQuantity);
-            return new Unit<Component>(component, availableQuantity);
+            return new DefaultUnit<Component>(component, availableQuantity);
         };
 
-        const actualCatalysts = Combination.fromRecord(userSelectedComponents.catalysts, componentId => allComponentsById.get(componentId))
+        const actualCatalysts = DefaultCombination.fromRecord(userSelectedComponents.catalysts, componentId => allComponentsById.get(componentId))
             .map(assignComponentAmounts)
-            .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+            .reduce((combination, unit) => combination.addUnit(unit), DefaultCombination.EMPTY<Component>());
 
         const catalysts = new TrackedCombination<Component>({
             target: selectedRequirementOption.catalysts.convertElements(componentReference => allComponentsById.get(componentReference.id)),
@@ -1080,9 +1080,9 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         // Select Ingredients from available components up to the required amount in the user selection
 
-        const actualIngredients = Combination.fromRecord(userSelectedComponents.ingredients, componentId => allComponentsById.get(componentId))
+        const actualIngredients = DefaultCombination.fromRecord(userSelectedComponents.ingredients, componentId => allComponentsById.get(componentId))
             .map(assignComponentAmounts)
-            .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+            .reduce((combination, unit) => combination.addUnit(unit), DefaultCombination.EMPTY<Component>());
 
         const ingredients = new TrackedCombination<Component>({
             target: selectedRequirementOption.ingredients.convertElements(componentReference => allComponentsById.get(componentReference.id)),
@@ -1091,9 +1091,9 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         // Select Essence Sources from available components up to the required amount in the user selection
 
-        const essenceSources = Combination.fromRecord<Component>(userSelectedComponents.essenceSources, componentId => allComponentsById.get(componentId))
+        const essenceSources = DefaultCombination.fromRecord<Component>(userSelectedComponents.essenceSources, componentId => allComponentsById.get(componentId))
             .map(assignComponentAmounts)
-            .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+            .reduce((combination, unit) => combination.addUnit(unit), DefaultCombination.EMPTY<Component>());
 
         const selectedComponents = new DefaultComponentSelection({
             catalysts,

@@ -1,6 +1,6 @@
 import {derived, Readable, Subscriber} from "svelte/store";
 import {Essence} from "../../scripts/crafting/essence/Essence";
-import {Unit} from "../../scripts/common/Unit";
+import {DefaultUnit, Unit} from "../../scripts/common/Unit";
 import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 
 /**
@@ -34,7 +34,7 @@ class RecipeRequirementOptionEssenceStore implements Readable<Map<string, Unit<E
                     .map(requirementOption => {
                         const essences = $allEssences
                             .map(essence => {
-                                return new Unit(essence, requirementOption.essences.amountFor(essence.id));
+                                return new DefaultUnit(essence, requirementOption.essences.amountFor(essence.id));
                             });
                         return {
                             requirementOption,

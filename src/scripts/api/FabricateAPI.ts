@@ -14,8 +14,6 @@ import {V2Component, V2CraftingSystem, V2Essence, V2Recipe} from "../repository/
 import {NotificationService} from "../foundry/NotificationService";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
-import {result} from "lodash";
-import error from "svelte/types/compiler/utils/error";
 
 /**
  * Contains summary statistics about an Entity type in the Fabricate database.

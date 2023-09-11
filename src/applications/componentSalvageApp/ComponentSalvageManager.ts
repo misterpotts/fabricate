@@ -3,7 +3,7 @@ import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/fou
 import {ComponentAPI} from "../../scripts/api/ComponentAPI";
 import {Component} from "../../scripts/crafting/component/Component";
 import {TrackedCombination} from "../../scripts/common/TrackedCombination";
-import {Combination} from "../../scripts/common/Combination";
+import {Combination, DefaultCombination} from "../../scripts/common/Combination";
 import {SalvageOption} from "../../scripts/crafting/component/SalvageOption";
 import {SalvageResult} from "../../scripts/crafting/result/SalvageResult";
 
@@ -159,7 +159,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
             const targetCatalysts = option.catalysts.convertElements(reference => includedComponentsById.get(reference.id));
             const actualCatalysts = ownedComponents.units
                 .filter(unit => targetCatalysts.has(unit.element))
-                .reduce((combination, unit) => combination.addUnit(unit), Combination.EMPTY<Component>());
+                .reduce((combination, unit) => combination.addUnit(unit), DefaultCombination.EMPTY<Component>());
             requiredCatalysts = new TrackedCombination<Component>({
                 target: targetCatalysts,
                 actual: actualCatalysts
@@ -173,7 +173,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
             optionId: option.id,
             optionName: option.name,
             amountOwned,
-            isPossible: isSalvageable,
+            isPossible: isSalvageable && amountOwned > 0,
             requiredCatalysts,
             componentToSalvage,
             producedComponents

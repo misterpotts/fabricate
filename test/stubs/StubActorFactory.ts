@@ -1,13 +1,13 @@
 import {StubItem} from "./StubItem";
 import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
-import {Combination} from "../../src/scripts/common/Combination";
+import {Combination, DefaultCombination} from "../../src/scripts/common/Combination";
 import {Component} from "../../src/scripts/crafting/component/Component";
 
 class StubActorFactory {
 
     constructor() {}
 
-    public make(ownedComponents: Combination<Component> = Combination.EMPTY(), additionalItemCount = 10): BaseActor {
+    public make(ownedComponents: Combination<Component> = DefaultCombination.EMPTY(), additionalItemCount = 10): BaseActor {
         const items = this.generateInventory(ownedComponents, additionalItemCount);
         return <BaseActor><unknown>{
             id: randomIdentifier(),
@@ -63,7 +63,7 @@ class StubActorFactory {
         };
     }
 
-    private generateInventory(ownedComponents: Combination<Component> = Combination.EMPTY(), additionalItemCount = 10): Map<string, StubItem> {
+    private generateInventory(ownedComponents: Combination<Component> = DefaultCombination.EMPTY(), additionalItemCount = 10): Map<string, StubItem> {
         const result: Map<string, StubItem> = new Map();
         for (let i = 0; i < additionalItemCount; i++) {
             const id = randomIdentifier();

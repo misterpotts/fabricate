@@ -19,10 +19,10 @@ import {FabricateStatistics} from "../src/scripts/api/FabricateAPI";
 import {
     AlchemistsSuppliesV16SystemDefinition
 } from "../src/scripts/repository/embedded_systems/AlchemistsSuppliesV16SystemDefinition";
-import {Combination} from "../src/scripts/common/Combination";
 import {EssenceReference} from "../src/scripts/crafting/essence/EssenceReference";
 import {ComponentReference} from "../src/scripts/crafting/component/ComponentReference";
 import {SalvageOptionConfig} from "../src/scripts/crafting/component/Component";
+import {DefaultCombination} from "../src/scripts/common/Combination";
 
 describe("Crafting System integration", () => {
 
@@ -578,7 +578,7 @@ describe("Export and import data", () => {
             expect(exportedComponent.itemUuid).toEqual(component.itemUuid);
             expect(exportedComponent.disabled).toEqual(component.isDisabled);
 
-            const exportedComponentEssences = Combination.fromRecord(exportedComponent.essences, id => new EssenceReference(id));
+            const exportedComponentEssences = DefaultCombination.fromRecord(exportedComponent.essences, id => new EssenceReference(id));
             expect(exportedComponentEssences.equals(component.essences)).toBe(true);
 
             expect(exportedComponent.salvageOptions.length).toEqual(component.salvageOptions.size);
@@ -587,9 +587,9 @@ describe("Export and import data", () => {
                 expect(componentSalvageOption).not.toBeNull();
                 expect(exportedSalvageOption.id).toEqual(componentSalvageOption.id);
                 expect(exportedSalvageOption.name).toEqual(componentSalvageOption.name);
-                const exportedSalvageOptionCatalysts = Combination.fromRecord(exportedSalvageOption.catalysts, id => new ComponentReference(id));
+                const exportedSalvageOptionCatalysts = DefaultCombination.fromRecord(exportedSalvageOption.catalysts, id => new ComponentReference(id));
                 expect(exportedSalvageOptionCatalysts.equals(componentSalvageOption.catalysts)).toBe(true);
-                const exportedSalvageOptionResults = Combination.fromRecord(exportedSalvageOption.results, id => new ComponentReference(id));
+                const exportedSalvageOptionResults = DefaultCombination.fromRecord(exportedSalvageOption.results, id => new ComponentReference(id));
                 expect(exportedSalvageOptionResults.equals(componentSalvageOption.results)).toBe(true);
             });
         });
@@ -610,7 +610,7 @@ describe("Export and import data", () => {
                 expect(recipeResultOption).not.toBeNull();
                 expect(exportedResultOption.id).toEqual(recipeResultOption.id);
                 expect(exportedResultOption.name).toEqual(recipeResultOption.name);
-                const exportedResultOptionResults = Combination.fromRecord(exportedResultOption.results, id => new ComponentReference(id));
+                const exportedResultOptionResults = DefaultCombination.fromRecord(exportedResultOption.results, id => new ComponentReference(id));
                 expect(exportedResultOptionResults.equals(recipeResultOption.results)).toBe(true);
             });
 
@@ -620,11 +620,11 @@ describe("Export and import data", () => {
                 expect(recipeRequirementOption).not.toBeNull();
                 expect(exportedRequirementOption.id).toEqual(recipeRequirementOption.id);
                 expect(exportedRequirementOption.name).toEqual(recipeRequirementOption.name);
-                const exportedRequirementOptionCatalysts = Combination.fromRecord(exportedRequirementOption.catalysts, id => new ComponentReference(id));
+                const exportedRequirementOptionCatalysts = DefaultCombination.fromRecord(exportedRequirementOption.catalysts, id => new ComponentReference(id));
                 expect(exportedRequirementOptionCatalysts.equals(recipeRequirementOption.catalysts)).toBe(true);
-                const exportedRequirementOptionIngredients = Combination.fromRecord(exportedRequirementOption.ingredients, id => new ComponentReference(id));
+                const exportedRequirementOptionIngredients = DefaultCombination.fromRecord(exportedRequirementOption.ingredients, id => new ComponentReference(id));
                 expect(exportedRequirementOptionIngredients.equals(recipeRequirementOption.ingredients)).toBe(true);
-                const exportedRequirementOptionEssences = Combination.fromRecord(exportedRequirementOption.essences, id => new EssenceReference(id));
+                const exportedRequirementOptionEssences = DefaultCombination.fromRecord(exportedRequirementOption.essences, id => new EssenceReference(id));
                 expect(exportedRequirementOptionEssences.equals(recipeRequirementOption.essences)).toBe(true);
             });
         });

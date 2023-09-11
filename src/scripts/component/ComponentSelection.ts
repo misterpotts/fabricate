@@ -1,14 +1,36 @@
 import {Component} from "../crafting/component/Component";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {Combination} from "../common/Combination";
+import {Combination, DefaultCombination} from "../common/Combination";
 import {Essence} from "../crafting/essence/Essence";
 
+/**
+ * Represents a selection of components and a target amount
+ */
 interface ComponentSelection {
 
+    /**
+     * Indicates whether the selection contains enough components to meet the targets
+     */
     isSufficient: boolean;
+
+    /**
+     * The components that are selected as catalysts, as well as the target amounts for each
+     */
     catalysts: TrackedCombination<Component>;
+
+    /**
+     * The components that are selected as ingredients, as well as the target amounts for each
+     */
     ingredients: TrackedCombination<Component>;
+
+    /**
+     * The cumulative essences present in essence sources, as well as the target amounts for each
+     */
     essences: TrackedCombination<Essence>;
+
+    /**
+     * The components that are selected as sources for the required essences, as well as the target amounts for each
+     */
     essenceSources: Combination<Component>;
 
 }
@@ -79,7 +101,7 @@ class EmptyComponentSelection implements ComponentSelection {
         }
 
         get essenceSources(): Combination<Component> {
-            return Combination.EMPTY();
+            return DefaultCombination.EMPTY();
         }
 
         get isSufficient(): boolean {
@@ -87,7 +109,7 @@ class EmptyComponentSelection implements ComponentSelection {
         }
 
         get selectedComponents(): Combination<Component> {
-            return Combination.EMPTY();
+            return DefaultCombination.EMPTY();
         }
 
 }

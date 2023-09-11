@@ -11,7 +11,7 @@
     import {DropEventParser} from "../../common/DropEventParser";
     import {recipeUpdated} from "../../common/EventBus";
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
-    import {Unit} from "../../../scripts/common/Unit";
+    import {DefaultUnit} from "../../../scripts/common/Unit";
     import {RecipeRequirementOptionEssenceStore} from "../../stores/RecipeRequirementOptionEssenceStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes`;
@@ -237,7 +237,7 @@
 
     function dereferenceComponentCombination(componentReferenceCombination) {
         return componentReferenceCombination
-            .map(componentReferenceUnit => new Unit(dereferenceComponent(componentReferenceUnit.element), componentReferenceUnit.quantity));
+            .map(componentReferenceUnit => new DefaultUnit(dereferenceComponent(componentReferenceUnit.element), componentReferenceUnit.quantity));
     }
 
     function dereferenceComponent(componentReference) {

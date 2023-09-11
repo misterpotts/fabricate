@@ -1,7 +1,7 @@
-import {Combination} from "../common/Combination";
+import {Combination, DefaultCombination} from "../common/Combination";
 import {Component} from "../crafting/component/Component";
-import {Unit} from "../common/Unit";
 import {EssenceReference} from "../crafting/essence/EssenceReference";
+import {DefaultUnit} from "../common/Unit";
 
 export class ComponentCombinationNode {
     private readonly _requiredEssences: Combination<EssenceReference>;
@@ -23,9 +23,9 @@ export class ComponentCombinationNode {
             return;
         }
         this._children = this._remainingPicks.members.map((component: Component) => {
-            const deltaUnit = new Unit(component, 1);
+            const deltaUnit = new DefaultUnit(component, 1);
             const childComponentCombination: Combination<Component> = this._componentCombination.addUnit(deltaUnit);
-            const remainingPicksForChild: Combination<Component> = this._remainingPicks.subtract(Combination.ofUnit(deltaUnit));
+            const remainingPicksForChild: Combination<Component> = this._remainingPicks.subtract(DefaultCombination.ofUnit(deltaUnit));
             return new ComponentCombinationNode(this._requiredEssences, childComponentCombination, remainingPicksForChild);
         });
         this._children.forEach((child: ComponentCombinationNode) => child.populate());

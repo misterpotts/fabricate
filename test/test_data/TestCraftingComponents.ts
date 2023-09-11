@@ -1,12 +1,12 @@
 import {Component, DefaultComponent} from "../../src/scripts/crafting/component/Component";
-import {Combination} from "../../src/scripts/common/Combination";
+import {DefaultCombination} from "../../src/scripts/common/Combination";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import Properties from "../../src/scripts/Properties";
 import {SelectableOptions} from "../../src/scripts/crafting/selection/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 import {testCraftingSystemOne} from "./TestCrafingSystem";
-import {Unit} from "../../src/scripts/common/Unit";
+import {DefaultUnit} from "../../src/scripts/common/Unit";
 import {SalvageOption} from "../../src/scripts/crafting/component/SalvageOption";
 
 const testComponentOne: Component = new DefaultComponent({
@@ -18,7 +18,7 @@ const testComponentOne: Component = new DefaultComponent({
         itemUuid: "Compendium.module.compendium-name.iyeUGBbSts0ij92X",
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([new Unit(elementalEarth.toReference(), 2)]),
+    essences: DefaultCombination.ofUnits([new DefaultUnit(elementalEarth.toReference(), 2)]),
 });
 
 const testComponentTwo: Component = new DefaultComponent({
@@ -30,7 +30,7 @@ const testComponentTwo: Component = new DefaultComponent({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([new Unit(elementalFire.toReference(), 2)]),
+    essences: DefaultCombination.ofUnits([new DefaultUnit(elementalFire.toReference(), 2)]),
 });
 
 const testComponentThree: Component = new DefaultComponent({
@@ -42,7 +42,7 @@ const testComponentThree: Component = new DefaultComponent({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 2)]),
+    essences: DefaultCombination.ofUnits([new DefaultUnit(elementalWater.toReference(), 2)]),
 });
 
 const testComponentFourId = "Ra2Z1ujre76weR0i";
@@ -55,13 +55,13 @@ const testComponentFour: Component = new DefaultComponent({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([new Unit(elementalAir.toReference(), 2)]),
+    essences: DefaultCombination.ofUnits([new DefaultUnit(elementalAir.toReference(), 2)]),
     salvageOptions: new SelectableOptions({
         options: [
             new SalvageOption({
                 id: `${testComponentFourId}-salvage-1`,
                 name: "Option 1",
-                results: Combination.of(testComponentThree.toReference(), 2)
+                results: DefaultCombination.of(testComponentThree.toReference(), 2)
             })
         ]
     })
@@ -77,18 +77,18 @@ const testComponentFive: Component = new DefaultComponent({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([
-        new Unit(elementalFire.toReference(), 1),
-        new Unit(elementalEarth.toReference(), 3)
+    essences: DefaultCombination.ofUnits([
+        new DefaultUnit(elementalFire.toReference(), 1),
+        new DefaultUnit(elementalEarth.toReference(), 3)
     ]),
     salvageOptions: new SelectableOptions({
         options: [
             new SalvageOption({
                 id: `${testComponentFiveId}-salvage-1`,
                 name: "Option 1",
-                results: Combination.ofUnits([
-                    new Unit(testComponentOne.toReference(), 2),
-                    new Unit(testComponentTwo.toReference(), 1)
+                results: DefaultCombination.ofUnits([
+                    new DefaultUnit(testComponentOne.toReference(), 2),
+                    new DefaultUnit(testComponentTwo.toReference(), 1)
                 ])
             })
         ]
@@ -104,7 +104,7 @@ const testComponentSix: Component = new DefaultComponent({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 1)])
+    essences: DefaultCombination.ofUnits([new DefaultUnit(elementalWater.toReference(), 1)])
 });
 
 const testComponentSeven: Component = new DefaultComponent({
@@ -116,7 +116,7 @@ const testComponentSeven: Component = new DefaultComponent({
         imageUrl: Properties.ui.defaults.recipeImageUrl,
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
-    essences: Combination.ofUnits([new Unit(elementalAir.toReference(), 1)])
+    essences: DefaultCombination.ofUnits([new DefaultUnit(elementalAir.toReference(), 1)])
 });
 
 const allTestComponents = new Map([
