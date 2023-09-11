@@ -306,6 +306,204 @@ interface SalvageOptionValue {
 }
 ```
 
+The component object
+
+Components implement the `Component` interface, described below.
+
+<details markdown="block">
+<summary>
+Component Interface
+</summary>
+
+```typescript
+interface Component extends Identifiable, Serializable<ComponentJson> {
+
+    /**
+     * The component's unique ID
+     */
+    readonly id: string;
+
+    /**
+     * The ID of the crafting system this component belongs to
+     */
+    readonly craftingSystemId: string;
+
+    /**
+     * The ID of the item this component is associated with
+     */
+    readonly itemUuid: string;
+
+    /**
+     * Indicates whether this component is embedded with Fabricate
+     */
+    readonly isEmbedded: boolean;
+
+    /**
+     * The name of the item this component is associated with
+     */
+    readonly name: string;
+
+    /**
+     * The URL of the image for the item this component is associated with
+     */
+    readonly imageUrl: string;
+
+    /**
+     * Indicates whether this component has Salvage options
+     */
+    readonly isSalvageable: boolean;
+
+    /**
+     * Indicates whether this component has any essences. This is a convenience function for checking if the component's
+     *  essence Combination is empty.
+     */
+    readonly hasEssences: boolean;
+
+    /**
+     * The essences that this component contains, if any. May be an empty Combination.
+     */
+    essences: Combination<EssenceReference>;
+
+    /**
+     * Indicates whether this component is disabled. Disabled components cannot used in crafting.
+     */
+    isDisabled: boolean;
+
+    /**
+     * The Salvage options for this component
+     */
+    salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
+
+    /**
+     * The Salvage options for this component, indexed by ID
+     */
+    readonly salvageOptionsById: Map<string, SalvageOption>;
+
+    /**
+     * The Fabricate item data for this component, containing the item's name, image URL, and any errors that occurred
+     *  while loading the item.
+     */
+    itemData: FabricateItemData;
+
+    /**
+     * Indicates whether this component has any errors. This is a convenience function for checking if the item data
+     *  has any errors.
+     */
+    readonly hasErrors: boolean;
+
+    /**
+     * The errors that occurred while loading the item data, if any. May be an empty array.
+     */
+    readonly errors: ItemLoadingError[];
+
+    /**
+     * The codes for the errors that occurred while loading the item data, if any. May be an empty array.
+     */
+    readonly errorCodes: string[];
+
+    /**
+     * Indicates whether this component's item data has been loaded
+     */
+    readonly loaded: boolean;
+
+    /**
+     * Converts this component to a ComponentReference
+     *
+     * @returns {ComponentReference} - The ComponentReference for this component
+     */
+    toReference(): ComponentReference;
+
+    /**
+     * Removes the essence with the given ID from this component, regardless of quantity
+     *
+     * @param essenceIdToDelete - The ID of the essence to remove
+     */
+    removeEssence(essenceIdToDelete: string): void;
+
+    /**
+     * Loads the item data for this component
+     *
+     * @param forceReload - Whether to reload the item data. Defaults to false.
+     */
+    load(forceReload?: boolean): Promise<void>;
+
+    /**
+     * Sets the Salvage option for this component. If the Salvage option has an ID, it will be used to attempt to
+     * overwrite an existing salvage option. Otherwise, a new Salvage option will be created with a new ID.
+     *
+     * @param {SalvageOptionConfig | SalvageOption} salvageOption - The Salvage option to set. Accepts a SalvageOption
+     *  instance or a SalvageOptionConfig object.
+     */
+    setSalvageOption(salvageOption: SalvageOptionConfig | SalvageOption): void;
+
+    /**
+     * Adds the given quantity of the essence with the given ID to this component
+     *
+     * @param essenceId - The ID of the essence to add
+     * @param quantity - The quantity of the essence to add. Defaults to 1.
+     */
+    addEssence(essenceId: string, quantity?: number): void;
+
+    /**
+     * Subtracts the given quantity of the essence with the given ID from this component
+     *
+     * @param essenceId - The ID of the essence to subtract
+     * @param quantity - The quantity of the essence to subtract. Defaults to 1.
+     */
+    subtractEssence(essenceId: string, quantity?: number): void;
+
+    /**
+     * Lists all the components referenced by this component's Salvage options. May be an empty array.
+     *
+     * @returns {ComponentReference[]} - The components referenced by this component, if any
+     */
+    getUniqueReferencedComponents(): ComponentReference[];
+
+    /**
+     * Lists all the essences referenced by this component. May be an empty array.
+     *
+     * @returns {EssenceReference[]} - The essences referenced by this component, if any
+     */
+    getUniqueReferencedEssences(): EssenceReference[];
+
+    /**
+     * Removes the given component from this component's Salvage options
+     *
+     * @param componentId - The ID of the component to remove
+     */
+    removeComponentFromSalvageOptions(componentId: string): void;
+
+    /**
+     * Deletes the Salvage option with the given ID from this component
+     *
+     * @param id - The ID of the Salvage option to delete
+     */
+    deleteSalvageOptionById(id: string): void;
+
+    /**
+     * Clones this component, optionally with a new ID, crafting system ID, and/or substitute essence IDs
+     *
+     * @param id - The ID for the cloned component. Must not be the ID of this component.
+     * @param embedded - Whether the cloned component should be embedded with Fabricate. Defaults to false.
+     * @param craftingSystemId - The ID of the crafting system for the cloned component. Defaults to the ID of this
+     *  component's crafting system.
+     * @param substituteEssenceIds - A map of essence IDs to substitute with new IDs. Defaults to an empty map. This is
+     *  used when cloning a component into a new crafting system, to ensure that the cloned component's essences are
+     *  unique to the new crafting system.
+     */
+    clone({
+              id,
+              craftingSystemId,
+              substituteEssenceIds,
+          }: {
+        id: string;
+        craftingSystemId?: string;
+        substituteEssenceIds?: Map<string, string>;
+    }): Component;
+
+}
+```
+
 </details>
 
 ## Examples
@@ -457,7 +655,7 @@ const components = await game.fabricate.api.components.getAllByItemUuid(myItemUu
 
 </details>
 
-### Deleting a component by ID
+### Deleting a component
 
 You can delete a component by calling `game.fabricate.api.components.deleteById()`, passing in the ID of the component to delete.
 
@@ -622,7 +820,7 @@ const componentAfterSave = await game.fabricate.api.components.save(component);
 
 You can change the item associated with a component (with a bit of a workaround) by first loading the item data using the document manager.
 Just like with other modifications, you will need to save the modified component after changing the source item data by calling `game.fabricate.api.components.save()`.
-In a later release of Fabricate, this will be simplified to allow you to simply assign the item UUID to a property on the component.
+In a later release of Fabricate, this will be simplified to allow you to simply assign the item UUID to a the `itemUuid` property on the component.
 
 <details markdown="block">
 <summary>

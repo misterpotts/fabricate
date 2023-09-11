@@ -1,4 +1,4 @@
-import {Component, ComponentJson} from "./Component";
+import {Component, ComponentJson, DefaultComponent} from "./Component";
 import {DocumentManager} from "../../foundry/DocumentManager";
 import {Combination} from "../../common/Combination";
 import {SelectableOptions} from "../selection/SelectableOptions";
@@ -22,7 +22,7 @@ class ComponentFactory implements EntityFactory<ComponentJson, Component> {
 
         const itemData = this.documentManager.prepareItemDataByDocumentUuid(componentJson.itemUuid);
 
-        return new Component({
+        return new DefaultComponent({
             itemData,
             id: componentJson.id,
             embedded: componentJson.embedded,
