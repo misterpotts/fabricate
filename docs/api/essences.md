@@ -233,6 +233,119 @@ interface EssenceCreationOptions {
 
 </details>
 
+## The essence object
+
+Essences implement the Essence interface, described below.
+
+<details markdown="block">
+<summary>
+Essence Interface
+</summary>
+
+```typescript
+interface Essence extends Identifiable, Serializable<EssenceJson> {
+
+    /**
+     * The unique id of this essence
+     */
+    readonly id: string;
+
+    /**
+     * The unique id of the crafting system this essence belongs to
+     */
+    readonly craftingSystemId: string;
+
+    /**
+     * The display name of this essence
+     */
+    name: string;
+
+    /**
+     * The long-form, detailed description of this essence
+     */
+    description: string;
+
+    /**
+     * The tooltip to display when the user hovers their cursor over the icon for this essence
+     */
+    tooltip: string;
+
+    /**
+     * The Fontawesome icon code for the icon to display for this essence. Free icons, included with Foundry VTT can be
+     *  found at https://fontawesome.com/search?m=free&o=r
+     */
+    iconCode: string;
+
+    /**
+     * Indicates whether this essence is embedded in a crafting system
+     */
+    readonly embedded: boolean;
+
+    /**
+     * Indicates whether this essence is disabled. Disabled essences cannot be used in crafting
+     */
+    disabled: boolean;
+
+    /**
+     * Indicates whether this essence's active effect source item data has been loaded, if it has any
+     */
+    readonly loaded: boolean;
+
+    /**
+     * Indicates whether this essence has an active effect source item
+     */
+    readonly hasActiveEffectSource: boolean;
+
+    /**
+     * The active effect source item data for this essence, if it has any. May be an instance of the null object,
+     *  `NoFabricateItemData`
+     */
+    activeEffectSource: FabricateItemData;
+
+    /**
+     * Indicates whether this essence has any loading errors in its active effect source item data
+     */
+    readonly hasErrors: boolean;
+
+    /**
+     * The loading errors in this essence's active effect source item data, if it has any
+     */
+    readonly errors: ItemLoadingError[];
+
+    /**
+     * Converts this essence to an essence reference
+     *
+     * @returns EssenceReference A reference to this essence
+     */
+    toReference(): EssenceReference;
+
+    /**
+     * Clones this essence, returning a new instance with the provided id and crafting system id
+     *
+     * @param id - The id for the new essence. Must be different to this essence's id
+     * @param craftingSystemId - The crafting system id for the new essence
+     * @returns Essence A new instance of this essence, with the provided id and crafting system id
+     */
+    clone({
+              id,
+              craftingSystemId,
+          }: {
+        id: string,
+        craftingSystemId?: string
+    }): Essence;
+
+    /**
+     * Loads this essence's active effect source item data, if it has any
+     *
+     * @returns Promise<Essence> A promise that resolves to this essence, after its active effect source item data has
+     */
+    load(): Promise<Essence>;
+
+}
+```
+
+</details>
+
 ## Examples
 
 The examples below illustrate how to use the essence API to create, modify and delete essences.

@@ -1,7 +1,7 @@
 import {EmbeddedCraftingSystemDefinition} from "./EmbeddedCraftingSystemDefinition";
 import {CraftingSystem, DefaultCraftingSystem} from "../../system/CraftingSystem";
 import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
-import {Essence} from "../../crafting/essence/Essence";
+import {DefaultEssence, Essence} from "../../crafting/essence/Essence";
 import {Component, DefaultComponent} from "../../crafting/component/Component";
 import {FabricateItemData, LoadedFabricateItemData, PendingFabricateItemData} from "../../foundry/DocumentManager";
 import {Combination} from "../../common/Combination";
@@ -48,7 +48,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
 
     get essences(): Essence[] {
         return [
-            new Essence({
+            new DefaultEssence({
                 id: "water",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 name: "Water",
@@ -58,7 +58,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Essence({
+            new DefaultEssence({
                 id: "fire",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 name: "Fire",
@@ -68,7 +68,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Essence({
+            new DefaultEssence({
                 id: "earth",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 name: "Earth",
@@ -78,7 +78,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Essence({
+            new DefaultEssence({
                 id: "air",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 name: "Air",
@@ -88,7 +88,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Essence({
+            new DefaultEssence({
                 id: "positive-energy",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 name: "Positive Energy",
@@ -98,7 +98,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Essence({
+            new DefaultEssence({
                 id: "negative-energy",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 name: "Negative Energy",

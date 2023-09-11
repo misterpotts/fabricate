@@ -141,8 +141,9 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      * Loads the item data for this component
      *
      * @param forceReload - Whether to reload the item data. Defaults to false.
+     * @returns {Promise<Component>} - A promise that resolves to this component, once the item data has been loaded
      */
-    load(forceReload?: boolean): Promise<void>;
+    load(forceReload?: boolean): Promise<Component>;
 
     /**
      * Sets the Salvage option for this component. If the Salvage option has an ID, it will be used to attempt to
@@ -407,11 +408,12 @@ class DefaultComponent implements Component {
         this._salvageOptions = new SelectableOptions({options});
     }
 
-    async load(forceCacheRefresh: boolean = false) {
-        if (this._itemData.loaded && !forceCacheRefresh) {
+    async load(forceReload: boolean = false) {
+        if (this.loaded && !forceReload) {
             return;
         }
         this.itemData = await this.itemData.load();
+        return this;
     }
 
     get loaded(): boolean {

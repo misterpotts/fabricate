@@ -453,7 +453,7 @@ class DefaultEssenceAPI implements EssenceAPI {
     }
 
     private rejectModifyingEmbeddedEssence(essence: Essence): void {
-        if (!essence?.embedded) {
+        if (!essence?.isEmbedded) {
             return;
         }
         const message = this.localizationService.format(
@@ -465,7 +465,7 @@ class DefaultEssenceAPI implements EssenceAPI {
     }
 
     private rejectDeletingEmbeddedEssence(essenceToDelete: Essence): void {
-        if (!essenceToDelete?.embedded) {
+        if (!essenceToDelete?.isEmbedded) {
             return;
         }
         const message = this.localizationService.format(
