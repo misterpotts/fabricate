@@ -22,6 +22,7 @@ import {
 import {Combination} from "../src/scripts/common/Combination";
 import {EssenceReference} from "../src/scripts/crafting/essence/EssenceReference";
 import {ComponentReference} from "../src/scripts/crafting/component/ComponentReference";
+import {SalvageOptionConfig} from "../src/scripts/crafting/component/Component";
 
 describe("Crafting System integration", () => {
 
@@ -175,7 +176,7 @@ describe("Crafting System integration", () => {
         expect(componentOne.isSalvageable).toEqual(false);
         expect(componentOne.hasEssences).toEqual(false);
 
-        componentOne.setSalvageOption({
+        componentOne.setSalvageOption(<SalvageOptionConfig>{
             name: "salvageOptionOne",
             results: {
                 [ componentTwo.id ]: 1
@@ -189,7 +190,7 @@ describe("Crafting System integration", () => {
 
         componentOne.salvageOptions.all.find(option => option.name === "salvageOptionOne").addResult(componentTwo.id, 1);
 
-        componentOne.setSalvageOption({
+        componentOne.setSalvageOption(<SalvageOptionConfig>{
             name: "salvageOptionTwo",
             results: {
                 [ componentTwo.id ]: 1

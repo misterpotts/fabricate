@@ -13,6 +13,9 @@ import Properties from "../Properties";
 import {V2Component, V2CraftingSystem, V2Essence, V2Recipe} from "../repository/migration/V2SettingsModel";
 import {NotificationService} from "../foundry/NotificationService";
 import {LocalizationService} from "../../applications/common/LocalizationService";
+import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
+import {result} from "lodash";
+import error from "svelte/types/compiler/utils/error";
 
 /**
  * Contains summary statistics about an Entity type in the Fabricate database.
@@ -142,6 +145,12 @@ interface FabricateAPI {
     readonly crafting: CraftingAPI;
 
     /**
+     * Gets an instance of the Fabricate Document manager, used for loading Foundry Documents and extracting the data
+     *   they contain that is relevant to Fabricate.
+     */
+    readonly documentManager: DocumentManager;
+
+    /**
      * Suppresses notifications from Fabricate for all operations. Use {@link FabricateAPI#activateNotifications} to
      * re-enable notifications.
      */
@@ -214,9 +223,10 @@ class DefaultFabricateAPI implements FabricateAPI {
     private readonly essenceAPI: EssenceAPI;
     private readonly craftingAPI: CraftingAPI;
     private readonly componentAPI: ComponentAPI;
+    private readonly _documentManager: DocumentManager;
+    private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly localizationService: LocalizationService;
     private readonly notificationService: NotificationService;
-    private readonly craftingSystemAPI: CraftingSystemAPI;
     private readonly settingMigrationAPI: SettingMigrationAPI;
 
     constructor({
@@ -224,6 +234,7 @@ class DefaultFabricateAPI implements FabricateAPI {
         essenceAPI,
         craftingAPI,
         componentAPI,
+        documentManager = new DefaultDocumentManager(),
         craftingSystemAPI,
         localizationService,
         notificationService,
@@ -233,6 +244,7 @@ class DefaultFabricateAPI implements FabricateAPI {
         essenceAPI: EssenceAPI;
         craftingAPI: CraftingAPI;
         componentAPI: ComponentAPI;
+        documentManager?: DocumentManager;
         craftingSystemAPI: CraftingSystemAPI;
         localizationService: LocalizationService;
         notificationService: NotificationService;
@@ -242,10 +254,15 @@ class DefaultFabricateAPI implements FabricateAPI {
         this.essenceAPI = essenceAPI;
         this.craftingAPI = craftingAPI;
         this.componentAPI = componentAPI;
+        this._documentManager = documentManager;
         this.craftingSystemAPI = craftingSystemAPI;
         this.localizationService = localizationService;
         this.notificationService = notificationService;
         this.settingMigrationAPI = settingMigrationAPI;
+    }
+
+    get documentManager(): DocumentManager {
+        return this._documentManager;
     }
 
     activateNotifications(): void {

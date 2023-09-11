@@ -15,6 +15,8 @@ interface SalvageOptionConfig {
     catalysts: Record<string, number>;
 }
 
+export { SalvageOptionConfig }
+
 interface ComponentJson {
     id: string;
     embedded: boolean;
