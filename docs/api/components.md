@@ -306,7 +306,7 @@ interface SalvageOptionValue {
 }
 ```
 
-The component object
+## The component object
 
 Components implement the `Component` interface, described below.
 
