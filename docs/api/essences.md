@@ -180,6 +180,59 @@ interface EssenceAPI {
 }
 ```
 
+</details>
+
+<details markdown="block">
+<summary>
+EssenceCreationOptions Interface
+</summary>
+
+```typescript
+/**
+ * Represents a set of options for creating an essence.
+ */
+interface EssenceCreationOptions {
+
+    /**
+     * The name of the essence.
+     */
+    name?: string;
+
+    /**
+     * The tooltip text to display when the essence is hovered over.
+     */
+    tooltip?: string;
+
+    /**
+     * The FontAwesome icon code for the essence icon
+     */
+    iconCode?: string;
+
+    /**
+     * A more detailed description of the essence
+     */
+    description?: string;
+
+    /**
+     * The UUID of the item that is the source of the active effect for this essence, if present
+     */
+    activeEffectSourceItemUuid?: string;
+
+    /**
+     * The ID of the crafting system to which this essence belongs.
+     */
+    craftingSystemId: string;
+
+    /**
+     * Whether the essence is disabled. Defaults to false.
+     */
+    disabled?: boolean;
+
+}
+```
+
+</details>
+
 ## The essence object
 
 Essences implement the Essence interface, described below.
@@ -287,57 +340,6 @@ interface Essence extends Identifiable, Serializable<EssenceJson> {
      * @returns Promise<Essence> A promise that resolves to this essence, after its active effect source item data has
      */
     load(): Promise<Essence>;
-
-}
-```
-
-</details>
-
-<details markdown="block">
-<summary>
-EssenceCreationOptions Interface
-</summary>
-
-```typescript
-/**
- * Represents a set of options for creating an essence.
- */
-interface EssenceCreationOptions {
-
-    /**
-     * The name of the essence.
-     */
-    name?: string;
-
-    /**
-     * The tooltip text to display when the essence is hovered over.
-     */
-    tooltip?: string;
-
-    /**
-     * The FontAwesome icon code for the essence icon
-     */
-    iconCode?: string;
-
-    /**
-     * A more detailed description of the essence
-     */
-    description?: string;
-
-    /**
-     * The UUID of the item that is the source of the active effect for this essence, if present
-     */
-    activeEffectSourceItemUuid?: string;
-
-    /**
-     * The ID of the crafting system to which this essence belongs.
-     */
-    craftingSystemId: string;
-
-    /**
-     * Whether the essence is disabled. Defaults to false.
-     */
-    disabled?: boolean;
 
 }
 ```
