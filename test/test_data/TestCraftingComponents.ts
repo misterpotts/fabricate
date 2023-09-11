@@ -1,4 +1,4 @@
-import {Component} from "../../src/scripts/crafting/component/Component";
+import {Component, DefaultComponent} from "../../src/scripts/crafting/component/Component";
 import {Combination} from "../../src/scripts/common/Combination";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
@@ -9,7 +9,7 @@ import {testCraftingSystemOne} from "./TestCrafingSystem";
 import {Unit} from "../../src/scripts/common/Unit";
 import {SalvageOption} from "../../src/scripts/crafting/component/SalvageOption";
 
-const testComponentOne: Component = new Component({
+const testComponentOne: Component = new DefaultComponent({
     id: "iyeUGBbSts0ij92X",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
@@ -21,7 +21,7 @@ const testComponentOne: Component = new Component({
     essences: Combination.ofUnits([new Unit(elementalEarth.toReference(), 2)]),
 });
 
-const testComponentTwo: Component = new Component({
+const testComponentTwo: Component = new DefaultComponent({
     id: "Ie7NoXMja9wI6xya",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
@@ -33,7 +33,7 @@ const testComponentTwo: Component = new Component({
     essences: Combination.ofUnits([new Unit(elementalFire.toReference(), 2)]),
 });
 
-const testComponentThree: Component = new Component({
+const testComponentThree: Component = new DefaultComponent({
     id: "tdyV4AWuTMkXbepw",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
@@ -46,7 +46,7 @@ const testComponentThree: Component = new Component({
 });
 
 const testComponentFourId = "Ra2Z1ujre76weR0i";
-const testComponentFour: Component = new Component({
+const testComponentFour: Component = new DefaultComponent({
     id: testComponentFourId,
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
@@ -68,7 +68,7 @@ const testComponentFour: Component = new Component({
 });
 
 const testComponentFiveId = "74K6TAuSg2xzd209";
-const testComponentFive: Component = new Component({
+const testComponentFive: Component = new DefaultComponent({
     id: testComponentFiveId,
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
@@ -95,7 +95,7 @@ const testComponentFive: Component = new Component({
     })
 });
 
-const testComponentSix: Component = new Component({
+const testComponentSix: Component = new DefaultComponent({
     id: "rgTv21iOSwjK1882",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({
@@ -107,7 +107,7 @@ const testComponentSix: Component = new Component({
     essences: Combination.ofUnits([new Unit(elementalWater.toReference(), 1)])
 });
 
-const testComponentSeven: Component = new Component({
+const testComponentSeven: Component = new DefaultComponent({
     id: "u9jwSlvIUhlQiEe1",
     craftingSystemId: testCraftingSystemOne.id,
     itemData: new LoadedFabricateItemData({

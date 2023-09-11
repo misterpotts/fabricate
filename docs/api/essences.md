@@ -347,7 +347,7 @@ const essences = await game.fabricate.api.essences.getAllByCraftingSystemId(craf
 
 </details>
 
-### Deleting an essence by ID
+### Deleting an essence
 
 You can delete an essence by its ID by calling `game.fabricate.api.essences.deleteById()` and passing in the ID of the essence you want to delete.
 

@@ -2,7 +2,7 @@ import {EmbeddedCraftingSystemDefinition} from "./EmbeddedCraftingSystemDefiniti
 import {CraftingSystem, DefaultCraftingSystem} from "../../system/CraftingSystem";
 import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
 import {Essence} from "../../crafting/essence/Essence";
-import {Component} from "../../crafting/component/Component";
+import {Component, DefaultComponent} from "../../crafting/component/Component";
 import {FabricateItemData, LoadedFabricateItemData, PendingFabricateItemData} from "../../foundry/DocumentManager";
 import {Combination} from "../../common/Combination";
 import {Unit} from "../../common/Unit";
@@ -113,7 +113,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
 
     get components(): Component[] {
         return [
-            new Component({
+            new DefaultComponent({
                 id: "night-eyes",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -123,7 +123,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "hydrathistle",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -136,7 +136,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("water"), 2),
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "instant-rope",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -146,7 +146,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "breath-bottle",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -156,7 +156,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "dust-of-dryness",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -166,7 +166,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "alchemical-bomb",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -176,7 +176,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "wrackwort-bulbs",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -190,7 +190,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("fire"), 1),
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "lightningbug-thorax",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -200,7 +200,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "luminous-cap",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -210,7 +210,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "radiant-synthseed",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -224,7 +224,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("fire"), 1),
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "melt-powder",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -234,7 +234,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "gashglue",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -244,7 +244,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "flash-pellet",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -254,7 +254,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "voidroot",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -267,7 +267,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("negative-energy"), 1),
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "alchemists-fire",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -277,7 +277,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "blue-toadshade",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -291,7 +291,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("air"), 1),
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "drakus-flower",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -304,7 +304,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("fire"), 2)
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "firesnuff",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -314,7 +314,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "ironwood-heart",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -327,7 +327,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("earth"), 2)
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "amanita-cap",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -340,7 +340,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("water"), 1)
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "rockvine",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -353,7 +353,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("earth"), 1)
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "noxious-smokestick",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -363,7 +363,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "smokestick",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -373,7 +373,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "fennel-silk",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -383,7 +383,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "wisp-stalks",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -396,7 +396,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                    new Unit(new EssenceReference("air"), 2)
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "titan-gum",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -406,7 +406,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "zaebelles-torpor",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -416,7 +416,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "tanglefoot-bag",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -426,7 +426,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                 embedded: true,
                 disabled: false,
             }),
-            new Component({
+            new DefaultComponent({
                 id: "frozen-seedlings",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(
@@ -440,7 +440,7 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     new Unit(new EssenceReference("water"), 1),
                 ]),
             }),
-            new Component({
+            new DefaultComponent({
                 id: "snappowder",
                 craftingSystemId: AlchemistsSuppliesV16SystemDefinition.CRAFTING_SYSTEM_ID,
                 itemData: new PendingFabricateItemData(

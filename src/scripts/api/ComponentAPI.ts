@@ -585,7 +585,7 @@ class DefaultComponentAPI implements ComponentAPI {
     }
 
     private rejectModifyingEmbeddedComponent(component: Component): void {
-        if (!component?.embedded) {
+        if (!component?.isEmbedded) {
             return;
         }
         const message = this.localizationService.format(
@@ -597,7 +597,7 @@ class DefaultComponentAPI implements ComponentAPI {
     }
 
     private rejectDeletingEmbeddedComponent(componentToDelete: Component): void {
-        if (!componentToDelete?.embedded) {
+        if (!componentToDelete?.isEmbedded) {
             return;
         }
         const message = this.localizationService.format(

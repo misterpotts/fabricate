@@ -124,9 +124,9 @@ interface CraftingSystemAPI {
 
 ## The Crafting system object
 
-Crafting systems implement the `CraftingSystem` interface, which is defined as follows:
+Crafting systems implement the `CraftingSystem` interface, described below:
 
-<details open markdown="block">
+<details markdown="block">
 <summary>
 CraftingSystem Interface
 </summary>
@@ -212,6 +212,22 @@ const myCraftingSystemData = {
 const craftingSystem = await game.fabricate.api.systems.create(myCraftingSystemData);
 console.log(`Created crafting system with ID "${craftingSystem.id}"`); // <-- You'll need this to edit the crafting system later
 // If you *do* forget the Crafting system ID you can retrieve it later using game.fabricate.api.systems.getAll()
+```
+
+</details>
+
+### Getting a crafting system by ID
+
+You can retrieve a crafting system by calling `game.fabricate.api.systems.getById()`, passing in the ID of the crafting system to retrieve.
+
+<details markdown="block">
+<summary>
+Example
+</summary>
+
+```typescript
+const myCraftingSystemId = "my-crafting-system-id"; // <-- You'll need to replace this with the ID of your crafting system
+const craftingSystem = await game.fabricate.api.systems.getById(myCraftingSystemId);
 ```
 
 </details>
