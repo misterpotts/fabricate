@@ -122,7 +122,7 @@ interface CraftingSystemAPI {
 
 </details>
 
-## The Crafting system object
+## The crafting system object
 
 Crafting systems implement the `CraftingSystem` interface, described below:
 

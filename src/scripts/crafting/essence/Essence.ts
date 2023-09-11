@@ -15,7 +15,112 @@ interface EssenceJson {
     activeEffectSourceItemUuid: string;
 }
 
-class Essence implements Identifiable, Serializable<EssenceJson> {
+export { EssenceJson }
+
+interface Essence extends Identifiable, Serializable<EssenceJson> {
+
+    /**
+     * The unique id of this essence
+     */
+    readonly id: string;
+
+    /**
+     * The unique id of the crafting system this essence belongs to
+     */
+    readonly craftingSystemId: string;
+
+    /**
+     * The display name of this essence
+     */
+    name: string;
+
+    /**
+     * The long-form, detailed description of this essence
+     */
+    description: string;
+
+    /**
+     * The tooltip to display when the user hovers their cursor over the icon for this essence
+     */
+    tooltip: string;
+
+    /**
+     * The Fontawesome icon code for the icon to display for this essence. Free icons, included with Foundry VTT can be
+     *  found at https://fontawesome.com/search?m=free&o=r
+     */
+    iconCode: string;
+
+    /**
+     * Indicates whether this essence is embedded in a crafting system
+     */
+    readonly isEmbedded: boolean;
+
+    /**
+     * Indicates whether this essence is disabled. Disabled essences cannot be used in crafting
+     */
+    disabled: boolean;
+
+    /**
+     * Indicates whether this essence's active effect source item data has been loaded, if it has any
+     */
+    readonly loaded: boolean;
+
+    /**
+     * Indicates whether this essence has an active effect source item
+     */
+    readonly hasActiveEffectSource: boolean;
+
+    /**
+     * The active effect source item data for this essence, if it has any. May be an instance of the null object,
+     *  `NoFabricateItemData`
+     */
+    activeEffectSource: FabricateItemData;
+
+    /**
+     * Indicates whether this essence has any loading errors in its active effect source item data
+     */
+    readonly hasErrors: boolean;
+
+    /**
+     * The loading errors in this essence's active effect source item data, if it has any
+     */
+    readonly errors: ItemLoadingError[];
+
+    /**
+     * Converts this essence to an essence reference
+     *
+     * @returns EssenceReference A reference to this essence
+     */
+    toReference(): EssenceReference;
+
+    /**
+     * Clones this essence, returning a new instance with the provided id and crafting system id
+     *
+     * @param id - The id for the new essence. Must be different to this essence's id
+     * @param craftingSystemId - The crafting system id for the new essence
+     * @returns Essence A new instance of this essence, with the provided id and crafting system id
+     */
+    clone({
+        id,
+        craftingSystemId,
+    }: {
+        id: string,
+        craftingSystemId?: string
+    }): Essence;
+
+    /**
+     * Loads this essence's active effect source item data, if it has any
+     *
+     * @param forceReload - Whether to reload the item data. Defaults to false.
+     * @returns Promise<Essence> A promise that resolves to this essence, after its active effect source item data has
+     */
+    load(forceReload?: boolean): Promise<Essence>;
+
+}
+
+export { Essence }
+
+class DefaultEssence implements Essence {
 
     private readonly _id: string;
     private readonly _craftingSystemId: string;
@@ -81,9 +186,12 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._activeEffectSource.loaded;
     }
 
-    public async load(): Promise<Essence> {
+    async load(forceReload = false): Promise<Essence> {
         if (!this.hasActiveEffectSource) {
             return;
+        }
+        if (this.loaded && !forceReload) {
+            return this;
         }
         this.activeEffectSource = await this._activeEffectSource.load();
         return this;
@@ -93,7 +201,7 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
         return this._id;
     }
 
-    get embedded(): boolean {
+    get isEmbedded(): boolean {
         return this._embedded;
     }
 
@@ -172,13 +280,18 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
     }
 
     clone({
-      id,
-      embedded = false,
-      craftingSystemId = this._craftingSystemId,
-    }: { id: string, craftingSystemId?: string, embedded?: boolean }): Essence {
-        return new Essence({
+        id,
+        craftingSystemId = this._craftingSystemId,
+    }: {
+        id: string,
+        craftingSystemId?: string,
+    }): Essence {
+        if (id === this._id) {
+            throw new Error(`Cannot clone essence with ID "${this._id}" using the same ID`);
+        }
+        return new DefaultEssence({
             id,
-            embedded,
+            embedded: false,
             craftingSystemId,
             name: this._name,
             tooltip: this._tooltip,
@@ -190,4 +303,4 @@ class Essence implements Identifiable, Serializable<EssenceJson> {
 
 }
 
-export { EssenceJson, Essence }
+export { DefaultEssence }
