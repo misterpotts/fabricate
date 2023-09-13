@@ -201,7 +201,7 @@
                     <div class="fab-row">
                         <h3>{localization.localize(`${localizationPath}.component.labels.salvageHeading`)}</h3>
                     </div>
-                    {#if $selectedComponent.isSalvageable}
+                    {#if !$selectedComponent.salvageOptions.isEmpty}
                         <div class="fab-salvage-editor fab-row">
                             <Tabs bind:selectTabAtIndex={selectSalvageTab}>
                                 <TabList>
