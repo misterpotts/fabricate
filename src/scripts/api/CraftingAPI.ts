@@ -816,13 +816,16 @@ class DefaultCraftingAPI implements CraftingAPI {
             });
         }
 
-        await Promise.all(includedEssences.map(essence => essence.load()));
+        const essencesToLoad = await Promise.all(includedEssences
+            .filter(essence => essence.hasActiveEffectSource)
+            .map(essence => essence.load()));
 
-        const essencesWithErrors = includedEssences.filter(essence => essence.activeEffectSource.hasErrors);
+        const essencesWithErrors = essencesToLoad.filter(essence => essence.activeEffectSource.hasErrors);
         if (essencesWithErrors.length > 0) {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidEssenceItemData`,
                 {
+                    recipeName: recipe.name,
                     essenceIds: essencesWithErrors.map(essence => essence.id).join(", ")
                 }
             );

@@ -72,7 +72,7 @@
 
     async function incrementEssence(essence, requirementOption) {
         requirementOption.addEssence(essence.id);
-        $selectedRecipe.saveRequirementOption(requirementOption)
+        $selectedRecipe.setRequirementOption(requirementOption)
         await recipeEditor.saveRecipe($selectedRecipe);
     }
 
@@ -85,7 +85,7 @@
             await deleteRequirementOption(requirementOption);
             return;
         }
-        $selectedRecipe.saveRequirementOption(requirementOption);
+        $selectedRecipe.setRequirementOption(requirementOption);
         await recipeEditor.saveRecipe($selectedRecipe);
     }
 
@@ -143,7 +143,7 @@
         } else {
             resultOption.addIngredient(component.id);
         }
-        $selectedRecipe.setResultOption(resultOption);
+        $selectedRecipe.setRequirementOption(resultOption);
         await recipeEditor.saveRecipe($selectedRecipe);
     }
 

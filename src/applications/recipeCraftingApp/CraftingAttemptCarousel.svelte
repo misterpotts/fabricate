@@ -14,11 +14,11 @@
     export let craftingAttempt;
 
     function selectNextOption() {
-        dispatch("nextRequirementOptionSelected", {});
+        dispatch("nextOptionSelected", {});
     }
 
     function selectPreviousOption() {
-        dispatch("previousRequirementOptionSelected", {});
+        dispatch("previousOptionSelected", {});
     }
 
 </script>
@@ -32,9 +32,9 @@
         </div>
         <div class="fab-component-grid-wrapper">
             <CraftingAttemptGrid columns={columns}
-                                 ingredients={craftingAttempt.ingredients}
-                                 catalysts={craftingAttempt.catalysts}
-                                 essences={craftingAttempt.essences} />
+                                 ingredients={craftingAttempt.selectedComponents.ingredients}
+                                 catalysts={craftingAttempt.selectedComponents.catalysts}
+                                 essences={craftingAttempt.selectedComponents.essences} />
         </div>
     </div>
 </div>

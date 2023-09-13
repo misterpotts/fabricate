@@ -40,7 +40,7 @@ class DefaultComponentSalvageAppFactory implements ComponentSalvageAppFactory {
             id: appId,
             resizable: false,
             width: 540,
-            height: 514
+            height: 620
         };
 
         const componentSalvageManager = new DefaultComponentSalvageManager({
