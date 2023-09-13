@@ -12,7 +12,7 @@ has_children: true
 
 Fabricate provides a set of utility types and other classes for use in acting on essences, components and recipes.
 
-<details markdown="block">
+<details open markdown="block">
   <summary>
     Table of contents
   </summary>
