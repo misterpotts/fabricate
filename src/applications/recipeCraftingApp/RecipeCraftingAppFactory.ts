@@ -40,7 +40,7 @@ class DefaultRecipeCraftingAppFactory implements RecipeCraftingAppFactory {
             id: appId,
             resizable: false,
             width: 680,
-            height: 620
+            height: 720
         }
 
         const allCraftingSystemComponentsById = await this._componentAPI.getAllByCraftingSystemId(recipe.craftingSystemId);

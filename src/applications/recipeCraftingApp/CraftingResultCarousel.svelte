@@ -13,11 +13,11 @@
     export let craftingAttempt;
 
     function selectNextOption() {
-        dispatch("nextResultOptionSelected", {});
+        dispatch("nextOptionSelected", {});
     }
 
     function selectPreviousOption() {
-        dispatch("previousResultOptionSelected", {});
+        dispatch("previousOptionSelected", {});
     }
 
 </script>

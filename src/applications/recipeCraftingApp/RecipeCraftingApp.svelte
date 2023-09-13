@@ -117,8 +117,8 @@
                     {#if recipeCraftingManager.hasRequirementChoices}
                         <CraftingAttemptCarousel columns={3}
                                                  craftingAttempt={craftingAttempt}
-                                                 on:nextIngredientOptionSelected={selectNextRequirementOption()}
-                                                 on:previousIngredientOptionSelected={selectPreviousRequirementOption()} />
+                                                 on:nextOptionSelected={selectNextRequirementOption}
+                                                 on:previousOptionSelected={selectPreviousRequirementOption} />
                     {:else}
                         <div class="fab-component-grid-wrapper">
                             <CraftingAttemptGrid
@@ -133,8 +133,8 @@
                     {#if recipeCraftingManager.hasResultChoices}
                         <CraftingResultCarousel columns={3}
                                                 craftingAttempt={craftingAttempt}
-                                                on:nextResultOptionSelected={selectNextResultOption()}
-                                                on:previousResultOptionSelected={selectPreviousResultOption()}>
+                                                on:nextOptionSelected={selectNextResultOption}
+                                                on:previousOptionSelected={selectPreviousResultOption}>
                             <h3 slot="description">{localization.localize(`${Properties.module.id}.typeNames.result.plural`)}</h3>
                         </CraftingResultCarousel>
                     {:else}
