@@ -1,14 +1,6 @@
-import {beforeEach, describe, expect, jest, test} from "@jest/globals";
+import {describe, expect, test} from "@jest/globals";
 import {DefaultCraftingSystem} from "../src/scripts/system/CraftingSystem";
-import * as Sinon from "sinon";
 import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
-
-const Sandbox: Sinon.SinonSandbox = Sinon.createSandbox();
-
-beforeEach(() => {
-    jest.resetAllMocks();
-    Sandbox.reset();
-});
 
 describe('Create and configure', () => {
 

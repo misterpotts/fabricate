@@ -16,9 +16,9 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "noErrorTruncation": true,
-    "target": "ES2021",
+    "target": "es2021",
     "lib": [
-      "ES2022",
+      "ES2021",
       "dom"
     ],
     "types": [
@@ -26,14 +26,15 @@
       "sinon",
       "jest",
       "svelte",
-      "@league-of-foundry-developers/foundry-vtt-types"
+      "@league-of-foundry-developers/foundry-vtt-types",
+      "jquery"
     ],
     "typeRoots": [
       "./typings"
     ],
     "allowUmdGlobalAccess": true
   },
-  "include": ["./src/**/*.ts", "./src/**/*.svelte", "./typings/**/*.ts", "./test/**/*.ts"],
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte", "src/**/*.js", "typings/global.d.ts"],
   "exclude": ["node_modules"],
   "files": [
     "./typings/global.d.ts"
@@ -41,5 +42,6 @@
   "ts-node": {
     "files": true,
     "transpileOnly": false
-  }
+  },
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
