@@ -2,10 +2,12 @@
 
     import openItemSheet from "./OpenItemSheet";
     import truncate from "./Truncate";
+    import {TrackedCombination} from "../../scripts/common/TrackedCombination";
+    import type {Component} from "../../scripts/crafting/component/Component";
 
-    export let trackedCombination;
-    export let columns = 3;
-    export let nameLength = 12;
+    export let trackedCombination: TrackedCombination<Component>;
+    export let columns: number = 3;
+    export let nameLength: number = 12;
 
     function formatQuantity(actual, target) {
         const formattedActual = actual > 99 ? "99+" : actual.toString();
