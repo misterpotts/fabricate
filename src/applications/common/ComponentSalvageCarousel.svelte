@@ -5,13 +5,17 @@
     import {localizationKey} from "./LocalizationService";
     import Properties from "../../scripts/Properties";
     import TrackedCraftingComponentGrid from "./TrackedCraftingComponentGrid.svelte";
+    import type {SalvageAttempt} from "../componentSalvageApp/ComponentSalvageManager";
 
-    const { localization } = getContext(localizationKey);
-    const localizationPath = `${Properties.module.id}.ComponentSalvageCarousel`;
+    const {
+        localization
+    } = getContext(localizationKey);
+
+    const localizationPath: string = `${Properties.module.id}.ComponentSalvageCarousel`;
     const dispatch = createEventDispatcher();
 
-    export let columns;
-    export let selectedSalvageAttempt;
+    export let columns: number = 3;
+    export let selectedSalvageAttempt: SalvageAttempt;
 
     function selectNextOption() {
         dispatch("nextSalvageOptionSelected", {});

@@ -26,7 +26,7 @@
         componentEditor
     } = getContext(key);
 
-    const componentSearchResults = new ComponentSearchStore({ components });
+    const componentSearchResults: ComponentSearchStore = new ComponentSearchStore({ components });
     const searchTerms = componentSearchResults.searchTerms;
     let selectRequirementsTab;
     let selectResultsTab;

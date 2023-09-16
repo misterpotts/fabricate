@@ -2,9 +2,11 @@
 <script lang="ts">
     import openItemSheet from "./OpenItemSheet";
     import truncate from "./Truncate";
-    export let componentCombination;
-    export let columns = 3;
-    export let nameLength = 12;
+    import type {Combination} from "../../scripts/common/Combination";
+    import type {Component} from "../../scripts/crafting/component/Component";
+    export let componentCombination: Combination<Component>;
+    export let columns: number = 3;
+    export let nameLength: number = 12;
 </script>
 
 <div class="fab-component-grid fab-grid-{columns}">
