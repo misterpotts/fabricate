@@ -40,7 +40,8 @@ const config: UserConfig = {
                     return;
                 }
                 defaultHandler(warning);
-            }
+            },
+            configFile: path.resolve(__dirname, "svelte.config.js")
         })
     ]
 }
