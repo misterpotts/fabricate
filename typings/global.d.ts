@@ -174,7 +174,7 @@ declare interface Actor {
  */
 declare interface ApplicationOptions {
 
-    id: string;
+    id?: string;
 
     template?: string;
 
@@ -208,7 +208,7 @@ declare abstract class Application {
 
     rendered: boolean;
 
-    constructor(options: ApplicationOptions);
+    protected constructor(options: ApplicationOptions);
 
     close(): Promise<void>;
 
