@@ -54,12 +54,25 @@ declare const game: Game;
 /**
  * =====================================================================================================================
  * Foundry Actor class.
+ * Documentation for Foundry VTT V11 can be found at:
+ * https://foundryvtt.com/api/v11/classes/foundry.abstract.EmbeddedCollection.html
+ * =====================================================================================================================
+ */
+declare interface EmbeddedCollection<T extends Document> extends Map<string, T> {
+
+}
+
+/**
+ * =====================================================================================================================
+ * Foundry Actor class.
  * Documentation for Foundry VTT V11 can be found at: https://foundryvtt.com/api/v11/classes/client.Actor.html
  * =====================================================================================================================
  */
 declare interface Actor {
 
-        id: string;
+    items: EmbeddedCollection<Item>;
+
+    id: string;
 
 }
 

@@ -112,8 +112,7 @@ class CraftingInventory implements Inventory {
 
     private getContentsWithSourceItems(): Map<string, any[]> {
         const actor = this.actor;
-        // @ts-ignore
-        const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
+        const ownedItems: EmbeddedCollection<Item> = actor.items;
         return Array.from(ownedItems.values())
             .filter((item: Item) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
             .flatMap((item: Item) => {
