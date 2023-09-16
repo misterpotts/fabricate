@@ -1,4 +1,4 @@
 import * as fs from "fs";
-const moduleContent = fs.readFileSync('dist/module.json', 'utf8');
-const moduleJson = JSON.parse(moduleContent);
-console.log(moduleJson.version);
+const packageContents = fs.readFileSync('dist/package.json', 'utf8');
+const packageJson = JSON.parse(packageContents);
+console.log(packageJson.version);
