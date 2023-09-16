@@ -1,7 +1,7 @@
 {
   "id": "fabricate",
   "title": "Fabricate",
-  "version": "0.9.10",
+  "version": "<derived-from-package.json>",
   "description": "A system-agnostic, flexible crafting module for FoundryVTT",
   "authors": [
     {

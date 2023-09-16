@@ -57,19 +57,19 @@ jobs:
           name: dist
           path: dist
 
-      # Get the version from 'module.json'
+      # Get the version from 'package.json'
       - name: Get Version
         shell: bash
         id: get-version
         run: echo "version=$(node ./.github/scripts/get-version.js)" >> $GITHUB_OUTPUT
 
-      # Get the name from 'module.json'
+      # Get the includes from 'module.json'
       - name: Get Includes
         shell: bash
         id: get-includes
         run: echo "files=$(node ./.github/scripts/get-includes.js)" >> $GITHUB_OUTPUT
 
-      # Substitute the Manifest and Download URLs in the module.json
+      # Substitute the Manifest and Download URLs,as well as the version, in module.json
       - name: Substitute Manifest and Download Links For Versioned Ones
         id: sub_manifest_link_version
         uses: microsoft/variable-substitution@v1
@@ -79,20 +79,20 @@ jobs:
           url: https://github.com/${{github.repository}}
           manifest: https://github.com/${{github.repository}}/releases/latest/download/module.json
           download: https://github.com/${{github.repository}}/releases/download/${{steps.get-version.outputs.version}}/module.zip
+          version: ${{steps.get-version.outputs.version}}
 
-      # create a zip file with all files required by the module to add to the release
+      # Create a zip file with all files required by the module to add to the release
       - name: Zip Files
         working-directory: ./dist
         run: zip -r ../module.zip ${{steps.get-includes.outputs.files}}
 
       # Create a release for this specific version
-      - name: Create Release
+      - name: Create Version Release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
           skipIfReleaseExists: true # If a release already exists for this version, skip it
           allowUpdates: false # Releases are immutable, so we don't want to allow updates
-          generateReleaseNotes: true # Automatically generate release notes from commit messages and PRs
           name: Release ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
