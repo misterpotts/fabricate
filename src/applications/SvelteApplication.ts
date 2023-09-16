@@ -27,7 +27,7 @@ class SvelteApplication extends Application {
         svelteConfig,
         onClose = () => {},
     }: {
-        applicationOptions: Partial<ApplicationOptions>;
+        applicationOptions: ApplicationOptions;
         svelteConfig: SvelteComponentConfig;
         onClose?: () => void;
     }) {

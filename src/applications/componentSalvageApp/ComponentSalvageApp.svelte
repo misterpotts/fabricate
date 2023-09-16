@@ -6,16 +6,18 @@
     import SalvageHeader from "./SalvageHeader.svelte";
     import CraftingComponentGrid from "../common/CraftingComponentGrid.svelte";
     import eventBus from "../common/EventBus";
-    import { localizationKey } from "../common/LocalizationService";
+    import {localizationKey} from "../common/LocalizationService";
+    import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
     import ComponentSalvageCarousel from "../common/ComponentSalvageCarousel.svelte";
     import TrackedCraftingComponentGrid from "../common/TrackedCraftingComponentGrid.svelte";
+    import type {ComponentSalvageManager} from "./ComponentSalvageManager";
 
     const localizationPath = `${Properties.module.id}.ComponentSalvageApp`;
 
-    export let componentSalvageManager;
+    export let componentSalvageManager: ComponentSalvageManager;
 
-    export let localization;
+    export let localization: LocalizationService;
     export let closeHook;
 
     let salvageAttempts = [];

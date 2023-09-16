@@ -9,7 +9,7 @@ const config: UserConfig = {
     root: "src/",
     server: {
         port: 30001,
-        open: "http://127.0.0.1:30001/game",
+        open: "http://localhost:30001/game",
         proxy: {
             "^(?!/modules/fabricate)": "http://localhost:30000/",
             "/socket.io": {

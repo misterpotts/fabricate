@@ -2,10 +2,6 @@ import {Component} from "../crafting/component/Component";
 import {Combination, DefaultCombination} from "../common/Combination";
 import {DefaultUnit} from "../common/Unit";
 import {InventoryAction} from "./InventoryAction";
-import EmbeddedCollection
-    from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/embedded-collection.mjs";
-import {BaseActor, BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
-import {ActorData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
 import {Essence} from "../crafting/essence/Essence";
@@ -16,7 +12,7 @@ interface Inventory {
     /**
      * The actor to which this inventory belongs.
      */
-    readonly actor: BaseActor;
+    readonly actor: Actor;
 
     /**
      * The components in this inventory.
@@ -52,7 +48,7 @@ interface Inventory {
 
 class CraftingInventory implements Inventory {
 
-    private readonly _actor: BaseActor;
+    private readonly _actor: Actor;
     private readonly _localization: LocalizationService;
     private readonly _itemDataManager: ItemDataManager;
 
@@ -70,7 +66,7 @@ class CraftingInventory implements Inventory {
         itemDataManager = new SingletonItemDataManager(),
         knownComponents = [],
     }: {
-        actor: BaseActor;
+        actor: Actor;
         localization: LocalizationService;
         knownEssencesById?: Map<string, Essence>;
         itemDataManager?: ItemDataManager;
@@ -89,7 +85,7 @@ class CraftingInventory implements Inventory {
         });
     }
 
-    get actor(): BaseActor {
+    get actor(): Actor {
         if (!this._actor) {
             throw new Error(this._localization.localize(`${Properties.module.id}.inventory.error.invalidActor`));
         }
@@ -116,11 +112,10 @@ class CraftingInventory implements Inventory {
 
     private getContentsWithSourceItems(): Map<string, any[]> {
         const actor = this.actor;
-        // @ts-ignore
-        const ownedItems: EmbeddedCollection<typeof BaseItem, ActorData> = actor.items;
+        const ownedItems: EmbeddedCollection<Item> = actor.items;
         return Array.from(ownedItems.values())
-            .filter((item: any) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
-            .flatMap((item: BaseItem) => {
+            .filter((item: Item) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
+            .flatMap((item: Item) => {
                 const sourceItemUuid: string = <string> item.getFlag("core", "sourceId");
                 const component = this._knownComponentsByItemUuid.get(sourceItemUuid);
                 return { component, item };

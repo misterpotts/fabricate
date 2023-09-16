@@ -1,12 +1,10 @@
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
-
 interface GameProvider {
 
     get(): Game;
 
     getGameSystemId(): string;
 
-    loadActor(actorId: string): Promise<BaseActor>;
+    loadActor(actorId: string): Promise<Actor>;
 
 }
 
@@ -25,8 +23,8 @@ class DefaultGameProvider implements GameProvider {
         return this.get().system.id;
     }
 
-    async loadActor(actorId: string): Promise<BaseActor> {
-        const actor = await this.get().actors.get(actorId);
+    async loadActor(actorId: string): Promise<Actor> {
+        const actor = this.get().actors.get(actorId);
         if (!actor) {
             throw new Error(`Actor with id ${actorId} not found`);
         }

@@ -4,8 +4,6 @@
     "esModuleInterop": true,
     "allowJs": true,
     "checkJs": true,
-    "baseUrl": "./",
-    "rootDirs": ["./src","./test"],
     "outDir": "./dist",
     "strict": true,
     "strictNullChecks": false,
@@ -16,9 +14,9 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "noErrorTruncation": true,
-    "target": "es2021",
+    "target": "es2022",
     "lib": [
-      "ES2021",
+      "ES2022",
       "dom"
     ],
     "types": [
@@ -26,22 +24,15 @@
       "sinon",
       "jest",
       "svelte",
-      "@league-of-foundry-developers/foundry-vtt-types",
-      "jquery"
-    ],
-    "typeRoots": [
-      "./typings"
+      "jquery",
     ],
     "allowUmdGlobalAccess": true
   },
-  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte", "src/**/*.js", "typings/global.d.ts"],
-  "exclude": ["node_modules"],
-  "files": [
-    "./typings/global.d.ts"
-  ],
+  "include": ["src/**/*.d.ts", "typings/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte", "src/**/*.js"],
+  "exclude": ["node_modules", "test/**/*.test.ts"],
   "ts-node": {
     "files": true,
-    "transpileOnly": false
+    "transpileOnly": false,
   },
   "references": [{ "path": "./tsconfig.node.json" }]
 }

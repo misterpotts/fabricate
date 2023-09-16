@@ -279,7 +279,7 @@ interface Essence extends Identifiable, Serializable<EssenceJson> {
     /**
      * Indicates whether this essence is embedded in a crafting system
      */
-    readonly embedded: boolean;
+    readonly isEmbedded: boolean;
 
     /**
      * Indicates whether this essence is disabled. Disabled essences cannot be used in crafting

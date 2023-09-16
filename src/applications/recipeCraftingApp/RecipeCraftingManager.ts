@@ -1,4 +1,3 @@
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {Recipe} from "../../scripts/crafting/recipe/Recipe";
 import {CraftingResult} from "../../scripts/crafting/result/CraftingResult";
 import {Component} from "../../scripts/crafting/component/Component";
@@ -101,9 +100,9 @@ interface RecipeCraftingManager {
 
     readonly recipeToCraft: Recipe;
 
-    readonly sourceActor: BaseActor;
+    readonly sourceActor: Actor;
 
-    readonly targetActor: BaseActor;
+    readonly targetActor: Actor;
 
     readonly hasRequirementChoices: boolean;
 
@@ -127,8 +126,8 @@ export { RecipeCraftingManager };
 
 class DefaultRecipeCraftingManager implements RecipeCraftingManager {
 
-    private readonly _sourceActor: BaseActor;
-    private readonly _targetActor: BaseActor;
+    private readonly _sourceActor: Actor;
+    private readonly _targetActor: Actor;
     private readonly _craftingAPI: CraftingAPI;
     private readonly _recipeToCraft: Recipe;
     private readonly _allCraftingSystemComponentsById: Map<string, Component>;
@@ -140,8 +139,8 @@ class DefaultRecipeCraftingManager implements RecipeCraftingManager {
         recipeToCraft,
         allCraftingSystemComponentsById,
     }: {
-        sourceActor: BaseActor;
-        targetActor: BaseActor;
+        sourceActor: Actor;
+        targetActor: Actor;
         craftingAPI: CraftingAPI;
         recipeToCraft: Recipe;
         allCraftingSystemComponentsById: Map<string, Component>;
@@ -157,11 +156,11 @@ class DefaultRecipeCraftingManager implements RecipeCraftingManager {
         return this._recipeToCraft;
     }
 
-    get sourceActor(): BaseActor {
+    get sourceActor(): Actor {
         return this._sourceActor;
     }
 
-    get targetActor(): BaseActor {
+    get targetActor(): Actor {
         return this._targetActor;
     }
 
