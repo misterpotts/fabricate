@@ -3,12 +3,11 @@ import {DefaultObjectUtility, ObjectUtility} from "../foundry/ObjectUtility";
 import {Component} from "../crafting/component/Component";
 import {ItemDataManager, PropertyPathAwareItemDataManager, SingletonItemDataManager} from "./ItemDataManager";
 import {LocalizationService} from "../../applications/common/LocalizationService";
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 
 interface InventoryFactory {
 
     make(gameSystemId: string,
-         actor: BaseActor,
+         actor: Actor,
          knownComponents: Component[],
     ): Inventory;
 
@@ -47,7 +46,7 @@ class DefaultInventoryFactory implements InventoryFactory {
     }
 
     make(gameSystemId: string,
-         actor: BaseActor,
+         actor: Actor,
          knownComponents: Component[],
     ): Inventory {
 

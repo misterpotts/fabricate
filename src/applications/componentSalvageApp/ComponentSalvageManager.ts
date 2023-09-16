@@ -1,5 +1,4 @@
 import {CraftingAPI} from "../../scripts/api/CraftingAPI";
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {ComponentAPI} from "../../scripts/api/ComponentAPI";
 import {Component} from "../../scripts/crafting/component/Component";
 import {TrackedCombination} from "../../scripts/common/TrackedCombination";
@@ -94,7 +93,7 @@ class DefaultSalvageAttempt implements SalvageAttempt {
 
 interface ComponentSalvageManager {
 
-    readonly actor: BaseActor;
+    readonly actor: Actor;
 
     readonly componentToSalvage: Component;
 
@@ -108,7 +107,7 @@ export { ComponentSalvageManager };
 
 class DefaultComponentSalvageManager implements ComponentSalvageManager {
 
-    private readonly _actor: BaseActor;
+    private readonly _actor: Actor;
     private readonly _craftingAPI: CraftingAPI;
     private readonly _componentAPI: ComponentAPI;
     private readonly _componentToSalvage: Component;
@@ -119,7 +118,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
         componentAPI,
         componentToSalvage,
     }: {
-        actor: BaseActor;
+        actor: Actor;
         craftingAPI: CraftingAPI;
         componentAPI: ComponentAPI;
         componentToSalvage: Component;
@@ -130,7 +129,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
         this._componentToSalvage = componentToSalvage;
     }
 
-    get actor(): BaseActor {
+    get actor(): Actor {
         return this._actor;
     }
 

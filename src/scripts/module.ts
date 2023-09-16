@@ -1,7 +1,6 @@
 import Properties from "./Properties";
 import {DefaultGameProvider} from "./foundry/GameProvider";
 import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
-import {BaseItem} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {DefaultFabricateAPIFactory, FabricateAPIFactory} from "./api/FabricateAPIFactory";
 import {FabricateAPI} from "./api/FabricateAPI";
 import {DefaultIdentityFactory} from "./foundry/IdentityFactory";
@@ -88,11 +87,11 @@ Hooks.on("deleteItem", async (item: any) => {
     itemDeleted(item);
 });
 
-Hooks.on("updateItem", async (item: BaseItem) => {
+Hooks.on("updateItem", async (item: Item) => {
     itemUpdated(item);
 });
 
-Hooks.on("createItem", async (item: BaseItem) => {
+Hooks.on("createItem", async (item: Item) => {
     itemCreated(item);
 });
 

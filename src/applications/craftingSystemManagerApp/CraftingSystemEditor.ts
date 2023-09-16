@@ -61,7 +61,7 @@ class CraftingSystemEditor {
             hint1: this._localization.format("DOCUMENT.ImportDataHint1", {document: craftingSystemTypeName}),
             hint2: this._localization.format("DOCUMENT.ImportDataHint2", {name: importActionHint})
         });
-        new Dialog({
+        await new Dialog({
             title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.title`),
             content: content,
             default: "import",
@@ -71,7 +71,6 @@ class CraftingSystemEditor {
                     label: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.buttons.import`),
                     callback: async (html) => {
 
-                        // @ts-ignore
                         const form = html.find("form")[0];
                         if (!form.data.files.length) {
                             const message = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.noFileUploaded`);
@@ -129,6 +128,7 @@ class CraftingSystemEditor {
     public async exportCraftingSystem(craftingSystem: CraftingSystem) {
         const exportData = await this._fabricateAPI.export(craftingSystem.id);
         const fileContents = JSON.stringify(exportData, null, 2);
+        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
         const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
         saveDataToFile(fileContents, "application/json", fileName);
         const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
