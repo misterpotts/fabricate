@@ -89,7 +89,6 @@ jobs:
       - name: Create Version Release
         id: create_release
         uses: ncipollo/release-action@v1
-        if: endsWith(github.ref, 'main')
         with:
           skipIfReleaseExists: true # If a release already exists for this version, skip it
           allowUpdates: false # Releases are immutable, so we don't want to allow updates
