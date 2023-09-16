@@ -86,12 +86,13 @@ jobs:
         run: zip -r ../module.zip ${{steps.get-includes.outputs.files}}
 
       # Create a release for this specific version
-      - name: Create Version Release
+      - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
           skipIfReleaseExists: true # If a release already exists for this version, skip it
           allowUpdates: false # Releases are immutable, so we don't want to allow updates
+          generateReleaseNotes: true # Automatically generate release notes from commit messages and PRs
           name: Release ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
