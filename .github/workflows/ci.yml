@@ -85,26 +85,13 @@ jobs:
         working-directory: ./dist
         run: zip -r ../module.zip ${{steps.get-includes.outputs.files}}
 
-      # Update the 'latest' release
-      - name: Update Latest Release
-        id: create_latest_release
-        uses: ncipollo/release-action@v1
-        if: endsWith(github.ref, 'master')
-        with:
-          allowUpdates: true
-          name: Latest
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: './dist/module.json, ./module.zip'
-          tag: latest
-
       # Create a release for this specific version
       - name: Create Version Release
-        id: create_version_release
+        id: create_release
         uses: ncipollo/release-action@v1
         with:
-          allowUpdates: true # set this to false if you want to prevent updating existing releases
+          skipIfReleaseExists: true # If a release already exists for this version, skip it
+          allowUpdates: false # Releases are immutable, so we don't want to allow updates
           name: Release ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
