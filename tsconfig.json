@@ -26,6 +26,7 @@
       "sinon",
       "jest",
       "svelte",
+      "@league-of-foundry-developers/foundry-vtt-types",
       "jquery"
     ],
     "typeRoots": [
