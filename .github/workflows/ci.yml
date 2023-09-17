@@ -93,6 +93,7 @@ jobs:
         with:
           skipIfReleaseExists: true # If a release already exists for this version, skip it
           allowUpdates: false # Releases are immutable, so we don't want to allow updates
+          generateReleaseNotes: true # Always generate release notes
           name: Release ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
