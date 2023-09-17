@@ -102,13 +102,20 @@ If you don't want to organise your projects how I do, you can set the `FVTT_DEV_
 export FVTT_DEV_DATA="relative-path/from-the-build-directory/to-your-FVTT/Data"
 ```
 
+## Built with Svelte
+
+Fabricate eschews the typical Foundry VTT module development approach of using Handlebars templates rendered in Foundry's UI.
+Instead, Fabricate uses [Svelte](https://svelte.dev/) to build its user interface components.
+Svelte is a component-based UI framework that compiles to vanilla JavaScript.
+It is more lightweight, faster and easier to use (in my humble opinion) than Handlebars and many other front end frameworks.
+Perhaps more importantly, using Vite and Svelte together means that Fabricate's UI is rebuilt and reloaded in the browser whenever you make changes to the source code during local development.
+
 ## Vite Development Server
 
-You can run a local Vite development server once you've performed a local installation of Fabricate.
+You can run a local Vite development server once you've performed a [local installation of Fabricate](#local-installation)
 Vite will watch the build directory and rebuild the `/dist` directory when some source files change.
 The Vite dev server will also intercept requests to `<LOCAL_FOUNDRY_HOST>/modules/fabricate/**` to serve these updated resources.
-This enables live reload for CSS, which I find hugely boosts my productivity when working on Fabricate's UI.
-I haven't figured out live reload for handlebars templates yet, but I'd like to.
+This enables live reload for CSS and Svelte components, which I find hugely boosts my productivity when working on Fabricate's UI.
 
 To start the Vite dev server, run:
 
@@ -116,8 +123,9 @@ To start the Vite dev server, run:
 npm run serve
 ```
 
-This will also open up a browser window at `http://127.0.0.1:30001/game`.
-Use this window, **NOT** your local Foundry client, or direct access (typically at port `30000`) to use live reload during local development.
+This will also open up a browser window at `http://localhost:30001/game`.
+Use this new browser window for local development.
+**DO NOT** use your local Foundry client, or direct access (typically at port `30000`) to see the changes from live reloads (HMR) during local development.
 
 # License
 
