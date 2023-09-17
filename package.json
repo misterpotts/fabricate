@@ -16,7 +16,7 @@
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.0.2",
+    "@sveltejs/vite-plugin-svelte": "^2.4.6",
     "@tsconfig/svelte": "^3.0.0",
     "@types/jest": "^28.1.6",
     "@types/jquery": "^3.5.19",
