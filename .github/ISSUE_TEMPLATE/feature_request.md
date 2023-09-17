@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: ['enhancement', 'triage']
+labels: enhancement, triage
 assignees: ''
 
 ---
@@ -21,4 +21,4 @@ How might it be implemented? What would you expect to see in the user interface?
 
 ## Additional Context
 
-Any additional contextual information about the new feature here. 
+Any additional contextual information about the new feature here.
