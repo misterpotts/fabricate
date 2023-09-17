@@ -25,7 +25,13 @@ Fabricate exposes an API in Foundry, enabling users to interact with the module 
 
 ## Accessing the API
 
-Fabricate makes its API available on the global Game object, at the path `game.fabricate.api`.
+Fabricate makes its APIs available on the global Game object, at the path `game.fabricate`.
+Fabricate provides two APIs: the Fabricate API (at `game.fabricate.api`), and the Fabricate User Interface API (at `game.fabricate.ui`).
+The Fabricate API is used for managing crafting systems, essences, components, and recipes, as well as performing crafting.
+The Fabricate User Interface API is used for interacting with the Fabricate user interface.
+
+## Fabricate API
+
 The Fabricate API implements the `FabricateAPI` interface, described below.
 
 <details open markdown="block">
@@ -355,6 +361,48 @@ interface FabricateExportModel {
 
 </details>
 
+## Fabricate User Interface API
+
+The Fabricate User Interface API implements the `FabricateUserInterfaceAPI` interface, described below.
+
+<details open markdown="block">
+<summary>
+FabricateUserInterfaceAPI Interface
+</summary>
+
+```typescript
+interface FabricateUserInterfaceAPI {
+
+    /**
+     * Renders the crafting system manager application.
+     *
+     * @returns A Promise that resolves when the application is rendered.
+     */
+    renderCraftingSystemManagerApp(): Promise<void>;
+
+    /**
+     * Renders the component salvage application for the specified actor and component.
+     *
+     * @param actorId - The ID of the actor that owns the component.
+     * @param componentId - The ID of the component to salvage.
+     * @returns A Promise that resolves when the application is rendered.
+     */
+    renderComponentSalvageApp(actorId: string, componentId: string): Promise<void>;
+
+    /**
+     * Renders the recipe crafting application for the specified actor and recipe.
+     *
+     * @param actorId - The ID of the actor that owns the recipe.
+     * @param recipeId - The ID of the recipe to craft.
+     * @returns A Promise that resolves when the application is rendered.
+     */
+    renderRecipeCraftingApp(actorId: string, recipeId: string): Promise<void>;
+
+}
+```
+
+</details>
+
 ## Important operations
 
 ### Add item quantity support for your world's game system
@@ -365,4 +413,4 @@ Fabricate knows how to read and write item quantities for the following game sys
 - Pathfinder 2nd Edition
 
 Fabricate needs to be told where to find item quantity information for your world's game system.
-See the [example in the Crafting API documentation](./crafting#setting-the-game-system-item-quantity-property-path) for details.
+See the [example in the Crafting API documentation](/fabricate/api/crafting#setting-the-game-system-item-quantity-property-path) for details.

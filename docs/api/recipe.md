@@ -583,10 +583,10 @@ The examples below illustrate how to use the recipe API to create, modify and de
 
 ### Creating a recipe
 
-Once you've [created a crafting system](../systems#create-a-crafting-system), you can create a recipe for that crafting system by calling `game.fabricate.api.recipes.create()`, passing in the recipe details.
+Once you've [created a crafting system](/fabricate/api/systems#create-a-crafting-system), you can create a recipe for that crafting system by calling `game.fabricate.api.recipes.create()`, passing in the recipe details.
 To create a recipe, you must provide the ID of the crafting system the recipe belongs to, and the UUID of the item the recipe is associated with.
-If you've [created components](../components#creating-a-component) and optionally [created essences](../essences#creating-an-essence) for the crafting system, you can also provide options for requirements and results for the recipe.
-If not, don't worry - you can always [add requirements](#modifying-the-requirementoptions-for-a-recipe) and [add results](#modifying-the-resultoptions-for-a-recipe) later.
+If you've [created components](/fabricate/api/components/#creating-a-component) and optionally [created essences](/fabricate/api/essences/#creating-an-essence) for the crafting system, you can also provide options for requirements and results for the recipe.
+If not, don't worry - you can always [add requirements](#modifying-the-requirement-options-for-a-recipe) and [add results](#modifying-the-result-options-for-a-recipe) later.
 
 <details markdown="block">
 <summary>
@@ -853,6 +853,68 @@ Example #4: Deleting a requirement option
 const recipeId = 'my-recipe-id'; // <-- Replace with the ID of the recipe you want to modify
 const recipe = await game.fabricate.api.recipes.getById(recipeId);
 recipe.deleteRequirementOptionById('my-requirement-option-id'); // <-- Replace with the ID of the requirement option you want to delete
+// Save the recipe
+await game.fabricate.api.recipes.save(recipe);
+```
+
+</details>
+
+### Modifying the result options for a recipe
+
+You can modify the result options for a recipe by fetching it, modifying the result option (or options), then calling `game.fabricate.api.recipes.save()`, passing in the modified recipe.
+
+<details markdown="block">
+<summary>
+Example #1: Adding a result option
+</summary>
+
+```typescript
+const recipeId = 'my-recipe-id'; // <-- Replace with the ID of the recipe you want to modify
+const recipe = await game.fabricate.api.recipes.getById(recipeId);
+const myResultOptionData = {
+    name: 'My Result Option', // <-- Replace with the name of the result option
+    results: { // <-- Replace the keys with the IDs of the components you want to add as results, and the values with the quantities created
+        'my-result-component-id': 1,
+    }
+};
+recipe.setResultOption(myResultOptionData);
+// Save the recipe
+await game.fabricate.api.recipes.save(recipe);
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+Example #2: Overwriting an existing result option
+</summary>
+
+```typescript
+const recipeId = 'my-recipe-id'; // <-- Replace with the ID of the recipe you want to modify
+const recipe = await game.fabricate.api.recipes.getById(recipeId);
+const myResultOptionData = {
+    id: 'my-result-option-id', // <-- Replace with the ID of the result option you want to overwrite
+    name: 'My Result Option', // <-- Replace with the name of the result option
+    results: { // <-- Replace the keys with the IDs of the components you want to add as results, and the values with the quantities created
+        'my-result-component-id': 1,
+    }
+};
+recipe.setResultOption(myResultOptionData);
+// Save the recipe
+await game.fabricate.api.recipes.save(recipe);
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+Example #3: Deleting a result option
+</summary>
+
+```typescript
+const recipeId = 'my-recipe-id'; // <-- Replace with the ID of the recipe you want to modify
+const recipe = await game.fabricate.api.recipes.getById(recipeId);
+recipe.deleteResultOptionById('my-result-option-id'); // <-- Replace with the ID of the result option you want to delete
 // Save the recipe
 await game.fabricate.api.recipes.save(recipe);
 ```
