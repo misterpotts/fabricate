@@ -515,9 +515,9 @@ The examples below illustrate how to use the component API to create, modify and
 
 ### Creating a component
 
-Once you've [created a crafting system](../systems#create-a-crafting-system) and an item, you can create a component for that item by calling `game.fabricate.api.components.create()`, passing in the component details.
+Once you've [created a crafting system](/fabricate/api/systems#create-a-crafting-system) and an item, you can create a component for that item by calling `game.fabricate.api.components.create()`, passing in the component details.
 To create a component, you must provide the ID of the crafting system that the component belongs to and the UUID of the item that the component is associated with.
-If you've [created essences for the crafting system](../essences#creating-an-essence), you can also provide a dictionary of essences and their quantities.
+If you've [created essences for the crafting system](/fabricate/api/essences/#creating-an-essence), you can also provide a dictionary of essences and their quantities.
 If you've created other components for the crafting system already, you can also provide an array of salvage options for the component.
 Don't worry though; you can always [add essences to the component later](#adding-essences-to-a-component) and [add salvage options to the component later](#modifying-the-salvage-options-for-a-component).
 
@@ -677,7 +677,7 @@ const deletedComponent = game.fabricate.api.components.deleteById(myComponentId)
 ### Adding essences to a component
 
 You can add essences to a component by fetching it, setting the essences then calling `game.fabricate.api.components.save()`, passing in the modified component.
-You'll need to [create the essences](../essences#create-an-essence) before you can add them to a component.
+You'll need to [create the essences](/fabricate/api/essences/#creating-an-essence) before you can add them to a component.
 
 <details markdown="block">
 <summary>

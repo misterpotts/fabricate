@@ -1,13 +1,12 @@
 ---
 layout: page
-title: Other Types
+title: Types
 permalink: /api/types/
 parent: API
 nav_order: 7
-has_children: true
 ---
 
-# Other types
+# Types
 {: .no_toc }
 
 Fabricate provides a set of utility types and other classes for use in acting on essences, components and recipes.

@@ -26,7 +26,7 @@ The crafting API implements the `CraftingAPI` interface, described below.
 
 <details open markdown="block">
 <summary>
-ComponentAPI Interface
+CraftingAPI Interface
 </summary>
 
 ```typescript
@@ -309,7 +309,7 @@ const count = await game.fabricate.api.crafting.countOwnedComponentsOfType(actor
 
 You can use the `CraftingAPI#getOwnedComponentsForCraftingSystem` method to get the components owned by an actor for a given crafting system.
 Functionally, this gives you the contents of the actor's inventory for the specified crafting system.
-The method produces a [Combination](../types#combination) of Component objects, which acts as a powerful set-like data structure for use in supporting crafting operations.
+The method produces a [Combination](/fabricate/api/types#combination) of Component objects, which acts as a powerful set-like data structure for use in supporting crafting operations.
 
 <details markdown="block">
 <summary>
@@ -333,7 +333,7 @@ componentCombination.units.forEach(unit => {
 
 You can use the `CraftingAPI#selectComponents` method to select components from an actor's inventory for use when crafting recipes.
 Fabricate will automatically select the least wasteful essence sources (if any are required) for the recipe, as well as any catalysts and named ingredients.
-The returned [Component Selection](../types#componentselection) will be insufficient if the actor's inventory does not contain enough components to satisfy the recipe requirement option.
+The returned [Component Selection](/fabricate/api/types#component-selection) will be insufficient if the actor's inventory does not contain enough components to satisfy the recipe requirement option.
 
 <details markdown="block">
 <summary>
