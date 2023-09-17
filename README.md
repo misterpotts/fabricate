@@ -104,7 +104,7 @@ export FVTT_DEV_DATA="relative-path/from-the-build-directory/to-your-FVTT/Data"
 
 ## Built with Svelte
 
-Foundry eschews the typical Foundry VTT module development approach of using Handlebars templates rendered in Foundry's UI.
+Fabricate eschews the typical Foundry VTT module development approach of using Handlebars templates rendered in Foundry's UI.
 Instead, Fabricate uses [Svelte](https://svelte.dev/) to build its user interface components.
 Svelte is a component-based UI framework that compiles to vanilla JavaScript.
 It is more lightweight, faster and easier to use(in my humble opinion) than Handlebars and many other front end frameworks.
