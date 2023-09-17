@@ -3,6 +3,16 @@ import * as _ from "lodash";
 
 class StubObjectUtility implements ObjectUtility {
 
+    private readonly strict: boolean;
+
+    constructor(isStrict = false) {
+        this.strict = isStrict;
+    }
+
+    get isStrict(): boolean {
+        return this.strict;
+    }
+
     duplicate<T extends {}>(source: T): T {
         return _.cloneDeep(source);
     }
@@ -12,14 +22,16 @@ class StubObjectUtility implements ObjectUtility {
     }
 
     getPropertyValue<T>(propertyPath: string, object: object): T {
-        if (!_.has(object, propertyPath)) {
+        const pathExists = _.has(object, propertyPath);
+        if (!pathExists && this.strict) {
             throw new Error(`Property path ${propertyPath} not found on object`);
         }
-        return _.get(object, propertyPath);
+        return _.get(object, propertyPath, undefined);
     }
 
     setPropertyValue<T>(propertyPath: string, object: object, value: T): void {
-        if (!_.has(object, propertyPath)) {
+        const pathExists = _.has(object, propertyPath);
+        if (!pathExists && this.strict) {
             throw new Error(`Property path ${propertyPath} not found on object`);
         }
         _.set(object, propertyPath, value);

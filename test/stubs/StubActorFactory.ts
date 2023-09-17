@@ -1,15 +1,27 @@
 import {StubItem} from "./StubItem";
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {Combination, DefaultCombination} from "../../src/scripts/common/Combination";
 import {Component} from "../../src/scripts/crafting/component/Component";
+import {ObjectUtility} from "../../src/scripts/foundry/ObjectUtility";
+import {StubObjectUtility} from "./StubObjectUtility";
 
 class StubActorFactory {
 
-    constructor() {}
+    private readonly objectUtility: ObjectUtility = new StubObjectUtility(false);
+    private readonly itemQuantityPropertyPath: string;
 
-    public make(ownedComponents: Combination<Component> = DefaultCombination.EMPTY(), additionalItemCount = 10): BaseActor {
+    constructor(itemQuantityPropertyPath = "system.quantity") {
+        this.itemQuantityPropertyPath = itemQuantityPropertyPath;
+    }
+
+    public make({
+        ownedComponents = DefaultCombination.EMPTY(),
+        additionalItemCount = 10
+    }: {
+        ownedComponents?: Combination<Component>;
+        additionalItemCount?: number;
+    } = {}): Actor {
         const items = this.generateInventory(ownedComponents, additionalItemCount);
-        return <BaseActor><unknown>{
+        return <Actor><unknown>{
             id: randomIdentifier(),
             name: "Stub Actor",
             items,
@@ -71,17 +83,16 @@ class StubActorFactory {
         }
         ownedComponents.units.map(unit => {
             const id = randomIdentifier();
-            result.set(id, new StubItem({
+            const stubItemData = {
                 id: id,
                 flags: {
                     core: {
                         sourceId: unit.element.itemUuid
                     }
-                },
-                system: {
-                    quantity: unit.quantity
                 }
-            }));
+            };
+            this.objectUtility.setPropertyValue(this.itemQuantityPropertyPath,stubItemData, unit.quantity);
+            result.set(id, new StubItem(stubItemData));
         });
         return result;
     }

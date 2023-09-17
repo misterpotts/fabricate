@@ -10,7 +10,7 @@ import {
     testComponentThree,
     testComponentTwo
 } from "./test_data/TestCraftingComponents";
-import {DefaultUnit, Unit} from "../src/scripts/common/Unit";
+import {DefaultUnit} from "../src/scripts/common/Unit";
 import {SimpleInventoryAction} from "../src/scripts/actor/InventoryAction";
 import {DefaultCombination} from "../src/scripts/common/Combination";
 
@@ -46,12 +46,12 @@ describe("Crafting Inventory", () => {
         test("should index actor's inventory with some fabricate items", () => {
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
@@ -61,15 +61,33 @@ describe("Crafting Inventory", () => {
 
         });
 
-        test("should index actor's inventory without counting item quantity if no item quantity property path is known", () => {
+        test("should index actor's inventory in unknown system if default item quantity property path is populated on items", () => {
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
+            const underTest = dnd5eInventoryFactory.make("notDnd5e", stubActor, getAllTestComponents());
+            const contents = underTest.getContents();
+            expect(contents).not.toBeNull();
+            expect(contents.size).toBe(5);
+            expect(contents.amountFor(testComponentTwo)).toBe(3);
+            expect(contents.amountFor(testComponentFive)).toBe(2);
+
+        });
+
+        test("should index actor's inventory without counting item quantity if no item quantity property path is known and default item quantity path is not populated on items", () => {
+
+            const stubActor = new StubActorFactory("data.amount")
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentTwo, 3),
+                        new DefaultUnit(testComponentFive, 2),
+                    ])
+                });
             const underTest = dnd5eInventoryFactory.make("notDnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
@@ -89,12 +107,12 @@ describe("Crafting Inventory", () => {
             inventoryFactory.registerGameSystemItemQuantityPropertyPath("notDnd5e", "system.quantity");
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
             const underTest = inventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const contents = underTest.getContents();
             expect(contents).not.toBeNull();
@@ -111,12 +129,12 @@ describe("Crafting Inventory", () => {
         test("should add items without removing if no removals are specified", async () => {
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const addOneTestComponentThreeOnly = new SimpleInventoryAction({
                 additions: DefaultCombination.ofUnits([new DefaultUnit(testComponentThree, 1)])
@@ -134,12 +152,12 @@ describe("Crafting Inventory", () => {
         test("should remove items without adding if no additions are specified", async () => {
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTwoOnly = new SimpleInventoryAction({
                 removals: DefaultCombination.ofUnits([new DefaultUnit(testComponentTwo, 2)])
@@ -156,12 +174,12 @@ describe("Crafting Inventory", () => {
         test("should add and remove items if both are specified", async () => {
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTwoAndTestComponentFiveAndAddTwoTestComponentThree = new SimpleInventoryAction({
                 removals: DefaultCombination.ofUnits([
@@ -184,12 +202,12 @@ describe("Crafting Inventory", () => {
         test("should rationalise complete overlapping additions and removals to no action", async () => {
 
             const stubActor = new StubActorFactory()
-                .make(
-                    DefaultCombination.ofUnits([
+                .make({
+                    ownedComponents: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentTwo, 3),
                         new DefaultUnit(testComponentFive, 2),
                     ])
-                );
+                });
             const underTest = dnd5eInventoryFactory.make("dnd5e", stubActor, getAllTestComponents());
             const removeTwoTestComponentTFourAndAddTwoTestComponentFour = new SimpleInventoryAction({
                 removals: DefaultCombination.ofUnits([new DefaultUnit(testComponentFour, 2)]),

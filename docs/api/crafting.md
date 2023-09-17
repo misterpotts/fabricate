@@ -268,9 +268,11 @@ The examples below illustrate how to use the crafting API to craft recipes and s
 
 ### Setting the game system item quantity property path
 
-Fabricate treats items in unknown game systems as having a quantity of 1.
-You'll need to configure this property if your game system of choice supports item quantities and is not known to Fabricate.
-You can do this by making Fabricate aware of the item quantity property path for your game system.
+By default, Fabricate looks for item quantity information at the path `system.quantity` in an item's data.
+If no value is found at this path, or the path is not valid, Fabricate treats all items in your game world as **having a quantity of 1**.
+
+You'll need to configure this property if your game system of choice supports item quantities and the item data path is not known to Fabricate.
+You can do this by making Fabricate aware of the item quantity property path for your world's game system.
 It's really easy to do this, just call `CraftingAPI#setGameSystemItemQuantityPropertyPath`, passing in the game system ID and the property path to use.
 
 <details markdown="block">

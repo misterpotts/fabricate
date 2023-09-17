@@ -13,7 +13,6 @@ import {allTestRecipes} from "./test_data/TestRecipes";
 import {allTestComponents, testComponentFour, testComponentThree} from "./test_data/TestCraftingComponents";
 import {allTestEssences} from "./test_data/TestEssences";
 import {testCraftingSystemOne} from "./test_data/TestCrafingSystem";
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 import {StubActorFactory} from "./stubs/StubActorFactory";
 import {DefaultCombination} from "../src/scripts/common/Combination";
 import {
@@ -27,7 +26,9 @@ describe("Crafting API", () => {
 
         test("should salvage a component with one salvage option", async () => {
 
-            const stubActor = new StubActorFactory().make(DefaultCombination.of(testComponentFour));
+            const stubActor = new StubActorFactory().make({
+                ownedComponents: DefaultCombination.of(testComponentFour)
+            });
 
             const underTest = make(new Map([ [stubActor.id, stubActor] ]));
             const result = await underTest.salvageComponent({
@@ -76,7 +77,7 @@ describe("Crafting API", () => {
 
 });
 
-function make(stubActors: Map<string, BaseActor> = new Map()): CraftingAPI {
+function make(stubActors: Map<string, Actor> = new Map()): CraftingAPI {
     const stubLocalizationService = new StubLocalizationService();
     return new DefaultCraftingAPI({
         recipeAPI: new StubRecipeAPI({
