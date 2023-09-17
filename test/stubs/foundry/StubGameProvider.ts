@@ -1,5 +1,4 @@
 import {GameProvider} from "../../../src/scripts/foundry/GameProvider";
-import {BaseActor} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs";
 
 class StubGameObject {
 
@@ -18,7 +17,7 @@ class StubGameProvider implements GameProvider {
 
     private readonly gameSystemId: string;
     private readonly stubGameObject: StubGameObject;
-    private readonly stubActors: Map<string, BaseActor>;
+    private readonly stubActors: Map<string, Actor>;
 
     constructor({
         gameSystemId = "dnd5e",
@@ -27,7 +26,7 @@ class StubGameProvider implements GameProvider {
     }: {
         gameSystemId?: string,
         stubGameObject?: StubGameObject;
-        stubActors?: Map<string, BaseActor>,
+        stubActors?: Map<string, Actor>,
     } = {}) {
         this.gameSystemId = gameSystemId;
         this.stubGameObject = stubGameObject;
@@ -42,7 +41,7 @@ class StubGameProvider implements GameProvider {
         return this.gameSystemId;
     }
 
-    async loadActor(actorId: string): Promise<BaseActor> {
+    async loadActor(actorId: string): Promise<Actor> {
         return this.stubActors.get(actorId);
     }
 

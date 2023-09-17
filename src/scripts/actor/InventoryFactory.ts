@@ -1,7 +1,11 @@
 import {CraftingInventory, Inventory} from "./Inventory";
 import {DefaultObjectUtility, ObjectUtility} from "../foundry/ObjectUtility";
 import {Component} from "../crafting/component/Component";
-import {ItemDataManager, PropertyPathAwareItemDataManager, SingletonItemDataManager} from "./ItemDataManager";
+import {
+    ItemDataManager,
+    OptimisticItemDataManagerFactory,
+    PropertyPathAwareItemDataManager
+} from "./ItemDataManager";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 
 interface InventoryFactory {
@@ -25,18 +29,22 @@ class DefaultInventoryFactory implements InventoryFactory {
     private readonly _localizationService: LocalizationService;
     private readonly _objectUtility: ObjectUtility;
     private readonly _gameSystemItemQuantityPropertyPaths: Map<string, string>;
+    private readonly _optimisticItemDataManagerFactory: OptimisticItemDataManagerFactory;
 
     constructor({
-        localizationService,
         objectUtility = new DefaultObjectUtility(),
+        localizationService,
         gameSystemItemQuantityPropertyPaths = DefaultInventoryFactory._KNOWN_GAME_SYSTEM_ITEM_QUANTITY_PROPERTY_PATHS,
+        optimisticItemDataManagerFactory = new OptimisticItemDataManagerFactory({ objectUtils: objectUtility }),
     }: {
-        localizationService: LocalizationService;
         objectUtility?: ObjectUtility;
+        localizationService: LocalizationService;
         gameSystemItemQuantityPropertyPaths?: Map<string, string>;
+        optimisticItemDataManagerFactory?: OptimisticItemDataManagerFactory;
     }) {
-        this._localizationService = localizationService;
         this._objectUtility = objectUtility;
+        this._localizationService = localizationService;
+        this._optimisticItemDataManagerFactory = optimisticItemDataManagerFactory;
         this._gameSystemItemQuantityPropertyPaths = gameSystemItemQuantityPropertyPaths;
     }
 
@@ -57,7 +65,7 @@ class DefaultInventoryFactory implements InventoryFactory {
                 propertyPath: this._gameSystemItemQuantityPropertyPaths.get(gameSystemId),
             });
         } else {
-            itemDataManager = new SingletonItemDataManager({ objectUtils: this._objectUtility } );
+            itemDataManager = this._optimisticItemDataManagerFactory.make();
         }
 
         return new CraftingInventory({

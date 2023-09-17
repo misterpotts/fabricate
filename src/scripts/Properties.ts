@@ -78,6 +78,7 @@ const Properties = {
             key: "modelVersion",
             targetValue: SettingVersion.V3
         },
+        defaultItemQuantityPropertyPath: "system.quantity"
     }
 };
 

@@ -4,6 +4,7 @@ import {Component} from "../crafting/component/Component";
 import {Unit} from "../common/Unit";
 import {FabricateItemData} from "../foundry/DocumentManager";
 import {InventoryContentsNotFoundError} from "../error/InventoryContentsNotFoundError";
+import Properties from "../Properties";
 
 interface ItemDataManager {
 
@@ -13,7 +14,7 @@ interface ItemDataManager {
      * @param item - The item to count the quantity of.
      * @returns The quantity of the specified item.
      */
-    count(item: any): number;
+    count(item: Item): number;
 
     /**
      * Prepares the additions to be made to the inventory as item update or create operations.
@@ -38,6 +39,8 @@ interface ItemDataManager {
     prepareRemovals(components: Combination<Component>, ownedItemsByComponentId: Map<string, any[]>): { updates: any[], deletes: any[] };
 
 }
+
+export { ItemDataManager }
 
 class SingletonItemDataManager implements ItemDataManager {
 
@@ -95,6 +98,8 @@ class SingletonItemDataManager implements ItemDataManager {
 
 }
 
+export { SingletonItemDataManager }
+
 class PropertyPathAwareItemDataManager implements ItemDataManager {
 
     private readonly _objectUtils: ObjectUtility;
@@ -111,7 +116,11 @@ class PropertyPathAwareItemDataManager implements ItemDataManager {
         this._propertyPath = propertyPath;
     }
 
-    count(item: any): number {
+    get propertyPath(): string {
+        return this._propertyPath;
+    }
+
+    count(item: Item): number {
         const quantity = this._objectUtils.getPropertyValue(this._propertyPath, item);
         if (typeof quantity !== "number") {
             throw new Error(`Expected a number, but found ${quantity}`);
@@ -210,4 +219,93 @@ class PropertyPathAwareItemDataManager implements ItemDataManager {
 
 }
 
-export { ItemDataManager, SingletonItemDataManager, PropertyPathAwareItemDataManager }
+export { PropertyPathAwareItemDataManager }
+
+/**
+ * An item data manager that attempts to read the quantity of an item from a property path on the item. If that fails,
+ * it falls back to a singleton item data manager (treating all items as having a quantity of 1).
+ */
+class OptimisticItemDataManager implements ItemDataManager {
+
+    private readonly _singletonItemDataManager: SingletonItemDataManager;
+    private readonly _propertyPathAwareItemDataManager: PropertyPathAwareItemDataManager;
+
+    constructor({
+        singletonItemDataManager,
+        propertyPathAwareItemDataManager,
+    }: {
+        singletonItemDataManager: SingletonItemDataManager;
+        propertyPathAwareItemDataManager: PropertyPathAwareItemDataManager;
+    }) {
+        this._singletonItemDataManager = singletonItemDataManager;
+        this._propertyPathAwareItemDataManager = propertyPathAwareItemDataManager;
+    }
+
+    count(item: Item): number {
+        try {
+            return this._propertyPathAwareItemDataManager.count(item);
+        } catch (e) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
+            console.warn(`${Properties.module.id} | Unable to read quantity from item using default property path "${this._propertyPathAwareItemDataManager.propertyPath}". Caused by: ${cause.message}`);
+            return this._singletonItemDataManager.count();
+        }
+    }
+
+    prepareAdditions(components: Combination<Component>, activeEffects: ActiveEffect[], ownedItemsByComponentId: Map<string, any[]>): {
+        updates: any[];
+        creates: any[]
+    } {
+        try {
+            return this._propertyPathAwareItemDataManager.prepareAdditions(components, activeEffects, ownedItemsByComponentId);
+        } catch (e) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
+            console.warn(`${Properties.module.id} | Unable to prepare additions using default property path "${this._propertyPathAwareItemDataManager.propertyPath}". Caused by: ${cause.message}`);
+            return this._singletonItemDataManager.prepareAdditions(components, activeEffects);
+        }
+    }
+
+    prepareRemovals(components: Combination<Component>, ownedItemsByComponentId: Map<string, any[]>): {
+        updates: any[];
+        deletes: any[]
+    } {
+        try {
+            return this._propertyPathAwareItemDataManager.prepareRemovals(components, ownedItemsByComponentId);
+        } catch (e) {
+            const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
+            console.warn(`${Properties.module.id} | Unable to prepare removals using default property path "${this._propertyPathAwareItemDataManager.propertyPath}". Caused by: ${cause.message}`);
+            return this._singletonItemDataManager.prepareRemovals(components, ownedItemsByComponentId);
+        }
+    }
+
+}
+
+export { OptimisticItemDataManager }
+
+class OptimisticItemDataManagerFactory {
+
+    private readonly _objectUtils: ObjectUtility;
+    private readonly _defaultItemQuantityPropertyPath: string;
+
+    constructor({
+        objectUtils = new DefaultObjectUtility(),
+        defaultItemQuantityPropertyPath = Properties.settings.defaultItemQuantityPropertyPath
+    }: {
+        objectUtils?: ObjectUtility;
+        defaultItemQuantityPropertyPath?: string;
+    } = {}) {
+        this._objectUtils = objectUtils;
+        this._defaultItemQuantityPropertyPath = defaultItemQuantityPropertyPath;
+    }
+
+    make(): OptimisticItemDataManager {
+        const singletonItemDataManager = new SingletonItemDataManager({ objectUtils: this._objectUtils });
+        const propertyPathAwareItemDataManager = new PropertyPathAwareItemDataManager({
+            objectUtils: this._objectUtils,
+            propertyPath: this._defaultItemQuantityPropertyPath
+        });
+        return new OptimisticItemDataManager({ singletonItemDataManager, propertyPathAwareItemDataManager });
+    }
+
+}
+
+export { OptimisticItemDataManagerFactory }
