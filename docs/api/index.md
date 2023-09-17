@@ -415,5 +415,5 @@ Fabricate knows how to read and write item quantities for the following game sys
 
 By default, Fabricate looks for item quantity information at the path `system.quantity` in an item's data.
 If no value is found at this path, or the path is not valid, Fabricate treats all items in your game world as **having a quantity of 1**.
-If your world's game system uses a different path, you can tell Fabricate where to find it by changing the `game.fabricate.api.crafting.itemQuantityPropertyPath` setting.
+If your world's game system uses a different path, you can tell Fabricate where to find it by changing the `itemQuantityPropertyPath` setting in the Crafting API.
 See the [example in the Crafting API documentation](/fabricate/api/crafting#setting-the-game-system-item-quantity-property-path) for details.
