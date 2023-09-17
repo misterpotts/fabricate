@@ -112,7 +112,7 @@ Perhaps more importantly, using Vite and Svelte together means that Fabricate's 
 
 ## Vite Development Server
 
-You can run a local Vite development server once you've performed a local installation of Fabricate.
+You can run a local Vite development server once you've performed a [local installation of Fabricate](#local-installation)
 Vite will watch the build directory and rebuild the `/dist` directory when some source files change.
 The Vite dev server will also intercept requests to `<LOCAL_FOUNDRY_HOST>/modules/fabricate/**` to serve these updated resources.
 This enables live reload for CSS and Svelte components, which I find hugely boosts my productivity when working on Fabricate's UI.
