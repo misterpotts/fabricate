@@ -458,7 +458,7 @@ class DefaultCraftingAPI implements CraftingAPI {
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.disabledCraftingSystem`,
                 {
                     craftingSystemName: craftingSystem.details.name,
-                    componentName: component.name
+                    name: component.name
                 }
             );
             this.notificationService.error(message);
@@ -669,7 +669,10 @@ class DefaultCraftingAPI implements CraftingAPI {
         if (craftingSystem.isDisabled) {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.disabledCraftingSystem`,
-                { craftingSystemName: craftingSystem.details.name }
+                {
+                    craftingSystemName: craftingSystem.details.name,
+                    name: recipe.name
+                }
             );
             this.notificationService.error(message);
             return new NoCraftingResult({

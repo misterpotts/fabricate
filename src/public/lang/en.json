@@ -124,7 +124,7 @@
     },
     "crafting": {
       "actorNotFound": "The Actor with id {actorId} could not be found. ",
-      "disabledCraftingSystem": "The component {componentName} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
+      "disabledCraftingSystem": "{name} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
       "salvage": {
         "componentNotFound": "The component with id {componentId} could not be found. ",
         "componentNotOwned": "The component with name {componentName} is not owned by the Actor {actorName}. ",

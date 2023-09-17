@@ -159,6 +159,8 @@ declare interface EmbeddedCollection<T extends Document> extends Map<string, T> 
  */
 declare interface Actor {
 
+    name: string;
+
     items: EmbeddedCollection<Item>;
 
     id: string;
