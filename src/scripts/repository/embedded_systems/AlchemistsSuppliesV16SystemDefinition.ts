@@ -10,10 +10,10 @@ import {
     DefaultRecipe,
     Recipe
 } from "../../crafting/recipe/Recipe";
-import {SelectableOptions} from "../../crafting/selection/SelectableOptions";
+import {SelectableOptions} from "../../common/SelectableOptions";
 import {ComponentReference} from "../../crafting/component/ComponentReference";
-import {RequirementOption, RequirementOptionJson} from "../../crafting/recipe/RequirementOption";
-import {ResultOption, ResultOptionJson} from "../../crafting/recipe/ResultOption";
+import {Requirement, RequirementJson} from "../../crafting/recipe/Requirement";
+import {Result, ResultJson} from "../../crafting/recipe/Result";
 import {DefaultCombination} from "../../common/Combination";
 
 class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDefinition {
@@ -463,9 +463,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.3N7TGYWJRrUJ9thy",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -475,9 +475,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -494,9 +494,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.6mKiAWQIzDZRPNOP",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -506,9 +506,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -525,9 +525,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.8M0vwnOuCEIEP9ww",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -537,9 +537,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -556,9 +556,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.EQfnAlIaDLh57ETN",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -568,9 +568,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -587,9 +587,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.F2dhRws4mZppZVIa",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -599,9 +599,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -618,9 +618,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.IVqzRv8v1MrfpKSa",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -630,9 +630,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -649,9 +649,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.JEewjPpD6JA2ifE3",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -661,9 +661,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -680,9 +680,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.O0FPlz7ARBLuLY1E",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -692,9 +692,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -711,9 +711,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.Pl65b1VSVhUJ2li9",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -725,9 +725,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -744,9 +744,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.WseDmjhOWaT1XeJf",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -756,9 +756,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -775,9 +775,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.hJFEOjoiLdTOOoBn",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -787,9 +787,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -806,9 +806,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.kI3lqJmjWai0aX5L",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -817,9 +817,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -836,9 +836,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.x4MkisNL6yBoTZ94",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -848,9 +848,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -867,9 +867,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.ylQuglLVjQFuH9w1",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -880,9 +880,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([
@@ -899,9 +899,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.yqKIdplKhpa5Ir7A",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
+                requirementOptions: new SelectableOptions<RequirementJson, Requirement>({
                     options: [
-                        new RequirementOption({
+                        new Requirement({
                             id: "option-1",
                             name: "Option 1",
                             essences: DefaultCombination.ofUnits([
@@ -912,9 +912,9 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                         }),
                     ],
                 }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
+                resultOptions: new SelectableOptions<ResultJson, Result>({
                     options: [
-                        new ResultOption({
+                        new Result({
                             id: "option-1",
                             name: "Option 1",
                             results: DefaultCombination.ofUnits([

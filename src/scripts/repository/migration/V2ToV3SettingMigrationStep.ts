@@ -7,10 +7,10 @@ import {V2Component, V2CraftingSystem, V2Essence, V2Recipe, V2SettingsModel} fro
 import {EssenceJson} from "../../crafting/essence/Essence";
 import {CraftingSystemJson} from "../../system/CraftingSystem";
 import {ComponentJson} from "../../crafting/component/Component";
-import {SalvageOptionJson} from "../../crafting/component/SalvageOption";
+import {SalvageJson} from "../../crafting/component/Salvage";
 import {RecipeJson} from "../../crafting/recipe/Recipe";
-import {ResultOptionJson} from "../../crafting/recipe/ResultOption";
-import {RequirementOptionJson} from "../../crafting/recipe/RequirementOption";
+import {ResultJson} from "../../crafting/recipe/Result";
+import {RequirementJson} from "../../crafting/recipe/Requirement";
 import {SettingMigrationStep} from "./SettingMigrationStep";
 
 /**
@@ -199,7 +199,7 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
             .reduce((record, value) => {
                 record[value.id] = value;
                 return record;
-            }, <Record<string, SalvageOptionJson>>{});
+            }, <Record<string, SalvageJson>>{});
         return {
             id: componentId,
             salvageOptions,
@@ -224,7 +224,7 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
             .reduce((record, value) => {
                 record[value.id] = value;
                 return record;
-            }, <Record<string, ResultOptionJson>>{});
+            }, <Record<string, ResultJson>>{});
         const requirementOptions = Object.keys(source.ingredientOptions)
             .map(ingredientOptionId => {
                 const ingredientOption = source.ingredientOptions[ingredientOptionId];
@@ -239,7 +239,7 @@ class V2ToV3SettingMigrationStep implements SettingMigrationStep {
             .reduce((record, value) => {
                 record[value.id] = value;
                 return record;
-            }, <Record<string, RequirementOptionJson>>{});
+            }, <Record<string, RequirementJson>>{});
         if (Object.keys(source.essences).length > 0 && Object.keys(requirementOptions).length === 0) {
             const optionId = this._identityFactory.make();
             requirementOptions[optionId] = {

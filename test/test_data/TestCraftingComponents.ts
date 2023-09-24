@@ -3,11 +3,11 @@ import {DefaultCombination} from "../../src/scripts/common/Combination";
 
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./TestEssences";
 import Properties from "../../src/scripts/Properties";
-import {SelectableOptions} from "../../src/scripts/crafting/selection/SelectableOptions";
 import {LoadedFabricateItemData} from "../../src/scripts/foundry/DocumentManager";
 import {testCraftingSystemOne} from "./TestCrafingSystem";
 import {DefaultUnit} from "../../src/scripts/common/Unit";
-import {SalvageOption} from "../../src/scripts/crafting/component/SalvageOption";
+import {Salvage} from "../../src/scripts/crafting/component/Salvage";
+import {DefaultSerializableOption, DefaultSerializableOptions} from "../../src/scripts/common/Options";
 
 const testComponentOne: Component = new DefaultComponent({
     id: "iyeUGBbSts0ij92X",
@@ -56,15 +56,17 @@ const testComponentFour: Component = new DefaultComponent({
         sourceDocument: { effects: [], flags: {}, system: { quantity: null } }
     }),
     essences: DefaultCombination.ofUnits([new DefaultUnit(elementalAir.toReference(), 2)]),
-    salvageOptions: new SelectableOptions({
-        options: [
-            new SalvageOption({
+    salvageOptions: new DefaultSerializableOptions(
+        [
+            new DefaultSerializableOption({
                 id: `${testComponentFourId}-salvage-1`,
                 name: "Option 1",
-                results: DefaultCombination.of(testComponentThree.toReference(), 2)
+                value: new Salvage({
+                    results: DefaultCombination.of(testComponentThree.toReference(), 2)
+                })
             })
         ]
-    })
+    )
 });
 
 const testComponentFiveId = "74K6TAuSg2xzd209";
@@ -81,18 +83,18 @@ const testComponentFive: Component = new DefaultComponent({
         new DefaultUnit(elementalFire.toReference(), 1),
         new DefaultUnit(elementalEarth.toReference(), 3)
     ]),
-    salvageOptions: new SelectableOptions({
-        options: [
-            new SalvageOption({
+    salvageOptions: new DefaultSerializableOptions([
+            new DefaultSerializableOption({
                 id: `${testComponentFiveId}-salvage-1`,
                 name: "Option 1",
-                results: DefaultCombination.ofUnits([
-                    new DefaultUnit(testComponentOne.toReference(), 2),
-                    new DefaultUnit(testComponentTwo.toReference(), 1)
-                ])
-            })
-        ]
-    })
+                value: new Salvage({
+                    results: DefaultCombination.ofUnits([
+                        new DefaultUnit(testComponentOne.toReference(), 2),
+                        new DefaultUnit(testComponentTwo.toReference(), 1)
+                    ])
+                })
+            }),
+        ])
 });
 
 const testComponentSix: Component = new DefaultComponent({

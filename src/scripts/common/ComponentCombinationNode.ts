@@ -1,7 +1,7 @@
-import {Combination, DefaultCombination} from "../common/Combination";
+import {Combination, DefaultCombination} from "./Combination";
 import {Component} from "../crafting/component/Component";
 import {EssenceReference} from "../crafting/essence/EssenceReference";
-import {DefaultUnit} from "../common/Unit";
+import {DefaultUnit} from "./Unit";
 
 export class ComponentCombinationNode {
     private readonly _requiredEssences: Combination<EssenceReference>;

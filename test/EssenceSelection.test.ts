@@ -1,5 +1,5 @@
 import {describe, expect, test} from "@jest/globals";
-import {EssenceSelection} from "../src/scripts/actor/EssenceSelection";
+import {EssenceSelection} from "../src/scripts/crafting/essence/EssenceSelection";
 import {DefaultCombination} from "../src/scripts/common/Combination";
 import {elementalAir, elementalEarth, elementalFire, elementalWater} from "./test_data/TestEssences";
 import {

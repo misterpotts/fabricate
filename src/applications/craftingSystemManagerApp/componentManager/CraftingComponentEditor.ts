@@ -1,7 +1,7 @@
 import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
-import {Component, SalvageOptionConfig} from "../../../scripts/crafting/component/Component";
+import {Component, SalvageConfig} from "../../../scripts/crafting/component/Component";
 import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
@@ -105,7 +105,7 @@ class CraftingComponentEditor {
 
     public async addSalvageOptionComponentAsCatalyst(event: any, selectedComponent: Component): Promise<Component> {
         const component = await this.getComponentFromDropEvent(event);
-        selectedComponent.setSalvageOption(<SalvageOptionConfig>{
+        selectedComponent.setSalvageOption(<SalvageConfig>{
             name: this.generateOptionName(selectedComponent),
             catalysts: { [ component.id ]: 1 },
             results: {}
@@ -116,7 +116,7 @@ class CraftingComponentEditor {
 
     public async addSalvageOptionComponentAsSalvageResult(event: any, selectedComponent: Component): Promise<Component> {
         const component = await this.getComponentFromDropEvent(event);
-        selectedComponent.setSalvageOption(<SalvageOptionConfig>{
+        selectedComponent.setSalvageOption(<SalvageConfig>{
             name: this.generateOptionName(selectedComponent),
             catalysts: {},
             results: { [ component.id ]: 1 }

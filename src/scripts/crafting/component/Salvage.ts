@@ -1,38 +1,45 @@
-import {Identifiable} from "../../common/Identifiable";
 import {Serializable} from "../../common/Serializable";
 import {Combination, DefaultCombination} from "../../common/Combination";
 import {ComponentReference} from "./ComponentReference";
 import {DefaultUnit} from "../../common/Unit";
 
-interface SalvageOptionJson {
-    id: string;
+/**
+ * todo: BREAKING remove this interface and perform data migration
+ *
+ * @deprecated Use OptionJson<SalvageJson> post data migration
+ */
+interface SalvageOptionJson extends SalvageJson {
+
+    id : string;
+
     name: string;
-    results: Record<string, number>;
-    catalysts: Record<string, number>;
+
 }
 
 export { SalvageOptionJson };
 
-class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
+interface SalvageJson {
 
-    private readonly _id: string;
-    private _name: string;
+    results: Record<string, number>;
+
+    catalysts: Record<string, number>;
+
+}
+
+export { SalvageJson };
+
+class Salvage implements Serializable<SalvageJson> {
+
     private _results: Combination<ComponentReference>;
     private _catalysts: Combination<ComponentReference>;
 
     constructor({
-        id,
-        name,
         results,
         catalysts = DefaultCombination.EMPTY()
     }: {
-        id: string;
-        name: string;
         results: Combination<ComponentReference>;
         catalysts?: Combination<ComponentReference>;
     }) {
-        this._id = id;
-        this._name = name;
         this._results = results;
         this._catalysts = catalysts;
     }
@@ -61,49 +68,31 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
         this._catalysts = value;
     }
 
-    set name(value: string) {
-        this._name = value;
-    }
-
     get isEmpty(): boolean {
         return this._results.isEmpty() && this._catalysts.isEmpty();
     }
 
-    get name(): string {
-        return this._name;
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
-    toJson(): SalvageOptionJson {
+    toJson(): SalvageJson {
         return {
-            id: this._id,
-            name: this._name,
             results: this._results.toJson(),
             catalysts: this._catalysts.toJson()
         };
     }
 
-    static fromJson(salvageOptionJson: SalvageOptionJson): SalvageOption {
+    static fromJson(salvageOptionJson: SalvageJson): Salvage {
         try {
-            return new SalvageOption({
-                id: salvageOptionJson.id,
-                name: salvageOptionJson.name,
+            return new Salvage({
                 results: DefaultCombination.fromRecord(salvageOptionJson.results, ComponentReference.fromComponentId),
                 catalysts: DefaultCombination.fromRecord(salvageOptionJson.catalysts, ComponentReference.fromComponentId)
             });
         } catch (e: any) {
             const cause: Error = e instanceof Error ? e : typeof e === "string" ? new Error(e) : new Error("An unknown error occurred");
-            throw new Error(`Unable to build result option ${salvageOptionJson.name}`, {cause});
+            throw new Error(`Unable to build result option`, {cause});
         }
     }
 
-    without(componentId: string): SalvageOption {
-        return new SalvageOption({
-            id: this._id,
-            name: this._name,
+    without(componentId: string): Salvage {
+        return new Salvage({
             results: this._results.without(componentId),
             catalysts: this._catalysts.without(componentId)
         });
@@ -127,4 +116,4 @@ class SalvageOption implements Identifiable, Serializable<SalvageOptionJson> {
 
 }
 
-export { SalvageOption };
+export { Salvage };

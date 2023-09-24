@@ -3,7 +3,7 @@ import {ComponentAPI} from "../../scripts/api/ComponentAPI";
 import {Component} from "../../scripts/crafting/component/Component";
 import {TrackedCombination} from "../../scripts/common/TrackedCombination";
 import {Combination, DefaultCombination} from "../../scripts/common/Combination";
-import {SalvageOption} from "../../scripts/crafting/component/SalvageOption";
+import {Salvage} from "../../scripts/crafting/component/Salvage";
 import {SalvageResult} from "../../scripts/crafting/result/SalvageResult";
 
 interface SalvageAttempt {
@@ -147,7 +147,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
 
     private buildSalvageAttempt(
         componentToSalvage: Component,
-        option: SalvageOption,
+        option: Salvage,
         amountOwned: number,
         ownedComponents: Combination<Component>,
         includedComponentsById: Map<string, Component>,

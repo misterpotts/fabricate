@@ -17,7 +17,7 @@ import {StubActorFactory} from "./stubs/StubActorFactory";
 import {DefaultCombination} from "../src/scripts/common/Combination";
 import {
     DefaultComponentSelectionStrategyFactory
-} from "../src/scripts/crafting/selection/ComponentSelectionStrategy";
+} from "../src/scripts/crafting/component/ComponentSelectionStrategy";
 
 
 describe("Crafting API", () => {

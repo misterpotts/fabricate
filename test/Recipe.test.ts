@@ -24,9 +24,9 @@ describe("When creating a recipe", () => {
 
         expect(underTest.hasChoices).toEqual(false);
         expect(underTest.hasRequirements).toEqual(true);
-        expect(underTest.requirementOptions.all[0].essences.size).toEqual(4);
-        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
-        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalEarth.id)).toEqual(3);
+        expect(underTest.requirementOptions.all[0].value.essences.size).toEqual(4);
+        expect(underTest.requirementOptions.all[0].value.essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.essences.amountFor(elementalEarth.id)).toEqual(3);
         expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultChoices).toEqual(false);
@@ -39,14 +39,14 @@ describe("When creating a recipe", () => {
         expect(underTest.hasRequirements).toEqual(true);
         expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.requirementOptions.all.length).toEqual(1);
-        expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
-        expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(false);
-        expect(underTest.requirementOptions.all[0].requiresEssences).toEqual(true);
-        expect(underTest.requirementOptions.all[0].essences.size).toEqual(2);
-        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalFire.id)).toEqual(1);
-        expect(underTest.requirementOptions.all[0].essences.amountFor(elementalWater.id)).toEqual(1);
-        expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
-        expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFour.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.requiresCatalysts).toEqual(true);
+        expect(underTest.requirementOptions.all[0].value.requiresIngredients).toEqual(false);
+        expect(underTest.requirementOptions.all[0].value.requiresEssences).toEqual(true);
+        expect(underTest.requirementOptions.all[0].value.essences.size).toEqual(2);
+        expect(underTest.requirementOptions.all[0].value.essences.amountFor(elementalFire.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.essences.amountFor(elementalWater.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.catalysts.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.catalysts.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultChoices).toEqual(false);
     });
@@ -58,12 +58,12 @@ describe("When creating a recipe", () => {
         expect(underTest.hasRequirements).toEqual(true);
         expect(underTest.hasRequirementChoices).toEqual(false);
         expect(underTest.requirementOptions.all.length).toEqual(1);
-        expect(underTest.requirementOptions.all[0].requiresCatalysts).toEqual(true);
-        expect(underTest.requirementOptions.all[0].requiresIngredients).toEqual(true);
-        expect(underTest.requirementOptions.all[0].catalysts.size).toEqual(1);
-        expect(underTest.requirementOptions.all[0].catalysts.amountFor(testComponentFive.id)).toEqual(1);
-        expect(underTest.requirementOptions.all[0].ingredients.size).toEqual(1);
-        expect(underTest.requirementOptions.all[0].ingredients.amountFor(testComponentFour.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.requiresCatalysts).toEqual(true);
+        expect(underTest.requirementOptions.all[0].value.requiresIngredients).toEqual(true);
+        expect(underTest.requirementOptions.all[0].value.catalysts.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.catalysts.amountFor(testComponentFive.id)).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.ingredients.size).toEqual(1);
+        expect(underTest.requirementOptions.all[0].value.ingredients.amountFor(testComponentFour.id)).toEqual(1);
         expect(underTest.hasResults).toEqual(true);
         expect(underTest.hasResultChoices).toEqual(false);
 

@@ -1,7 +1,7 @@
 import {ComponentCombinationNode} from "./ComponentCombinationNode";
-import {Combination, DefaultCombination} from "../common/Combination";
+import {Combination, DefaultCombination} from "./Combination";
 import {Component} from "../crafting/component/Component";
-import {DefaultUnit} from "../common/Unit";
+import {DefaultUnit} from "./Unit";
 import {EssenceReference} from "../crafting/essence/EssenceReference";
 
 interface ComponentEssenceCombination {

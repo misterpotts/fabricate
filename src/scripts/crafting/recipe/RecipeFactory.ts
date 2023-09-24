@@ -1,9 +1,9 @@
 import {DefaultRecipe, Recipe, RecipeJson} from "./Recipe";
 import {DefaultDocumentManager, DocumentManager} from "../../foundry/DocumentManager";
-import {SelectableOptions} from "../selection/SelectableOptions";
 import {EntityFactory} from "../../repository/EntityFactory";
-import {RequirementOption, RequirementOptionJson} from "./RequirementOption";
-import {ResultOption, ResultOptionJson} from "./ResultOption";
+import {Requirement, RequirementJson, RequirementOptionJson} from "./Requirement";
+import {Result, ResultJson, ResultOptionJson} from "./Result";
+import {DefaultSerializableOption, DefaultSerializableOptions, SerializableOptions} from "../../common/Options";
 
 class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
 
@@ -35,16 +35,28 @@ class RecipeFactory implements EntityFactory<RecipeJson, Recipe> {
         }
     }
 
-    private buildRequirementOptions(requirementOptionsJson: Record<string, RequirementOptionJson>): SelectableOptions<RequirementOptionJson, RequirementOption> {
+    private buildRequirementOptions(requirementOptionsJson: Record<string, RequirementOptionJson>): SerializableOptions<RequirementJson, Requirement> {
         const options = Object.values(requirementOptionsJson)
-            .map(json => RequirementOption.fromJson(json));
-        return new SelectableOptions<RequirementOptionJson, RequirementOption>({ options });
+            .map(json => new DefaultSerializableOption({
+                id: json.id,
+                name: json.name,
+                value: Requirement.fromJson({
+                    catalysts: json.catalysts,
+                    ingredients: json.ingredients,
+                    essences: json.essences
+                })
+            }));
+        return new DefaultSerializableOptions<RequirementJson, Requirement>(options);
     }
 
-    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>): SelectableOptions<ResultOptionJson, ResultOption> {
+    private buildResultOptions(resultOptionsJson: Record<string, ResultOptionJson>): SerializableOptions<ResultJson, Result> {
         const options = Object.values(resultOptionsJson)
-            .map(json => ResultOption.fromJson(json));
-        return new SelectableOptions<ResultOptionJson, ResultOption>({ options });
+            .map(json => new DefaultSerializableOption({
+                id: json.id,
+                name: json.name,
+                value: Result.fromJson({ products: json.results })
+            }));
+        return new DefaultSerializableOptions<ResultJson, Result>(options);
     }
 
 }

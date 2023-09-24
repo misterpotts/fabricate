@@ -6,7 +6,7 @@ import {IdentityFactory} from "../foundry/IdentityFactory";
 import {EntityValidationResult} from "./EntityValidator";
 import {ComponentValidator} from "../crafting/component/ComponentValidator";
 import {NotificationService} from "../foundry/NotificationService";
-import {SalvageOptionJson} from "../crafting/component/SalvageOption";
+import {SalvageJson} from "../crafting/component/Salvage";
 import {ComponentExportModel} from "../repository/import/FabricateExportModel";
 
 /**
@@ -339,7 +339,7 @@ class DefaultComponentAPI implements ComponentAPI {
                 ...salvageOption
             };
             return result;
-        }, <Record<string, SalvageOptionJson>>{});
+        }, <Record<string, SalvageJson>>{});
 
         const entityJson: ComponentJson = {
             id,
@@ -444,7 +444,7 @@ class DefaultComponentAPI implements ComponentAPI {
                     ...salvageOption
                 };
             return result;
-        }, <Record<string, SalvageOptionJson>>{});
+        }, <Record<string, SalvageJson>>{});
         const componentJson = {
             id,
             craftingSystemId,

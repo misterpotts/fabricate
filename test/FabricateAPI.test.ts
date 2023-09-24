@@ -21,7 +21,6 @@ import {
 } from "../src/scripts/repository/embedded_systems/AlchemistsSuppliesV16SystemDefinition";
 import {EssenceReference} from "../src/scripts/crafting/essence/EssenceReference";
 import {ComponentReference} from "../src/scripts/crafting/component/ComponentReference";
-import {SalvageOptionConfig} from "../src/scripts/crafting/component/Component";
 import {DefaultCombination} from "../src/scripts/common/Combination";
 
 describe("Crafting System integration", () => {
@@ -176,26 +175,30 @@ describe("Crafting System integration", () => {
         expect(componentOne.isSalvageable).toEqual(false);
         expect(componentOne.hasEssences).toEqual(false);
 
-        componentOne.setSalvageOption(<SalvageOptionConfig>{
+        componentOne.setSalvageOption({
             name: "salvageOptionOne",
-            results: {
-                [ componentTwo.id ]: 1
-            },
-            catalysts: {
-                [ componentThree.id ]: 1
+            value: {
+                results: {
+                    [ componentTwo.id ]: 1
+                },
+                catalysts: {
+                    [ componentThree.id ]: 1
+                }
             }
         });
 
         componentOne.addEssence(essenceOne.id, 1);
 
-        componentOne.salvageOptions.all.find(option => option.name === "salvageOptionOne").addResult(componentTwo.id, 1);
+        componentOne.salvageOptions.all.find(option => option.name === "salvageOptionOne").value.addResult(componentTwo.id, 1);
 
-        componentOne.setSalvageOption(<SalvageOptionConfig>{
+        componentOne.setSalvageOption({
             name: "salvageOptionTwo",
-            results: {
-                [ componentTwo.id ]: 1
-            },
-            catalysts: {}
+            value: {
+                results: {
+                    [ componentTwo.id ]: 1
+                },
+                catalysts: {}
+            }
         });
 
         // Save the first component
@@ -206,10 +209,10 @@ describe("Crafting System integration", () => {
         expect(updatedComponent.isSalvageable).toEqual(true);
         expect(updatedComponent.salvageOptions.all.length).toEqual(2);
         const updatedSalvageOption = updatedComponent.salvageOptions.all.find(option => option.name === "salvageOptionOne");
-        expect(updatedSalvageOption.catalysts.size).toEqual(1);
-        expect(updatedSalvageOption.catalysts.amountFor(componentThree.id)).toEqual(1);
-        expect(updatedSalvageOption.results.size).toEqual(2);
-        expect(updatedSalvageOption.results.amountFor(componentTwo.id)).toEqual(2);
+        expect(updatedSalvageOption.value.catalysts.size).toEqual(1);
+        expect(updatedSalvageOption.value.catalysts.amountFor(componentThree.id)).toEqual(1);
+        expect(updatedSalvageOption.value.results.size).toEqual(2);
+        expect(updatedSalvageOption.value.results.amountFor(componentTwo.id)).toEqual(2);
 
         // Create the first recipe
 
@@ -233,25 +236,29 @@ describe("Crafting System integration", () => {
 
         recipeOne.setRequirementOption({
             name: "requirementOptionOne",
-            essences: {},
-            ingredients: {
-                [ componentOne.id ]: 1
-            },
-            catalysts: {
-                [ componentTwo.id ]: 1
+            value: {
+                essences: {},
+                ingredients: {
+                    [ componentOne.id ]: 1
+                },
+                catalysts: {
+                    [ componentTwo.id ]: 1
+                }
             }
         });
 
-        recipeOne.requirementOptions.all.find(option => option.name === "requirementOptionOne").addIngredient(componentOne.id, 1);
+        recipeOne.requirementOptions.all.find(option => option.name === "requirementOptionOne").value.addIngredient(componentOne.id, 1);
 
         recipeOne.setResultOption({
             name: "resultOptionOne",
-            results: {
-                [ componentThree.id ]: 2
+            value: {
+                products: {
+                    [ componentThree.id ]: 2
+                }
             }
         });
 
-        recipeOne.resultOptions.all.find(option => option.name === "resultOptionOne").subtract(componentThree.id, 1);
+        recipeOne.resultOptions.all.find(option => option.name === "resultOptionOne").value.subtract(componentThree.id, 1);
 
         // Save the recipe
 
@@ -261,14 +268,14 @@ describe("Crafting System integration", () => {
         expect(updatedRecipeOne.hasRequirements).toEqual(true);
         expect(updatedRecipeOne.requirementOptions.size).toEqual(1);
         const recipeOneRequirementOptionOne = updatedRecipeOne.requirementOptions.all.find(option => option.name === "requirementOptionOne");
-        expect(recipeOneRequirementOptionOne.ingredients.size).toEqual(2);
-        expect(recipeOneRequirementOptionOne.ingredients.amountFor(componentOne.id)).toEqual(2);
-        expect(recipeOneRequirementOptionOne.catalysts.size).toEqual(1);
-        expect(recipeOneRequirementOptionOne.catalysts.amountFor(componentTwo.id)).toEqual(1);
+        expect(recipeOneRequirementOptionOne.value.ingredients.size).toEqual(2);
+        expect(recipeOneRequirementOptionOne.value.ingredients.amountFor(componentOne.id)).toEqual(2);
+        expect(recipeOneRequirementOptionOne.value.catalysts.size).toEqual(1);
+        expect(recipeOneRequirementOptionOne.value.catalysts.amountFor(componentTwo.id)).toEqual(1);
         expect(updatedRecipeOne.resultOptions.size).toEqual(1);
         const recipeOneResultOptionOne = updatedRecipeOne.resultOptions.all.find(option => option.name === "resultOptionOne");
-        expect(recipeOneResultOptionOne.results.size).toEqual(1);
-        expect(recipeOneResultOptionOne.results.amountFor(componentThree.id)).toEqual(1);
+        expect(recipeOneResultOptionOne.value.products.size).toEqual(1);
+        expect(recipeOneResultOptionOne.value.products.amountFor(componentThree.id)).toEqual(1);
 
         // Create the second recipe
 
@@ -281,17 +288,21 @@ describe("Crafting System integration", () => {
 
         recipeTwo.setRequirementOption({
             name: "requirementOptionOne",
-            essences: {
-                [ essenceOne.id ]: 1
+            value: {
+                essences: {
+                    [ essenceOne.id ]: 1
+                }
             }
         });
 
-        recipeTwo.requirementOptions.all.find(option => option.name === "requirementOptionOne").addEssence(essenceTwo.id, 2);
+        recipeTwo.requirementOptions.all.find(option => option.name === "requirementOptionOne").value.addEssence(essenceTwo.id, 2);
 
         recipeTwo.setResultOption({
             name: "resultOptionOne",
-            results: {
-                [ componentOne.id ]: 1
+            value: {
+                products: {
+                    [ componentOne.id ]: 1
+                }
             }
         });
 
@@ -301,8 +312,8 @@ describe("Crafting System integration", () => {
         expect(updatedRecipeTwo.hasRequirements).toEqual(true);
         expect(updatedRecipeTwo.resultOptions.size).toEqual(1);
         const recipeTwoResultOptionOne = updatedRecipeTwo.resultOptions.all.find(option => option.name === "resultOptionOne");
-        expect(recipeTwoResultOptionOne.results.size).toEqual(1);
-        expect(recipeTwoResultOptionOne.results.amountFor(componentOne.id)).toEqual(1);
+        expect(recipeTwoResultOptionOne.value.products.size).toEqual(1);
+        expect(recipeTwoResultOptionOne.value.products.amountFor(componentOne.id)).toEqual(1);
 
     });
 
@@ -588,9 +599,9 @@ describe("Export and import data", () => {
                 expect(exportedSalvageOption.id).toEqual(componentSalvageOption.id);
                 expect(exportedSalvageOption.name).toEqual(componentSalvageOption.name);
                 const exportedSalvageOptionCatalysts = DefaultCombination.fromRecord(exportedSalvageOption.catalysts, id => new ComponentReference(id));
-                expect(exportedSalvageOptionCatalysts.equals(componentSalvageOption.catalysts)).toBe(true);
+                expect(exportedSalvageOptionCatalysts.equals(componentSalvageOption.value.catalysts)).toBe(true);
                 const exportedSalvageOptionResults = DefaultCombination.fromRecord(exportedSalvageOption.results, id => new ComponentReference(id));
-                expect(exportedSalvageOptionResults.equals(componentSalvageOption.results)).toBe(true);
+                expect(exportedSalvageOptionResults.equals(componentSalvageOption.value.results)).toBe(true);
             });
         });
 
@@ -611,7 +622,7 @@ describe("Export and import data", () => {
                 expect(exportedResultOption.id).toEqual(recipeResultOption.id);
                 expect(exportedResultOption.name).toEqual(recipeResultOption.name);
                 const exportedResultOptionResults = DefaultCombination.fromRecord(exportedResultOption.results, id => new ComponentReference(id));
-                expect(exportedResultOptionResults.equals(recipeResultOption.results)).toBe(true);
+                expect(exportedResultOptionResults.equals(recipeResultOption.value.products)).toBe(true);
             });
 
             expect(exportedRecipe.requirementOptions.length).toEqual(recipe.requirementOptions.size);
@@ -621,11 +632,11 @@ describe("Export and import data", () => {
                 expect(exportedRequirementOption.id).toEqual(recipeRequirementOption.id);
                 expect(exportedRequirementOption.name).toEqual(recipeRequirementOption.name);
                 const exportedRequirementOptionCatalysts = DefaultCombination.fromRecord(exportedRequirementOption.catalysts, id => new ComponentReference(id));
-                expect(exportedRequirementOptionCatalysts.equals(recipeRequirementOption.catalysts)).toBe(true);
+                expect(exportedRequirementOptionCatalysts.equals(recipeRequirementOption.value.catalysts)).toBe(true);
                 const exportedRequirementOptionIngredients = DefaultCombination.fromRecord(exportedRequirementOption.ingredients, id => new ComponentReference(id));
-                expect(exportedRequirementOptionIngredients.equals(recipeRequirementOption.ingredients)).toBe(true);
+                expect(exportedRequirementOptionIngredients.equals(recipeRequirementOption.value.ingredients)).toBe(true);
                 const exportedRequirementOptionEssences = DefaultCombination.fromRecord(exportedRequirementOption.essences, id => new EssenceReference(id));
-                expect(exportedRequirementOptionEssences.equals(recipeRequirementOption.essences)).toBe(true);
+                expect(exportedRequirementOptionEssences.equals(recipeRequirementOption.value.essences)).toBe(true);
             });
         });
 

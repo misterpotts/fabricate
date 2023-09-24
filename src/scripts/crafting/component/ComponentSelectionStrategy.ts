@@ -1,8 +1,8 @@
 import {Combination, DefaultCombination} from "../../common/Combination";
 import {ComponentSelection, DefaultComponentSelection} from "../../component/ComponentSelection";
-import {Component} from "../component/Component";
+import {Component} from "./Component";
 import {TrackedCombination} from "../../common/TrackedCombination";
-import {EssenceSelection} from "../../actor/EssenceSelection";
+import {EssenceSelection} from "../essence/EssenceSelection";
 import {Identifiable} from "../../common/Identifiable";
 import {EssenceReference} from "../essence/EssenceReference";
 import {Essence} from "../essence/Essence";
