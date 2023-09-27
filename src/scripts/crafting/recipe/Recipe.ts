@@ -732,6 +732,13 @@ class DefaultRecipe implements Recipe {
                     ingredients
                 });
             });
+        this._resultOptions = this._resultOptions
+            .clone((result) => {
+                const products = result.products.without(componentId);
+                return new Result({
+                    products
+                });
+            });
     }
 
     removeEssence(essenceIdToRemove: string) {
