@@ -164,8 +164,6 @@ interface Options<T> {
 
     readonly byId: Map<string, Option<T>>;
 
-    add(option: OptionConfig<T>): void;
-
     set(option: Option<T>): void;
 
     get(id: string): Option<T>;
@@ -194,17 +192,13 @@ class DefaultOptions<T> implements Options<T> {
         return new DefaultOptions<T>();
     }
 
-    public add(option: OptionConfig<T>) {
-        const id = this.nextId(Array.from(this._values.keys()));
-        this._values.set(id, new DefaultOption<T>({
-            id,
-            name: option.name,
-            value: option.value
-        }));
-    }
-
     public set(option: Option<T>) {
-        this._values.set(option.id, option);
+        if (option.id) {
+            this._values.set(option.id, option);
+        }
+        const id = this.nextId(Array.from(this._values.keys()));
+        option = option.clone(id);
+        this._values.set(id, option);
     }
 
     public get(id: string): Option<T> {
@@ -248,12 +242,12 @@ class DefaultOptions<T> implements Options<T> {
 
     private nextId(assignedIds: string[]): string {
         let generationAttempts = 1;
-        let nextId;
+        let value;
         do {
-            nextId = `option-${this._values.size + generationAttempts}`;
+            value = `option-${this._values.size + generationAttempts}`;
             generationAttempts++;
-        } while (assignedIds.includes(nextId));
-        return nextId;
+        } while (assignedIds.includes(value));
+        return value;
     }
 
     equals(other: Options<T>): boolean {
@@ -312,10 +306,6 @@ class DefaultSerializableOptions<J, T extends Serializable<J>> implements Serial
                 result[option.id] = option.value.toJson()
                 return result;
             }, <Record<string, J>>{});
-    }
-
-    public add(option: OptionConfig<T>): void {
-        this._options.add(option);
     }
 
     public set(option: Option<T>): void {
