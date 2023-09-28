@@ -479,7 +479,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const selectedSalvageOption: Option<Salvage> = salvageOptionId ? component.salvageOptions.byId.get(salvageOptionId) : component.salvageOptions.byId.values().next().value;
 
-        const salvageResultComponentReferences = selectedSalvageOption.value.results.combineWith(selectedSalvageOption.value.catalysts);
+        const salvageResultComponentReferences = selectedSalvageOption.value.products.combineWith(selectedSalvageOption.value.catalysts);
         const includedComponentsById = await this.componentAPI.getAllById(salvageResultComponentReferences.members.map(component => component.id));
 
         const includedComponents = Array.from(includedComponentsById.values());
@@ -559,7 +559,7 @@ class DefaultCraftingAPI implements CraftingAPI {
          */
 
         const action = new SimpleInventoryAction({
-            additions: selectedSalvageOption.value.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+            additions: selectedSalvageOption.value.products.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
             removals: DefaultCombination.of(component),
         });
         await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);

@@ -166,7 +166,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
         }
 
         const isSalvageable = requiredCatalysts.isSufficient;
-        const producedComponents = option.results.convertElements(reference => includedComponentsById.get(reference.id));
+        const producedComponents = option.products.convertElements(reference => includedComponentsById.get(reference.id));
 
         return new DefaultSalvageAttempt({
             optionId: option.id,

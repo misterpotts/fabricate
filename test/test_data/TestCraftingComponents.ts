@@ -62,7 +62,7 @@ const testComponentFour: Component = new DefaultComponent({
                 id: `${testComponentFourId}-salvage-1`,
                 name: "Option 1",
                 value: new Salvage({
-                    results: DefaultCombination.of(testComponentThree.toReference(), 2)
+                    products: DefaultCombination.of(testComponentThree.toReference(), 2)
                 })
             })
         ]
@@ -88,7 +88,7 @@ const testComponentFive: Component = new DefaultComponent({
                 id: `${testComponentFiveId}-salvage-1`,
                 name: "Option 1",
                 value: new Salvage({
-                    results: DefaultCombination.ofUnits([
+                    products: DefaultCombination.ofUnits([
                         new DefaultUnit(testComponentOne.toReference(), 2),
                         new DefaultUnit(testComponentTwo.toReference(), 1)
                     ])

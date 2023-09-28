@@ -22,16 +22,40 @@ interface OptionConfig<T> {
 
 export {OptionConfig}
 
+/**
+ * An option.
+ */
 interface Option<T> extends Identifiable {
 
+    /**
+     * The unique id of the option within the set of options.
+     */
     id: string;
 
+    /**
+     * The display name of the option.
+     */
     name: string;
 
+    /**
+     * The value (or contents) of the option.
+     */
     value: T;
 
+    /**
+     * Clone the option.
+     *
+     * @param id - The id of the cloned option.
+     * @returns Option<T> The cloned option.
+     */
     clone(id: string): Option<T>;
 
+    /**
+     * Whether the option is equal to another option.
+     *
+     * @param other - The other option.
+     * @returns boolean Whether the options are equal.
+     */
     equals(other: Option<T>): boolean;
 
 }
@@ -154,26 +178,72 @@ class DefaultSerializableOption<J, T extends Serializable<J>> implements Seriali
 
 export {DefaultSerializableOption}
 
+/**
+ * A collection of options.
+ */
 interface Options<T> {
 
+    /**
+     * All options.
+     */
     readonly all: Option<T>[];
 
+    /**
+     * The number of options.
+     */
     readonly size: number;
 
+    /**
+     * Whether there are no options.
+     */
     readonly isEmpty: boolean;
 
+    /**
+     * A map of options by id.
+     */
     readonly byId: Map<string, Option<T>>;
 
+    /**
+     * Set an option. If the option has no ID one will be generated. If the option has an ID and an option with that ID
+     * already exists it will be replaced.
+     *
+     * @param option - The option to set.
+     */
     set(option: Option<T>): void;
 
+    /**
+     * Get an option by ID.
+     *
+     * @param id - The ID of the option.
+     * @returns Option<T> The option or undefined if no option with the given ID exists.
+     */
     get(id: string): Option<T>;
 
+    /**
+     * Remove an option.
+     *
+     * @param option - The id of the option to remove or the  option itself.
+     */
     remove(option: string | Option<T>): void;
 
+    /**
+     * Whether an option exists.
+     *
+     * @param option - The id of the option to check or the option itself.
+     */
     has(option: string | Option<T>): boolean;
 
+    /**
+     * Clone the options.
+     */
     clone(): Options<T>;
 
+    /**
+     * Whether the options are equal to another set of options.
+     *
+     * @param other - The other options.
+     * @returns boolean Whether the options are equal.
+     */
     equals(other: Options<T>): boolean;
 
 }

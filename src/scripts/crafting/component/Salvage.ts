@@ -5,8 +5,6 @@ import {DefaultUnit} from "../../common/Unit";
 
 /**
  * todo: BREAKING remove this interface and perform data migration
- *
- * @deprecated Use OptionJson<SalvageJson> post data migration
  */
 interface SalvageOptionJson extends SalvageJson {
 
@@ -18,6 +16,9 @@ interface SalvageOptionJson extends SalvageJson {
 
 export { SalvageOptionJson };
 
+/**
+ * todo: BREAKING rename results to products and perform data migration
+ */
 interface SalvageJson {
 
     results: Record<string, number>;
@@ -30,30 +31,30 @@ export { SalvageJson };
 
 class Salvage implements Serializable<SalvageJson> {
 
-    private _results: Combination<ComponentReference>;
+    private _products: Combination<ComponentReference>;
     private _catalysts: Combination<ComponentReference>;
 
     constructor({
-        results,
+        products = DefaultCombination.EMPTY(),
         catalysts = DefaultCombination.EMPTY()
     }: {
-        results: Combination<ComponentReference>;
+        products?: Combination<ComponentReference>;
         catalysts?: Combination<ComponentReference>;
-    }) {
-        this._results = results;
+    } = {}) {
+        this._products = products;
         this._catalysts = catalysts;
     }
 
-    get results(): Combination<ComponentReference> {
-        return this._results;
+    get products(): Combination<ComponentReference> {
+        return this._products;
     }
 
     get hasResults(): boolean {
-        return !this._results.isEmpty();
+        return !this._products.isEmpty();
     }
 
-    set results(value: Combination<ComponentReference>) {
-        this._results = value;
+    set products(value: Combination<ComponentReference>) {
+        this._products = value;
     }
 
     get catalysts(): Combination<ComponentReference> {
@@ -69,12 +70,12 @@ class Salvage implements Serializable<SalvageJson> {
     }
 
     get isEmpty(): boolean {
-        return this._results.isEmpty() && this._catalysts.isEmpty();
+        return this._products.isEmpty() && this._catalysts.isEmpty();
     }
 
     toJson(): SalvageJson {
         return {
-            results: this._results.toJson(),
+            results: this._products.toJson(),
             catalysts: this._catalysts.toJson()
         };
     }
@@ -82,7 +83,7 @@ class Salvage implements Serializable<SalvageJson> {
     static fromJson(salvageOptionJson: SalvageJson): Salvage {
         try {
             return new Salvage({
-                results: DefaultCombination.fromRecord(salvageOptionJson.results, ComponentReference.fromComponentId),
+                products: DefaultCombination.fromRecord(salvageOptionJson.results, ComponentReference.fromComponentId),
                 catalysts: DefaultCombination.fromRecord(salvageOptionJson.catalysts, ComponentReference.fromComponentId)
             });
         } catch (e: any) {
@@ -93,17 +94,17 @@ class Salvage implements Serializable<SalvageJson> {
 
     without(componentId: string): Salvage {
         return new Salvage({
-            results: this._results.without(componentId),
+            products: this._products.without(componentId),
             catalysts: this._catalysts.without(componentId)
         });
     }
 
     addResult(componentId: string, quantity: number = 1) {
-        this._results = this._results.addUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
+        this._products = this._products.addUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
     }
 
     subtractResult(componentId: string, quantity: number = 1) {
-        this._results = this._results.subtractUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
+        this._products = this._products.subtractUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
     }
 
     addCatalyst(componentId: string, number: number = 1) {

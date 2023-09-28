@@ -22,7 +22,6 @@ import {
 import {EssenceReference} from "../src/scripts/crafting/essence/EssenceReference";
 import {ComponentReference} from "../src/scripts/crafting/component/ComponentReference";
 import {DefaultCombination} from "../src/scripts/common/Combination";
-
 describe("Crafting System integration", () => {
 
     test("Create Crafting System from scratch", async () => {
@@ -177,13 +176,11 @@ describe("Crafting System integration", () => {
 
         componentOne.setSalvageOption({
             name: "salvageOptionOne",
-            value: {
-                results: {
-                    [ componentTwo.id ]: 1
-                },
-                catalysts: {
-                    [ componentThree.id ]: 1
-                }
+            results: {
+                [ componentTwo.id ]: 1
+            },
+            catalysts: {
+                [ componentThree.id ]: 1
             }
         });
 
@@ -193,12 +190,10 @@ describe("Crafting System integration", () => {
 
         componentOne.setSalvageOption({
             name: "salvageOptionTwo",
-            value: {
-                results: {
-                    [ componentTwo.id ]: 1
-                },
-                catalysts: {}
-            }
+            results: {
+                [ componentTwo.id ]: 1
+            },
+            catalysts: {}
         });
 
         // Save the first component
@@ -211,8 +206,8 @@ describe("Crafting System integration", () => {
         const updatedSalvageOption = updatedComponent.salvageOptions.all.find(option => option.name === "salvageOptionOne");
         expect(updatedSalvageOption.value.catalysts.size).toEqual(1);
         expect(updatedSalvageOption.value.catalysts.amountFor(componentThree.id)).toEqual(1);
-        expect(updatedSalvageOption.value.results.size).toEqual(2);
-        expect(updatedSalvageOption.value.results.amountFor(componentTwo.id)).toEqual(2);
+        expect(updatedSalvageOption.value.products.size).toEqual(2);
+        expect(updatedSalvageOption.value.products.amountFor(componentTwo.id)).toEqual(2);
 
         // Create the first recipe
 
@@ -236,14 +231,12 @@ describe("Crafting System integration", () => {
 
         recipeOne.setRequirementOption({
             name: "requirementOptionOne",
-            value: {
-                essences: {},
-                ingredients: {
-                    [ componentOne.id ]: 1
-                },
-                catalysts: {
-                    [ componentTwo.id ]: 1
-                }
+            essences: {},
+            ingredients: {
+                [ componentOne.id ]: 1
+            },
+            catalysts: {
+                [ componentTwo.id ]: 1
             }
         });
 
@@ -251,10 +244,8 @@ describe("Crafting System integration", () => {
 
         recipeOne.setResultOption({
             name: "resultOptionOne",
-            value: {
-                products: {
-                    [ componentThree.id ]: 2
-                }
+            results: {
+                [ componentThree.id ]: 2
             }
         });
 
@@ -288,10 +279,8 @@ describe("Crafting System integration", () => {
 
         recipeTwo.setRequirementOption({
             name: "requirementOptionOne",
-            value: {
-                essences: {
-                    [ essenceOne.id ]: 1
-                }
+            essences: {
+                [ essenceOne.id ]: 1
             }
         });
 
@@ -299,10 +288,8 @@ describe("Crafting System integration", () => {
 
         recipeTwo.setResultOption({
             name: "resultOptionOne",
-            value: {
-                products: {
-                    [ componentOne.id ]: 1
-                }
+            results: {
+                [ componentOne.id ]: 1
             }
         });
 
@@ -601,7 +588,7 @@ describe("Export and import data", () => {
                 const exportedSalvageOptionCatalysts = DefaultCombination.fromRecord(exportedSalvageOption.catalysts, id => new ComponentReference(id));
                 expect(exportedSalvageOptionCatalysts.equals(componentSalvageOption.value.catalysts)).toBe(true);
                 const exportedSalvageOptionResults = DefaultCombination.fromRecord(exportedSalvageOption.results, id => new ComponentReference(id));
-                expect(exportedSalvageOptionResults.equals(componentSalvageOption.value.results)).toBe(true);
+                expect(exportedSalvageOptionResults.equals(componentSalvageOption.value.products)).toBe(true);
             });
         });
 

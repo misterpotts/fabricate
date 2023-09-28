@@ -362,24 +362,19 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
     readonly hasEssences: boolean;
 
     /**
-     * The essences that this component contains, if any. May be an empty Combination.
+     * The essences that this component contains, if any. Might be an empty Combination.
      */
     essences: Combination<EssenceReference>;
 
     /**
-     * Indicates whether this component is disabled. Disabled components cannot used in crafting.
+     * Indicates whether this component is disabled. Disabled components cannot be used in crafting.
      */
     isDisabled: boolean;
 
     /**
      * The Salvage options for this component
      */
-    salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
-
-    /**
-     * The Salvage options for this component, indexed by ID
-     */
-    readonly salvageOptionsById: Map<string, SalvageOption>;
+    salvageOptions: Options<Salvage>;
 
     /**
      * The Fabricate item data for this component, containing the item's name, image URL, and any errors that occurred
@@ -392,16 +387,6 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      *  has any errors.
      */
     readonly hasErrors: boolean;
-
-    /**
-     * The errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errors: ItemLoadingError[];
-
-    /**
-     * The codes for the errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errorCodes: string[];
 
     /**
      * Indicates whether this component's item data has been loaded
@@ -434,10 +419,10 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      * Sets the Salvage option for this component. If the Salvage option has an ID, it will be used to attempt to
      * overwrite an existing salvage option. Otherwise, a new Salvage option will be created with a new ID.
      *
-     * @param {SalvageOptionConfig | SalvageOption} salvageOption - The Salvage option to set. Accepts a SalvageOption
-     *  instance or a SalvageOptionConfig object.
+     * @param {SerializableOption<SalvageJson, Salvage> | SalvageOptionConfig} salvageOption - The Salvage option to set.
+     *  Accepts a SerializableOption instance or a SalvageOptionConfig object.
      */
-    setSalvageOption(salvageOption: SalvageOptionConfig | SalvageOption): void;
+    setSalvageOption(salvageOption: SerializableOption<SalvageJson, Salvage> | SalvageOptionConfig): void;
 
     /**
      * Adds the given quantity of the essence with the given ID to this component
@@ -456,14 +441,14 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
     subtractEssence(essenceId: string, quantity?: number): void;
 
     /**
-     * Lists all the components referenced by this component's Salvage options. May be an empty array.
+     * Lists all the components referenced by this component's Salvage options. Might be an empty array.
      *
      * @returns {ComponentReference[]} - The components referenced by this component, if any
      */
     getUniqueReferencedComponents(): ComponentReference[];
 
     /**
-     * Lists all the essences referenced by this component. May be an empty array.
+     * Lists all the essences referenced by this component. Might be an empty array.
      *
      * @returns {EssenceReference[]} - The essences referenced by this component, if any
      */
@@ -495,10 +480,10 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      *  unique to the new crafting system.
      */
     clone({
-        id,
-        craftingSystemId,
-        substituteEssenceIds,
-    }: {
+              id,
+              craftingSystemId,
+              substituteEssenceIds,
+          }: {
         id: string;
         craftingSystemId?: string;
         substituteEssenceIds?: Map<string, string>;
