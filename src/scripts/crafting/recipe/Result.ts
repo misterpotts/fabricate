@@ -5,8 +5,6 @@ import {DefaultUnit} from "../../common/Unit";
 
 /**
  * todo: BREAKING remove this interface and perform data migration
- *
- * @deprecated Use OptionJson<ResultJson> post data migration
  */
 interface ResultOptionJson {
 
