@@ -480,10 +480,10 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      *  unique to the new crafting system.
      */
     clone({
-              id,
-              craftingSystemId,
-              substituteEssenceIds,
-          }: {
+        id,
+        craftingSystemId,
+        substituteEssenceIds,
+    }: {
         id: string;
         craftingSystemId?: string;
         substituteEssenceIds?: Map<string, string>;
