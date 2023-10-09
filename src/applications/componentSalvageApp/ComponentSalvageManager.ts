@@ -5,6 +5,7 @@ import {TrackedCombination} from "../../scripts/common/TrackedCombination";
 import {Combination, DefaultCombination} from "../../scripts/common/Combination";
 import {Salvage} from "../../scripts/crafting/component/Salvage";
 import {SalvageResult} from "../../scripts/crafting/result/SalvageResult";
+import {Option} from "../../scripts/common/Options";
 
 interface SalvageAttempt {
 
@@ -147,15 +148,15 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
 
     private buildSalvageAttempt(
         componentToSalvage: Component,
-        option: Salvage,
+        option: Option<Salvage>,
         amountOwned: number,
         ownedComponents: Combination<Component>,
         includedComponentsById: Map<string, Component>,
     ): SalvageAttempt {
 
         let requiredCatalysts: TrackedCombination<Component> = TrackedCombination.EMPTY();
-        if (option.requiresCatalysts) {
-            const targetCatalysts = option.catalysts.convertElements(reference => includedComponentsById.get(reference.id));
+        if (option.value.requiresCatalysts) {
+            const targetCatalysts = option.value.catalysts.convertElements(reference => includedComponentsById.get(reference.id));
             const actualCatalysts = ownedComponents.units
                 .filter(unit => targetCatalysts.has(unit.element))
                 .reduce((combination, unit) => combination.addUnit(unit), DefaultCombination.EMPTY<Component>());
@@ -166,7 +167,7 @@ class DefaultComponentSalvageManager implements ComponentSalvageManager {
         }
 
         const isSalvageable = requiredCatalysts.isSufficient;
-        const producedComponents = option.products.convertElements(reference => includedComponentsById.get(reference.id));
+        const producedComponents = option.value.products.convertElements(reference => includedComponentsById.get(reference.id));
 
         return new DefaultSalvageAttempt({
             optionId: option.id,

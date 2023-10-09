@@ -1,7 +1,6 @@
-import {Identifiable} from "./Identifiable";
 import {Option} from "./Options";
 
-interface SelectableOptions<T extends Identifiable> {
+interface SelectableOptions<T> {
 
     /**
      * Indicates whether the option with the given id exists.
@@ -94,7 +93,7 @@ interface SelectableOptions<T extends Identifiable> {
 
 export {SelectableOptions}
 
-class DefaultSelectableOptions<T extends Identifiable> implements SelectableOptions<T> {
+class DefaultSelectableOptions<T> implements SelectableOptions<T> {
 
     private readonly _optionsById: Map<string, Option<T>>;
     private readonly _optionsInOrder: Option<T>[];
@@ -113,6 +112,9 @@ class DefaultSelectableOptions<T extends Identifiable> implements SelectableOpti
         }
         this._optionsInOrder = options;
         this._selectedOptionId = selectedOptionId;
+        if (this._selectedOptionId === "" && !this.isEmpty) {
+            this.selectFirst();
+        }
     }
 
     get size(): number {
