@@ -1,10 +1,10 @@
 import {Component, ComponentJson, DefaultComponent} from "./Component";
 import {DocumentManager} from "../../foundry/DocumentManager";
-import {SelectableOptions} from "../selection/SelectableOptions";
 import {EntityFactory} from "../../repository/EntityFactory";
-import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
+import {Salvage, SalvageJson, SalvageOptionJson} from "./Salvage";
 import {EssenceReference} from "../essence/EssenceReference";
 import {DefaultCombination} from "../../common/Combination";
+import {DefaultSerializableOption, DefaultSerializableOptions, SerializableOptions} from "../../common/Options";
 
 class ComponentFactory implements EntityFactory<ComponentJson, Component> {
 
@@ -34,10 +34,16 @@ class ComponentFactory implements EntityFactory<ComponentJson, Component> {
 
     }
 
-    private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>): SelectableOptions<SalvageOptionJson, SalvageOption> {
+    private buildSalvageOptions(salvageOptionsJson: Record<string, SalvageOptionJson>): SerializableOptions<SalvageJson, Salvage> {
+        // todo: BREAKING remove this method and perform data migration
         const options = Object.values(salvageOptionsJson)
-            .map(json => SalvageOption.fromJson(json));
-        return new SelectableOptions<SalvageOptionJson, SalvageOption>({ options });
+            .map(json => new DefaultSerializableOption({
+                id: json.id,
+                name: json.name,
+                value: Salvage.fromJson({ results: json.results, catalysts: json.catalysts })
+            })
+        );
+        return new DefaultSerializableOptions<SalvageJson, Salvage>(options);
     }
 
 }

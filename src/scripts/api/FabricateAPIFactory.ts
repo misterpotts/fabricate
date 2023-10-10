@@ -44,7 +44,7 @@ import {V2ToV3SettingMigrationStep} from "../repository/migration/V2ToV3SettingM
 import {DefaultInventoryFactory} from "../actor/InventoryFactory";
 import {
     DefaultComponentSelectionStrategyFactory
-} from "../crafting/selection/ComponentSelectionStrategy";
+} from "../crafting/component/ComponentSelectionStrategy";
 
 interface FabricateAPIFactory {
 

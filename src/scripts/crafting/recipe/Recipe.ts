@@ -1,15 +1,98 @@
 import {DefaultCombination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
-import {SelectableOptions} from "../selection/SelectableOptions";
-import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
+import {FabricateItemData, NoFabricateItemData} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
 import {ComponentReference} from "../component/ComponentReference";
-import {RequirementOption} from "./RequirementOption";
-import {RequirementOptionJson} from "./RequirementOption";
-import {RequirementOptionConfig} from "./RequirementOption";
-import {ResultOption, ResultOptionJson} from "./ResultOption";
-import {ResultOptionConfig} from "./ResultOption";
+import {Requirement} from "./Requirement";
+import {RequirementJson} from "./Requirement";
+import {Result, ResultJson} from "./Result";
 import {EssenceReference} from "../essence/EssenceReference";
+import {
+    SerializableOptions,
+    DefaultSerializableOption,
+    DefaultSerializableOptions,
+    SerializableOption
+} from "../../common/Options";
+
+/**
+ * The RequirementOptionConfig interface. This interface is used to define the structure of the JSON object used to
+ *   define a requirement option without instantiating one directly.
+ */
+interface RequirementOptionConfig {
+
+    /**
+     * The ID of the requirement option. If not provided, a new ID will be generated.
+     */
+    id?: string,
+
+    /**
+     * The display name of the requirement option
+     */
+    name: string,
+
+    /**
+     * The type and number of catalyst components required by this requirement option, keyed on the component ID
+     */
+    catalysts?: Record<string, number>;
+
+    /**
+     * The type and number of ingredient components required by this requirement option, keyed on the component ID
+     */
+    ingredients?: Record<string, number>;
+
+    /**
+     * The type and number of essences required by this requirement option, keyed on the essence ID
+     */
+    essences?: Record<string, number>;
+
+}
+
+export { RequirementOptionConfig }
+
+/**
+ * The ResultOptionConfig interface. This interface is used to define the structure of the JSON object used to define
+ *  a result option without instantiating one directly.
+ */
+interface ResultOptionConfig {
+
+    /**
+     * The ID of the result option. If not provided, a new ID will be generated.
+     */
+    id?: string;
+
+    /**
+     * The display name of the result option
+     */
+    name: string;
+
+    /**
+     * The type and number of components produced by this result option, keyed on the component ID
+     */
+    results: Record<string, number>;
+
+}
+
+export { ResultOptionConfig }
+
+// todo: BREAKING replace with OptionsJson and RequirementJson and perform data migration
+type RecipeRequirementOptionJson = Record<string, {
+    id: string;
+    name: string;
+    catalysts: Record<string, number>;
+    ingredients: Record<string, number>;
+    essences: Record<string, number>;
+}>;
+
+export { RecipeRequirementOptionJson }
+
+// todo: BREAKING replace with OptionsJson and ResultJson and perform data migration
+type RecipeResultOptionJson = Record<string, {
+    id: string;
+    name: string;
+    results: Record<string, number>;
+}>;
+
+export { RecipeResultOptionJson }
 
 interface RecipeJson {
 
@@ -18,8 +101,8 @@ interface RecipeJson {
     itemUuid: string;
     disabled: boolean;
     craftingSystemId: string;
-    resultOptions: Record<string, ResultOptionJson>;
-    requirementOptions: Record<string, RequirementOptionJson>;
+    resultOptions: RecipeResultOptionJson;
+    requirementOptions: RecipeRequirementOptionJson;
 
 }
 
@@ -68,14 +151,14 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
     itemData: FabricateItemData;
 
     /**
-     * The options for the requirements of this recipe. May be empty.
+     * The options for the requirements of this recipe
      */
-    readonly requirementOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
+    readonly requirementOptions: SerializableOptions<RequirementJson, Requirement>;
 
     /**
-     * The options for the results of this recipe. May be empty.
+     * The options for the results of this recipe
      */
-    readonly resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
+    readonly resultOptions: SerializableOptions<ResultJson, Result>;
 
     /**
      * Whether this recipe has any requirement options. This is a convenience function for checking if the requirement
@@ -114,17 +197,8 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
     readonly hasErrors: boolean;
 
     /**
-     * The codes for the errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errorCodes: string[];
-
-    /**
-     * The errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errors: ItemLoadingError[];
-
-    /**
-     * Indicates whether this recipe's item data has been loaded
+     * Indicates whether this recipe's item data has been loaded. This is a convenience function for checking if the
+     *  item data has been loaded.
      */
     readonly loaded: boolean;
 
@@ -132,19 +206,21 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
      * Sets the result option for this recipe. If the result option has an ID, it will be used to attempt to overwrite
      * an existing result option. Otherwise, a new result option will be created with a new ID.
      *
-     * @param {ResultOptionConfig | ResultOption} resultOption - The result option to set. Accepts a ResultOption
-     *  instance or a ResultOptionConfig object.
+     * @param {SerializableOption<ResultJson, Result> | Option<Result>} resultOption - The result option to set. Accepts a
+     * SerializableOption instance or a ResultOptionConfig object. ResultOptionConfig is deprecated and will be removed
+     * in a future version.
      */
-    setResultOption(resultOption: ResultOptionConfig | ResultOption): void;
+    setResultOption(resultOption: SerializableOption<ResultJson, Result> | ResultOptionConfig): void;
 
     /**
      * Sets the requirement option for this recipe. If the requirement option has an ID, it will be used to attempt to
      * overwrite an existing requirement option. Otherwise, a new requirement option will be created with a new ID.
      *
-     * @param {RequirementOptionConfig | RequirementOption} requirementOption - The requirement option to set. Accepts
-     * a RequirementOption instance or a RequirementOptionConfig object.
+     * @param {SerializableOption<RequirementJson, Requirement> | RequirementOptionConfig} requirementOption - The requirement option
+     * to set. Accepts a SerializableOption instance or a RequirementOptionConfig object. RequirementOptionConfig is deprecated
+     * and will be removed in a future version.
      */
-    setRequirementOption(requirementOption: RequirementOptionConfig | RequirementOption): void;
+    setRequirementOption(requirementOption: SerializableOption<RequirementJson, Requirement> | RequirementOptionConfig): void;
 
     /**
      * Deletes the result option with the given ID from this recipe
@@ -265,8 +341,8 @@ class DefaultRecipe implements Recipe {
     private readonly _embedded: boolean;
 
     private _itemData: FabricateItemData;
-    private _requirementOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
-    private _resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
+    private _requirementOptions: SerializableOptions<RequirementJson, Requirement>;
+    private _resultOptions: SerializableOptions<ResultJson, Result>;
     private _disabled: boolean;
 
     /* ===========================
@@ -279,16 +355,16 @@ class DefaultRecipe implements Recipe {
         craftingSystemId,
         disabled = false,
         itemData = NoFabricateItemData.INSTANCE(),
-        resultOptions = new SelectableOptions({}),
-        requirementOptions = new SelectableOptions({})
+        resultOptions = new DefaultSerializableOptions(),
+        requirementOptions = new DefaultSerializableOptions(),
     }: {
         id: string;
         embedded?: boolean;
         craftingSystemId: string;
         itemData?: FabricateItemData;
         disabled?: boolean;
-        resultOptions?: SelectableOptions<ResultOptionJson, ResultOption>;
-        requirementOptions?: SelectableOptions<RequirementOptionJson, RequirementOption>;
+        resultOptions?: SerializableOptions<ResultJson, Result>;
+        requirementOptions?: SerializableOptions<RequirementJson, Requirement>;
     }) {
         this._id = id;
         this._embedded = embedded;
@@ -331,7 +407,7 @@ class DefaultRecipe implements Recipe {
         return this._itemData;
     }
 
-    get requirementOptions(): SelectableOptions<RequirementOptionJson, RequirementOption> {
+    get requirementOptions(): SerializableOptions<RequirementJson, Requirement> {
         return this._requirementOptions;
     }
 
@@ -339,7 +415,7 @@ class DefaultRecipe implements Recipe {
         return this._disabled;
     }
 
-    get resultOptions(): SelectableOptions<ResultOptionJson, ResultOption> {
+    get resultOptions(): SerializableOptions<ResultJson, Result> {
         return this._resultOptions;
     }
 
@@ -348,31 +424,23 @@ class DefaultRecipe implements Recipe {
     }
 
     get hasRequirementChoices(): boolean {
-        return this._requirementOptions.requiresUserChoice;
+        return this._requirementOptions.size > 1;
     }
 
     get hasResultChoices(): boolean {
-        return this._resultOptions.requiresUserChoice
+        return this._resultOptions.size > 1;
     }
 
     get hasRequirements() {
-        return !this._requirementOptions.isEmpty;
+        return this._requirementOptions.size !== 0;
     }
 
     get hasResults(): boolean {
-        return !this._resultOptions.isEmpty;
+        return this._resultOptions.size !== 0;
     }
 
     get hasErrors(): boolean {
         return this._itemData.hasErrors;
-    }
-
-    get errorCodes(): string[] {
-        return this._itemData.errors.map(error => error.code);
-    }
-
-    get errors(): ItemLoadingError[] {
-        return this._itemData.errors;
     }
 
     get loaded(): boolean {
@@ -395,55 +463,87 @@ class DefaultRecipe implements Recipe {
     *  Methods
     *  =========================== */
 
-    setResultOption(resultOption: ResultOptionConfig | ResultOption): void {
-        if (resultOption instanceof ResultOption) {
-            this._resultOptions.set(resultOption);
-            return;
+    setResultOption(resultOption: SerializableOption<ResultJson, Result> | ResultOptionConfig): void {
+
+        // Create a SerializableOption from the ResultOptionConfig if one was provided
+        if (this.isResultOptionConfig(resultOption)) {
+            resultOption = new DefaultSerializableOption({
+                id: resultOption.id,
+                name: resultOption.name,
+                value: Result.fromJson({
+                    products: resultOption.results
+                })
+            });
         }
+
+        // We don't accept user-defined identifiers for new result options
+        // If the result option has an ID, assert that it exists to overwrite
         if (resultOption.id && !this._resultOptions.has(resultOption.id)) {
-            throw new Error(`Unable to find result option with id ${resultOption.id}`);
+            throw new Error(`Unable to find result option with id ${resultOption.id} to overwrite`);
         }
-        const optionId = this._resultOptions.nextId();
-        const value = ResultOption.fromJson({
-            id: optionId,
-            ...resultOption
-        });
-        this._resultOptions.set(value);
+
+        if (!(resultOption instanceof DefaultSerializableOption)) {
+            throw new Error(`Unable to set result option ${resultOption.id} as it is not an instance of DefaultSerializableOption`);
+        }
+
+        this._resultOptions.set(resultOption);
+
     }
 
-    setRequirementOption(requirementOption: RequirementOptionConfig | RequirementOption): void {
-        if (requirementOption instanceof RequirementOption) {
-            this._requirementOptions.set(requirementOption);
-            return;
+    private isResultOptionConfig(resultOption: any): resultOption is ResultOptionConfig {
+        return resultOption
+            && resultOption.name
+            && resultOption.results;
+    }
+
+    setRequirementOption(requirementOption: SerializableOption<RequirementJson, Requirement> | RequirementOptionConfig): void {
+
+        // Create a SerializableOption from the RequirementOptionConfig if one was provided
+        if (this.isRequirementOptionConfig(requirementOption)) {
+            requirementOption = new DefaultSerializableOption({
+                id: requirementOption.id,
+                name: requirementOption.name,
+                value: Requirement.fromJson({
+                    catalysts: requirementOption.catalysts,
+                    ingredients: requirementOption.ingredients,
+                    essences: requirementOption.essences
+                })
+            });
         }
+
+        // We don't accept user-defined identifiers for new requirement options
+        // If the requirement option has an ID, assert that it exists to overwrite
         if (requirementOption.id && !this._requirementOptions.has(requirementOption.id)) {
-            throw new Error(`Unable to find requirement option with id ${requirementOption.id}`);
+            throw new Error(`Unable to find requirement option with id ${requirementOption.id} to overwrite`);
         }
-        const optionId = this._requirementOptions.nextId();
-        const value = RequirementOption.fromJson({
-            id: optionId,
-            name: requirementOption.name,
-            catalysts: requirementOption.catalysts,
-            ingredients: requirementOption.ingredients,
-            essences: requirementOption.essences
-        });
-        this._requirementOptions.set(value);
+
+        if (!(requirementOption instanceof DefaultSerializableOption)) {
+            throw new Error(`Unable to set requirement option ${requirementOption.id} as it is not an instance of DefaultSerializableOption`);
+        }
+
+        this._requirementOptions.set(requirementOption);
+
+    }
+
+    private isRequirementOptionConfig(requirementOption: any): requirementOption is RequirementOptionConfig {
+        return requirementOption
+            && requirementOption.name;
     }
 
     deleteResultOptionById(id: string) {
-        this._resultOptions.deleteById(id);
+        this._resultOptions.remove(id);
     }
 
     deleteRequirementOptionById(id: string) {
-        this._requirementOptions.deleteById(id);
+        this._requirementOptions.remove(id);
     }
 
     clone({
-              id,
-              craftingSystemId = this._craftingSystemId,
-              substituteEssenceIds = new Map<string, string>(),
-              substituteComponentIds = new Map<string, string>(),
-          }: {
+        id,
+        craftingSystemId = this._craftingSystemId,
+        substituteEssenceIds = new Map<string, string>(),
+        substituteComponentIds = new Map<string, string>(),
+      }: {
         id: string;
         craftingSystemId?: string;
         substituteEssenceIds?: Map<string, string>;
@@ -460,28 +560,28 @@ class DefaultRecipe implements Recipe {
             embedded: false,
             craftingSystemId,
             disabled: this._disabled,
-            resultOptions: this._resultOptions.clone((resultOption) => {
-                return resultOption.clone({
+            resultOptions: this._resultOptions.clone((resultOption) =>
+                resultOption.clone({
+                    substituteComponentIds
+                })
+            ),
+            requirementOptions: this._requirementOptions.clone((requirementOption) =>
+                requirementOption.clone({
                     substituteComponentIds,
-                });
-            }),
-            requirementOptions: this._requirementOptions.clone((requirementOption) => {
-                return requirementOption.clone({
-                    substituteEssenceIds,
-                    substituteComponentIds,
-                });
-            })
+                    substituteEssenceIds
+                })
+            )
         });
     }
 
     getUniqueReferencedComponents(): ComponentReference[] {
         const componentsFromResults = this.resultOptions.all
-            .map(resultOption => resultOption.results)
+            .map(resultOption => resultOption.value.products)
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
             }, DefaultCombination.EMPTY<ComponentReference>());
         const componentFromRequirements = this.requirementOptions.all
-            .map(requirementOption => requirementOption.ingredients.combineWith(requirementOption.catalysts))
+            .map(requirementOption => requirementOption.value.ingredients.combineWith(requirementOption.value.catalysts))
             .reduce((previousValue, currentValue) => {
                 return previousValue.combineWith(currentValue);
             }, DefaultCombination.EMPTY<ComponentReference>());
@@ -503,8 +603,28 @@ class DefaultRecipe implements Recipe {
             craftingSystemId: this._craftingSystemId,
             disabled: this._disabled,
             embedded: this._embedded,
-            resultOptions: this._resultOptions.toJson(),
-            requirementOptions: this._requirementOptions.toJson()
+            resultOptions: this._resultOptions.all
+                .map(option => ({
+                    id: option.id,
+                    name: option.name,
+                    results: option.value.products.toJson()
+                }))
+                .reduce((previousValue, currentValue) => {
+                    previousValue[currentValue.id] = currentValue;
+                    return previousValue;
+                }, <RecipeResultOptionJson>{}),
+            requirementOptions: this._requirementOptions.all
+                .map(option => ({
+                    id: option.id,
+                    name: option.name,
+                    catalysts: option.value.catalysts.toJson(),
+                    ingredients: option.value.ingredients.toJson(),
+                    essences: option.value.essences.toJson()
+                }))
+                .reduce((previousValue, currentValue) => {
+                    previousValue[currentValue.id] = currentValue;
+                    return previousValue;
+                }, <RecipeRequirementOptionJson>{})
         };
     }
 
@@ -531,12 +651,12 @@ class DefaultRecipe implements Recipe {
     }
 
     hasEssenceRequirementOption() {
-        return this._requirementOptions.all.some(option => !option.essences.isEmpty());
+        return this._requirementOptions.all.some(option => !option.value.essences.isEmpty());
     }
 
     hasComponent(componentId: string): boolean {
         const inRequirements = this.requirementOptions.all
-            .map(option => option.ingredients.has(componentId) || option.catalysts.has(componentId))
+            .map(option => option.value.ingredients.has(componentId) || option.value.catalysts.has(componentId))
             .reduce((previousValue, currentValue) => {
                 return previousValue || currentValue;
             }, false);
@@ -546,48 +666,42 @@ class DefaultRecipe implements Recipe {
         }
 
         return this.resultOptions.all
-            .map(option => option.results.has(componentId))
+            .map(option => option.value.products.has(componentId))
             .reduce((previousValue, currentValue) => {
                 return previousValue || currentValue;
             }, false);
     }
 
     removeComponent(componentId: string) {
-        const modifiedRequirementOptions = this.requirementOptions.all.map(option => {
-            const ingredients = option.ingredients.without(componentId);
-            const catalysts = option.catalysts.without(componentId);
-            return new RequirementOption({
-                id: option.id,
-                name: option.name,
-                essences: option.essences,
-                catalysts,
-                ingredients
+        this._requirementOptions = this._requirementOptions
+            .clone((requirement) => {
+                const catalysts = requirement.catalysts.without(componentId);
+                const ingredients = requirement.ingredients.without(componentId);
+                return new Requirement({
+                    essences: requirement.essences,
+                    catalysts,
+                    ingredients
+                });
             });
-        });
-        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({options: modifiedRequirementOptions});
-        const modifiedResultOptions = this.resultOptions.all.map(option => {
-            const results = option.results.without(componentId);
-            return new ResultOption({
-                id: option.id,
-                name: option.name,
-                results
+        this._resultOptions = this._resultOptions
+            .clone((result) => {
+                const products = result.products.without(componentId);
+                return new Result({
+                    products
+                });
             });
-        });
-        this._resultOptions = new SelectableOptions<ResultOptionJson, ResultOption>({options: modifiedResultOptions});
     }
 
     removeEssence(essenceIdToRemove: string) {
-        const modifiedRequirementOptions = this.requirementOptions.all.map(option => {
-            const essences = option.essences.without(essenceIdToRemove);
-            return new RequirementOption({
-                id: option.id,
-                name: option.name,
-                essences,
-                catalysts: option.catalysts,
-                ingredients: option.ingredients
+        this._requirementOptions = this._requirementOptions
+            .clone((requirement) => {
+                const essences = requirement.essences.without(essenceIdToRemove);
+                return new Requirement({
+                    essences,
+                    catalysts: requirement.catalysts,
+                    ingredients: requirement.ingredients
+                });
             });
-        });
-        this._requirementOptions = new SelectableOptions<RequirementOptionJson, RequirementOption>({options: modifiedRequirementOptions});
     }
 
     hasEssence(essenceId: string) {
@@ -596,13 +710,37 @@ class DefaultRecipe implements Recipe {
 
     getUniqueReferencedEssences(): EssenceReference[] {
         return this.requirementOptions.all
-            .flatMap(option => option.essences.members)
+            .flatMap(option => option.value.essences.members)
             .filter((essence, index, array) => array.findIndex(other => other.id === essence.id) === index);
     }
 
     static fromJson(recipeJson: RecipeJson) {
-        const resultOptions = SelectableOptions.fromJson<ResultOptionJson, ResultOption>(recipeJson.resultOptions, ResultOption.fromJson);
-        const requirementOptions = SelectableOptions.fromJson<RequirementOptionJson, RequirementOption>(recipeJson.requirementOptions, RequirementOption.fromJson);
+        const resultOptions = new DefaultSerializableOptions<ResultJson, Result>(
+            Object.entries(recipeJson.resultOptions)
+                .map(([id, resultOptionJson]) => {
+                    return new DefaultSerializableOption({
+                        id,
+                        name: resultOptionJson.name,
+                        value: Result.fromJson({
+                            products: resultOptionJson.results
+                        })
+                    });
+                })
+        );
+        const requirementOptions = new DefaultSerializableOptions<RequirementJson, Requirement>(
+            Object.entries(recipeJson.requirementOptions)
+                .map(([id, requirementOptionJson]) => {
+                    return new DefaultSerializableOption({
+                        id,
+                        name: requirementOptionJson.name,
+                        value: Requirement.fromJson({
+                            catalysts: requirementOptionJson.catalysts,
+                            ingredients: requirementOptionJson.ingredients,
+                            essences: requirementOptionJson.essences
+                        })
+                    });
+                })
+        );
         return new DefaultRecipe({
             id: recipeJson.id,
             embedded: recipeJson.embedded,

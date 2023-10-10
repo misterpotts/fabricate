@@ -551,20 +551,20 @@ describe("Edit", () => {
         const recipeToEdit = await underTest.getById(testRecipeOne.id);
 
         const essencesBefore = {
-            size: recipeToEdit.requirementOptions.all.map(option => option.essences.size).reduce((left, right) => left + right, 0),
-            fireCount: recipeToEdit.requirementOptions.all.map(option => option.essences.amountFor(elementalFire.id)).reduce((left, right) => left + right, 0)
+            size: recipeToEdit.requirementOptions.all.map(option => option.value.essences.size).reduce((left, right) => left + right, 0),
+            fireCount: recipeToEdit.requirementOptions.all.map(option => option.value.essences.amountFor(elementalFire.id)).reduce((left, right) => left + right, 0)
         };
         const requirementOptionCount = recipeToEdit.requirementOptions.size;
         recipeToEdit.requirementOptions.all.forEach(option => {
-            option.essences = option.essences.increment(elementalFire.toReference());
+            option.value.essences = option.value.essences.increment(elementalFire.toReference());
         });
 
         await underTest.save(recipeToEdit);
 
         const editedRecipe = await underTest.getById(testRecipeOne.id);
         const essencesAfter = {
-            size: editedRecipe.requirementOptions.all.map(option => option.essences.size).reduce((left, right) => left + right, 0),
-            fireCount: editedRecipe.requirementOptions.all.map(option => option.essences.amountFor(elementalFire.id)).reduce((left, right) => left + right, 0)
+            size: editedRecipe.requirementOptions.all.map(option => option.value.essences.size).reduce((left, right) => left + right, 0),
+            fireCount: editedRecipe.requirementOptions.all.map(option => option.value.essences.amountFor(elementalFire.id)).reduce((left, right) => left + right, 0)
         };
 
         expect(essencesAfter.size).toEqual(essencesBefore.size + requirementOptionCount);
@@ -825,15 +825,15 @@ function countComponentReferences(recipes: Recipe[], componentId: string) {
         .map(recipe => {
             const amountInIngredients = recipe.requirementOptions
                 .all
-                .map(requirementOption => requirementOption.ingredients.amountFor(componentId))
+                .map(requirementOption => requirementOption.value.ingredients.amountFor(componentId))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
             const amountInCatalysts = recipe.requirementOptions
                 .all
-                .map(requirementOption => requirementOption.catalysts.amountFor(componentId))
+                .map(requirementOption => requirementOption.value.catalysts.amountFor(componentId))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
             const amountInResults = recipe.resultOptions
                 .all
-                .map(resultOption => resultOption.results.amountFor(componentId))
+                .map(resultOption => resultOption.value.products.amountFor(componentId))
                 .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
             const amount = amountInIngredients + amountInCatalysts + amountInResults;
             return {
@@ -859,10 +859,10 @@ function countEssenceReferences(recipes: Recipe[], essenceId: string): { amount:
                 }
             });
         })
-        .filter(candidate => candidate.requirementOption.essences.has(essenceId))
+        .filter(candidate => candidate.requirementOption.value.essences.has(essenceId))
         .reduce((summary, recipeRequirementOption) => {
             return {
-                amount: summary.amount + recipeRequirementOption.requirementOption.essences.amountFor(essenceId),
+                amount: summary.amount + recipeRequirementOption.requirementOption.value.essences.amountFor(essenceId),
                 matchingRecipes: summary.matchingRecipes.includes(recipeRequirementOption.recipeId) ? summary.matchingRecipes : summary.matchingRecipes.concat(recipeRequirementOption.recipeId)
             }
         }, { amount: 0, matchingRecipes: <string[]>[] });

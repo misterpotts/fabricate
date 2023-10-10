@@ -12,17 +12,18 @@ import {InventoryFactory} from "../actor/InventoryFactory";
 import {Inventory} from "../actor/Inventory";
 import {NotificationService} from "../foundry/NotificationService";
 import {SimpleInventoryAction} from "../actor/InventoryAction";
-import {SalvageOption} from "../crafting/component/SalvageOption";
+import {Salvage} from "../crafting/component/Salvage";
 import {CraftingResult, NoCraftingResult, SuccessfulCraftingResult} from "../crafting/result/CraftingResult";
-import {RequirementOption} from "../crafting/recipe/RequirementOption";
-import {ResultOption} from "../crafting/recipe/ResultOption";
+import {Requirement} from "../crafting/recipe/Requirement";
+import {Result} from "../crafting/recipe/Result";
 import {
     ComponentSelectionStrategyFactory
-} from "../crafting/selection/ComponentSelectionStrategy";
+} from "../crafting/component/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
 import {DefaultUnit, Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
+import {Option} from "../common/Options";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -427,13 +428,13 @@ class DefaultCraftingAPI implements CraftingAPI {
          * =============================================================================================================
          */
 
-        if (!salvageOptionId && component.salvageOptionsById.size > 1) {
+        if (!salvageOptionId && component.salvageOptions.byId.size > 1) {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.salvageOptionIdRequired`,
                 {
                     componentName: component.name,
-                    salvageOptionIds: Array.from(component.salvageOptionsById.keys()).join(", ") ,
-                    salvageOptionCount: component.salvageOptionsById.size
+                    salvageOptionIds: Array.from(component.salvageOptions.byId.keys()).join(", ") ,
+                    salvageOptionCount: component.salvageOptions.byId.size
                 }
             );
             this.notificationService.error(message);
@@ -476,9 +477,9 @@ class DefaultCraftingAPI implements CraftingAPI {
          * =============================================================================================================
          */
 
-        const selectedSalvageOption: SalvageOption = salvageOptionId ? component.salvageOptionsById.get(salvageOptionId) : component.salvageOptionsById.values().next().value;
+        const selectedSalvageOption: Option<Salvage> = salvageOptionId ? component.salvageOptions.byId.get(salvageOptionId) : component.salvageOptions.byId.values().next().value;
 
-        const salvageResultComponentReferences = selectedSalvageOption.results.combineWith(selectedSalvageOption.catalysts);
+        const salvageResultComponentReferences = selectedSalvageOption.value.products.combineWith(selectedSalvageOption.value.catalysts);
         const includedComponentsById = await this.componentAPI.getAllById(salvageResultComponentReferences.members.map(component => component.id));
 
         const includedComponents = Array.from(includedComponentsById.values());
@@ -525,13 +526,13 @@ class DefaultCraftingAPI implements CraftingAPI {
          * =============================================================================================================
          */
 
-        if (selectedSalvageOption.requiresCatalysts) {
+        if (selectedSalvageOption.value.requiresCatalysts) {
             const missingCatalysts = ownedItems.without(component.id, 1)
                 .units
-                .filter(unit => selectedSalvageOption.catalysts.has(unit.element.id))
+                .filter(unit => selectedSalvageOption.value.catalysts.has(unit.element.id))
                 .reduce((wantedCatalysts, ownedCatalyst) => {
                     return wantedCatalysts.without(ownedCatalyst.element.id, ownedCatalyst.quantity);
-                }, selectedSalvageOption.catalysts);
+                }, selectedSalvageOption.value.catalysts);
 
             if (!missingCatalysts.isEmpty()) {
                 const message = this.localizationService.format(
@@ -558,7 +559,7 @@ class DefaultCraftingAPI implements CraftingAPI {
          */
 
         const action = new SimpleInventoryAction({
-            additions: selectedSalvageOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+            additions: selectedSalvageOption.value.products.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
             removals: DefaultCombination.of(component),
         });
         await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);
@@ -627,7 +628,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         if (recipe.hasErrors) {
             const message = this.localizationService.format(
                 `${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidItemData`,
-                { recipeId: recipe.id, cause: recipe.errors.join(", ") }
+                { recipeId: recipe.id, cause: recipe.itemData.errors.join(", ") }
             );
             this.notificationService.error(message);
             return new NoCraftingResult({
@@ -737,11 +738,11 @@ class DefaultCraftingAPI implements CraftingAPI {
          * =============================================================================================================
          */
 
-        const selectedRequirementOption: RequirementOption = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
-        const selectedResultOption: ResultOption = resultOptionId ? recipe.resultOptions.byId.get(resultOptionId) : recipe.resultOptions.byId.values().next().value;
+        const selectedRequirementOption: Requirement = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId).value : recipe.requirementOptions.byId.values().next().value;
+        const selectedResultOption: Result = resultOptionId ? recipe.resultOptions.byId.get(resultOptionId).value : recipe.resultOptions.byId.values().next().value;
         const allComponentIds = selectedRequirementOption.ingredients
             .combineWith(selectedRequirementOption.catalysts)
-            .combineWith(selectedResultOption.results)
+            .combineWith(selectedResultOption.products)
             .map(unit => unit.element.id);
         const includedComponentsById = await this.componentAPI.getAllById(allComponentIds);
 
@@ -949,7 +950,7 @@ class DefaultCraftingAPI implements CraftingAPI {
          */
 
         const action = new SimpleInventoryAction({
-            additions: selectedResultOption.results.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
+            additions: selectedResultOption.products.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
             removals: selectedComponents.essenceSources.combineWith(selectedComponents.ingredients.target)
         });
         await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);
@@ -1020,7 +1021,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             return new EmptyComponentSelection();
         }
 
-        const requirementOption = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
+        const requirementOption: Requirement = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId).value : recipe.requirementOptions.byId.values().next().value;
 
         const allCraftingSystemComponentsById = await this.componentAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
         const allCraftingSystemEssencesById = await this.essenceAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
@@ -1035,7 +1036,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         );
     }
 
-    private makeSelections(selectedRequirementOption: RequirementOption,
+    private makeSelections(selectedRequirementOption: Requirement,
                            ownedComponents: Combination<Component>,
                            allComponentsById: Map<string, Component>,
                            allCraftingSystemEssencesById: Map<string, Essence>): ComponentSelection {
@@ -1054,7 +1055,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             && Object.keys(userSelectedComponents.essenceSources).length === 0;
     }
 
-    private assignUserProvidedComponents(selectedRequirementOption: RequirementOption,
+    private assignUserProvidedComponents(selectedRequirementOption: Requirement,
                                  userSelectedComponents: UserSelectedComponents,
                                  allComponentsById: Map<string, Component>,
                                  allEssencesById: Map<string, Essence>,

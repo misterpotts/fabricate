@@ -1,8 +1,8 @@
-import {Combination, DefaultCombination} from "../common/Combination";
-import {Component} from "../crafting/component/Component";
-import {ComponentCombinationGenerator, ComponentEssenceCombination} from "./ComponentCombinationGenerator";
-import {TrackedCombination} from "../common/TrackedCombination";
-import {EssenceReference} from "../crafting/essence/EssenceReference";
+import {Combination, DefaultCombination} from "../../common/Combination";
+import {Component} from "../component/Component";
+import {ComponentCombinationGenerator, ComponentEssenceCombination} from "../../common/ComponentCombinationGenerator";
+import {TrackedCombination} from "../../common/TrackedCombination";
+import {EssenceReference} from "./EssenceReference";
 
 export class EssenceSelection {
 

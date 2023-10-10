@@ -10,11 +10,11 @@ import {
     DefaultRecipe,
     Recipe
 } from "../../crafting/recipe/Recipe";
-import {SelectableOptions} from "../../crafting/selection/SelectableOptions";
 import {ComponentReference} from "../../crafting/component/ComponentReference";
-import {RequirementOption, RequirementOptionJson} from "../../crafting/recipe/RequirementOption";
-import {ResultOption, ResultOptionJson} from "../../crafting/recipe/ResultOption";
+import {Requirement, RequirementJson} from "../../crafting/recipe/Requirement";
+import {Result, ResultJson} from "../../crafting/recipe/Result";
 import {DefaultCombination} from "../../common/Combination";
+import {DefaultSerializableOption, DefaultSerializableOptions} from "../../common/Options";
 
 class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDefinition {
 
@@ -463,29 +463,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.3N7TGYWJRrUJ9thy",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                        new DefaultSerializableOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: DefaultCombination.ofUnits([
-                                new DefaultUnit(new EssenceReference("water"), 2),
-                                new DefaultUnit(new EssenceReference("earth"), 2),
-                            ])
+                            value: new Requirement({
+                                essences: DefaultCombination.ofUnits([
+                                    new DefaultUnit(new EssenceReference("water"), 2),
+                                    new DefaultUnit(new EssenceReference("earth"), 2),
+                                ])
+                            })
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("instant-rope"), 1),
                             ])
-                        }),
-                    ]
-                })
+                        })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "zaebelles-torpor",
@@ -494,29 +494,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.6mKiAWQIzDZRPNOP",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("air"), 2),
                                 new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
-                        }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                        })
+                    })
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("zaebelles-torpor"), 1),
                             ])
-                        }),
-                    ]
-                })
+                        })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "flash-pellet",
@@ -525,29 +525,31 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.8M0vwnOuCEIEP9ww",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>(
+                    [
+                        new DefaultSerializableOption({
                             id: "option-1",
                             name: "Option 1",
-                            essences: DefaultCombination.ofUnits([
-                                new DefaultUnit(new EssenceReference("fire"), 2),
-                                new DefaultUnit(new EssenceReference("positive-energy"), 1),
-                            ])
-                        }),
+                            value: new Requirement({
+                                essences: DefaultCombination.ofUnits([
+                                    new DefaultUnit(new EssenceReference("fire"), 2),
+                                    new DefaultUnit(new EssenceReference("positive-energy"), 1),
+                                ])
+                            }),
+                        })
                     ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                ),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("flash-pellet"), 1),
                             ])
-                        }),
-                    ]
-                })
+                        })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "titan-gum",
@@ -556,29 +558,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.EQfnAlIaDLh57ETN",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("earth"), 2),
                                 new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
-                        }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                        })
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("titan-gum"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "gashglue",
@@ -587,29 +589,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.F2dhRws4mZppZVIa",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("water"), 2),
                                 new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("gashglue"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "dust-of-dryness",
@@ -618,29 +620,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.IVqzRv8v1MrfpKSa",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("earth"), 3),
                                 new DefaultUnit(new EssenceReference("negative-energy"), 2 ),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("dust-of-dryness"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "firesnuff",
@@ -649,29 +651,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.JEewjPpD6JA2ifE3",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("fire"), 1),
                                 new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("firesnuff"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "snappowder",
@@ -680,29 +682,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.O0FPlz7ARBLuLY1E",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("earth"), 2),
                                 new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("snappowder"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "alchemists-fire",
@@ -711,11 +713,11 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.Pl65b1VSVhUJ2li9",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("fire"), 2),
                                 new DefaultUnit(new EssenceReference("earth"), 1),
@@ -723,19 +725,20 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                                 new DefaultUnit(new EssenceReference("positive-energy"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("alchemists-fire"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "melt-powder",
@@ -744,29 +747,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.WseDmjhOWaT1XeJf",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("earth"), 1),
                                 new DefaultUnit(new EssenceReference("fire"), 2),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("melt-powder"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "tanglefoot-bag",
@@ -775,29 +778,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.hJFEOjoiLdTOOoBn",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("water"), 2),
                                 new DefaultUnit(new EssenceReference("earth"), 2),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("tanglefoot-bag"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "breath-bottle",
@@ -806,28 +809,28 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.kI3lqJmjWai0aX5L",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("air"), 3),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("breath-bottle"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "smokestick",
@@ -836,29 +839,29 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.x4MkisNL6yBoTZ94",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("air"), 2),
                                 new DefaultUnit(new EssenceReference("fire"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("smokestick"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "night-eyes",
@@ -867,30 +870,30 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.ylQuglLVjQFuH9w1",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("water"), 1),
                                 new DefaultUnit(new EssenceReference("fire"), 1),
                                 new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("night-eyes"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
             new DefaultRecipe({
                 id: "noxious-smokestick",
@@ -899,34 +902,33 @@ class AlchemistsSuppliesV16SystemDefinition implements EmbeddedCraftingSystemDef
                     "Compendium.fabricate.alchemists-supplies-v16.yqKIdplKhpa5Ir7A",
                     this._itemDataLoadingFunction
                 ),
-                requirementOptions: new SelectableOptions<RequirementOptionJson, RequirementOption>({
-                    options: [
-                        new RequirementOption({
-                            id: "option-1",
-                            name: "Option 1",
+                requirementOptions: new DefaultSerializableOptions<RequirementJson, Requirement>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Requirement({
                             essences: DefaultCombination.ofUnits([
                                 new DefaultUnit(new EssenceReference("air"), 2),
                                 new DefaultUnit(new EssenceReference("fire"), 2),
                                 new DefaultUnit(new EssenceReference("negative-energy"), 1),
                             ])
                         }),
-                    ],
-                }),
-                resultOptions: new SelectableOptions<ResultOptionJson, ResultOption>({
-                    options: [
-                        new ResultOption({
-                            id: "option-1",
-                            name: "Option 1",
-                            results: DefaultCombination.ofUnits([
+                    }),
+                ]),
+                resultOptions: new DefaultSerializableOptions<ResultJson, Result>([
+                    new DefaultSerializableOption({
+                        id: "option-1",
+                        name: "Option 1",
+                        value: new Result({
+                            products: DefaultCombination.ofUnits([
                                 new DefaultUnit(new ComponentReference("noxious-smokestick"), 1),
                             ])
                         }),
-                    ]
-                })
+                    }),
+                ])
             }),
         ];
     }
-
 }
 
 export { AlchemistsSuppliesV16SystemDefinition }

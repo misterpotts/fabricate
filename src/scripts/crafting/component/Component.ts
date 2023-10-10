@@ -1,19 +1,29 @@
 import {Combination, DefaultCombination} from "../../common/Combination";
 import {Identifiable} from "../../common/Identifiable";
-import {SelectableOptions} from "../selection/SelectableOptions";
-import {FabricateItemData, ItemLoadingError, NoFabricateItemData} from "../../foundry/DocumentManager";
+import {FabricateItemData, NoFabricateItemData} from "../../foundry/DocumentManager";
 import {Serializable} from "../../common/Serializable";
 import {ComponentReference} from "./ComponentReference";
-import {SalvageOption, SalvageOptionJson} from "./SalvageOption";
+import {Salvage, SalvageJson, SalvageOptionJson} from "./Salvage";
 import {EssenceReference} from "../essence/EssenceReference";
 import {DefaultUnit} from "../../common/Unit";
+import {
+    DefaultOption,
+    DefaultSerializableOption,
+    DefaultSerializableOptions,
+    Options,
+    SerializableOption,
+    SerializableOptions
+} from "../../common/Options";
 
 interface SalvageOptionConfig {
 
-    id: string;
+    id?: string;
+
     name: string;
-    results: Record<string, number>;
-    catalysts: Record<string, number>;
+
+    results?: Record<string, number>;
+
+    catalysts?: Record<string, number>;
 
 }
 
@@ -77,24 +87,19 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
     readonly hasEssences: boolean;
 
     /**
-     * The essences that this component contains, if any. May be an empty Combination.
+     * The essences that this component contains, if any. Might be an empty Combination.
      */
     essences: Combination<EssenceReference>;
 
     /**
-     * Indicates whether this component is disabled. Disabled components cannot used in crafting.
+     * Indicates whether this component is disabled. Disabled components cannot be used in crafting.
      */
     isDisabled: boolean;
 
     /**
      * The Salvage options for this component
      */
-    salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
-
-    /**
-     * The Salvage options for this component, indexed by ID
-     */
-    readonly salvageOptionsById: Map<string, SalvageOption>;
+    salvageOptions: Options<Salvage>;
 
     /**
      * The Fabricate item data for this component, containing the item's name, image URL, and any errors that occurred
@@ -107,16 +112,6 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      *  has any errors.
      */
     readonly hasErrors: boolean;
-
-    /**
-     * The errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errors: ItemLoadingError[];
-
-    /**
-     * The codes for the errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errorCodes: string[];
 
     /**
      * Indicates whether this component's item data has been loaded
@@ -149,10 +144,10 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
      * Sets the Salvage option for this component. If the Salvage option has an ID, it will be used to attempt to
      * overwrite an existing salvage option. Otherwise, a new Salvage option will be created with a new ID.
      *
-     * @param {SalvageOptionConfig | SalvageOption} salvageOption - The Salvage option to set. Accepts a SalvageOption
-     *  instance or a SalvageOptionConfig object.
+     * @param {SerializableOption<SalvageJson, Salvage> | SalvageOptionConfig} salvageOption - The Salvage option to set.
+     *  Accepts a SerializableOption instance or a SalvageOptionConfig object.
      */
-    setSalvageOption(salvageOption: SalvageOptionConfig | SalvageOption): void;
+    setSalvageOption(salvageOption: SerializableOption<SalvageJson, Salvage> | SalvageOptionConfig): void;
 
     /**
      * Adds the given quantity of the essence with the given ID to this component
@@ -171,14 +166,14 @@ interface Component extends Identifiable, Serializable<ComponentJson> {
     subtractEssence(essenceId: string, quantity?: number): void;
 
     /**
-     * Lists all the components referenced by this component's Salvage options. May be an empty array.
+     * Lists all the components referenced by this component's Salvage options. Might be an empty array.
      *
      * @returns {ComponentReference[]} - The components referenced by this component, if any
      */
     getUniqueReferencedComponents(): ComponentReference[];
 
     /**
-     * Lists all the essences referenced by this component. May be an empty array.
+     * Lists all the essences referenced by this component. Might be an empty array.
      *
      * @returns {EssenceReference[]} - The essences referenced by this component, if any
      */
@@ -231,7 +226,7 @@ class DefaultComponent implements Component {
 
     private _itemData: FabricateItemData;
     private _essences: Combination<EssenceReference>;
-    private _salvageOptions: SelectableOptions<SalvageOptionJson, SalvageOption>;
+    private _salvageOptions: SerializableOptions<SalvageJson, Salvage>;
     private _disabled: boolean;
 
     constructor({
@@ -241,7 +236,7 @@ class DefaultComponent implements Component {
         embedded = false,
         itemData = NoFabricateItemData.INSTANCE(),
         essences = DefaultCombination.EMPTY<EssenceReference>(),
-        salvageOptions = new SelectableOptions({})
+        salvageOptions = new DefaultSerializableOptions()
     }: {
         id: string;
         disabled?: boolean;
@@ -249,7 +244,7 @@ class DefaultComponent implements Component {
         craftingSystemId: string;
         itemData?: FabricateItemData;
         essences?: Combination<EssenceReference>;
-        salvageOptions?: SelectableOptions<SalvageOptionJson, SalvageOption>;
+        salvageOptions?: SerializableOptions<SalvageJson, Salvage>;
     }) {
         this._id = id;
         this._embedded = embedded;
@@ -305,7 +300,7 @@ class DefaultComponent implements Component {
             return false;
         }
         return this._salvageOptions.all
-            .map(option => !option.results.isEmpty())
+            .map(option => !option.value.products.isEmpty())
             .reduce((left, right) => left || right, false);
     }
 
@@ -321,8 +316,25 @@ class DefaultComponent implements Component {
             essences: this._essences.toJson(),
             itemUuid: this._itemData.toJson().uuid,
             craftingSystemId: this._craftingSystemId,
-            salvageOptions: this._salvageOptions.toJson()
+            salvageOptions: this.serializeSalvageLegacy()
         }
+    }
+
+    // todo: BREAKING remove this method and perform data migration
+    private serializeSalvageLegacy(): Record<string, SalvageOptionJson> {
+        return this._salvageOptions.all
+            .map(option => {
+                return {
+                    id: option.id,
+                    name: option.name,
+                    results: option.value.products.toJson(),
+                    catalysts: option.value.catalysts.toJson()
+                }
+            })
+            .reduce((result, salvageOption) => {
+                result[salvageOption.id] = salvageOption;
+                return result;
+            }, <Record<string, SalvageOptionJson>>{});
     }
 
     public toReference(): ComponentReference {
@@ -333,7 +345,7 @@ class DefaultComponent implements Component {
       id,
       craftingSystemId = this._craftingSystemId,
       substituteEssenceIds = new Map<string, string>(),
-      }: {
+    }: {
         id: string;
         craftingSystemId?: string;
         substituteEssenceIds?: Map<string, string>;
@@ -370,32 +382,16 @@ class DefaultComponent implements Component {
         this._essences = value;
     }
 
-    set salvageOptions(options: SelectableOptions<SalvageOptionJson, SalvageOption>) {
-        this._salvageOptions = options
-    }
-
-    get salvageOptions(): SelectableOptions<SalvageOptionJson, SalvageOption> {
+    get salvageOptions(): Options<Salvage> {
         return this._salvageOptions;
     }
 
-    get salvageOptionsById(): Map<string, SalvageOption> {
-        return this._salvageOptions.byId;
-    }
-
     deleteSalvageOptionById(id: string) {
-        this._salvageOptions.deleteById(id);
+        this._salvageOptions.remove(id);
     }
 
     get hasErrors(): boolean {
         return this._itemData.hasErrors;
-    }
-
-    get errors(): ItemLoadingError[] {
-        return this._itemData.errors;
-    }
-
-    get errorCodes(): string[] {
-        return this._itemData.errors.map(error => error.code);
     }
 
     removeEssence(essenceIdToDelete: string) {
@@ -403,9 +399,11 @@ class DefaultComponent implements Component {
     }
 
     removeComponentFromSalvageOptions(componentId: string) {
-        const options = this._salvageOptions.all
-            .map(option => option.without(componentId));
-        this._salvageOptions = new SelectableOptions({options});
+        this._salvageOptions = this._salvageOptions.clone((salvage) => {
+            salvage.products = salvage.products.without(componentId);
+            salvage.catalysts = salvage.catalysts.without(componentId);
+            return salvage;
+        });
     }
 
     async load(forceReload: boolean = false) {
@@ -420,20 +418,32 @@ class DefaultComponent implements Component {
         return this.itemData.loaded;
     }
 
-    setSalvageOption(salvageOption: SalvageOptionConfig | SalvageOption) {
-        if (salvageOption instanceof SalvageOption) {
-            this._salvageOptions.set(salvageOption);
-            return;
+    setSalvageOption(salvageOption: SerializableOption<SalvageJson, Salvage> | SalvageOptionConfig) {
+
+        // Create a SerializableOption from the SalvageOptionConfig if one was provided
+        if (this.isSalvageOptionConfig(salvageOption)) {
+            salvageOption = new DefaultSerializableOption({
+                id: salvageOption.id,
+                name: salvageOption.name,
+                value: Salvage.fromJson({
+                    results: salvageOption.results,
+                    catalysts: salvageOption.catalysts,
+                }),
+            });
         }
+
+        // We don't accept user-defined identifiers for new salvage options
+        // If the salvage option has an ID, assert that it exists to overwrite
         if (salvageOption.id && !this._salvageOptions.has(salvageOption.id)) {
-            throw new Error(`Unable to find salvage option with id ${salvageOption.id}`);
+            throw new Error(`Unable to find salvage option with id ${salvageOption.id} to overwrite`);
         }
-        const optionId = salvageOption.id ?? this._salvageOptions.nextId();
-        const created = SalvageOption.fromJson({
-            id: optionId,
-            ...salvageOption
-        });
-        this._salvageOptions.set(created);
+
+        if (!(salvageOption instanceof DefaultSerializableOption)) {
+            throw new Error(`Unable to set salvage option ${salvageOption.id} as it is not an instance of DefaultSerializableOption`);
+        }
+
+        this._salvageOptions.set(salvageOption);
+
     }
 
     addEssence(essenceId: string, quantity: number = 1) {
@@ -446,7 +456,7 @@ class DefaultComponent implements Component {
 
     getUniqueReferencedComponents(): ComponentReference[] {
         return this._salvageOptions.all
-            .map(salvageOption => salvageOption.results.combineWith(salvageOption.catalysts))
+            .map(salvageOption => salvageOption.value.products.combineWith(salvageOption.value.catalysts))
             .reduce((left, right) => left.combineWith(right), DefaultCombination.EMPTY<ComponentReference>())
             .members;
     }
@@ -455,6 +465,14 @@ class DefaultComponent implements Component {
         return this._essences.members;
     }
 
+    private isSalvageOptionConfig(salvageOption: any): salvageOption is SalvageOptionConfig {
+        if (salvageOption instanceof DefaultSerializableOption || salvageOption instanceof DefaultOption) {
+            return false;
+        }
+        return salvageOption
+            && typeof salvageOption === "object"
+            && typeof salvageOption.name === "string";
+    }
 }
 
 export { DefaultComponent }

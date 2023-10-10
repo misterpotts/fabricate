@@ -1,13 +1,11 @@
 import {expect, jest, test, beforeEach} from "@jest/globals";
-
 import {Combination, DefaultCombination} from "../src/scripts/common/Combination";
 import {Component, DefaultComponent} from "../src/scripts/crafting/component/Component";
-
 import {testComponentFive, testComponentFour, testComponentOne, testComponentThree, testComponentTwo} from "./test_data/TestCraftingComponents";
 import {NoFabricateItemData} from "../src/scripts/foundry/DocumentManager";
-import {SelectableOptions} from "../src/scripts/crafting/selection/SelectableOptions";
 import {DefaultUnit, Unit} from "../src/scripts/common/Unit";
-import {SalvageOption, SalvageOptionJson} from "../src/scripts/crafting/component/SalvageOption";
+import {Salvage, SalvageJson} from "../src/scripts/crafting/component/Salvage";
+import {DefaultSerializableOptions} from "../src/scripts/common/Options";
 
 beforeEach(() => {
     jest.resetAllMocks();
@@ -22,7 +20,7 @@ test('Should create an empty Combination',() => {
     expect(underTest.has(new DefaultComponent({
         id: 'XYZ345',
         craftingSystemId: "ABC123",
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
+        salvageOptions: new DefaultSerializableOptions<SalvageJson, Salvage>(),
         essences: DefaultCombination.EMPTY(),
         disabled: true,
         itemData: NoFabricateItemData.INSTANCE()
@@ -41,7 +39,7 @@ test('Should create a Combination from a single Unit',() => {
     let equivalentComponent = new DefaultComponent({
         id: testComponentOne.id,
         craftingSystemId: testComponentOne.craftingSystemId,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.all }),
+        salvageOptions: new DefaultSerializableOptions<SalvageJson, Salvage>(testComponentOne.salvageOptions.all),
         essences: testComponentOne.essences,
         disabled: testComponentOne.isDisabled,
         itemData: testComponentOne.itemData
@@ -51,7 +49,7 @@ test('Should create a Combination from a single Unit',() => {
     let nonEquivalentComponent = new DefaultComponent({
         id: 'XYZ345',
         craftingSystemId: "ABC123",
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
+        salvageOptions: new DefaultSerializableOptions<SalvageJson, Salvage>(),
         essences: DefaultCombination.EMPTY(),
         disabled: true,
         itemData: NoFabricateItemData.INSTANCE()
@@ -83,13 +81,13 @@ test('Should create a Combination from a several Units',() => {
         craftingSystemId: testComponentOne.craftingSystemId,
         itemData: testComponentOne.itemData,
         disabled: testComponentOne.isDisabled,
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({ options: testComponentOne.salvageOptions.all }),
+        salvageOptions: new DefaultSerializableOptions<SalvageJson, Salvage>(testComponentOne.salvageOptions.all),
         essences: testComponentOne.essences
     }))).toBe(true);
     expect(underTest.has(new DefaultComponent({
         id: 'XYZ345',
         craftingSystemId: "ABC123",
-        salvageOptions: new SelectableOptions<SalvageOptionJson, SalvageOption>({}),
+        salvageOptions: new DefaultSerializableOptions<SalvageJson, Salvage>(),
         essences: DefaultCombination.EMPTY(),
         disabled: true,
         itemData: NoFabricateItemData.INSTANCE()

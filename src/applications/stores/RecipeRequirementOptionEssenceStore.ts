@@ -34,7 +34,7 @@ class RecipeRequirementOptionEssenceStore implements Readable<Map<string, Unit<E
                     .map(requirementOption => {
                         const essences = $allEssences
                             .map(essence => {
-                                return new DefaultUnit(essence, requirementOption.essences.amountFor(essence.id));
+                                return new DefaultUnit(essence, requirementOption.value.essences.amountFor(essence.id));
                             });
                         return {
                             requirementOption,

@@ -104,6 +104,13 @@ interface FabricateItemData {
     errors: ItemLoadingError[];
 
     /**
+     * An array of error codes for the item loading errors. Will be empty if no errors occurred when loading the item,
+     * or if it has not been loaded yet.
+     * @type {string[]}
+     */
+    errorCodes: string[];
+
+    /**
      * A convenience function that indicates whether the item has loading errors or not. Checks the length of `errors`
      * is zero.
      *
@@ -167,6 +174,10 @@ class NoFabricateItemData implements FabricateItemData {
         return NoFabricateItemData._ERRORS;
     }
 
+    get errorCodes(): string[] {
+        return NoFabricateItemData._ERRORS.map(error => error.code);
+    }
+
     get hasErrors(): boolean {
         return true;
     }
@@ -212,6 +223,10 @@ class PendingFabricateItemData implements FabricateItemData {
     }
 
     get errors(): ItemLoadingError[] {
+        return [];
+    }
+
+    get errorCodes(): string[] {
         return [];
     }
 
@@ -295,6 +310,10 @@ class LoadedFabricateItemData implements FabricateItemData {
         return this._errors;
     }
 
+    get errorCodes(): string[] {
+        return this._errors.map(error => error.code);
+    }
+
     get hasErrors(): boolean {
         return this.errors.length > 0;
     }
@@ -364,6 +383,10 @@ class BrokenFabricateItemData implements FabricateItemData {
 
     get errors(): ItemLoadingError[] {
         return this._errors;
+    }
+
+    get errorCodes(): string[] {
+        return this._errors.map(error => error.code);
     }
 
     get hasErrors(): boolean {

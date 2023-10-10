@@ -1,4 +1,4 @@
-import {Recipe, RecipeJson} from "../crafting/recipe/Recipe";
+import {Recipe, RecipeJson, RecipeRequirementOptionJson, RecipeResultOptionJson} from "../crafting/recipe/Recipe";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
 import {EntityValidationResult} from "./EntityValidator";
@@ -6,8 +6,6 @@ import {EntityDataStore} from "../repository/EntityDataStore";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {RecipeValidator} from "../crafting/recipe/RecipeValidator";
 import {NotificationService} from "../foundry/NotificationService";
-import {RequirementOptionJson} from "../crafting/recipe/RequirementOption";
-import {ResultOptionJson} from "../crafting/recipe/ResultOption";
 import {RecipeExportModel} from "../repository/import/FabricateExportModel";
 
 /**
@@ -72,12 +70,6 @@ interface RecipeOptions {
      * The ID of the crafting system that the recipe belongs to.
      * */
     craftingSystemId: string;
-
-    /**
-     * Optional dictionary of the essences required for the recipe. The dictionary is keyed on the essence ID and with
-     * the values representing the required quantities.
-     */
-    essences?: Record<string, number>;
 
     /**
      * Whether the recipe is disabled. Defaults to false.
@@ -388,7 +380,6 @@ class DefaultRecipeAPI implements RecipeAPI {
     async create({
         itemUuid,
         craftingSystemId,
-        essences = {},
         disabled = false,
         requirementOptions = [],
         resultOptions = [],
@@ -404,7 +395,7 @@ class DefaultRecipeAPI implements RecipeAPI {
                 ...requirementOption
             };
             return result;
-        }, <Record<string, RequirementOptionJson>>{});
+        }, <RecipeRequirementOptionJson>{});
 
         const mappedResultOptions = resultOptions.reduce((result, resultOption) => {
             const optionId = this.identityFactory.make();
@@ -413,11 +404,10 @@ class DefaultRecipeAPI implements RecipeAPI {
                 ...resultOption
             };
             return result;
-        }, <Record<string, ResultOptionJson>>{});
+        }, <RecipeResultOptionJson>{});
 
-        const entityJson = {
+        const entityJson: RecipeJson = {
             id,
-            essences,
             itemUuid,
             disabled,
             embedded: false,
@@ -518,15 +508,15 @@ class DefaultRecipeAPI implements RecipeAPI {
                     ...requirementOption
                 };
                 return result;
-            }, <Record<string, RequirementOptionJson>>{});
+            }, <RecipeRequirementOptionJson>{});
         const resultOptionsRecord = resultOptions
             .reduce((result, resultOption) => {
                 result[resultOption.id] = {
                     ...resultOption
                 };
                 return result;
-            }, <Record<string, ResultOptionJson>>{});
-        const componentJson = {
+            }, <RecipeResultOptionJson>{});
+        const recipeJson: RecipeJson = {
             id,
             craftingSystemId,
             itemUuid,
@@ -535,7 +525,7 @@ class DefaultRecipeAPI implements RecipeAPI {
             resultOptions: resultOptionsRecord,
             requirementOptions: requirementOptionsRecord,
         }
-        const recipe = await this.recipeStore.buildEntity(componentJson);
+        const recipe = await this.recipeStore.buildEntity(recipeJson);
         return this.save(recipe);
     }
 

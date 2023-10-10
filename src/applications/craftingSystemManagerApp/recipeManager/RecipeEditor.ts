@@ -7,9 +7,10 @@ import {Recipe} from "../../../scripts/crafting/recipe/Recipe";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {RecipesStore} from "../../stores/RecipesStore";
 import {ComponentsStore} from "../../stores/ComponentsStore";
-import {RequirementOption} from "../../../scripts/crafting/recipe/RequirementOption";
-import {ResultOption} from "../../../scripts/crafting/recipe/ResultOption";
+import {Requirement} from "../../../scripts/crafting/recipe/Requirement";
+import {Result} from "../../../scripts/crafting/recipe/Result";
 import {Essence} from "../../../scripts/crafting/essence/Essence";
+import {Option} from "../../../scripts/common/Options";
 
 class RecipeEditor {
 
@@ -163,14 +164,14 @@ class RecipeEditor {
         return nextOptionName;
     }
 
-    public async deleteRequirementOption(selectedRecipe: Recipe, requirementOption: RequirementOption) {
+    public async deleteRequirementOption(selectedRecipe: Recipe, requirementOption: Option<Requirement>) {
         selectedRecipe.deleteRequirementOptionById(requirementOption.id);
         const updatedRecipe = await this._fabricateAPI.recipes.save(selectedRecipe);
         this._recipes.insert(updatedRecipe);
         return updatedRecipe;
     }
 
-    public async deleteResultOption(selectedRecipe: Recipe, resultOption: ResultOption) {
+    public async deleteResultOption(selectedRecipe: Recipe, resultOption: Option<Result>) {
         selectedRecipe.deleteResultOptionById(resultOption.id);
         await this.saveRecipe(selectedRecipe);
     }

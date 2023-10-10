@@ -246,12 +246,6 @@ interface RecipeOptions {
     craftingSystemId: string;
 
     /**
-     * Optional dictionary of the essences required for the recipe. The dictionary is keyed on the essence ID and with
-     * the values representing the required quantities.
-     */
-    essences?: Record<string, number>;
-
-    /**
      * Whether the recipe is disabled. Defaults to false.
      */
     disabled?: boolean;
@@ -390,14 +384,14 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
     itemData: FabricateItemData;
 
     /**
-     * The options for the requirements of this recipe. May be empty.
+     * The options for the requirements of this recipe
      */
-    readonly requirementOptions: SelectableOptions<RequirementOptionJson, RequirementOption>;
+    readonly requirementOptions: SerializableOptions<RequirementJson, Requirement>;
 
     /**
-     * The options for the results of this recipe. May be empty.
+     * The options for the results of this recipe
      */
-    readonly resultOptions: SelectableOptions<ResultOptionJson, ResultOption>;
+    readonly resultOptions: SerializableOptions<ResultJson, Result>;
 
     /**
      * Whether this recipe has any requirement options. This is a convenience function for checking if the requirement
@@ -436,17 +430,8 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
     readonly hasErrors: boolean;
 
     /**
-     * The codes for the errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errorCodes: string[];
-
-    /**
-     * The errors that occurred while loading the item data, if any. May be an empty array.
-     */
-    readonly errors: ItemLoadingError[];
-
-    /**
-     * Indicates whether this recipe's item data has been loaded
+     * Indicates whether this recipe's item data has been loaded. This is a convenience function for checking if the
+     *  item data has been loaded.
      */
     readonly loaded: boolean;
 
@@ -454,19 +439,21 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
      * Sets the result option for this recipe. If the result option has an ID, it will be used to attempt to overwrite
      * an existing result option. Otherwise, a new result option will be created with a new ID.
      *
-     * @param {ResultOptionConfig | ResultOption} resultOption - The result option to set. Accepts a ResultOption
-     *  instance or a ResultOptionConfig object.
+     * @param {SerializableOption<ResultJson, Result> | Option<Result>} resultOption - The result option to set. Accepts a
+     * SerializableOption instance or a ResultOptionConfig object. ResultOptionConfig is deprecated and will be removed
+     * in a future version.
      */
-    setResultOption(resultOption: ResultOptionConfig | ResultOption): void;
+    setResultOption(resultOption: SerializableOption<ResultJson, Result> | ResultOptionConfig): void;
 
     /**
      * Sets the requirement option for this recipe. If the requirement option has an ID, it will be used to attempt to
      * overwrite an existing requirement option. Otherwise, a new requirement option will be created with a new ID.
      *
-     * @param {RequirementOptionConfig | RequirementOption} requirementOption - The requirement option to set. Accepts
-     * a RequirementOption instance or a RequirementOptionConfig object.
+     * @param {SerializableOption<RequirementJson, Requirement> | RequirementOptionConfig} requirementOption - The requirement option
+     * to set. Accepts a SerializableOption instance or a RequirementOptionConfig object. RequirementOptionConfig is deprecated
+     * and will be removed in a future version.
      */
-    setRequirementOption(requirementOption: RequirementOptionConfig | RequirementOption): void;
+    setRequirementOption(requirementOption: SerializableOption<RequirementJson, Requirement> | RequirementOptionConfig): void;
 
     /**
      * Deletes the result option with the given ID from this recipe
@@ -501,7 +488,7 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
         craftingSystemId,
         substituteEssenceIds,
         substituteComponentIds,
-      }: {
+    }: {
         id: string;
         craftingSystemId?: string;
         substituteEssenceIds?: Map<string, string>;
@@ -571,6 +558,80 @@ interface Recipe extends Identifiable, Serializable<RecipeJson> {
      * @param essenceId - The ID of the essence to check for
      */
     hasEssence(essenceId: string): any;
+
+}
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+RequirementOptionConfig interface
+</summary>
+
+```typescript
+/**
+ * The RequirementOptionConfig interface. This interface is used to define the structure of the JSON object used to
+ *   define a requirement option without instantiating one directly.
+ */
+interface RequirementOptionConfig {
+    
+    /**
+     * The ID of the requirement option. If not provided, a new ID will be generated.
+     */
+    id?: string,
+
+    /**
+     * The display name of the requirement option
+     */
+    name: string,
+
+    /**
+     * The type and number of catalyst components required by this requirement option, keyed on the component ID
+     */
+    catalysts?: Record<string, number>;
+
+    /**
+     * The type and number of ingredient components required by this requirement option, keyed on the component ID
+     */
+    ingredients?: Record<string, number>;
+
+    /**
+     * The type and number of essences required by this requirement option, keyed on the essence ID
+     */
+    essences?: Record<string, number>;
+    
+}
+```
+
+</details>
+
+<details markdown="block">
+<summary>
+ResultOptionConfig interface
+</summary>
+
+```typescript
+/**
+ * The ResultOptionConfig interface. This interface is used to define the structure of the JSON object used to define
+ *  a result option without instantiating one directly.
+ */
+interface ResultOptionConfig {
+
+    /**
+     * The ID of the result option. If not provided, a new ID will be generated.
+     */
+    id?: string;
+
+    /**
+     * The display name of the result option
+     */
+    name: string;
+
+    /**
+     * The type and number of components produced by this result option, keyed on the component ID
+     */
+    results: Record<string, number>;
 
 }
 ```

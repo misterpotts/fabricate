@@ -13,17 +13,35 @@
     import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import {DefaultUnit} from "../../../scripts/common/Unit";
     import {RecipeRequirementOptionEssenceStore} from "../../stores/RecipeRequirementOptionEssenceStore";
+    import type {Option} from "../../../scripts/common/Options";
+    import {Requirement} from "../../../scripts/crafting/recipe/Requirement";
+    import {Result} from "../../../scripts/crafting/recipe/Result";
+    import type {LocalizationService} from "../../common/LocalizationService";
+    import type {Recipe} from "../../../scripts/crafting/recipe/Recipe";
+    import type {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+    import type {Essence} from "../../../scripts/crafting/essence/Essence";
+    import type {Component} from "../../../scripts/crafting/component/Component";
+    import {RecipeEditor} from "./RecipeEditor";
+    import {CraftingComponentEditor} from "../componentManager/CraftingComponentEditor";
+    import type {Readable} from "svelte/store";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.recipes`;
     const {
         localization,
-        recipes,
         selectedRecipe,
         selectedCraftingSystem,
         essences,
         components,
         recipeEditor,
         componentEditor
+    }: {
+        localization: LocalizationService,
+        selectedRecipe: Readable<Recipe>,
+        selectedCraftingSystem: Readable<CraftingSystem>,
+        essences: Readable<Essence[]>,
+        components: Readable<Component[]>,
+        recipeEditor: RecipeEditor,
+        componentEditor: CraftingComponentEditor
     } = getContext(key);
 
     const componentSearchResults: ComponentSearchStore = new ComponentSearchStore({ components });
@@ -89,7 +107,7 @@
         await recipeEditor.saveRecipe($selectedRecipe);
     }
 
-    async function deleteRequirementOption(optionToDelete) {
+    async function deleteRequirementOption(optionToDelete: Option<Requirement>) {
         await recipeEditor.deleteRequirementOption($selectedRecipe, optionToDelete);
         recipeUpdated($selectedRecipe);
     }
@@ -185,7 +203,7 @@
         clearTimeout(scheduledSave);
     });
 
-    async function deleteResultOption(optionToDelete) {
+    async function deleteResultOption(optionToDelete: Option<Result>) {
         $selectedRecipe.deleteResultOptionById(optionToDelete.id);
         await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
