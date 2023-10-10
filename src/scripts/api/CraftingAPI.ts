@@ -738,8 +738,8 @@ class DefaultCraftingAPI implements CraftingAPI {
          * =============================================================================================================
          */
 
-        const selectedRequirementOption: Requirement = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
-        const selectedResultOption: Result = resultOptionId ? recipe.resultOptions.byId.get(resultOptionId) : recipe.resultOptions.byId.values().next().value;
+        const selectedRequirementOption: Requirement = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId).value : recipe.requirementOptions.byId.values().next().value;
+        const selectedResultOption: Result = resultOptionId ? recipe.resultOptions.byId.get(resultOptionId).value : recipe.resultOptions.byId.values().next().value;
         const allComponentIds = selectedRequirementOption.ingredients
             .combineWith(selectedRequirementOption.catalysts)
             .combineWith(selectedResultOption.products)
@@ -1021,7 +1021,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             return new EmptyComponentSelection();
         }
 
-        const requirementOption = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId) : recipe.requirementOptions.byId.values().next().value;
+        const requirementOption: Requirement = requirementOptionId ? recipe.requirementOptions.byId.get(requirementOptionId).value : recipe.requirementOptions.byId.values().next().value;
 
         const allCraftingSystemComponentsById = await this.componentAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
         const allCraftingSystemEssencesById = await this.essenceAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
