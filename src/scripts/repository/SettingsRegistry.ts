@@ -58,6 +58,7 @@ class DefaultSettingsRegistry implements SettingsRegistry {
             config: true,
             type: String,
             default: Properties.settings.patreon.secretKey.default,
+            // todo: remove this when the first feature is working
             onChange: async () => {
                 // @ts-ignore
                 const enabledFeatures = await this._gameProvider.get().fabricate.patreon.listFeatures();
