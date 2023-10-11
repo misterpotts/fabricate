@@ -34,7 +34,6 @@
     "vite": "^4.4.11"
   },
   "dependencies": {
-    "@types/node": "^18.7.3",
-    "crypto": "^1.0.1"
+    "@types/node": "^18.7.3"
   }
 }
