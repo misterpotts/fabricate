@@ -1,4 +1,4 @@
-class StubClientSettings {
+class StubClientSettings implements ClientSettings {
 
     private readonly settings: Map<string, Map<string, any>>;
 
@@ -10,11 +10,30 @@ class StubClientSettings {
         return this.settings.get(scope)?.get(key);
     }
 
-    set(scope: string, key: string, value: any): void {
-        if (!this.settings.has(scope)) {
-            this.settings.set(scope, new Map());
+    async set(namespace: string, key: string, value: any): Promise<any> {
+        if (!this.settings.has(namespace)) {
+            this.settings.set(namespace, new Map());
         }
-        this.settings.get(scope).set(key, value);
+        this.settings.get(namespace).set(key, value);
+    }
+
+    get storage(): Map<string, any> {
+        throw new Error("Method not implemented.");
+    }
+
+    register(_namespace: string, _key: string, _settingConfig: {
+        default: any;
+        hint: string;
+        scope: string;
+        name: string;
+        type: ObjectConstructor;
+        config: boolean;
+        choices?: Record<string, string>;
+        range?: { min: number; max: number; step: number };
+        onChange?: (value: any) => void;
+        requiresReload?: boolean
+    }): void {
+        throw new Error("Method not implemented.");
     }
 
 }

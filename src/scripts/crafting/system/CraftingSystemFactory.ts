@@ -1,6 +1,6 @@
 import {DefaultCraftingSystem, CraftingSystemJson, CraftingSystem} from "./CraftingSystem";
 import {CraftingSystemDetails} from "./CraftingSystemDetails";
-import {EntityFactory} from "../repository/EntityFactory";
+import {EntityFactory} from "../../repository/EntityFactory";
 
 class CraftingSystemFactory implements EntityFactory<CraftingSystemJson, CraftingSystem> {
 

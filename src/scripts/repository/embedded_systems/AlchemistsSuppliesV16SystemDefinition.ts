@@ -1,6 +1,6 @@
 import {EmbeddedCraftingSystemDefinition} from "./EmbeddedCraftingSystemDefinition";
-import {CraftingSystem, DefaultCraftingSystem} from "../../system/CraftingSystem";
-import {CraftingSystemDetails} from "../../system/CraftingSystemDetails";
+import {CraftingSystem, DefaultCraftingSystem} from "../../crafting/system/CraftingSystem";
+import {CraftingSystemDetails} from "../../crafting/system/CraftingSystemDetails";
 import {DefaultEssence, Essence} from "../../crafting/essence/Essence";
 import {Component, DefaultComponent} from "../../crafting/component/Component";
 import {FabricateItemData, LoadedFabricateItemData, PendingFabricateItemData} from "../../foundry/DocumentManager";

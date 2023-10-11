@@ -2,15 +2,15 @@ import {
     DefaultCraftingSystem,
     CraftingSystemJson,
     CraftingSystem
-} from "../system/CraftingSystem";
+} from "../crafting/system/CraftingSystem";
 import {IdentityFactory} from "../foundry/IdentityFactory";
 import {LocalizationService} from "../../applications/common/LocalizationService";
 import Properties from "../Properties";
 import {EntityValidationResult} from "./EntityValidator";
 import {EntityDataStore} from "../repository/EntityDataStore";
-import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
+import {CraftingSystemValidator} from "../crafting/system/CraftingSystemValidator";
 import {NotificationService} from "../foundry/NotificationService";
-import {CraftingSystemDetails} from "../system/CraftingSystemDetails";
+import {CraftingSystemDetails} from "../crafting/system/CraftingSystemDetails";
 
 /**
  * CraftingSystemImportData is the data format used when importing crafting systems into Fabricate.

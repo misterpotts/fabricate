@@ -5,7 +5,7 @@ import Properties from "../../Properties";
 import {V3SettingsModel} from "./V3SettingsModel";
 import {V2Component, V2CraftingSystem, V2Essence, V2Recipe, V2SettingsModel} from "./V2SettingsModel";
 import {EssenceJson} from "../../crafting/essence/Essence";
-import {CraftingSystemJson} from "../../system/CraftingSystem";
+import {CraftingSystemJson} from "../../crafting/system/CraftingSystem";
 import {ComponentJson} from "../../crafting/component/Component";
 import {SalvageJson} from "../../crafting/component/Salvage";
 import {RecipeJson} from "../../crafting/recipe/Recipe";

@@ -3,7 +3,7 @@ import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundr
 import Properties from "../../../scripts/Properties";
 import {Component, SalvageOptionConfig} from "../../../scripts/crafting/component/Component";
 import {LocalizationService} from "../../common/LocalizationService";
-import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {ComponentsStore} from "../../stores/ComponentsStore";
 

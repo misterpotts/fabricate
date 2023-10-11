@@ -78,6 +78,14 @@ const Properties = {
             key: "modelVersion",
             targetValue: SettingVersion.V3
         },
+        patreon: {
+            secretKey: {
+                key: "patreonSecretKey",
+                name: "Patron Secret Key",
+                hint: "The secret key used to determine which Fabricate pre-release features are enabled for you. This key is provided for each version with pre-release features in Patreon posts.",
+                default: ""
+            }
+        },
         defaultItemQuantityPropertyPath: "system.quantity"
     }
 };

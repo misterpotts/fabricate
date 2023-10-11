@@ -1,4 +1,4 @@
-import {CraftingSystemJson} from "../../system/CraftingSystem";
+import {CraftingSystemJson} from "../../crafting/system/CraftingSystem";
 import {ComponentJson} from "../../crafting/component/Component";
 import {RecipeJson} from "../../crafting/recipe/Recipe";
 import {EssenceJson} from "../../crafting/essence/Essence";

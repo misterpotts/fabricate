@@ -1,6 +1,6 @@
 import {describe, expect, test} from "@jest/globals";
-import {DefaultCraftingSystem} from "../src/scripts/system/CraftingSystem";
-import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
+import {DefaultCraftingSystem} from "../src/scripts/crafting/system/CraftingSystem";
+import {CraftingSystemDetails} from "../src/scripts/crafting/system/CraftingSystemDetails";
 
 describe('Create and configure', () => {
 

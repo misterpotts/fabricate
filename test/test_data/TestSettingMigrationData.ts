@@ -3,7 +3,7 @@ import {SettingVersion} from "../../src/scripts/repository/migration/SettingVers
 import {
     AlchemistsSuppliesV16SystemDefinition
 } from "../../src/scripts/repository/embedded_systems/AlchemistsSuppliesV16SystemDefinition";
-import {CraftingSystemJson} from "../../src/scripts/system/CraftingSystem";
+import {CraftingSystemJson} from "../../src/scripts/crafting/system/CraftingSystem";
 import {EssenceJson} from "../../src/scripts/crafting/essence/Essence";
 import {ComponentJson} from "../../src/scripts/crafting/component/Component";
 import {RecipeJson} from "../../src/scripts/crafting/recipe/Recipe";

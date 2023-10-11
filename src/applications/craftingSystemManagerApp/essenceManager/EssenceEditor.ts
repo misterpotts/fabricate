@@ -1,6 +1,6 @@
 import {LocalizationService} from "../../common/LocalizationService";
 import {Essence} from "../../../scripts/crafting/essence/Essence";
-import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
 import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";

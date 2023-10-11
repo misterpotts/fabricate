@@ -9,6 +9,8 @@ import {DefaultSettingsRegistry, SettingsRegistry} from "./repository/SettingsRe
 import {DefaultFabricateUserInterfaceAPIFactory} from "./api/FabricateUserInterfaceAPIFactory";
 import {DefaultUIProvider} from "./foundry/UIProvider";
 import {FabricateUserInterfaceAPI} from "./api/FabricateUserInterfaceAPI";
+import {DefaultFabricatePatreonAPIFactory} from "./patreon/PatreonAPIFactory";
+import {DefaultPatreonFeature} from "./patreon/PatreonFeature";
 
 let fabricateAPI: FabricateAPI;
 let fabricateUserInterfaceAPI: FabricateUserInterfaceAPI;
@@ -60,6 +62,18 @@ Hooks.once('ready', async () => {
 
     fabricateUserInterfaceAPI = fabricateUserInterfaceAPIFactory.make();
 
+    const patreonAPIFactory = new DefaultFabricatePatreonAPIFactory({
+        clientSettings: gameObject.settings,
+    });
+    const fabricatePatreonAPI = patreonAPIFactory.make([
+        new DefaultPatreonFeature({
+            id: "new-ui",
+            name: "New UI",
+            description: "Fabricate's new user interface, including the Actor sheet crafting application.",
+            targets: [ "7916c71e8ebaf1eaa2fd5a22cae69ea26cef0eeb473fafe731d4285455832f14" ]
+        }),
+    ]);
+
     // Sets the default value of game.fabricate to an empty object
     // @ts-ignore
     gameObject[Properties.module.id] = {};
@@ -69,8 +83,11 @@ Hooks.once('ready', async () => {
     // Makes the Fabricate User Interface API available globally as game.fabricate.ui
     // @ts-ignore
     gameObject[Properties.module.id].ui = fabricateUserInterfaceAPI;
+    // Makes the Patreon API available globally as game.fabricate.patreon
+    // @ts-ignore
+    gameObject[Properties.module.id].patreon = fabricatePatreonAPI;
 
-    Hooks.callAll(`${Properties.module.id}.ready`, fabricateAPI, fabricateUserInterfaceAPI);
+    Hooks.callAll(`${Properties.module.id}.ready`, fabricateAPI, fabricateUserInterfaceAPI, fabricatePatreonAPI);
 
 });
 

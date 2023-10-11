@@ -1,4 +1,4 @@
-import {CraftingSystem} from "../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../scripts/crafting/system/CraftingSystem";
 import {Readable, Subscriber, Updater, writable, Writable, get} from "svelte/store";
 import {Component} from "../../scripts/crafting/component/Component";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
