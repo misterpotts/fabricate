@@ -1,5 +1,5 @@
-import {DefaultCraftingSystem} from "../../src/scripts/system/CraftingSystem";
-import {CraftingSystemDetails} from "../../src/scripts/system/CraftingSystemDetails";
+import {DefaultCraftingSystem} from "../../src/scripts/crafting/system/CraftingSystem";
+import {CraftingSystemDetails} from "../../src/scripts/crafting/system/CraftingSystemDetails";
 
 const testCraftingSystemOne = new DefaultCraftingSystem({
     id: "c3d50462684c5d960f3fba9f953a93a1",

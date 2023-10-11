@@ -4,14 +4,14 @@ import {StubIdentityFactory} from "./stubs/foundry/StubIdentityFactory";
 import {StubLocalizationService} from "./stubs/foundry/StubLocalizationService";
 import {StubNotificationService} from "./stubs/foundry/StubNotificationService";
 import Properties from "../src/scripts/Properties";
-import {CraftingSystemDetails} from "../src/scripts/system/CraftingSystemDetails";
+import {CraftingSystemDetails} from "../src/scripts/crafting/system/CraftingSystemDetails";
 import {EntityDataStore, SerialisedEntityData} from "../src/scripts/repository/EntityDataStore";
-import {DefaultCraftingSystem, CraftingSystemJson} from "../src/scripts/system/CraftingSystem";
+import {DefaultCraftingSystem, CraftingSystemJson} from "../src/scripts/crafting/system/CraftingSystem";
 import {StubSettingManager} from "./stubs/foundry/StubSettingManager";
 import {testCraftingSystemOne, testCraftingSystemTwo} from "./test_data/TestCrafingSystem";
 import {StubEntityFactory} from "./stubs/StubEntityFactory";
 import {CraftingSystemCollectionManager} from "../src/scripts/repository/CollectionManager";
-import {CraftingSystemValidator} from "../src/scripts/system/CraftingSystemValidator";
+import {CraftingSystemValidator} from "../src/scripts/crafting/system/CraftingSystemValidator";
 
 
 const defaultSettingValue = (): SerialisedEntityData<CraftingSystemJson> => {

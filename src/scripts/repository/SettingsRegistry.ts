@@ -1,5 +1,6 @@
 import Properties from "../Properties";
 import {GameProvider} from "../foundry/GameProvider";
+import {PatreonFeature} from "../patreon/PatreonFeature";
 
 interface SettingsRegistry {
 
@@ -49,6 +50,23 @@ class DefaultSettingsRegistry implements SettingsRegistry {
 
     registerAll(): void {
         this._settingKeys.map(async settingKey => this._registerSetting(settingKey));
+
+        game.settings.register(Properties.module.id, Properties.settings.patreon.secretKey.key, {
+            name: Properties.settings.patreon.secretKey.name,
+            hint: Properties.settings.patreon.secretKey.hint,
+            scope: 'world',
+            config: true,
+            type: String,
+            default: Properties.settings.patreon.secretKey.default,
+            onChange: async () => {
+                // @ts-ignore
+                const enabledFeatures = await this._gameProvider.get().fabricate.patreon.listFeatures();
+                const enabledFeaturesMessage = `Fabricate | Enabled patreon pre-release features: ${enabledFeatures.enabled.map((feature: PatreonFeature) => feature.name).join(", ")}`;
+                console.log(enabledFeaturesMessage);
+                const disabledFeaturesMessage = `Fabricate | Disabled patreon pre-release features: ${enabledFeatures.disabled.map((feature: PatreonFeature) => feature.name).join(", ")}`;
+                console.log(disabledFeaturesMessage);
+            }
+        });
     }
 
     private _registerSetting(settingKey: string) {

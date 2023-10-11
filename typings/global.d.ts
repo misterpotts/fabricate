@@ -319,7 +319,7 @@ declare interface ClientSettings {
         hint: string;
         scope: string;
         name: string;
-        type: ObjectConstructor;
+        type: ObjectConstructor | StringConstructor | NumberConstructor | BooleanConstructor;
         config: boolean;
         choices?: Record<string, string>;
         range?: { min: number; max: number; step: number };

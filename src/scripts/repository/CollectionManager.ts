@@ -1,7 +1,7 @@
 import {Identifiable} from "../common/Identifiable";
 import {RecipeJson} from "../crafting/recipe/Recipe";
 import Properties from "../Properties";
-import {CraftingSystemJson} from "../system/CraftingSystem";
+import {CraftingSystemJson} from "../crafting/system/CraftingSystem";
 import {EssenceJson} from "../crafting/essence/Essence";
 import {ComponentJson} from "../crafting/component/Component";
 

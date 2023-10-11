@@ -18,7 +18,7 @@
     import {Result} from "../../../scripts/crafting/recipe/Result";
     import type {LocalizationService} from "../../common/LocalizationService";
     import type {Recipe} from "../../../scripts/crafting/recipe/Recipe";
-    import type {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+    import type {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
     import type {Essence} from "../../../scripts/crafting/essence/Essence";
     import type {Component} from "../../../scripts/crafting/component/Component";
     import {RecipeEditor} from "./RecipeEditor";

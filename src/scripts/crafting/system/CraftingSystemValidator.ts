@@ -1,4 +1,4 @@
-import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../api/EntityValidator";
+import {DefaultEntityValidationResult, EntityValidationResult, EntityValidator} from "../../api/EntityValidator";
 import {CraftingSystemJson, CraftingSystem} from "./CraftingSystem";
 
 class CraftingSystemValidator implements EntityValidator<CraftingSystemJson, CraftingSystem> {

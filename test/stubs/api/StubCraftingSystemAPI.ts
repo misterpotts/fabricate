@@ -1,5 +1,5 @@
 import {CraftingSystemAPI, CraftingSystemImportData} from "../../../src/scripts/api/CraftingSystemAPI";
-import {DefaultCraftingSystem} from "../../../src/scripts/system/CraftingSystem";
+import {DefaultCraftingSystem} from "../../../src/scripts/crafting/system/CraftingSystem";
 import {NotificationService} from "../../../src/scripts/foundry/NotificationService";
 
 class StubCraftingSystemAPI implements CraftingSystemAPI {

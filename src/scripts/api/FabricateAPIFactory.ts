@@ -6,10 +6,10 @@ import {DefaultLocalizationService} from "../../applications/common/Localization
 import {DefaultSettingMigrationAPI, SettingMigrationAPI} from "./SettingMigrationAPI";
 import {CraftingSystemAPI, DefaultCraftingSystemAPI} from "./CraftingSystemAPI";
 import {DefaultNotificationService} from "../foundry/NotificationService";
-import {CraftingSystemValidator} from "../system/CraftingSystemValidator";
+import {CraftingSystemValidator} from "../crafting/system/CraftingSystemValidator";
 import {EntityDataStore, SerialisedEntityData} from "../repository/EntityDataStore";
-import {CraftingSystemJson, CraftingSystem} from "../system/CraftingSystem";
-import {CraftingSystemFactory} from "../system/CraftingSystemFactory";
+import {CraftingSystemJson, CraftingSystem} from "../crafting/system/CraftingSystem";
+import {CraftingSystemFactory} from "../crafting/system/CraftingSystemFactory";
 import {
     ComponentCollectionManager,
     CraftingSystemCollectionManager,

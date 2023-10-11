@@ -2,7 +2,7 @@ import {DropEventParser} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
-import {CraftingSystem} from "../../../scripts/system/CraftingSystem";
+import {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
 import {Recipe} from "../../../scripts/crafting/recipe/Recipe";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {RecipesStore} from "../../stores/RecipesStore";

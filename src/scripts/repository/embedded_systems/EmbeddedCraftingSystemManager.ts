@@ -4,7 +4,7 @@ import {EntityDataStore} from "../EntityDataStore";
 import {Recipe, RecipeJson} from "../../crafting/recipe/Recipe";
 import {Component, ComponentJson} from "../../crafting/component/Component";
 import {Essence, EssenceJson} from "../../crafting/essence/Essence";
-import {CraftingSystemJson, CraftingSystem} from "../../system/CraftingSystem";
+import {CraftingSystemJson, CraftingSystem} from "../../crafting/system/CraftingSystem";
 import Properties from "../../Properties";
 
 interface EmbeddedCraftingSystemManager {

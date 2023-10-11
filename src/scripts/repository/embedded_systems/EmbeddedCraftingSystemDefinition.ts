@@ -1,4 +1,4 @@
-import {CraftingSystem} from "../../system/CraftingSystem";
+import {CraftingSystem} from "../../crafting/system/CraftingSystem";
 import {Recipe} from "../../crafting/recipe/Recipe";
 import {Component} from "../../crafting/component/Component";
 import {Essence} from "../../crafting/essence/Essence";
