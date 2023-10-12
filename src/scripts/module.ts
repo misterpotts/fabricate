@@ -1,6 +1,6 @@
 import Properties from "./Properties";
 import {DefaultGameProvider} from "./foundry/GameProvider";
-import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
+import {itemCreated, itemDeleted, itemUpdated} from "../applications/common/EventBus";
 import {DefaultFabricateAPIFactory, FabricateAPIFactory} from "./api/FabricateAPIFactory";
 import {FabricateAPI} from "./api/FabricateAPI";
 import {DefaultIdentityFactory} from "./foundry/IdentityFactory";
@@ -11,9 +11,11 @@ import {DefaultUIProvider} from "./foundry/UIProvider";
 import {FabricateUserInterfaceAPI} from "./api/FabricateUserInterfaceAPI";
 import {DefaultFabricatePatreonAPIFactory} from "./patreon/PatreonAPIFactory";
 import {DefaultPatreonFeature} from "./patreon/PatreonFeature";
+import {FabricatePatreonAPI} from "./patreon/FabricatePatreonAPI";
 
 let fabricateAPI: FabricateAPI;
 let fabricateUserInterfaceAPI: FabricateUserInterfaceAPI;
+let fabricatePatreonAPI: FabricatePatreonAPI;
 
 Hooks.once('ready', async () => {
 
@@ -65,7 +67,7 @@ Hooks.once('ready', async () => {
     const patreonAPIFactory = new DefaultFabricatePatreonAPIFactory({
         clientSettings: gameObject.settings,
     });
-    const fabricatePatreonAPI = patreonAPIFactory.make([
+    fabricatePatreonAPI = patreonAPIFactory.make([
         new DefaultPatreonFeature({
             id: "new-ui",
             name: "New UI",
@@ -112,14 +114,48 @@ Hooks.on("createItem", async (item: Item) => {
     itemCreated(item);
 });
 
+Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
+
+    const newUiFeatureEnabled = await fabricatePatreonAPI.isEnabled("new-ui");
+    if (!newUiFeatureEnabled) {
+        return;
+    }
+
+    if (!actorSheet.actor) {
+        return;
+    }
+
+    const header = html.find(".window-header");
+    if (!header) {
+        throw new Error("Fabricate was unable to render header buttons for the Actor Sheet application");
+    }
+    let title = header.children(".window-title");
+    const headerButton = {
+        label: "Crafting",
+        tooltip: "Fabricate Crafting",
+        class: "fab-actor-sheet-header-button",
+        icon: "fa-solid fa-screwdriver-wrench",
+        onclick: async () => {
+            console.log("Fabricate | Crafting button clicked")
+        }
+    };
+    const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
+    button.on("click", () => headerButton.onclick());
+    button.insertAfter(title);
+
+});
+
 Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
+
     if (!itemSheet.actor) {
         return;
     }
+
     const document = itemSheet.document;
     if (!Properties.module.documents.supportedTypes.includes(document.documentName)) {
         return;
     }
+
     const sourceItemUuid = document.getFlag("core", "sourceId");
     if (!sourceItemUuid) {
         return;
