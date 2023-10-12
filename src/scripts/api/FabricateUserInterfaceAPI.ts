@@ -3,6 +3,7 @@ import {ComponentSalvageAppCatalog} from "../../applications/componentSalvageApp
 import {RecipeCraftingAppCatalog} from "../../applications/recipeCraftingApp/RecipeCraftingAppCatalog";
 import {FabricateAPI} from "./FabricateAPI";
 import {GameProvider} from "../foundry/GameProvider";
+import {FabricatePatreonAPI} from "../patreon/FabricatePatreonAPI";
 
 /**
  * Represents an API for managing the Fabricate user interface.
@@ -34,6 +35,8 @@ interface FabricateUserInterfaceAPI {
      */
     renderRecipeCraftingApp(actorId: string, recipeId: string): Promise<void>;
 
+    renderActorCraftingApp(args: { targetActorId?: string; sourceActorId?: string; selectedRecipeId?: string; selectedSalvageId?: string; }): Promise<void>;
+
 }
 
 export { FabricateUserInterfaceAPI };
@@ -42,6 +45,7 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
 
     private readonly fabricateAPI: FabricateAPI;
     private readonly gameProvider: GameProvider;
+    private readonly fabricatePatreonAPI: FabricatePatreonAPI;
     private readonly recipeCraftingAppCatalog: RecipeCraftingAppCatalog;
     private readonly componentSalvageAppCatalog: ComponentSalvageAppCatalog;
     private readonly craftingSystemManagerAppFactory: CraftingSystemManagerAppFactory
@@ -49,18 +53,21 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
     constructor({
         fabricateAPI,
         gameProvider,
+        fabricatePatreonAPI,
         recipeCraftingAppCatalog,
         componentSalvageAppCatalog,
         craftingSystemManagerAppFactory,
     }: {
         fabricateAPI: FabricateAPI;
         gameProvider: GameProvider;
+        fabricatePatreonAPI: FabricatePatreonAPI;
         recipeCraftingAppCatalog: RecipeCraftingAppCatalog;
         componentSalvageAppCatalog: ComponentSalvageAppCatalog;
         craftingSystemManagerAppFactory: CraftingSystemManagerAppFactory;
     }) {
         this.fabricateAPI = fabricateAPI;
         this.gameProvider = gameProvider;
+        this.fabricatePatreonAPI = fabricatePatreonAPI;
         this.recipeCraftingAppCatalog = recipeCraftingAppCatalog;
         this.componentSalvageAppCatalog = componentSalvageAppCatalog;
         this.craftingSystemManagerAppFactory = craftingSystemManagerAppFactory;
@@ -85,6 +92,23 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
         await recipe.load();
         const application = await this.recipeCraftingAppCatalog.load(recipe, actor);
         application.render(true);
+    }
+
+    async renderActorCraftingApp({
+        targetActorId,
+        sourceActorId,
+        selectedRecipeId,
+        selectedSalvageId,
+    }: {
+        targetActorId?: string;
+        sourceActorId?: string;
+        selectedRecipeId?: string;
+        selectedSalvageId?: string;
+    }): Promise<void> {
+        if (!this.fabricatePatreonAPI.isEnabled("new-ui")) {
+            return;
+        }
+        console.log("renderActorCraftingApp", { targetActorId, sourceActorId, selectedRecipeId, selectedSalvageId });
     }
 
 }

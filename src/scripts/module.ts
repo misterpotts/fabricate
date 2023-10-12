@@ -57,13 +57,6 @@ Hooks.once('ready', async () => {
 
     fabricateAPI = fabricateAPIFactory.make();
 
-    const fabricateUserInterfaceAPIFactory = new DefaultFabricateUserInterfaceAPIFactory({
-        fabricateAPI,
-        gameProvider,
-    });
-
-    fabricateUserInterfaceAPI = fabricateUserInterfaceAPIFactory.make();
-
     const patreonAPIFactory = new DefaultFabricatePatreonAPIFactory({
         clientSettings: gameObject.settings,
     });
@@ -75,6 +68,14 @@ Hooks.once('ready', async () => {
             targets: [ "7916c71e8ebaf1eaa2fd5a22cae69ea26cef0eeb473fafe731d4285455832f14" ]
         }),
     ]);
+
+    const fabricateUserInterfaceAPIFactory = new DefaultFabricateUserInterfaceAPIFactory({
+        fabricateAPI,
+        gameProvider,
+        fabricatePatreonAPI,
+    });
+
+    fabricateUserInterfaceAPI = fabricateUserInterfaceAPIFactory.make();
 
     // Sets the default value of game.fabricate to an empty object
     // @ts-ignore
@@ -136,7 +137,9 @@ Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
         class: "fab-actor-sheet-header-button",
         icon: "fa-solid fa-screwdriver-wrench",
         onclick: async () => {
-            console.log("Fabricate | Crafting button clicked")
+            await fabricateUserInterfaceAPI.renderActorCraftingApp({
+                targetActorId: actorSheet.actor.id
+            });
         }
     };
     const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
@@ -209,7 +212,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
     let title = header.children(".window-title");
     additionalHeaderButtons.forEach(headerButton => {
         const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
-        button.click(() => headerButton.onclick());
+        button.on("click", () => headerButton.onclick());
         button.insertAfter(title);
     });
 });

@@ -7,6 +7,7 @@ import {DefaultRecipeCraftingAppFactory} from "../../applications/recipeCrafting
 import {FabricateAPI} from "./FabricateAPI";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
 import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
+import {FabricatePatreonAPI} from "../patreon/FabricatePatreonAPI";
 
 interface FabricateUserInterfaceAPIFactory {
 
@@ -19,16 +20,20 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
 
     private readonly fabricateAPI: FabricateAPI;
     private readonly gameProvider: GameProvider;
+    private readonly fabricatePatreonAPI: FabricatePatreonAPI;
 
     constructor({
         fabricateAPI,
         gameProvider = new DefaultGameProvider(),
+        fabricatePatreonAPI
     }: {
         fabricateAPI: FabricateAPI;
         gameProvider?: GameProvider;
+        fabricatePatreonAPI: FabricatePatreonAPI;
     }) {
         this.fabricateAPI = fabricateAPI;
         this.gameProvider = gameProvider;
+        this.fabricatePatreonAPI = fabricatePatreonAPI;
     }
 
     make(): FabricateUserInterfaceAPI {
@@ -62,6 +67,7 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
             recipeCraftingAppCatalog,
             fabricateAPI: this.fabricateAPI,
             gameProvider: this.gameProvider,
+            fabricatePatreonAPI: this.fabricatePatreonAPI,
         });
     }
 
