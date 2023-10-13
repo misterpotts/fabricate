@@ -144,6 +144,12 @@ interface FabricateAPI {
      */
     export(craftingSystemId: string): Promise<FabricateExportModel>;
 
+    /**
+     * Downloads a copy of all Fabricate data as a JSON file. This function is used for debugging and troubleshooting.
+     * If you want to export data from Fabricate for use in another Foundry VTT world, use {@link FabricateAPI#export}
+     */
+    downloadData(): void;
+
 }
 ```
 
