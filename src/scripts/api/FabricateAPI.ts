@@ -211,6 +211,12 @@ interface FabricateAPI {
      */
     export(craftingSystemId: string): Promise<FabricateExportModel>;
 
+    /**
+     * Downloads a copy of all Fabricate data as a JSON file. This function is used for debugging and troubleshooting.
+     * If you want to export data from Fabricate for use in another Foundry VTT world, use {@link FabricateAPI#export}
+     */
+    downloadData(): void;
+
 }
 
 export { FabricateAPI }
@@ -257,6 +263,18 @@ class DefaultFabricateAPI implements FabricateAPI {
         this.localizationService = localizationService;
         this.notificationService = notificationService;
         this.settingMigrationAPI = settingMigrationAPI;
+    }
+
+    downloadData(): void {
+        const allFabricateSettingValues = Array.from(game.settings.storage.get("world").values())
+            .filter((setting: any) => setting.key.search(new RegExp("fabricate", "i")) >= 0);
+        const fileContents = JSON.stringify(allFabricateSettingValues, null, 2);
+        const dateTime = new Date();
+        const postfix = dateTime.toISOString()
+            .replace(/:\s*/g, "-")
+            .replace(".", "-");
+        const fileName = `fabricate-data-extract-${postfix}.json`;
+        saveDataToFile(fileContents, "application/json", fileName);
     }
 
     get documentManager(): DocumentManager {
@@ -447,7 +465,6 @@ class DefaultFabricateAPI implements FabricateAPI {
     }
 
     async import(importData: FabricateExportModel): Promise<CraftingSystemData> {
-
 
         importData = this.upgradeV1ImportData(importData);
         await this.validateImportData(importData);
