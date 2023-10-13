@@ -1,6 +1,6 @@
 import Properties from "./Properties";
 import {DefaultGameProvider} from "./foundry/GameProvider";
-import {itemUpdated, itemDeleted, itemCreated} from "../applications/common/EventBus";
+import {itemCreated, itemDeleted, itemUpdated} from "../applications/common/EventBus";
 import {DefaultFabricateAPIFactory, FabricateAPIFactory} from "./api/FabricateAPIFactory";
 import {FabricateAPI} from "./api/FabricateAPI";
 import {DefaultIdentityFactory} from "./foundry/IdentityFactory";
@@ -11,9 +11,11 @@ import {DefaultUIProvider} from "./foundry/UIProvider";
 import {FabricateUserInterfaceAPI} from "./api/FabricateUserInterfaceAPI";
 import {DefaultFabricatePatreonAPIFactory} from "./patreon/PatreonAPIFactory";
 import {DefaultPatreonFeature} from "./patreon/PatreonFeature";
+import {FabricatePatreonAPI} from "./patreon/FabricatePatreonAPI";
 
 let fabricateAPI: FabricateAPI;
 let fabricateUserInterfaceAPI: FabricateUserInterfaceAPI;
+let fabricatePatreonAPI: FabricatePatreonAPI;
 
 Hooks.once('ready', async () => {
 
@@ -55,24 +57,25 @@ Hooks.once('ready', async () => {
 
     fabricateAPI = fabricateAPIFactory.make();
 
-    const fabricateUserInterfaceAPIFactory = new DefaultFabricateUserInterfaceAPIFactory({
-        fabricateAPI,
-        gameProvider,
-    });
-
-    fabricateUserInterfaceAPI = fabricateUserInterfaceAPIFactory.make();
-
     const patreonAPIFactory = new DefaultFabricatePatreonAPIFactory({
         clientSettings: gameObject.settings,
     });
-    const fabricatePatreonAPI = patreonAPIFactory.make([
+    fabricatePatreonAPI = patreonAPIFactory.make([
         new DefaultPatreonFeature({
             id: "new-ui",
             name: "New UI",
             description: "Fabricate's new user interface, including the Actor sheet crafting application.",
-            targets: [ "7916c71e8ebaf1eaa2fd5a22cae69ea26cef0eeb473fafe731d4285455832f14" ]
+            targets: [ "88a8dcd4bf1ff9207228bcbf47e8f2a2606847cc4cf83d9e5d9016a4f7c251f0" ]
         }),
     ]);
+
+    const fabricateUserInterfaceAPIFactory = new DefaultFabricateUserInterfaceAPIFactory({
+        fabricateAPI,
+        gameProvider,
+        fabricatePatreonAPI,
+    });
+
+    fabricateUserInterfaceAPI = fabricateUserInterfaceAPIFactory.make();
 
     // Sets the default value of game.fabricate to an empty object
     // @ts-ignore
@@ -112,14 +115,50 @@ Hooks.on("createItem", async (item: Item) => {
     itemCreated(item);
 });
 
+Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
+
+    const newUiFeatureEnabled = await fabricatePatreonAPI.isEnabled("new-ui");
+    if (!newUiFeatureEnabled) {
+        return;
+    }
+
+    if (!actorSheet.actor) {
+        return;
+    }
+
+    const header = html.find(".window-header");
+    if (!header) {
+        throw new Error("Fabricate was unable to render header buttons for the Actor Sheet application");
+    }
+    let title = header.children(".window-title");
+    const headerButton = {
+        label: "Crafting",
+        tooltip: "Fabricate Crafting",
+        class: "fab-actor-sheet-header-button",
+        icon: "fa-solid fa-screwdriver-wrench",
+        onclick: async () => {
+            await fabricateUserInterfaceAPI.renderActorCraftingApp({
+                targetActorId: actorSheet.actor.id
+            });
+        }
+    };
+    const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
+    button.on("click", headerButton.onclick);
+    button.insertAfter(title);
+
+});
+
 Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
+
     if (!itemSheet.actor) {
         return;
     }
+
     const document = itemSheet.document;
     if (!Properties.module.documents.supportedTypes.includes(document.documentName)) {
         return;
     }
+
     const sourceItemUuid = document.getFlag("core", "sourceId");
     if (!sourceItemUuid) {
         return;
@@ -173,7 +212,7 @@ Hooks.on("renderItemSheet", async (itemSheet: ItemSheet, html: any) => {
     let title = header.children(".window-title");
     additionalHeaderButtons.forEach(headerButton => {
         const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
-        button.click(() => headerButton.onclick());
+        button.on("click", () => headerButton.onclick());
         button.insertAfter(title);
     });
 });

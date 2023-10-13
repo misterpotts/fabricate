@@ -136,6 +136,12 @@ declare interface Game {
 
     i18n: FoundryI18NLocalization;
 
+    fabricate: {
+        patreon: any;
+        api: any;
+        ui: any;
+    }
+
 }
 
 declare const game: Game;
@@ -408,6 +414,18 @@ declare interface ItemSheet {
     document: Document;
 
     actor?: Actor;
+
+}
+
+declare interface ActorSheet {
+
+    actor: Actor;
+
+    document: Document;
+
+    rendered: boolean;
+
+    position: { width: number; height: number; top: number; left: number; scale: number; zIndex: number };
 
 }
 

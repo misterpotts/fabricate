@@ -7,6 +7,8 @@ import {DefaultRecipeCraftingAppFactory} from "../../applications/recipeCrafting
 import {FabricateAPI} from "./FabricateAPI";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
 import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
+import {FabricatePatreonAPI} from "../patreon/FabricatePatreonAPI";
+import {DefaultActorCraftingAppFactory} from "../../applications/actorCraftingApp/ActorCraftingAppFactory";
 
 interface FabricateUserInterfaceAPIFactory {
 
@@ -19,16 +21,20 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
 
     private readonly fabricateAPI: FabricateAPI;
     private readonly gameProvider: GameProvider;
+    private readonly fabricatePatreonAPI: FabricatePatreonAPI;
 
     constructor({
         fabricateAPI,
         gameProvider = new DefaultGameProvider(),
+        fabricatePatreonAPI
     }: {
         fabricateAPI: FabricateAPI;
         gameProvider?: GameProvider;
+        fabricatePatreonAPI: FabricatePatreonAPI;
     }) {
         this.fabricateAPI = fabricateAPI;
         this.gameProvider = gameProvider;
+        this.fabricatePatreonAPI = fabricatePatreonAPI;
     }
 
     make(): FabricateUserInterfaceAPI {
@@ -36,6 +42,11 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
         const localizationService = new DefaultLocalizationService(this.gameProvider);
 
         const craftingSystemManagerAppFactory = new CraftingSystemManagerAppFactory({
+            fabricateAPI: this.fabricateAPI,
+            localizationService
+        });
+
+        const actorCraftingAppFactory = new DefaultActorCraftingAppFactory({
             fabricateAPI: this.fabricateAPI,
             localizationService
         });
@@ -57,11 +68,13 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
         });
 
         return new DefaultFabricateUserInterfaceAPI({
-            craftingSystemManagerAppFactory,
-            componentSalvageAppCatalog,
+            actorCraftingAppFactory,
             recipeCraftingAppCatalog,
+            componentSalvageAppCatalog,
+            craftingSystemManagerAppFactory,
             fabricateAPI: this.fabricateAPI,
             gameProvider: this.gameProvider,
+            fabricatePatreonAPI: this.fabricatePatreonAPI,
         });
     }
 
