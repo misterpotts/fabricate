@@ -135,7 +135,7 @@ Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
         label: "Crafting",
         tooltip: "Fabricate Crafting",
         class: "fab-actor-sheet-header-button",
-        icon: "fa-solid fa-screwdriver-wrench",
+        icon: "fas fabricate-icon-logo",
         onclick: async () => {
             await fabricateUserInterfaceAPI.renderActorCraftingApp({
                 targetActorId: actorSheet.actor.id
