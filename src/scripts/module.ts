@@ -143,7 +143,7 @@ Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
         }
     };
     const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
-    button.on("click", () => headerButton.onclick());
+    button.on("click", headerButton.onclick);
     button.insertAfter(title);
 
 });

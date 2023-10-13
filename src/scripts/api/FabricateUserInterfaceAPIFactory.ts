@@ -8,6 +8,7 @@ import {FabricateAPI} from "./FabricateAPI";
 import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
 import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 import {FabricatePatreonAPI} from "../patreon/FabricatePatreonAPI";
+import {DefaultActorCraftingAppFactory} from "../../applications/actorCraftingApp/ActorCraftingAppFactory";
 
 interface FabricateUserInterfaceAPIFactory {
 
@@ -45,6 +46,11 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
             localizationService
         });
 
+        const actorCraftingAppFactory = new DefaultActorCraftingAppFactory({
+            fabricateAPI: this.fabricateAPI,
+            localizationService
+        });
+
         const componentSalvageAppCatalog = new DefaultComponentSalvageAppCatalog({
             componentSalvageAppFactory: new DefaultComponentSalvageAppFactory({
                 localizationService,
@@ -62,9 +68,10 @@ class DefaultFabricateUserInterfaceAPIFactory implements FabricateUserInterfaceA
         });
 
         return new DefaultFabricateUserInterfaceAPI({
-            craftingSystemManagerAppFactory,
-            componentSalvageAppCatalog,
+            actorCraftingAppFactory,
             recipeCraftingAppCatalog,
+            componentSalvageAppCatalog,
+            craftingSystemManagerAppFactory,
             fabricateAPI: this.fabricateAPI,
             gameProvider: this.gameProvider,
             fabricatePatreonAPI: this.fabricatePatreonAPI,

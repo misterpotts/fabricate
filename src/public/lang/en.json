@@ -192,6 +192,9 @@
         "unrecognisedComponent": "The Crafting Component {componentName} is not a part of this crafting system. "
       }
     },
+    "ActorCraftingApp": {
+      "title": "Fabricate | Crafting"
+    },
     "ComponentSalvageApp": {
       "title": "Fabricate | Component Salvage | {actorName}",
       "header": {

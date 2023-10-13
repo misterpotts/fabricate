@@ -50,6 +50,9 @@ const Properties = {
         apps: {
             craftingSystemManager: {
                 id: "fabricate-crafting-system-manager"
+            },
+            actorCraftingApp: {
+                id: "fabricate-actor-crafting-app"
             }
         }
     },

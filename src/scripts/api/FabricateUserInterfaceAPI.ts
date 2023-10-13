@@ -4,6 +4,8 @@ import {RecipeCraftingAppCatalog} from "../../applications/recipeCraftingApp/Rec
 import {FabricateAPI} from "./FabricateAPI";
 import {GameProvider} from "../foundry/GameProvider";
 import {FabricatePatreonAPI} from "../patreon/FabricatePatreonAPI";
+import {ActorCraftingAppFactory} from "../../applications/actorCraftingApp/ActorCraftingAppFactory";
+import {ActorCraftingAppViewType} from "../../applications/actorCraftingApp/ActorCraftingAppViewType";
 
 /**
  * Represents an API for managing the Fabricate user interface.
@@ -35,7 +37,20 @@ interface FabricateUserInterfaceAPI {
      */
     renderRecipeCraftingApp(actorId: string, recipeId: string): Promise<void>;
 
-    renderActorCraftingApp(args: { targetActorId?: string; sourceActorId?: string; selectedRecipeId?: string; selectedSalvageId?: string; }): Promise<void>;
+    /**
+     * Renders the actor crafting application for the specified actor.
+     *
+     * @param args - The arguments for rendering the application.
+     * @param args.targetActorId - The ID of the actor to add any components to when crafting recipes or salvaging
+     *  components.
+     * @param args.sourceActorId - The ID of the actor to remove any components from when crafting recipes or salvaging
+     *  components. If not specified, the target actor will be used.
+     * @param args.selected - The selected recipe or component when opening the app, if any.
+     * @param args.selected.type - The type of the selected entity ("recipe" or "component").
+     * @param args.selected.id - The ID of the selected entity.
+     * @returns A Promise that resolves when the application is rendered.
+     */
+    renderActorCraftingApp(args: { targetActorId: string; sourceActorId?: string, selected?: { type: "recipe" | "component", id: string } }): Promise<void>;
 
 }
 
@@ -46,6 +61,7 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
     private readonly fabricateAPI: FabricateAPI;
     private readonly gameProvider: GameProvider;
     private readonly fabricatePatreonAPI: FabricatePatreonAPI;
+    private readonly actorCraftingAppFactory: ActorCraftingAppFactory;
     private readonly recipeCraftingAppCatalog: RecipeCraftingAppCatalog;
     private readonly componentSalvageAppCatalog: ComponentSalvageAppCatalog;
     private readonly craftingSystemManagerAppFactory: CraftingSystemManagerAppFactory
@@ -54,6 +70,7 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
         fabricateAPI,
         gameProvider,
         fabricatePatreonAPI,
+        actorCraftingAppFactory,
         recipeCraftingAppCatalog,
         componentSalvageAppCatalog,
         craftingSystemManagerAppFactory,
@@ -61,6 +78,7 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
         fabricateAPI: FabricateAPI;
         gameProvider: GameProvider;
         fabricatePatreonAPI: FabricatePatreonAPI;
+        actorCraftingAppFactory: ActorCraftingAppFactory;
         recipeCraftingAppCatalog: RecipeCraftingAppCatalog;
         componentSalvageAppCatalog: ComponentSalvageAppCatalog;
         craftingSystemManagerAppFactory: CraftingSystemManagerAppFactory;
@@ -68,6 +86,7 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
         this.fabricateAPI = fabricateAPI;
         this.gameProvider = gameProvider;
         this.fabricatePatreonAPI = fabricatePatreonAPI;
+        this.actorCraftingAppFactory = actorCraftingAppFactory;
         this.recipeCraftingAppCatalog = recipeCraftingAppCatalog;
         this.componentSalvageAppCatalog = componentSalvageAppCatalog;
         this.craftingSystemManagerAppFactory = craftingSystemManagerAppFactory;
@@ -78,12 +97,12 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
         const component = await this.fabricateAPI.components.getById(componentId);
         await component.load();
         const application = await this.componentSalvageAppCatalog.load(actor, component);
-        application.render(true);
+        await application.render(true);
     }
 
     async renderCraftingSystemManagerApp(): Promise<void> {
         const application = this.craftingSystemManagerAppFactory.make();
-        application.render(true);
+        await application.render(true);
     }
 
     async renderRecipeCraftingApp(actorId: string, recipeId: string): Promise<void> {
@@ -91,24 +110,54 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
         const recipe = await this.fabricateAPI.recipes.getById(recipeId);
         await recipe.load();
         const application = await this.recipeCraftingAppCatalog.load(recipe, actor);
-        application.render(true);
+        await application.render(true);
     }
 
     async renderActorCraftingApp({
         targetActorId,
-        sourceActorId,
-        selectedRecipeId,
-        selectedSalvageId,
+        sourceActorId = targetActorId,
+        selected
     }: {
-        targetActorId?: string;
+        targetActorId: string;
         sourceActorId?: string;
-        selectedRecipeId?: string;
-        selectedSalvageId?: string;
+        selected?: {
+            type: "recipe" | "component";
+            id: string;
+        }
     }): Promise<void> {
-        if (!this.fabricatePatreonAPI.isEnabled("new-ui")) {
+        const featureEnabled = await this.fabricatePatreonAPI.isEnabled("new-ui");
+        if (!featureEnabled) {
             return;
         }
-        console.log("renderActorCraftingApp", { targetActorId, sourceActorId, selectedRecipeId, selectedSalvageId });
+        if (!selected) {
+            const application = await this.actorCraftingAppFactory.make({
+                targetActorId,
+                sourceActorId
+            });
+            await application.render(true);
+            return;
+        }
+        if (selected.type === "recipe") {
+            const application = await this.actorCraftingAppFactory.make({
+                targetActorId,
+                sourceActorId,
+                view: ActorCraftingAppViewType.CRAFTING,
+                selectedRecipeId: selected.id
+            });
+            await application.render(true);
+            return;
+        }
+        if (selected.type === "component") {
+            const application = await this.actorCraftingAppFactory.make({
+                targetActorId,
+                sourceActorId,
+                view: ActorCraftingAppViewType.SALVAGING,
+                selectedComponentId: selected.id
+            });
+            await application.render(true);
+            return;
+        }
+        throw new Error(`Unknown selected entity type: ${selected.type}`);
     }
 
 }
