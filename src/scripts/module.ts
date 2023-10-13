@@ -65,7 +65,7 @@ Hooks.once('ready', async () => {
             id: "new-ui",
             name: "New UI",
             description: "Fabricate's new user interface, including the Actor sheet crafting application.",
-            targets: [ "7916c71e8ebaf1eaa2fd5a22cae69ea26cef0eeb473fafe731d4285455832f14" ]
+            targets: [ "88a8dcd4bf1ff9207228bcbf47e8f2a2606847cc4cf83d9e5d9016a4f7c251f0" ]
         }),
     ]);
 
