@@ -1,21 +1,30 @@
 <!-- ActorCraftingApp.svelte -->
 <script lang="ts">
 
-import {AppShell} from "@skeletonlabs/skeleton";
+    import {AppBar, AppRail, AppRailAnchor, AppRailTile, AppShell} from "@skeletonlabs/skeleton";
+
+    let view: string = "recipes";
 
 </script>
 
-<AppShell slotSidebarLeft="bg-surface-800 w-56 p-4">
-
-<svelte:fragment slot="sidebarLeft">
-    <!-- Insert the list: -->
-    <nav class="list-nav">
-        <ul>
-            <li>Home</li>
-            <li>About</li>
-        </ul>
-    </nav>
-    <!-- --- -->
-</svelte:fragment>
-
+<AppShell>
+    <svelte:fragment slot="sidebarLeft">
+        <AppRail background="bg-surface-600">
+            <AppRailTile bind:group={view} name="recipes" value={"recipes"} title="recipes">
+                <svelte:fragment slot="lead"><i class="fa-solid fa-book"></i></svelte:fragment>
+                <span>Recipes</span>
+            </AppRailTile>
+            <AppRailTile bind:group={view} name="components" value={"components"} title="components">
+                <svelte:fragment slot="lead"><i class="fa-solid fa-toolbox"></i></svelte:fragment>
+                <span>Components</span>
+            </AppRailTile>
+        </AppRail>
+    </svelte:fragment>
+    <slot>
+        <div class="bg-surface grid-cols-5">
+            <div>Hello from the crafting app</div>
+        </div>
+    </slot>
 </AppShell>
+
+

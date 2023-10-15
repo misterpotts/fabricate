@@ -87,17 +87,16 @@ export const fabricateSkeletonTheme: CustomThemeConfig = {
         "--color-error-700": "128 47 52", // #802f34
         "--color-error-800": "103 38 41", // #672629
         "--color-error-900": "84 31 34", // #541f22
-        // surface | #504e54
-        "--color-surface-50": "229 228 229", // #e5e4e5
-        "--color-surface-100": "220 220 221", // #dcdcdd
-        "--color-surface-200": "211 211 212", // #d3d3d4
-        "--color-surface-300": "185 184 187", // #b9b8bb
-        "--color-surface-400": "133 131 135", // #858387
-        "--color-surface-500": "80 78 84", // #504e54
-        "--color-surface-600": "72 70 76", // #48464c
-        "--color-surface-700": "60 59 63", // #3c3b3f
-        "--color-surface-800": "48 47 50", // #302f32
-        "--color-surface-900": "39 38 41", // #272629
-
+        // surface | #2c2a2e
+        "--color-surface-50": "223 223 224", // #dfdfe0
+        "--color-surface-100": "213 212 213", // #d5d4d5
+        "--color-surface-200": "202 202 203", // #cacacb
+        "--color-surface-300": "171 170 171", // #abaaab
+        "--color-surface-400": "107 106 109", // #6b6a6d
+        "--color-surface-500": "44 42 46", // #2c2a2e
+        "--color-surface-600": "40 38 41", // #282629
+        "--color-surface-700": "33 32 35", // #212023
+        "--color-surface-800": "26 25 28", // #1a191c
+        "--color-surface-900": "22 21 23", // #161517
     }
 }
