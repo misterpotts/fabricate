@@ -1,116 +1,27 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss"
+import { join } from "path";
+import { skeleton } from "@skeletonlabs/tw-plugin";
+import { fabricateSkeletonTheme } from "./fabricate-skeleton-theme"
 
 export default {
-    content: ["./src/**/*.{svelte,ts}"],
+    content: [
+        "./src/**/*.{svelte,ts}",
+        join(require.resolve(
+                "@skeletonlabs/skeleton"),
+            "../**/*.{html,js,svelte,ts}"
+        )
+    ],
     theme: {
         extend: {},
-        fontFamily: {
-            sans: [
-                "Inter",
-                "ui-sans-serif",
-                "system-ui",
-                "-apple-system",
-                "BlinkMacSystemFont",
-                "`Segoe UI`",
-                "Roboto",
-                "'Helvetica Neue'",
-                "Arial",
-                "'Noto Sans'",
-                "sans-serif",
-                "'Apple Color Emoji'",
-                "'Segoe UI Emoji'",
-                "'Segoe UI Symbol'",
-                "'Noto Color Emoji",
-            ]
-        },
-        colors: {
-            primary: {
-                50: "#f5efea",
-                100: "#f2e9e4",
-                200: "#eee4dd",
-                300: "#e4d3c8",
-                400: "#d0b39f",
-                500: "#bc9276",
-                600: "#a9836a",
-                700: "#8d6e59",
-                800: "#715847",
-                900: "#5c483a",
-            },
-            secondary: {
-                50: "#f3f0e9",
-                100: "#eeece2",
-                200: "#eae7da",
-                300: "#ded8c4",
-                400: "#c5bb98",
-                500: "#ac9e6c",
-                600: "#9b8e61",
-                700: "#817751",
-                800: "#675f41",
-                900: "#544d35",
-            },
-            tertiary: {
-                50: "#eee8fa",
-                100: "#e9e1f9",
-                200: "#e3d9f7",
-                300: "#d2c3f2",
-                400: "#b195e9",
-                500: "#8f68df",
-                600: "#815ec9",
-                700: "#6b4ea7",
-                800: "#563e86",
-                900: "#46336d",
-            },
-            success: {
-                50:"#ebf6e8",
-                100:"#e5f3e1",
-                200:"#def1d9",
-                300:"#cbe8c2",
-                400:"#a3d695",
-                500:"#7cc567",
-                600:"#70b15d",
-                700:"#5d944d",
-                800:"#4a763e",
-                900:"#3d6132",
-            },
-            warning: {
-                50:"#fcf6e4",
-                100:"#fbf3db",
-                200:"#faf0d2",
-                300:"#f7e7b7",
-                400:"#f2d681",
-                500:"#ecc44b",
-                600:"#d4b044",
-                700:"#b19338",
-                800:"#8e762d",
-                900:"#746025",
-            },
-            error: {
-                50:"#f2e2e3",
-                100:"#eed9da",
-                200:"#eacfd1",
-                300:"#ddb2b5",
-                400:"#c4797d",
-                500:"#ab3f45",
-                600:"#9a393e",
-                700:"#802f34",
-                800:"#672629",
-                900:"#541f22",
-            },
-            surface: {
-                50:"#e5e4e5",
-                100:"#dcdcdd",
-                200:"#d3d3d4",
-                300:"#b9b8bb",
-                400:"#858387",
-                500:"#504e54",
-                600:"#48464c",
-                700:"#3c3b3f",
-                800:"#302f32",
-                900:"#272629",
-            }
-        },
     },
-    plugins: [],
+    plugins: [
+        skeleton({
+            base: false,
+            themes: {
+                custom: [ fabricateSkeletonTheme ]
+            }
+        })
+    ],
     corePlugins: {
         preflight: false,
     }
