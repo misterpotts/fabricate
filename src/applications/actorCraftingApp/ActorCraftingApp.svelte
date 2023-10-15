@@ -4,5 +4,5 @@
 </script>
 
 <div>
-    <p>Hello from the actor crafting app!</p>
+    <p class="p-4 text-primary-50">Hello from the actor crafting app!</p>
 </div>

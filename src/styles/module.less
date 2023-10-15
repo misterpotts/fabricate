@@ -1293,26 +1293,18 @@ END COMMON STRUCTURAL STYLES
 */
 
 @font-face {
-  font-family: 'fabricate-regular';
+  font-family: "fabricate-regular";
   src:  url("/assets/fonts/fabricate-regular.eot?uhkbys");
   src:  url("/assets/fonts/fabricate-regular.eot?uhkbys#iefix") format("embedded-opentype"),
   url("/assets/fonts/fabricate-regular.ttf?uhkbys") format("truetype"),
   url("/assets/fonts/fabricate-regular.woff?uhkbys") format("woff"),
   url("/assets/fonts/fabricate-regular.svg?uhkbys#fabricate-regular") format("svg");
-  font-weight: normal;
-  font-style: normal;
-  font-display: block;
 }
 
-[class^="fabricate-icon-"], [class*=" fabricate-icon-"] {
+[class^="fabricate-icon-"], [class*="fabricate-icon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: "fabricate-regular" !important;
-  speak: never;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
+  speak: none;
 
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
@@ -1321,10 +1313,27 @@ END COMMON STRUCTURAL STYLES
 
 .fabricate-icon-logo:before {
   content: "\e900";
+  font-weight: 400;
 }
 
 /*
 =====================================================================
   END FABRICATE CUSTOM WEB FONT STYLES
+=====================================================================
+*/
+
+/*
+=====================================================================
+BEGIN TAILWIND DIRECTIVES
+=====================================================================
+*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+=====================================================================
+END TAILWIND DIRECTIVES
 =====================================================================
 */
