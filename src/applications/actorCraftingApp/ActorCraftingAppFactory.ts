@@ -24,7 +24,7 @@ export { ActorCraftingAppFactory }
 
 class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
 
-    private static readonly DEFAULT_VIEW: ActorCraftingAppViewType = ActorCraftingAppViewType.BROWSE_COMPONENTS;
+    private static readonly DEFAULT_VIEW: ActorCraftingAppViewType = ActorCraftingAppViewType.BROWSE_RECIPES;
 
     private readonly localizationService: LocalizationService;
     private readonly fabricateAPI: FabricateAPI;

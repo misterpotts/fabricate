@@ -97,6 +97,8 @@ declare interface Actors {
 
     get(actorId: string): Actor;
 
+    filter(param: (actor: Actor) => boolean): Actor[];
+
 }
 
 /**
@@ -165,11 +167,17 @@ declare interface EmbeddedCollection<T extends Document> extends Map<string, T> 
  */
 declare interface Actor {
 
+    type: "character" | "npc" | "vehicle";
+
+    isOwner: boolean;
+
     name: string;
 
     items: EmbeddedCollection<Item>;
 
     id: string;
+
+    img: string;
 
 }
 

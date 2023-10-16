@@ -4,6 +4,7 @@ import { skeleton } from "@skeletonlabs/tw-plugin";
 import { fabricateSkeletonTheme } from "./fabricate-skeleton-theme"
 
 export default {
+    important: true,
     content: [
         "./src/**/*.{svelte,ts}",
         join(require.resolve(
