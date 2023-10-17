@@ -71,7 +71,11 @@
         sourceActorDetails = targetActorDetails;
     }
 
-    function showSourceActorSelectionMenu() {
+    function toggleSourceActorSelectionMenu() {
+        if (showSourceActorSelection) {
+            showSourceActorSelection = false;
+            return;
+        }
         availableSourceActors = game.actors
             .filter(actor => actor.isOwner)
             .filter(actor => actor.id !== targetActorDetails.id)
@@ -93,7 +97,7 @@
 
 <AppShell>
     <svelte:fragment slot="header">
-        <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="place-self-center" background="bg-surface-600">
+        <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full" background="bg-surface-600">
             <svelte:fragment slot="lead">
                 <div class="space-x-4 flex place-items-center">
                     <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
@@ -101,31 +105,36 @@
                 </div>
             </svelte:fragment>
             <svelte:fragment slot="trail">
-                {#if sourceActorDetails.id === targetActorDetails.id}
-                    <div class="relative">
-                        <a class="btn variant-filled-primary text-sm text-black" on:click={showSourceActorSelectionMenu}>
-                            <span><i class="fa-solid fa-box-open"></i></span>
-                            <span>Craft from another source</span>
-                        </a>
-                        {#if showSourceActorSelection}
-                            <ListBox rounded="rounded-none" class="absolute bg-surface-700 w-auto">
-                                {#each availableSourceActors as availableSourceActor}
-                                    <ListBoxItem bind:group={sourceActorDetails}
-                                                 name="Source Actor" value="{availableSourceActor}"
-                                                 on:click={() => {setSourceActor(availableSourceActor);}}>
-                                        <Avatar src="{availableSourceActor.avatarUrl}" initials="{availableSourceActor.initials}" width="w-8" rounded="rounded-full" />
-                                        <span>{availableSourceActor.name}</span>
-                                    </ListBoxItem>
-                                {/each}
-                            </ListBox>
-                        {/if}
-                    </div>
-                {:else}
-                    <div class="space-x-4 flex place-items-center" on:auxclick={clearSourceActor}>
-                        <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
-                        <h2 class="=text-lg">{sourceActorDetails.name}</h2>
-                    </div>
-                {/if}
+                <div class="relative inline-block w-full">
+                    {#if sourceActorDetails.id === targetActorDetails.id}
+                            <a class="btn variant-filled-primary text-sm text-black" on:click={toggleSourceActorSelectionMenu}>
+                                <span><i class="fa-solid fa-box-open"></i></span>
+                                <span>Craft from another source</span>
+                            </a>
+                    {:else if availableSourceActors.length > 0}
+                        <div class="space-x-4 place-items-center cursor-pointer inline-flex" on:auxclick={clearSourceActor} on:click={toggleSourceActorSelectionMenu}>
+                            <div class="relative">
+                                <span class="text-black badge-icon variant-filled-tertiary absolute -top-0 -right-0 z-10"><i class="fa-solid fa-box-open"></i></span>
+                                <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
+                            </div>
+                            <h2 class="text-lg">{sourceActorDetails.name}</h2>
+                        </div>
+                    {/if}
+                    {#if showSourceActorSelection}
+                        <ListBox rounded="rounded" class="absolute bg-surface-700 w-full mt-2">
+                            {#each availableSourceActors as availableSourceActor}
+                                <ListBoxItem bind:group={sourceActorDetails}
+                                            name="Source Actor" value="{availableSourceActor}"
+                                            on:click={() => {setSourceActor(availableSourceActor);}}>
+                                    <svelte:fragment slot="lead">
+                                        <Avatar src="{availableSourceActor.avatarUrl}" initials="{availableSourceActor.initials}" width="w-8" rounded="rounded-full" class="inline-flex" />
+                                    </svelte:fragment>
+                                    <span>{availableSourceActor.name}</span>
+                                </ListBoxItem>
+                            {/each}
+                        </ListBox>
+                    {/if}
+                </div>
             </svelte:fragment>
         </AppBar>
     </svelte:fragment>
@@ -144,19 +153,19 @@
     <slot>
         <div class="grid grid-cols-6 gap-4 p-4">
             <div class="card variant-soft">
-                <header class="card-header">(header)</header>
-                <section class="p-4">(content)</section>
-                <footer class="card-footer">(footer)</footer>
+                <header class="card-header"><div class="placeholder animate-pulse" /></header>
+                <section class="p-4"><div class="placeholder animate-pulse" /></section>
+                <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
             </div>
             <div class="card variant-soft">
-                <header class="card-header">(header)</header>
-                <section class="p-4">(content)</section>
-                <footer class="card-footer">(footer)</footer>
+                <header class="card-header"><div class="placeholder animate-pulse" /></header>
+                <section class="p-4"><div class="placeholder animate-pulse" /></section>
+                <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
             </div>
-            <div class="card  variant-soft">
-                <header class="card-header">(header)</header>
-                <section class="p-4">(content)</section>
-                <footer class="card-footer">(footer)</footer>
+            <div class="card variant-soft">
+                <header class="card-header"><div class="placeholder animate-pulse" /></header>
+                <section class="p-4"><div class="placeholder animate-pulse" /></section>
+                <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
             </div>
 
         </div>
