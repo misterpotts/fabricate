@@ -7,12 +7,14 @@ import {
     PropertyPathAwareItemDataManager
 } from "./ItemDataManager";
 import {LocalizationService} from "../../applications/common/LocalizationService";
+import {Recipe} from "../crafting/recipe/Recipe";
 
 interface InventoryFactory {
 
     make(gameSystemId: string,
          actor: Actor,
-         knownComponents: Component[],
+         knownComponents?: Component[],
+         knownRecipes?: Recipe[],
     ): Inventory;
 
     registerGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
@@ -55,7 +57,8 @@ class DefaultInventoryFactory implements InventoryFactory {
 
     make(gameSystemId: string,
          actor: Actor,
-         knownComponents: Component[],
+         knownComponents: Component[] = [],
+         knownRecipes: Recipe[] = [],
     ): Inventory {
 
         let itemDataManager: ItemDataManager;
@@ -73,6 +76,7 @@ class DefaultInventoryFactory implements InventoryFactory {
             localization: this._localizationService,
             itemDataManager,
             knownComponents,
+            knownRecipes,
        });
 
     }

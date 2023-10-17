@@ -64,13 +64,15 @@
         });
     }
 
-    function setSourceActor(value: ActorDetails) {
+    async function setSourceActor(value: ActorDetails) {
         sourceActorDetails = value;
         showSourceActorSelection = false;
+        await prepareRecipes();
     }
 
-    function clearSourceActor() {
+    async function clearSourceActor() {
         sourceActorDetails = targetActorDetails;
+        await prepareRecipes();
     }
 
     function toggleSourceActorSelectionMenu() {
@@ -93,11 +95,12 @@
     }
 
     async function prepareRecipes() {
-        summarisedRecipes = fabricateAPI.crafting.summariseRecipes(sourceActorDetails.id);
+        summarisedRecipes = await fabricateAPI.crafting.summariseRecipes({ sourceActorId: sourceActorDetails.id });
     }
 
     onMount(async () => {
         await loadActorDetails();
+        await prepareRecipes();
     });
 
 </script>
@@ -168,21 +171,12 @@
     <slot>
         {#if view === ActorCraftingAppViewType.BROWSE_RECIPES}
             <div class="grid grid-cols-6 gap-4 p-4">
-                <div class="card variant-soft">
-                    <header class="card-header"><div class="placeholder animate-pulse" /></header>
-                    <section class="p-4"><div class="placeholder animate-pulse" /></section>
-                    <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
-                </div>
-                <div class="card variant-soft">
-                    <header class="card-header"><div class="placeholder animate-pulse" /></header>
-                    <section class="p-4"><div class="placeholder animate-pulse" /></section>
-                    <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
-                </div>
-                <div class="card variant-soft">
-                    <header class="card-header"><div class="placeholder animate-pulse" /></header>
-                    <section class="p-4"><div class="placeholder animate-pulse" /></section>
-                    <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
-                </div>
+                {#each summarisedRecipes as recipeSummary}
+                    <div class="card variant-soft">
+                        <header class="card-header"><img src="{recipeSummary.imageUrl}"></header>
+                        <section class="p-4">{recipeSummary.name}</section>
+                    </div>
+                {/each}
             </div>
         {/if}
     </slot>

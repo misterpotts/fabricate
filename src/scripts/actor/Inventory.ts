@@ -6,6 +6,8 @@ import {LocalizationService} from "../../applications/common/LocalizationService
 import Properties from "../Properties";
 import {Essence} from "../crafting/essence/Essence";
 import {ItemDataManager, SingletonItemDataManager} from "./ItemDataManager";
+import {Recipe} from "../crafting/recipe/Recipe";
+import {Identifiable} from "../common/Identifiable";
 
 interface Inventory {
 
@@ -21,6 +23,14 @@ interface Inventory {
      * @throws Error if the actor does not exist.
      */
     getContents(): Combination<Component>;
+
+    /**
+     * The recipes owned by the actor to which this inventory belongs.
+     *
+     * @returns A Promise that resolves with the recipes owned by the actor to which this inventory belongs.
+     * @throws Error if the actor does not exist.
+     */
+    getOwnedRecipes(): Combination<Recipe>;
 
     /**
      * Perform the specified action on this inventory, adding and removing components as necessary. Additions and
@@ -59,18 +69,27 @@ class CraftingInventory implements Inventory {
      */
     private readonly _knownComponentsByItemUuid: Map<string, Component>;
     private readonly _knownComponentsById: Map<string, Component>;
+    /**
+     * A Map of source item UUIDs to the Recipe that uses it. An inventory expects to be initialised with a complete
+     * set of recipes for a single crafting system. Item UUIDs must therefore map to a single recipe.
+     * @private
+     */
+    private readonly _knownRecipesByItemUuid: Map<string, Recipe>;
+    private readonly _knownRecipesById: Map<string, Recipe>;
 
     constructor({
         actor,
         localization,
         itemDataManager = new SingletonItemDataManager(),
         knownComponents = [],
+        knownRecipes = []
     }: {
         actor: Actor;
         localization: LocalizationService;
         knownEssencesById?: Map<string, Essence>;
         itemDataManager?: ItemDataManager;
         knownComponents?: Component[];
+        knownRecipes?: Recipe[];
     }) {
         this._actor = actor;
         this._localization = localization;
@@ -78,10 +97,16 @@ class CraftingInventory implements Inventory {
 
         this._knownComponentsByItemUuid = new Map();
         this._knownComponentsById = new Map();
-
         knownComponents.forEach(component => {
             this._knownComponentsByItemUuid.set(component.itemUuid, component);
             this._knownComponentsById.set(component.id, component);
+        });
+
+        this._knownRecipesByItemUuid = new Map();
+        this._knownRecipesById = new Map();
+        knownRecipes.forEach(recipe => {
+            this._knownRecipesByItemUuid.set(recipe.itemUuid, recipe);
+            this._knownRecipesById.set(recipe.id, recipe);
         });
     }
 
@@ -98,8 +123,7 @@ class CraftingInventory implements Inventory {
     }
 
     getContents(): Combination<Component> {
-        // @ts-ignore
-        const contentsWithSourceItems = this.getContentsWithSourceItems();
+        const contentsWithSourceItems = this.identifyItems(this._knownComponentsByItemUuid);
         return Array.from(contentsWithSourceItems.entries())
             .flatMap(([componentId, items]) => {
                 return items.map((item: any) => {
@@ -110,24 +134,36 @@ class CraftingInventory implements Inventory {
            .reduce((contents, unit) => contents.addUnit(unit), DefaultCombination.EMPTY<Component>());
     }
 
-    private getContentsWithSourceItems(): Map<string, any[]> {
+    getOwnedRecipes(): Combination<Recipe> {
+        const ownedRecipesWithSourceItems = this.identifyItems(this._knownRecipesByItemUuid);
+        return Array.from(ownedRecipesWithSourceItems.entries())
+            .flatMap(([recipeId, items]) => {
+                return items.map((item: any) => {
+                    const quantity = this._itemDataManager.count(item);
+                    return new DefaultUnit(this._knownRecipesById.get(recipeId), quantity);
+                });
+            })
+            .reduce((contents, unit) => contents.addUnit(unit), DefaultCombination.EMPTY<Recipe>());
+    }
+
+    private identifyItems<T extends Identifiable>(knownItems: Map<string, T>): Map<string, any[]> {
         const actor = this.actor;
         const ownedItems: EmbeddedCollection<Item> = actor.items;
         return Array.from(ownedItems.values())
-            .filter((item: Item) => this._knownComponentsByItemUuid.has(item.getFlag("core", "sourceId")))
+            .filter((item: Item) => knownItems.has(item.getFlag("core", "sourceId")))
             .flatMap((item: Item) => {
                 const sourceItemUuid: string = <string> item.getFlag("core", "sourceId");
-                const component = this._knownComponentsByItemUuid.get(sourceItemUuid);
-                return { component, item };
+                const identifiableItem = knownItems.get(sourceItemUuid);
+                return { identifiableItem, item };
             })
             .reduce((contents, entry) => {
-                if (!contents.has(entry.component.id)) {
-                    contents.set(entry.component.id, []);
+                if (!contents.has(entry.identifiableItem.id)) {
+                    contents.set(entry.identifiableItem.id, []);
                 }
-                contents.get(entry.component.id)
+                contents.get(entry.identifiableItem.id)
                     .push(entry.item);
                 return contents;
-            }, new Map<string, any>());
+            }, new Map<string, any[]>());
     }
 
     async perform(action: InventoryAction): Promise<Combination<Component>> {
@@ -141,7 +177,7 @@ class CraftingInventory implements Inventory {
 
     async removeAll(components: Combination<Component>): Promise<void> {
 
-        const sourceItemsByComponentId = this.getContentsWithSourceItems();
+        const sourceItemsByComponentId = this.identifyItems(this._knownComponentsByItemUuid);
 
         const itemData = this._itemDataManager.prepareRemovals(components, sourceItemsByComponentId);
 
@@ -156,7 +192,7 @@ class CraftingInventory implements Inventory {
 
     async addAll(components: Combination<Component>, activeEffects: ActiveEffect[]): Promise<void> {
 
-        const sourceItemsByComponentId = this.getContentsWithSourceItems();
+        const sourceItemsByComponentId = this.identifyItems(this._knownComponentsByItemUuid);
 
         const itemData = this._itemDataManager.prepareAdditions(components, activeEffects, sourceItemsByComponentId);
 
