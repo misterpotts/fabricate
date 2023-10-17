@@ -78,8 +78,9 @@
         }
         availableSourceActors = game.actors
             .filter(actor => actor.isOwner)
-            .filter(actor => actor.id !== targetActorDetails.id)
             .filter(actor => actor.type === "character" || actor.type === "npc")
+            .filter(actor => actor.id !== targetActorDetails.id)
+            .filter(actor => actor.id !== sourceActorDetails.id)
             .map(actor => new DefaultActorDetails({
                 id: actor.id,
                 name: actor.name,
@@ -97,7 +98,7 @@
 
 <AppShell>
     <svelte:fragment slot="header">
-        <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full" background="bg-surface-600">
+        <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full h-full relative" background="bg-surface-600">
             <svelte:fragment slot="lead">
                 <div class="space-x-4 flex place-items-center">
                     <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
@@ -105,13 +106,15 @@
                 </div>
             </svelte:fragment>
             <svelte:fragment slot="trail">
-                <div class="relative flex w-full justify-end">
-                    {#if sourceActorDetails.id === targetActorDetails.id}
-                            <a class="btn variant-filled-primary text-sm text-black" on:click={toggleSourceActorSelectionMenu}>
-                                <span><i class="fa-solid fa-box-open"></i></span>
-                                <span>Craft from another source</span>
-                            </a>
-                    {:else if availableSourceActors.length > 0}
+                {#if sourceActorDetails.id === targetActorDetails.id}
+                    <div class="flex w-full justify-center">
+                        <a class="btn variant-filled-primary text-sm text-black" on:click={toggleSourceActorSelectionMenu}>
+                            <span><i class="fa-solid fa-box-open"></i></span>
+                            <span>Craft from another source</span>
+                        </a>
+                    </div>
+                {:else if availableSourceActors.length > 0}
+                    <div class="flex w-full justify-start">
                         <div class="space-x-4 place-items-center cursor-pointer inline-flex" on:auxclick={clearSourceActor} on:click={toggleSourceActorSelectionMenu}>
                             <div class="relative">
                                 <span class="text-black badge-icon variant-filled-tertiary absolute -top-0 -right-0 z-10"><i class="fa-solid fa-box-open"></i></span>
@@ -119,22 +122,28 @@
                             </div>
                             <h2 class="text-lg">{sourceActorDetails.name}</h2>
                         </div>
-                    {/if}
-                    {#if showSourceActorSelection}
-                        <ListBox rounded="rounded" class="absolute bg-surface-700 w-full mt-2">
-                            {#each availableSourceActors as availableSourceActor}
-                                <ListBoxItem bind:group={sourceActorDetails}
-                                            name="Source Actor" value="{availableSourceActor}"
-                                            on:click={() => {setSourceActor(availableSourceActor);}}>
-                                    <svelte:fragment slot="lead">
-                                        <Avatar src="{availableSourceActor.avatarUrl}" initials="{availableSourceActor.initials}" width="w-8" rounded="rounded-full" class="inline-flex" />
-                                    </svelte:fragment>
-                                    <span>{availableSourceActor.name}</span>
-                                </ListBoxItem>
-                            {/each}
-                        </ListBox>
-                    {/if}
-                </div>
+                    </div>
+                {/if}
+                {#if showSourceActorSelection}
+                    <ListBox rounded="rounded" class="absolute bg-surface-700 top-14 -left-3 w-full border-surface-500 space-x-0">
+                        {#each availableSourceActors as availableSourceActor}
+                            <ListBoxItem bind:group={sourceActorDetails}
+                                         name="Source Actor"
+                                         hover="hover:bg-secondary-500 hover:text-black"
+                                         value="{availableSourceActor}"
+                                         on:click={() => {setSourceActor(availableSourceActor);}}>
+                                <svelte:fragment slot="lead">
+                                    <Avatar src="{availableSourceActor.avatarUrl}"
+                                            initials="{availableSourceActor.initials}"
+                                            width="w-8"
+                                            rounded="rounded-full"
+                                            class="inline-flex" />
+                                </svelte:fragment>
+                                <span>{availableSourceActor.name}</span>
+                            </ListBoxItem>
+                        {/each}
+                    </ListBox>
+                {/if}
             </svelte:fragment>
         </AppBar>
     </svelte:fragment>
