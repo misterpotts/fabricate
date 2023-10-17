@@ -9,6 +9,7 @@
     import {NoActorDetails} from "./ActorDetails";
     import {onMount} from "svelte";
     import {DefaultActorDetails} from "./ActorDetails.js";
+    import type {RecipeSummary} from "./RecipeSummary";
 
     /*
      * ===========================================================================
@@ -34,6 +35,7 @@
     let targetActorDetails: ActorDetails = new NoActorDetails();
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
+    let summarisedRecipes: RecipeSummary[] = [];
 
     async function loadActorDetails() {
         const sourceActor = await game.actors.get(sourceActorId);
@@ -90,6 +92,10 @@
         showSourceActorSelection = true;
     }
 
+    async function prepareRecipes() {
+        summarisedRecipes = fabricateAPI.crafting.summariseRecipes(sourceActorDetails.id);
+    }
+
     onMount(async () => {
         await loadActorDetails();
     });
@@ -129,7 +135,7 @@
                         {#each availableSourceActors as availableSourceActor}
                             <ListBoxItem bind:group={sourceActorDetails}
                                          name="Source Actor"
-                                         hover="hover:bg-secondary-500 hover:text-black"
+                                         hover="hover:bg-primary-500 hover:text-black"
                                          value="{availableSourceActor}"
                                          on:click={() => {setSourceActor(availableSourceActor);}}>
                                 <svelte:fragment slot="lead">
@@ -160,24 +166,25 @@
         </AppRail>
     </svelte:fragment>
     <slot>
-        <div class="grid grid-cols-6 gap-4 p-4">
-            <div class="card variant-soft">
-                <header class="card-header"><div class="placeholder animate-pulse" /></header>
-                <section class="p-4"><div class="placeholder animate-pulse" /></section>
-                <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
+        {#if view === ActorCraftingAppViewType.BROWSE_RECIPES}
+            <div class="grid grid-cols-6 gap-4 p-4">
+                <div class="card variant-soft">
+                    <header class="card-header"><div class="placeholder animate-pulse" /></header>
+                    <section class="p-4"><div class="placeholder animate-pulse" /></section>
+                    <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
+                </div>
+                <div class="card variant-soft">
+                    <header class="card-header"><div class="placeholder animate-pulse" /></header>
+                    <section class="p-4"><div class="placeholder animate-pulse" /></section>
+                    <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
+                </div>
+                <div class="card variant-soft">
+                    <header class="card-header"><div class="placeholder animate-pulse" /></header>
+                    <section class="p-4"><div class="placeholder animate-pulse" /></section>
+                    <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
+                </div>
             </div>
-            <div class="card variant-soft">
-                <header class="card-header"><div class="placeholder animate-pulse" /></header>
-                <section class="p-4"><div class="placeholder animate-pulse" /></section>
-                <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
-            </div>
-            <div class="card variant-soft">
-                <header class="card-header"><div class="placeholder animate-pulse" /></header>
-                <section class="p-4"><div class="placeholder animate-pulse" /></section>
-                <footer class="card-footer"><div class="placeholder animate-pulse" /></footer>
-            </div>
-
-        </div>
+        {/if}
     </slot>
 </AppShell>
 
