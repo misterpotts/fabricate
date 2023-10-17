@@ -105,7 +105,7 @@
                 </div>
             </svelte:fragment>
             <svelte:fragment slot="trail">
-                <div class="relative inline-block w-full">
+                <div class="relative flex w-full justify-end">
                     {#if sourceActorDetails.id === targetActorDetails.id}
                             <a class="btn variant-filled-primary text-sm text-black" on:click={toggleSourceActorSelectionMenu}>
                                 <span><i class="fa-solid fa-box-open"></i></span>
