@@ -227,13 +227,15 @@ interface CraftingAPI {
      * crafted, if at all.
      *
      * @param options - The options to use when summarising recipes.
-     * @param options.sourceActorId - The ID of the actor to summarise recipes for.
+     * @param options.sourceActorId - The optional ID of the actor to use as a source for components. Defaults to the
+     *  targetActorId.
+     * @param options.targetActorId - The ID of the actor to use as a source for recipes
      * @param options.craftingSystemId - The ID of the crafting system to limit the summary to. If not specified, all
      *  recipes for all crafting systems will be summarised.
      * @param options.craftableOnly - If true, only recipes that can be crafted will be included in the summary.
      * @returns A Promise that resolves with an array of recipe summaries.
      */
-    summariseRecipes(options: { sourceActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<RecipeSummary[]>;
+    summariseRecipes(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<RecipeSummary[]>;
 
 }
 
@@ -286,11 +288,13 @@ class DefaultCraftingAPI implements CraftingAPI {
     }
 
     async summariseRecipes({
-        sourceActorId,
+        targetActorId,
+        sourceActorId = targetActorId,
         craftingSystemId,
         craftableOnly = false
      }: {
-        sourceActorId: string;
+        sourceActorId?: string;
+        targetActorId: string;
         craftingSystemId?: string;
         craftableOnly?: boolean;
     }): Promise<RecipeSummary[]> {
@@ -305,16 +309,19 @@ class DefaultCraftingAPI implements CraftingAPI {
             .filter(component => craftingSystems.has(component.craftingSystemId));
 
         const gameSystemId = this.gameProvider.getGameSystemId();
-        const actor = await this.gameProvider.loadActor(sourceActorId);
-        const inventory = this.inventoryFactory.make(gameSystemId, actor, includedComponents, includedRecipes);
-        const ownedRecipes = inventory.getOwnedRecipes();
+        const targetActor = await this.gameProvider.loadActor(targetActorId);
+        const targetActorOnly = sourceActorId === targetActorId;
+        const sourceActor = targetActorOnly ? targetActor : await this.gameProvider.loadActor(sourceActorId);
+        const targetInventory = this.inventoryFactory.make(gameSystemId, targetActor, includedComponents, includedRecipes);
+        const sourceInventory = targetActorOnly ? targetInventory : this.inventoryFactory.make(gameSystemId, sourceActor, includedComponents, includedRecipes);
+        const ownedRecipes = targetInventory.getOwnedRecipes();
 
         const includedComponentsById = new Map(includedComponents.map(component => [component.id, component]));
         const allEssencesById = await this.essenceAPI.getAll();
         const summarisedRecipes = await Promise.all(includedRecipes
             .filter(recipe => ownedRecipes.has(recipe))
             .map(recipe => {
-                return this.summariseRecipe(recipe, inventory, includedComponentsById, allEssencesById);
+                return this.summariseRecipe(recipe, sourceInventory, includedComponentsById, allEssencesById);
             }));
 
         if (craftableOnly) {
