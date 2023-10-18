@@ -10,6 +10,9 @@
     import {onMount} from "svelte";
     import {DefaultActorDetails} from "./ActorDetails.js";
     import type {RecipeSummary} from "./RecipeSummary";
+    import truncate from "../common/Truncate";
+    import Properties from "../../scripts/Properties";
+    import ClickEvent = JQuery.ClickEvent;
 
     /*
      * ===========================================================================
@@ -98,6 +101,16 @@
         summarisedRecipes = await fabricateAPI.crafting.summariseRecipes({ sourceActorId: sourceActorDetails.id });
     }
 
+    function handleRecipeSummaryClicked(event: PointerEvent, recipeSummary: RecipeSummary) {
+        if (event.shiftKey) {
+            console.log("Craft with default selections");
+        } else {
+            console.log("View recipe crafting preparations")
+            selectedRecipeId = recipeSummary.id;
+            view = ActorCraftingAppViewType.CRAFTING;
+        }
+    }
+
     onMount(async () => {
         await loadActorDetails();
         await prepareRecipes();
@@ -170,11 +183,39 @@
     </svelte:fragment>
     <slot>
         {#if view === ActorCraftingAppViewType.BROWSE_RECIPES}
-            <div class="grid grid-cols-6 gap-4 p-4">
+            <div class="grid grid-cols-6 gap-5 p-4">
                 {#each summarisedRecipes as recipeSummary}
-                    <div class="card variant-soft">
-                        <header class="card-header"><img src="{recipeSummary.imageUrl}"></header>
-                        <section class="p-4">{recipeSummary.name}</section>
+                    <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={(e) => handleRecipeSummaryClicked(e, recipeSummary)}>
+                        <header class="card-header h-1/3 text-center bg-primary-500 pb-4 grid grid-cols-1 grid-rows-1">
+                            <span class="place-self-center text-black">{truncate(recipeSummary.name, 24, 12)}</span>
+                        </header>
+                        <section class="relative">
+                            <Avatar src="{recipeSummary.imageUrl}"
+                                    fallback="{Properties.ui.defaults.recipeImageUrl}"
+                                    width="w-full"
+                                    rounded="rounded-none" />
+                            <!-- Badge container -->
+                            <span class="absolute -top-4 -right-4 z-10 grid grid-cols-1 grid-rows-3 gap-1">
+                                {#if recipeSummary.isDisabled}
+                                    <!-- Recipe disabled badge -->
+                                    <span class="text-warning-900 text-lg badge-icon variant-filled-warning w-8 h-8">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                {:else}
+                                    {#if recipeSummary.isCraftable}
+                                        <!-- Recipe craftable badge -->
+                                        <span class="text-success-900 text-lg badge-icon variant-filled-success w-8 h-8">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        </span>
+                                    {:else}
+                                        <!-- Recipe not craftable badge -->
+                                        <span class="text-error-900 text-lg badge-icon variant-filled-error w-8 h-8">
+                                            <i class="fa-solid fa-circle-xmark"></i>
+                                        </span>
+                                    {/if}
+                                {/if}
+                            </span>
+                        </section>
                     </div>
                 {/each}
             </div>
