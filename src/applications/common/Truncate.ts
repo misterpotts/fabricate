@@ -14,10 +14,6 @@ export default function (string: string, maxLength: number = 12, maxWordLength?:
     const processedWords: string[] = [];
     let length = 0;
 
-    // truncate each word longer than the max word length if specified and add to processed words
-    // otherwise, if the total length of the string exceeds the max length, truncate the word to the max string length
-    // and add to processed words. If the total length of the string does not exceed the max length, add the word to
-    // processed words
     for (const word of words) {
         if (maxWordLength && word.length > maxWordLength) {
             processedWords.push(word.substring(0, maxWordLength) + truncationCharacters);
