@@ -58,6 +58,7 @@ class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
 
         return new SvelteApplication({
             applicationOptions,
+            preflight: true,
             svelteConfig: {
                 options: {
                     props: {

@@ -186,7 +186,7 @@
             <div class="grid grid-cols-6 gap-5 p-4">
                 {#each summarisedRecipes as recipeSummary}
                     <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={(e) => handleRecipeSummaryClicked(e, recipeSummary)}>
-                        <header class="card-header h-1/3 text-center bg-primary-500 pb-4 grid grid-cols-1 grid-rows-1">
+                        <header class="card-header bg-primary-500 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
                             <span class="place-self-center text-black">{truncate(recipeSummary.name, 24, 12)}</span>
                         </header>
                         <section class="relative">
@@ -194,27 +194,19 @@
                                     fallback="{Properties.ui.defaults.recipeImageUrl}"
                                     width="w-full"
                                     rounded="rounded-none" />
-                            <!-- Badge container -->
-                            <span class="absolute -top-4 -right-4 z-10 grid grid-cols-1 grid-rows-3 gap-1">
-                                {#if recipeSummary.isDisabled}
-                                    <!-- Recipe disabled badge -->
-                                    <span class="text-warning-900 text-lg badge-icon variant-filled-warning w-8 h-8">
+                            {#if recipeSummary.isDisabled}
+                                <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                                    <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
                                         <i class="fa-solid fa-lock"></i>
                                     </span>
-                                {:else}
-                                    {#if recipeSummary.isCraftable}
-                                        <!-- Recipe craftable badge -->
-                                        <span class="text-success-900 text-lg badge-icon variant-filled-success w-8 h-8">
-                                            <i class="fa-solid fa-circle-check"></i>
-                                        </span>
-                                    {:else}
-                                        <!-- Recipe not craftable badge -->
-                                        <span class="text-error-900 text-lg badge-icon variant-filled-error w-8 h-8">
-                                            <i class="fa-solid fa-circle-xmark"></i>
-                                        </span>
-                                    {/if}
-                                {/if}
-                            </span>
+                                </footer>
+                            {:else if !recipeSummary.isCraftable}
+                                <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                                    <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                    </span>
+                                </footer>
+                            {/if}
                         </section>
                     </div>
                 {/each}
