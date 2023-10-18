@@ -12,7 +12,6 @@
     import type {RecipeSummary} from "./RecipeSummary";
     import truncate from "../common/Truncate";
     import Properties from "../../scripts/Properties";
-    import ClickEvent = JQuery.ClickEvent;
 
     /*
      * ===========================================================================
@@ -98,7 +97,10 @@
     }
 
     async function prepareRecipes() {
-        summarisedRecipes = await fabricateAPI.crafting.summariseRecipes({ sourceActorId: sourceActorDetails.id });
+        summarisedRecipes = await fabricateAPI.crafting.summariseRecipes({
+            targetActorId: targetActorDetails.id,
+            sourceActorId: sourceActorDetails.id ? sourceActorDetails.id : undefined
+        });
     }
 
     function handleRecipeSummaryClicked(event: PointerEvent, recipeSummary: RecipeSummary) {
