@@ -14,7 +14,9 @@ interface SvelteComponentConfig {
 
 class SvelteApplication extends Application {
 
-    private static readonly _template = `modules/${Properties.module.id}/templates/application.html`;
+    private static readonly _defaultTemplate = `modules/${Properties.module.id}/templates/application.html`;
+    private static readonly _tailwindTemplate = `modules/${Properties.module.id}/templates/tailwind-application.html`;
+
     private static readonly _defaultClasses = ["fab-application-window", "fab-fabricate-theme"];
 
     private readonly _svelteConfig: SvelteComponentConfig;
@@ -26,12 +28,14 @@ class SvelteApplication extends Application {
         applicationOptions,
         svelteConfig,
         onClose = () => {},
+        preflight = false,
     }: {
         applicationOptions: ApplicationOptions;
         svelteConfig: SvelteComponentConfig;
         onClose?: () => void;
+        preflight?: boolean;
     }) {
-        applicationOptions.template = SvelteApplication._template;
+        applicationOptions.template = preflight ? SvelteApplication._tailwindTemplate : SvelteApplication._defaultTemplate;
         applicationOptions.classes = applicationOptions.classes ? applicationOptions.classes.concat(SvelteApplication._defaultClasses) : SvelteApplication._defaultClasses;
         super(applicationOptions);
         this._svelteConfig = svelteConfig;

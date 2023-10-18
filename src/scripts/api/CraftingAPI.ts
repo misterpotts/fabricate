@@ -24,6 +24,12 @@ import {TrackedCombination} from "../common/TrackedCombination";
 import {DefaultUnit, Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
 import {Option} from "../common/Options";
+import {
+    CraftableRecipeSummary,
+    DisabledRecipeSummary,
+    RecipeSummary, SelectableRequirementOptionSummary, UncraftableRecipeSummary
+} from "../../applications/actorCraftingApp/RecipeSummary";
+import {Recipe} from "../crafting/recipe/Recipe";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -216,6 +222,19 @@ interface CraftingAPI {
      */
     setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
 
+    /**
+     * Summarises all the recipes that the specified actor owns, describing the number of times each recipe can be
+     * crafted, if at all.
+     *
+     * @param options - The options to use when summarising recipes.
+     * @param options.sourceActorId - The ID of the actor to summarise recipes for.
+     * @param options.craftingSystemId - The ID of the crafting system to limit the summary to. If not specified, all
+     *  recipes for all crafting systems will be summarised.
+     * @param options.craftableOnly - If true, only recipes that can be crafted will be included in the summary.
+     * @returns A Promise that resolves with an array of recipe summaries.
+     */
+    summariseRecipes(options: { sourceActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<RecipeSummary[]>;
+
 }
 
 export { CraftingAPI };
@@ -264,6 +283,109 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.notificationService = notificationService;
         this.localizationService = localizationService;
         this.componentSelectionStrategyFactory = componentSelectionStrategyFactory;
+    }
+
+    async summariseRecipes({
+        sourceActorId,
+        craftingSystemId,
+        craftableOnly = false
+     }: {
+        sourceActorId: string;
+        craftingSystemId?: string;
+        craftableOnly?: boolean;
+    }): Promise<RecipeSummary[]> {
+
+        const allRecipes = await this.recipeAPI.getAll();
+        const includedCraftingSystemIds = craftingSystemId ? [craftingSystemId] : Array.from(allRecipes.values()).map(recipe => recipe.craftingSystemId);
+        const includedRecipes = Array.from(allRecipes.values())
+            .filter(recipe => includedCraftingSystemIds.includes(recipe.craftingSystemId));
+        const craftingSystems = await this.craftingSystemAPI.getAllById(includedCraftingSystemIds);
+        const allComponents = await this.componentAPI.getAll();
+        const includedComponents = Array.from(allComponents.values())
+            .filter(component => craftingSystems.has(component.craftingSystemId));
+
+        const gameSystemId = this.gameProvider.getGameSystemId();
+        const actor = await this.gameProvider.loadActor(sourceActorId);
+        const inventory = this.inventoryFactory.make(gameSystemId, actor, includedComponents, includedRecipes);
+        const ownedRecipes = inventory.getOwnedRecipes();
+
+        const includedComponentsById = new Map(includedComponents.map(component => [component.id, component]));
+        const allEssencesById = await this.essenceAPI.getAll();
+        const summarisedRecipes = await Promise.all(includedRecipes
+            .filter(recipe => ownedRecipes.has(recipe))
+            .map(recipe => {
+                return this.summariseRecipe(recipe, inventory, includedComponentsById, allEssencesById);
+            }));
+
+        if (craftableOnly) {
+            return summarisedRecipes.filter(summary => summary.isCraftable);
+        } else {
+            return summarisedRecipes;
+        }
+
+    }
+
+    private async summariseRecipe(recipe: Recipe,
+                            inventory: Inventory,
+                            includedComponentsById: Map<string, Component>,
+                            includedEssencesById: Map<string, Essence>): Promise<RecipeSummary> {
+
+        await recipe.load();
+
+        // A disabled recipe cannot be crafted.
+        if (recipe.isDisabled) {
+            return new DisabledRecipeSummary({
+                id: recipe.id,
+                name: recipe.name,
+                imageUrl: recipe.imageUrl
+            });
+        }
+
+        // A recipe with no requirements can be crafted. It needs nothing! Bit strange, but no judgement here.
+        if (!recipe.hasRequirements) {
+            return new CraftableRecipeSummary({
+                id: recipe.id,
+                name: recipe.name,
+                imageUrl: recipe.imageUrl,
+            });
+        }
+        const selectableOptions: SelectableRequirementOptionSummary[] = recipe.requirementOptions.all
+            .map(requirementOption => {
+                const selection = this.makeSelections(requirementOption.value,
+                    inventory.getContents(),
+                    includedComponentsById,
+                    includedEssencesById);
+                return {
+                    id: requirementOption.id,
+                    name: requirementOption.name,
+                    isCraftable: selection.isSufficient,
+                }
+            })
+            .filter(option => option.isCraftable)
+            .map(option => {
+                return {
+                    id: option.id,
+                    name: option.name,
+                }
+            });
+
+        // If there are selectable options, the recipe can be crafted.
+        if (selectableOptions.length > 0) {
+            return new CraftableRecipeSummary({
+                id: recipe.id,
+                name: recipe.name,
+                imageUrl: recipe.imageUrl,
+                selectableOptions,
+            });
+        // If there are no selectable options, the recipe cannot be crafted.
+        } else {
+            return new UncraftableRecipeSummary({
+                id: recipe.id,
+                name: recipe.name,
+                imageUrl: recipe.imageUrl,
+            });
+        }
+
     }
 
     setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][] {

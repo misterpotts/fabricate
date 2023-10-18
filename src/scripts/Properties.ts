@@ -20,6 +20,7 @@ const Properties = {
                 description: "A magical essence that can be used to craft items",
             },
             itemImageUrl: "icons/containers/bags/pack-simple-leather-tan.webp",
+            mysteryManImagePath: "icons/svg/mystery-man.svg",
             noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",
             erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",
             recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp",

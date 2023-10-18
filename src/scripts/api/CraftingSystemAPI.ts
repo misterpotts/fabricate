@@ -115,6 +115,16 @@ interface CraftingSystemAPI {
      */
     getAll(): Promise<Map<string, CraftingSystem>>;
 
+    /**
+     * Retrieves all crafting systems with the given IDs.
+     *
+     * @async
+     * @param ids - The IDs of the crafting systems to retrieve.
+     * @returns {Promise<Map<string, CraftingSystem>>} A Promise that resolves with a map of all crafting systems with
+     *  the given IDs keyed by their ID. If a crafting system ID does not exist, it will not be included in the map.
+     */
+    getAllById(ids: string[]): Promise<Map<string, CraftingSystem>>;
+
 }
 
 export { CraftingSystemAPI };
@@ -156,6 +166,17 @@ class DefaultCraftingSystemAPI implements CraftingSystemAPI {
 
     get notifications(): NotificationService {
         return this.notificationService;
+    }
+
+    async getAllById(ids: string[]): Promise<Map<string, CraftingSystem>> {
+        const allCraftingSystems = await this.craftingSystemStore.getAllEntities();
+        const craftingSystemsById = new Map<string, CraftingSystem>();
+        for (const craftingSystem of allCraftingSystems) {
+            if (ids.includes(craftingSystem.id)) {
+                craftingSystemsById.set(craftingSystem.id, craftingSystem);
+            }
+        }
+        return craftingSystemsById;
     }
 
     async deleteById(id: string): Promise<CraftingSystem | undefined> {
