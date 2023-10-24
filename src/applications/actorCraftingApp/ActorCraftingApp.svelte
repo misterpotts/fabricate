@@ -12,6 +12,8 @@
     import type {RecipeSummary} from "./RecipeSummary";
     import truncate from "../common/Truncate";
     import Properties from "../../scripts/Properties";
+    import {type CraftingPlan, DefaultCraftingPlan, NoCraftingPlan} from "./CraftingPlan";
+    import {NoSalvagePlan, type SalvagePlan} from "./SalvagePlan";
 
     /*
      * ===========================================================================
@@ -19,7 +21,7 @@
      * ===========================================================================
      */
 
-    export let view: ActorCraftingAppViewType = ActorCraftingAppViewType.BROWSE_RECIPES;
+    export let view: ActorCraftingAppViewType = ActorCraftingAppViewType.SALVAGING;
     export let localization: LocalizationService;
     export let fabricateAPI: FabricateAPI;
     export let sourceActorId: string;
@@ -38,6 +40,12 @@
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
     let summarisedRecipes: RecipeSummary[] = [];
+
+    let craftingPlan: CraftingPlan = new NoCraftingPlan();
+    let searchCraftableOnly: boolean = false;
+    let searchName: string = "";
+
+    let salvagePlan: SalvagePlan = new NoSalvagePlan();
 
     async function loadActorDetails() {
         const sourceActor = await game.actors.get(sourceActorId);
@@ -96,6 +104,10 @@
         showSourceActorSelection = true;
     }
 
+    function searchRecipeSummaries() {
+        console.log(`Fabricate | ActorCraftingApp: Searching for recipes with name ${searchName} and craftable only ${searchCraftableOnly}`);
+    }
+
     async function prepareRecipes() {
         summarisedRecipes = await fabricateAPI.crafting.summariseRecipes({
             targetActorId: targetActorDetails.id,
@@ -103,14 +115,12 @@
         });
     }
 
-    function handleRecipeSummaryClicked(event: PointerEvent, recipeSummary: RecipeSummary) {
-        if (event.shiftKey) {
-            console.log("Craft with default selections");
-        } else {
-            console.log("View recipe crafting preparations")
-            selectedRecipeId = recipeSummary.id;
-            view = ActorCraftingAppViewType.CRAFTING;
-        }
+    function clearCraftingPlan() {
+        craftingPlan = new NoCraftingPlan();
+    }
+
+    function handleRecipeSummaryClicked(recipeSummary: RecipeSummary) {
+        craftingPlan = new DefaultCraftingPlan({ recipeName: recipeSummary.name });
     }
 
     onMount(async () => {
@@ -173,46 +183,66 @@
     </svelte:fragment>
     <svelte:fragment slot="sidebarLeft">
         <AppRail background="bg-surface-600">
-            <AppRailTile bind:group={view} name="recipes" value={ActorCraftingAppViewType.BROWSE_RECIPES} title="recipes">
-                <svelte:fragment slot="lead"><i class="fa-solid fa-book"></i></svelte:fragment>
-                <span>Recipes</span>
-            </AppRailTile>
-            <AppRailTile bind:group={view} name="components" value={ActorCraftingAppViewType.BROWSE_COMPONENTS} title="components">
+            <AppRailTile bind:group={view} name="components" value={ActorCraftingAppViewType.SALVAGING} title="components">
                 <svelte:fragment slot="lead"><i class="fa-solid fa-toolbox"></i></svelte:fragment>
                 <span>Components</span>
+            </AppRailTile>
+            <AppRailTile bind:group={view} name="recipes" value={ActorCraftingAppViewType.CRAFTING} title="recipes">
+                <svelte:fragment slot="lead"><i class="fa-solid fa-book"></i></svelte:fragment>
+                <span>Recipes</span>
             </AppRailTile>
         </AppRail>
     </svelte:fragment>
     <slot>
-        {#if view === ActorCraftingAppViewType.BROWSE_RECIPES}
-            <div class="grid grid-cols-6 gap-5 p-4">
-                {#each summarisedRecipes as recipeSummary}
-                    <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={(e) => handleRecipeSummaryClicked(e, recipeSummary)}>
-                        <header class="card-header bg-primary-500 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
-                            <span class="place-self-center text-black">{truncate(recipeSummary.name, 24, 12)}</span>
-                        </header>
-                        <section class="relative">
-                            <Avatar src="{recipeSummary.imageUrl}"
-                                    fallback="{Properties.ui.defaults.recipeImageUrl}"
-                                    width="w-full"
-                                    rounded="rounded-none" />
-                            {#if recipeSummary.isDisabled}
-                                <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                    <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
-                                        <i class="fa-solid fa-lock"></i>
-                                    </span>
-                                </footer>
-                            {:else if !recipeSummary.isCraftable}
-                                <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                    <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
-                                        <i class="fa-solid fa-circle-xmark"></i>
-                                    </span>
-                                </footer>
-                            {/if}
-                        </section>
+        {#if view === ActorCraftingAppViewType.CRAFTING}
+            {#if craftingPlan.isReady}
+                <AppBar background="bg-surface-700 text-white">
+                    <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingPlan}></i></svelte:fragment>
+                    <h2 class="text-lg">{craftingPlan.recipeName}</h2>
+                </AppBar>
+            {:else}
+                <AppBar background="bg-surface-700 text-white" slotDefault="space-x-4 flex">
+                    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+                        <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <input class="input h-full rounded-none p-2 text-black" type="search" placeholder="Recipe name..." bind:value={searchName} />
+                        <a class="btn variant-filled-primary text-black text-sm border-none rounded-l-none" on:click={searchRecipeSummaries}>Search</a>
                     </div>
-                {/each}
-            </div>
+                    <label class="label flex items-center space-x-2">
+                        <span>Craftable only?</span>
+                        <input class="checkbox" type="checkbox" bind:checked={searchCraftableOnly} on:change={searchRecipeSummaries}/>
+                    </label>
+                </AppBar>
+                <div class="max-h-full overflow-y-auto">
+                </div>
+                <div class="grid grid-cols-6 gap-5 p-4">
+                    {#each summarisedRecipes as recipeSummary}
+                        <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => handleRecipeSummaryClicked(recipeSummary)}>
+                            <header class="card-header bg-surface-800 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
+                                <span class="place-self-center text-white">{truncate(recipeSummary.name, 24, 12)}</span>
+                            </header>
+                            <section class="relative">
+                                <Avatar src="{recipeSummary.imageUrl}"
+                                        fallback="{Properties.ui.defaults.recipeImageUrl}"
+                                        width="w-full"
+                                        rounded="rounded-none" />
+                                {#if recipeSummary.isDisabled}
+                                    <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                                        <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </span>
+                                    </footer>
+                                {:else if !recipeSummary.isCraftable}
+                                    <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                                        <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
+                                            <i class="fa-solid fa-circle-xmark"></i>
+                                        </span>
+                                    </footer>
+                                {/if}
+                            </section>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
         {/if}
     </slot>
 </AppShell>
