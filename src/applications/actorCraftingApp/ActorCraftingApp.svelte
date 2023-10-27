@@ -43,17 +43,15 @@
 
     let searchCraftableOnly: boolean = false;
     let searchName: string = "";
-    type RecipeSummarySearchTerms = { craftableOnly: boolean; name: string };
-    const summarisedRecipes: SearchableStore<RecipeSummarySearchTerms, RecipeSummary> = new DefaultSearchableStore<RecipeSummarySearchTerms, RecipeSummary>({
-        searchFunction: (recipeSummary: RecipeSummary, terms: RecipeSummarySearchTerms) => {
-            if (terms.craftableOnly && !recipeSummary.isCraftable) {
-                return false;
-            }
-            if (terms.name && !recipeSummary.name.toLowerCase().includes(terms.name.toLowerCase())) {
-                return false;
-            }
+    let availableRecipes = [];
+    $: recipeSummariesToDisplay = availableRecipes.filter(recipe => {
+        if (searchCraftableOnly && !recipe.isCraftable) {
+            return false;
+        }
+        if (!searchName) {
             return true;
         }
+        return recipe.name.search(new RegExp(searchName, "i")) >= 0;
     });
 
     let craftingPlan: CraftingPlan = new NoCraftingPlan();
@@ -117,15 +115,8 @@
         showSourceActorSelection = true;
     }
 
-    function searchRecipeSummaries() {
-        summarisedRecipes.searchTerms = {
-            name: searchName,
-            craftableOnly: searchCraftableOnly
-        };
-    }
-
     async function prepareRecipes() {
-        summarisedRecipes.items = await fabricateAPI.crafting.summariseRecipes({
+        availableRecipes = await fabricateAPI.crafting.summariseRecipes({
             targetActorId: targetActorDetails.id,
             sourceActorId: sourceActorDetails.id ? sourceActorDetails.id : undefined
         });
@@ -133,15 +124,6 @@
 
     function clearCraftingPlan() {
         craftingPlan = new NoCraftingPlan();
-    }
-
-    function clearSearchName() {
-        if (!searchName) {
-            summarisedRecipes.searchTerms = {
-                name: "",
-                craftableOnly: searchCraftableOnly
-            };
-        }
     }
 
     function handleRecipeSummaryClicked(recipeSummary: RecipeSummary) {
@@ -229,18 +211,17 @@
                 <AppBar background="bg-surface-700 text-white" slotDefault="space-x-4 flex">
                     <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
                         <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchName} on:change={clearSearchName} />
-                        <a class="btn variant-filled-primary text-black text-sm border-none rounded-l-none" on:click={searchRecipeSummaries}>Search</a>
+                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchName} />
                     </div>
                     <label class="label flex items-center space-x-2">
                         <span>Craftable only?</span>
-                        <input class="checkbox" type="checkbox" bind:checked={searchCraftableOnly} on:change={searchRecipeSummaries}/>
+                        <input class="checkbox" type="checkbox" bind:checked={searchCraftableOnly} />
                     </label>
                 </AppBar>
                 <div class="max-h-full overflow-y-auto">
                 </div>
                 <div class="grid grid-cols-6 gap-5 p-4">
-                    {#each $summarisedRecipes as recipeSummary}
+                    {#each recipeSummariesToDisplay as recipeSummary}
                         <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => handleRecipeSummaryClicked(recipeSummary)}>
                             <header class="card-header bg-surface-800 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
                                 <span class="place-self-center text-white">{truncate(recipeSummary.name, 24, 12)}</span>
