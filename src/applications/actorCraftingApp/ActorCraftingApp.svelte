@@ -14,6 +14,7 @@
     import Properties from "../../scripts/Properties";
     import {type CraftingPlan, DefaultCraftingPlan, NoCraftingPlan} from "./CraftingPlan";
     import {NoSalvagePlan, type SalvagePlan} from "./SalvagePlan";
+    import {RecipeSummarySearchStore} from "./RecipeSummarySearchStore";
 
     /*
      * ===========================================================================
@@ -39,11 +40,12 @@
     let targetActorDetails: ActorDetails = new NoActorDetails();
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
-    let summarisedRecipes: RecipeSummary[] = [];
 
-    let craftingPlan: CraftingPlan = new NoCraftingPlan();
     let searchCraftableOnly: boolean = false;
     let searchName: string = "";
+    const summarisedRecipes: RecipeSummarySearchStore = new RecipeSummarySearchStore();
+
+    let craftingPlan: CraftingPlan = new NoCraftingPlan();
 
     let salvagePlan: SalvagePlan = new NoSalvagePlan();
 
@@ -106,10 +108,14 @@
 
     function searchRecipeSummaries() {
         console.log(`Fabricate | ActorCraftingApp: Searching for recipes with name ${searchName} and craftable only ${searchCraftableOnly}`);
+        summarisedRecipes.searchTerms = {
+            name: searchName,
+            craftableOnly: searchCraftableOnly
+        };
     }
 
     async function prepareRecipes() {
-        summarisedRecipes = await fabricateAPI.crafting.summariseRecipes({
+        summarisedRecipes.availableRecipes = await fabricateAPI.crafting.summariseRecipes({
             targetActorId: targetActorDetails.id,
             sourceActorId: sourceActorDetails.id ? sourceActorDetails.id : undefined
         });
@@ -117,6 +123,15 @@
 
     function clearCraftingPlan() {
         craftingPlan = new NoCraftingPlan();
+    }
+
+    function clearSearchName() {
+        if (!searchName) {
+            summarisedRecipes.searchTerms = {
+                name: "",
+                craftableOnly: searchCraftableOnly
+            };
+        }
     }
 
     function handleRecipeSummaryClicked(recipeSummary: RecipeSummary) {
@@ -204,7 +219,7 @@
                 <AppBar background="bg-surface-700 text-white" slotDefault="space-x-4 flex">
                     <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
                         <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <input class="input h-full rounded-none p-2 text-black" type="search" placeholder="Recipe name..." bind:value={searchName} />
+                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchName} on:change={clearSearchName} />
                         <a class="btn variant-filled-primary text-black text-sm border-none rounded-l-none" on:click={searchRecipeSummaries}>Search</a>
                     </div>
                     <label class="label flex items-center space-x-2">
@@ -215,7 +230,7 @@
                 <div class="max-h-full overflow-y-auto">
                 </div>
                 <div class="grid grid-cols-6 gap-5 p-4">
-                    {#each summarisedRecipes as recipeSummary}
+                    {#each $summarisedRecipes as recipeSummary}
                         <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => handleRecipeSummaryClicked(recipeSummary)}>
                             <header class="card-header bg-surface-800 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
                                 <span class="place-self-center text-white">{truncate(recipeSummary.name, 24, 12)}</span>
