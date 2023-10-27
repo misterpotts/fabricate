@@ -14,7 +14,7 @@
     import Properties from "../../scripts/Properties";
     import {type CraftingPlan, DefaultCraftingPlan, NoCraftingPlan} from "./CraftingPlan";
     import {NoSalvagePlan, type SalvagePlan} from "./SalvagePlan";
-    import {RecipeSummarySearchStore} from "./RecipeSummarySearchStore";
+    import {DefaultSearchableStore, type SearchableStore} from "./SearchableStore";
 
     /*
      * ===========================================================================
@@ -43,7 +43,18 @@
 
     let searchCraftableOnly: boolean = false;
     let searchName: string = "";
-    const summarisedRecipes: RecipeSummarySearchStore = new RecipeSummarySearchStore();
+    type RecipeSummarySearchTerms = { craftableOnly: boolean; name: string };
+    const summarisedRecipes: SearchableStore<RecipeSummarySearchTerms, RecipeSummary> = new DefaultSearchableStore<RecipeSummarySearchTerms, RecipeSummary>({
+        searchFunction: (recipeSummary: RecipeSummary, terms: RecipeSummarySearchTerms) => {
+            if (terms.craftableOnly && !recipeSummary.isCraftable) {
+                return false;
+            }
+            if (terms.name && !recipeSummary.name.toLowerCase().includes(terms.name.toLowerCase())) {
+                return false;
+            }
+            return true;
+        }
+    });
 
     let craftingPlan: CraftingPlan = new NoCraftingPlan();
 
@@ -107,7 +118,6 @@
     }
 
     function searchRecipeSummaries() {
-        console.log(`Fabricate | ActorCraftingApp: Searching for recipes with name ${searchName} and craftable only ${searchCraftableOnly}`);
         summarisedRecipes.searchTerms = {
             name: searchName,
             craftableOnly: searchCraftableOnly
@@ -115,7 +125,7 @@
     }
 
     async function prepareRecipes() {
-        summarisedRecipes.availableRecipes = await fabricateAPI.crafting.summariseRecipes({
+        summarisedRecipes.items = await fabricateAPI.crafting.summariseRecipes({
             targetActorId: targetActorDetails.id,
             sourceActorId: sourceActorDetails.id ? sourceActorDetails.id : undefined
         });
