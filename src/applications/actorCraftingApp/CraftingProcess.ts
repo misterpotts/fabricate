@@ -1,4 +1,4 @@
-interface CraftingPlan {
+interface CraftingProcess {
 
     readonly isReady: boolean;
 
@@ -6,9 +6,9 @@ interface CraftingPlan {
 
 }
 
-export { CraftingPlan };
+export { CraftingProcess };
 
-class DefaultCraftingPlan implements CraftingPlan {
+class DefaultCraftingProcess implements CraftingProcess {
 
     private readonly _recipeName: string;
 
@@ -30,9 +30,9 @@ class DefaultCraftingPlan implements CraftingPlan {
 
 }
 
-export { DefaultCraftingPlan };
+export { DefaultCraftingProcess };
 
-class NoCraftingPlan implements CraftingPlan {
+class NoCraftingProcess implements CraftingProcess {
 
     get recipeName(): string {
         return "No Recipe";
@@ -44,4 +44,4 @@ class NoCraftingPlan implements CraftingPlan {
 
 }
 
-export { NoCraftingPlan };
+export { NoCraftingProcess };

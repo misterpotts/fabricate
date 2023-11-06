@@ -1,5 +1,5 @@
 import {writable, Writable, Readable, derived, Subscriber} from "svelte/store";
-import {RecipeSummary} from "./RecipeSummary";
+import {CraftingAssessment} from "./CraftingAssessment";
 
 interface RecipeSummarySearchTerms {
 
@@ -10,15 +10,15 @@ interface RecipeSummarySearchTerms {
 
 class RecipeSummarySearchStore {
 
-    private readonly _availableRecipes: Writable<RecipeSummary[]>;
-    private readonly _searchResults: Readable<RecipeSummary[]>;
+    private readonly _availableRecipes: Writable<CraftingAssessment[]>;
+    private readonly _searchResults: Readable<CraftingAssessment[]>;
     private readonly _searchTerms: Writable<RecipeSummarySearchTerms>;
 
     constructor({
         availableRecipes = writable([]),
         searchTerms = {}
     }: {
-        availableRecipes?: Writable<RecipeSummary[]>;
+        availableRecipes?: Writable<CraftingAssessment[]>;
         searchTerms?: RecipeSummarySearchTerms;
     } = {}) {
         this._availableRecipes = availableRecipes;
@@ -31,11 +31,11 @@ class RecipeSummarySearchStore {
         );
     }
 
-    set availableRecipes(value: RecipeSummary[]) {
+    set availableRecipes(value: CraftingAssessment[]) {
         this._availableRecipes.set(value);
     }
 
-    private searchRecipes(recipes: RecipeSummary[], searchTerms: RecipeSummarySearchTerms) {
+    private searchRecipes(recipes: CraftingAssessment[], searchTerms: RecipeSummarySearchTerms) {
         return recipes.filter((recipe) => {
             if (searchTerms.craftableOnly && !recipe.isCraftable) {
                 return false;
@@ -43,7 +43,7 @@ class RecipeSummarySearchStore {
             if (!searchTerms.name) {
                 return true;
             }
-            return recipe.name.search(new RegExp(searchTerms.name, "i")) >= 0;
+            return recipe.recipeName.search(new RegExp(searchTerms.name, "i")) >= 0;
         });
     }
 

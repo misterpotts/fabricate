@@ -25,10 +25,10 @@ import {DefaultUnit, Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
 import {Option} from "../common/Options";
 import {
-    CraftableRecipeSummary,
-    DisabledRecipeSummary,
-    RecipeSummary, SelectableRequirementOptionSummary, UncraftableRecipeSummary
-} from "../../applications/actorCraftingApp/RecipeSummary";
+    DefaultCraftingAssessment,
+    DisabledCraftingAssessment,
+    CraftingAssessment, SelectableRequirementOptionSummary, ImpossibleCraftingAssessment
+} from "../../applications/actorCraftingApp/CraftingAssessment";
 import {Recipe} from "../crafting/recipe/Recipe";
 
 /**
@@ -235,7 +235,7 @@ interface CraftingAPI {
      * @param options.craftableOnly - If true, only recipes that can be crafted will be included in the summary.
      * @returns A Promise that resolves with an array of recipe summaries.
      */
-    summariseRecipes(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<RecipeSummary[]>;
+    summariseRecipes(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<CraftingAssessment[]>;
 
 }
 
@@ -297,7 +297,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         targetActorId: string;
         craftingSystemId?: string;
         craftableOnly?: boolean;
-    }): Promise<RecipeSummary[]> {
+    }): Promise<CraftingAssessment[]> {
 
         const allRecipes = await this.recipeAPI.getAll();
         const includedCraftingSystemIds = craftingSystemId ? [craftingSystemId] : Array.from(allRecipes.values()).map(recipe => recipe.craftingSystemId);
@@ -335,13 +335,13 @@ class DefaultCraftingAPI implements CraftingAPI {
     private async summariseRecipe(recipe: Recipe,
                             inventory: Inventory,
                             includedComponentsById: Map<string, Component>,
-                            includedEssencesById: Map<string, Essence>): Promise<RecipeSummary> {
+                            includedEssencesById: Map<string, Essence>): Promise<CraftingAssessment> {
 
         await recipe.load();
 
         // A disabled recipe cannot be crafted.
         if (recipe.isDisabled) {
-            return new DisabledRecipeSummary({
+            return new DisabledCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl
@@ -350,7 +350,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         // A recipe with no requirements can be crafted. It needs nothing! Bit strange, but no judgement here.
         if (!recipe.hasRequirements) {
-            return new CraftableRecipeSummary({
+            return new DefaultCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,
@@ -378,7 +378,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         // If there are selectable options, the recipe can be crafted.
         if (selectableOptions.length > 0) {
-            return new CraftableRecipeSummary({
+            return new DefaultCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,
@@ -386,7 +386,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             });
         // If there are no selectable options, the recipe cannot be crafted.
         } else {
-            return new UncraftableRecipeSummary({
+            return new ImpossibleCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,

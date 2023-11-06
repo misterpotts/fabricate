@@ -9,10 +9,10 @@
     import {NoActorDetails} from "./ActorDetails";
     import {onMount} from "svelte";
     import {DefaultActorDetails} from "./ActorDetails.js";
-    import type {RecipeSummary} from "./RecipeSummary";
+    import type {CraftingAssessment} from "./CraftingAssessment";
     import truncate from "../common/Truncate";
     import Properties from "../../scripts/Properties";
-    import {type CraftingPlan, DefaultCraftingPlan, NoCraftingPlan} from "./CraftingPlan";
+    import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
     import {NoSalvagePlan, type SalvagePlan} from "./SalvagePlan";
     import {DefaultSearchableStore, type SearchableStore} from "./SearchableStore";
 
@@ -40,21 +40,22 @@
     let targetActorDetails: ActorDetails = new NoActorDetails();
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
+    
 
     let searchCraftableOnly: boolean = false;
     let searchName: string = "";
-    let availableRecipes = [];
-    $: recipeSummariesToDisplay = availableRecipes.filter(recipe => {
+    let craftingAssessments: CraftingAssessment[] = [];
+    $: craftingAssessmentsToDisplay = craftingAssessments.filter(recipe => {
         if (searchCraftableOnly && !recipe.isCraftable) {
             return false;
         }
         if (!searchName) {
             return true;
         }
-        return recipe.name.search(new RegExp(searchName, "i")) >= 0;
+        return recipe.recipeName.search(new RegExp(searchName, "i")) >= 0;
     });
 
-    let craftingPlan: CraftingPlan = new NoCraftingPlan();
+    let craftingPlan: CraftingProcess = new NoCraftingProcess();
 
     let salvagePlan: SalvagePlan = new NoSalvagePlan();
 
@@ -116,18 +117,18 @@
     }
 
     async function prepareRecipes() {
-        availableRecipes = await fabricateAPI.crafting.summariseRecipes({
+        craftingAssessments = await fabricateAPI.crafting.summariseRecipes({
             targetActorId: targetActorDetails.id,
             sourceActorId: sourceActorDetails.id ? sourceActorDetails.id : undefined
         });
     }
 
     function clearCraftingPlan() {
-        craftingPlan = new NoCraftingPlan();
+        craftingPlan = new NoCraftingProcess();
     }
 
-    function handleRecipeSummaryClicked(recipeSummary: RecipeSummary) {
-        craftingPlan = new DefaultCraftingPlan({ recipeName: recipeSummary.name });
+    function openCraftingAssessment(recipeSummary: CraftingAssessment) {
+        craftingPlan = new DefaultCraftingProcess({ recipeName: recipeSummary.recipeName });
     }
 
     onMount(async () => {
@@ -221,23 +222,23 @@
                 <div class="max-h-full overflow-y-auto">
                 </div>
                 <div class="grid grid-cols-6 gap-5 p-4">
-                    {#each recipeSummariesToDisplay as recipeSummary}
-                        <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => handleRecipeSummaryClicked(recipeSummary)}>
+                    {#each craftingAssessmentsToDisplay as craftingAssessment}
+                        <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => openCraftingAssessment(craftingAssessment)}>
                             <header class="card-header bg-surface-800 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
-                                <span class="place-self-center text-white">{truncate(recipeSummary.name, 24, 12)}</span>
+                                <span class="place-self-center text-white">{truncate(craftingAssessment.recipeName, 24, 12)}</span>
                             </header>
                             <section class="relative">
-                                <Avatar src="{recipeSummary.imageUrl}"
+                                <Avatar src="{craftingAssessment.imageUrl}"
                                         fallback="{Properties.ui.defaults.recipeImageUrl}"
                                         width="w-full"
                                         rounded="rounded-none" />
-                                {#if recipeSummary.isDisabled}
+                                {#if craftingAssessment.isDisabled}
                                     <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                                         <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
                                             <i class="fa-solid fa-lock"></i>
                                         </span>
                                     </footer>
-                                {:else if !recipeSummary.isCraftable}
+                                {:else if !craftingAssessment.isCraftable}
                                     <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                                         <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
                                             <i class="fa-solid fa-circle-xmark"></i>
