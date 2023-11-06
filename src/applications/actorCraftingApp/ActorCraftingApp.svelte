@@ -14,7 +14,7 @@
     import Properties from "../../scripts/Properties";
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
     import {NoSalvagePlan, type SalvagePlan} from "./SalvagePlan";
-    import {DefaultSearchableStore, type SearchableStore} from "./SearchableStore";
+    import type {SalvageAssessment} from "./SalvageAssessment";
 
     /*
      * ===========================================================================
@@ -40,24 +40,51 @@
     let targetActorDetails: ActorDetails = new NoActorDetails();
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
-    
+    let craftingPlan: CraftingProcess = new NoCraftingProcess();
+    let salvagePlan: SalvagePlan = new NoSalvagePlan();
 
-    let searchCraftableOnly: boolean = false;
-    let searchName: string = "";
+    /*
+     * ===========================================================================
+     * Recipe crafting assessments search
+     * ===========================================================================
+     */
+
+    let mustBeCraftable: boolean = false;
+    let searchRecipeName: string = "";
     let craftingAssessments: CraftingAssessment[] = [];
     $: craftingAssessmentsToDisplay = craftingAssessments.filter(recipe => {
-        if (searchCraftableOnly && !recipe.isCraftable) {
+        if (mustBeCraftable && !recipe.isCraftable) {
             return false;
         }
-        if (!searchName) {
+        if (!searchRecipeName) {
             return true;
         }
-        return recipe.recipeName.search(new RegExp(searchName, "i")) >= 0;
+        return recipe.recipeName.search(new RegExp(searchRecipeName, "i")) >= 0;
     });
 
-    let craftingPlan: CraftingProcess = new NoCraftingProcess();
+    /*
+     * ===========================================================================
+     * Component salvage assessments search
+     * ===========================================================================
+     */
 
-    let salvagePlan: SalvagePlan = new NoSalvagePlan();
+    let mustHaveSalvage: boolean = false;
+    let mustBeSalvageable: boolean = false;
+    let searchSalvageName: string = "";
+    let salvageAssessments: SalvageAssessment[] = [];
+    $: salvageAssessmentsToDisplay = salvageAssessments
+        .filter(salvageAssessment => {
+            if (mustHaveSalvage && !salvageAssessment.hasSalvage) {
+                return false;
+            }
+            if (mustBeSalvageable && !salvageAssessment.isSalvageable) {
+                return false;
+            }
+            if (!searchSalvageName) {
+                return true;
+            }
+            return salvageAssessment.componentName.search(new RegExp(searchSalvageName, "i")) >= 0;
+        });
 
     async function loadActorDetails() {
         const sourceActor = await game.actors.get(sourceActorId);
@@ -123,6 +150,12 @@
         });
     }
 
+    async function prepareComponents() {
+        salvageAssessments = await fabricateAPI.crafting.summariseComponents({
+            actorId: targetActorDetails.id,
+        });
+    }
+
     function clearCraftingPlan() {
         craftingPlan = new NoCraftingProcess();
     }
@@ -134,6 +167,7 @@
     onMount(async () => {
         await loadActorDetails();
         await prepareRecipes();
+        await prepareComponents();
     });
 
 </script>
@@ -212,11 +246,11 @@
                 <AppBar background="bg-surface-700 text-white" slotDefault="space-x-4 flex">
                     <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
                         <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchName} />
+                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchRecipeName} />
                     </div>
                     <label class="label flex items-center space-x-2">
                         <span>Craftable only?</span>
-                        <input class="checkbox" type="checkbox" bind:checked={searchCraftableOnly} />
+                        <input class="checkbox" type="checkbox" bind:checked={mustBeCraftable} />
                     </label>
                 </AppBar>
                 <div class="max-h-full overflow-y-auto">
