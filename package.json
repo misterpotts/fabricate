@@ -20,7 +20,7 @@
     "@skeletonlabs/tw-plugin": "^0.2.3",
     "@sveltejs/vite-plugin-svelte": "^2.4.6",
     "@tsconfig/svelte": "^5.0.2",
-    "@types/jest": "^29.5.6",
+    "@types/jest": "^29.5.7",
     "@types/jquery": "^3.5.25",
     "@types/lodash": "^4.14.200",
     "autoprefixer": "^10.4.16",
