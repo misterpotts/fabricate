@@ -1,3 +1,6 @@
+import {Essence} from "../../scripts/crafting/essence/Essence";
+import {Unit} from "../../scripts/common/Unit";
+
 type SelectableSalvageOptionSummary = { name: string, id: string };
 
 export { SelectableSalvageOptionSummary }
@@ -20,61 +23,15 @@ interface SalvageAssessment {
 
     selectableOptions: SelectableSalvageOptionSummary[];
 
+    hasEssences: boolean;
+
+    needsCatalysts: boolean;
+
+    essences: Unit<Essence>[];
+
 }
 
 export { SalvageAssessment }
-
-class DisabledSalvageAssessment implements SalvageAssessment {
-
-    private readonly _id: string;
-    private readonly _name: string;
-    private readonly _imageUrl: string;
-    private readonly _quantity: number;
-    private readonly _hasSalvage: boolean;
-
-    constructor({ id, name, imageUrl, quantity, hasSalvage }: { id: string, name: string; imageUrl: string; quantity: number; hasSalvage: boolean; }) {
-        this._id = id;
-        this._name = name;
-        this._imageUrl = imageUrl;
-        this._quantity = quantity;
-        this._hasSalvage = hasSalvage;
-    }
-
-    get quantity(): number {
-        return this._quantity;
-    }
-
-    get isSalvageable(): boolean {
-        return false;
-    }
-
-    get hasSalvage(): boolean {
-        return this._hasSalvage;
-    }
-
-    get isDisabled(): boolean {
-        return true;
-    }
-
-    get componentId(): string {
-        return this._id;
-    }
-
-    get componentName(): string {
-        return this._name;
-    }
-
-    get imageUrl(): string {
-        return this._imageUrl;
-    }
-
-    get selectableOptions(): SelectableSalvageOptionSummary[] {
-        return [];
-    }
-
-}
-
-export { DisabledSalvageAssessment }
 
 class DefaultSalvageAssessment implements SalvageAssessment {
 
@@ -82,7 +39,11 @@ class DefaultSalvageAssessment implements SalvageAssessment {
     private readonly _name: string;
     private readonly _imageUrl: string;
     private readonly _quantity: number;
+    private readonly _essences: Unit<Essence>[];
+    private readonly _disabled: boolean;
     private readonly _hasSalvage: boolean;
+    private readonly _salvageable: boolean;
+    private readonly _needsCatalysts: boolean;
     private readonly _selectableOptions: SelectableSalvageOptionSummary[];
 
     constructor({
@@ -90,22 +51,46 @@ class DefaultSalvageAssessment implements SalvageAssessment {
         name,
         imageUrl,
         quantity,
+        essences = [],
+        disabled = false,
         hasSalvage = false,
+        salvageable = false,
+        needsCatalysts = false,
         selectableOptions = []
     }: {
-        id: string,
-        name: string,
-        imageUrl: string,
-        quantity: number,
-        hasSalvage?: boolean,
-        selectableOptions?: SelectableSalvageOptionSummary[]
+        id: string;
+        name: string;
+        imageUrl: string;
+        quantity: number;
+        essences?: Unit<Essence>[];
+        disabled?: boolean;
+        hasSalvage?: boolean;
+        salvageable?: boolean;
+        needsCatalysts?: boolean;
+        selectableOptions?: SelectableSalvageOptionSummary[];
     }) {
         this._id = id;
         this._name = name;
         this._imageUrl = imageUrl;
         this._quantity = quantity;
+        this._essences = essences;
+        this._disabled = disabled;
         this._hasSalvage = hasSalvage;
+        this._salvageable = salvageable;
+        this._needsCatalysts = needsCatalysts;
         this._selectableOptions = selectableOptions;
+    }
+
+    get needsCatalysts(): boolean {
+        return this._needsCatalysts;
+    }
+
+    get hasEssences(): boolean {
+        return this._essences.length > 0;
+    }
+
+    get essences(): Unit<Essence>[] {
+        return this._essences;
     }
 
     get quantity(): number {
@@ -113,7 +98,7 @@ class DefaultSalvageAssessment implements SalvageAssessment {
     }
 
     get isSalvageable(): boolean {
-        return true;
+        return this._salvageable;
     }
 
     get hasSalvage(): boolean {
@@ -121,7 +106,7 @@ class DefaultSalvageAssessment implements SalvageAssessment {
     }
 
     get isDisabled(): boolean {
-        return false;
+        return this._disabled;
     }
 
     get componentId(): string {
@@ -143,55 +128,3 @@ class DefaultSalvageAssessment implements SalvageAssessment {
 }
 
 export { DefaultSalvageAssessment }
-
-class ImpossibleSalvageAssessment implements SalvageAssessment {
-
-    private readonly _id: string;
-    private readonly _name: string;
-    private readonly _imageUrl: string;
-    private readonly _hasSalvage: boolean;
-    private readonly _quantity: number;
-
-    constructor({ id, name, imageUrl, hasSalvage = false, quantity }: { id: string, name: string; imageUrl: string; hasSalvage?: boolean; quantity: number; }) {
-        this._id = id;
-        this._name = name;
-        this._imageUrl = imageUrl;
-        this._hasSalvage = hasSalvage;
-        this._quantity = quantity;
-    }
-
-    get quantity(): number {
-        return this._quantity;
-    }
-
-    get isSalvageable(): boolean {
-        return false;
-    }
-
-    get hasSalvage(): boolean {
-        return this._hasSalvage;
-    }
-
-    get isDisabled(): boolean {
-        return false;
-    }
-
-    get componentId(): string {
-        return this._id;
-    }
-
-    get componentName(): string {
-        return this._name;
-    }
-
-    get imageUrl(): string {
-        return this._imageUrl;
-    }
-
-    get selectableOptions(): SelectableSalvageOptionSummary[] {
-        return [];
-    }
-
-}
-
-export { ImpossibleSalvageAssessment }

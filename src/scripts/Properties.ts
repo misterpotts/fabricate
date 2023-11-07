@@ -24,6 +24,7 @@ const Properties = {
             noItemImageUrl: "modules/fabricate/assets/no-item-icon-4.webp",
             erroredItemImageUrl: "modules/fabricate/assets/item-loading-error-icon.webp",
             recipeImageUrl: "icons/sundries/scrolls/scroll-runed-brown-black.webp",
+            componentImageUrl: "icons/tools/laboratory/mortar-empty-grey.webp",
             craftingSystem: {
                 name: "My New Crafting System",
                 description: "This crafting system is a collection of recipes and components that can be used to craft items.",

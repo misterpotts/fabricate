@@ -51,7 +51,7 @@ class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
         const applicationOptions = {
             title: this.localizationService.localize(`${Properties.module.id}.ActorCraftingApp.title`),
             id: Properties.ui.apps.actorCraftingApp.id,
-            resizable: true,
+            resizable: false,
             width: 1020,
             height: 780
         }

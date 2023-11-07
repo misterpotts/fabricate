@@ -70,7 +70,9 @@
 
     let mustHaveSalvage: boolean = false;
     let mustBeSalvageable: boolean = false;
-    let searchSalvageName: string = "";
+    let mustHaveEssences: boolean = false;
+    let mustHaveCatalysts: boolean = false;
+    let searchComponentName: string = "";
     let salvageAssessments: SalvageAssessment[] = [];
     $: salvageAssessmentsToDisplay = salvageAssessments
         .filter(salvageAssessment => {
@@ -80,10 +82,16 @@
             if (mustBeSalvageable && !salvageAssessment.isSalvageable) {
                 return false;
             }
-            if (!searchSalvageName) {
+            if (mustHaveEssences && !salvageAssessment.hasEssences) {
+                return false;
+            }
+            if (mustHaveCatalysts && !salvageAssessment.needsCatalysts) {
+                return false;
+            }
+            if (!searchComponentName) {
                 return true;
             }
-            return salvageAssessment.componentName.search(new RegExp(searchSalvageName, "i")) >= 0;
+            return salvageAssessment.componentName.search(new RegExp(searchComponentName, "i")) >= 0;
         });
 
     /*
@@ -123,11 +131,13 @@
         sourceActorDetails = value;
         showSourceActorSelection = false;
         await prepareRecipes();
+        await prepareComponents();
     }
 
     async function clearSourceActor() {
         sourceActorDetails = targetActorDetails;
         await prepareRecipes();
+        await prepareComponents();
     }
 
     function toggleSourceActorSelectionMenu() {
@@ -158,7 +168,7 @@
 
     async function prepareComponents() {
         salvageAssessments = await fabricateAPI.crafting.summariseComponents({
-            actorId: targetActorDetails.id,
+            actorId: sourceActorDetails.id,
         });
     }
 
@@ -178,9 +188,9 @@
 
 </script>
 
-<AppShell>
-    <svelte:fragment slot="header">
-        <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full h-full relative" background="bg-surface-600">
+<div class="flex flex-col w-full h-full">
+    <div class="flex flex-row w-full">
+        <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full h-full relative" background="bg-surface-600" class="w-full">
             <svelte:fragment slot="lead">
                 <div class="space-x-4 flex place-items-center">
                     <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
@@ -228,21 +238,9 @@
                 {/if}
             </svelte:fragment>
         </AppBar>
-    </svelte:fragment>
-    <svelte:fragment slot="sidebarLeft">
-        <AppRail background="bg-surface-600">
-            <AppRailTile bind:group={view} name="components" value={ActorCraftingAppViewType.SALVAGING} title="components">
-                <svelte:fragment slot="lead"><i class="fa-solid fa-toolbox"></i></svelte:fragment>
-                <span>Components</span>
-            </AppRailTile>
-            <AppRailTile bind:group={view} name="recipes" value={ActorCraftingAppViewType.CRAFTING} title="recipes">
-                <svelte:fragment slot="lead"><i class="fa-solid fa-book"></i></svelte:fragment>
-                <span>Recipes</span>
-            </AppRailTile>
-        </AppRail>
-    </svelte:fragment>
-    <slot>
-        {#if view === ActorCraftingAppViewType.CRAFTING}
+    </div>
+    <div class="flex flex-row w-full h-full">
+        <div class="flex flex-col w-4/5 h-full">
             {#if craftingAssessment.isReady}
                 <AppBar background="bg-surface-700 text-white">
                     <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingPlan}></i></svelte:fragment>
@@ -259,8 +257,6 @@
                         <input class="checkbox" type="checkbox" bind:checked={mustBeCraftable} />
                     </label>
                 </AppBar>
-                <div class="max-h-full overflow-y-auto">
-                </div>
                 <div class="grid grid-cols-6 gap-5 p-4">
                     {#each craftingAssessmentsToDisplay as craftingAssessment}
                         <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => openCraftingAssessment(craftingAssessment)}>
@@ -274,15 +270,15 @@
                                         rounded="rounded-none" />
                                 {#if craftingAssessment.isDisabled}
                                     <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                        <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
-                                            <i class="fa-solid fa-lock"></i>
-                                        </span>
+                                    <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
                                     </footer>
                                 {:else if !craftingAssessment.isCraftable}
                                     <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                        <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
-                                            <i class="fa-solid fa-circle-xmark"></i>
-                                        </span>
+                                    <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                    </span>
                                     </footer>
                                 {/if}
                             </section>
@@ -290,8 +286,83 @@
                     {/each}
                 </div>
             {/if}
-        {/if}
-    </slot>
-</AppShell>
+        </div>
+        <div class="flex flex-col w-2/5 p-4 h-[660px]">
+            <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px]">
+                <div class="row-span-1 col-span-2 pb-1">
+                    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+                        <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Component name..." bind:value={searchComponentName} />
+                    </div>
+                </div>
+                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                    <input class="checkbox" type="checkbox" bind:checked={mustBeSalvageable} />
+                    <span class="mt-0">Can be salvaged</span>
+                </label>
+                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                    <input class="checkbox" type="checkbox" bind:checked={mustHaveSalvage} />
+                    <span class="mt-0">Has Salvage</span>
+                </label>
+                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                    <input class="checkbox" type="checkbox" bind:checked={mustHaveEssences} />
+                    <span class="mt-0">Has essences</span>
+                </label>
+                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                    <input class="checkbox" type="checkbox" bind:checked={mustHaveCatalysts} />
+                    <span class="mt-0">Needs catalysts</span>
+                </label>
+            </div>
+            <div class="pt-4 pb-4 h-[480px]">
+                <div class="overflow-y-auto overflow-x-hidden h-full">
+                    <div class="grid grid-cols-1 gap-3">
+                        {#each salvageAssessmentsToDisplay as salvageAssessment}
+                            <div class="card col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative" class:cursor-pointer={salvageAssessment.isSalvageable}>
+                                {#if salvageAssessment.isSalvageable}
+                                <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
+                                    <i class="fa-solid fa-recycle"></i>
+                                </span>
+                                {:else if salvageAssessment.hasSalvage}
+                                    <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
+                                    <i class="fa-solid fa-recycle"></i>
+                                </span>
+                                {/if}
+                                <Avatar src="{salvageAssessment.imageUrl}"
+                                        fallback="{Properties.ui.defaults.componentImageUrl}"
+                                        width="w-16"
+                                        rounded="rounded-r-none rounded-l-md" />
+                                <div class="flex flex-col p-2">
+                                    <p class="font-bold text-white mb-2">
+                                        {truncate(salvageAssessment.componentName, 18, 12)}
+                                    </p>
+                                    {#if salvageAssessment.hasEssences}
+                                        <div class="flex-row flex">
+                                            <p class="mr-2">Essences:</p>
+                                            {#each salvageAssessment.essences as essence}
+                                            <span class="text-l flex" data-tooltip="{essence.element.name}">
+                                                <span class="mr-1">{essence.quantity}</span>
+                                                <i class="{essence.element.iconCode}"></i>
+                                            </span>
+                                            {/each}
+                                        </div>
+                                    {/if}
+                                </div>
+                            </div>
+                        {:else}
+                            {#if salvageAssessments.length > 0}
+                                <div class="col-span-1 h-96 flex place-items-center">
+                                    <p class="w-full text-center leading-relaxed">No matching components. Broaden your search terms, or get more stuff.</p>
+                                </div>
+                            {:else}
+                                <div class="col-span-1 h-96 flex place-items-center">
+                                    <p class="w-full text-center leading-relaxed">This actor doesn't own any components.</p>
+                                </div>
+                            {/if}
+                        {/each}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 

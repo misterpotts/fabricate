@@ -32,8 +32,6 @@ import {
 import {Recipe} from "../crafting/recipe/Recipe";
 import {
     DefaultSalvageAssessment,
-    DisabledSalvageAssessment,
-    ImpossibleSalvageAssessment,
     SalvageAssessment
 } from "../../applications/actorCraftingApp/SalvageAssessment";
 
@@ -363,13 +361,17 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const allComponents = await this.componentAPI.getAll();
         const filteredComponents = craftingSystemId ? Array.from(allComponents.values()).filter(component => component.craftingSystemId === craftingSystemId) : Array.from(allComponents.values());
+        const allEssencesIds= filteredComponents
+            .flatMap(component => component.essences.members)
+            .map(essence => essence.id);
+        const allEssencesById = await this.essenceAPI.getAllById(allEssencesIds);
 
         const gameSystemId = this.gameProvider.getGameSystemId();
         const actor = await this.gameProvider.loadActor(actorId);
         const inventory = this.inventoryFactory.make(gameSystemId, actor, filteredComponents);
         const ownedComponents = inventory.getContents();
         const salvageSummaries = await Promise.all(ownedComponents
-            .map(unit => this.summariseComponent(unit.element, unit.quantity, inventory)));
+            .map(unit => this.summariseComponent(unit.element, unit.quantity, inventory, allEssencesById)));
 
         if (salvageableOnly) {
             return salvageSummaries.filter(summary => summary.isSalvageable);
@@ -379,39 +381,24 @@ class DefaultCraftingAPI implements CraftingAPI {
 
     }
 
-    private async summariseComponent(component: Component, quantity: number, inventory: Inventory): Promise<SalvageAssessment> {
+    private async summariseComponent(component: Component, quantity: number, inventory: Inventory, allEssencesById: Map<string, Essence>): Promise<SalvageAssessment> {
 
         // todo: this can be smarter, or done in the UI
         await component.load();
 
-        // A disabled component cannot be salvaged.
-        if (component.isDisabled) {
-            return new DisabledSalvageAssessment({
-                quantity,
-                id: component.id,
-                name: component.name,
-                imageUrl: component.imageUrl,
-                hasSalvage: component.isSalvageable,
-            });
-        }
+        const componentEssenceUnits = component.essences
+            .convertElements(essenceReference => allEssencesById.get(essenceReference.id))
+            .units;
 
-        // A component with no salvage options cannot be salvaged.
-        if (!component.isSalvageable) {
-            return new ImpossibleSalvageAssessment({
-                quantity,
-                id: component.id,
-                name: component.name,
-                imageUrl: component.imageUrl,
-            });
-        }
-
+        const ownedComponents = inventory.getContents();
+        let needsCatalysts = false;
         // A component with salvage options can be salvaged if its requirements can be met.
         const availableSalvageOptions = component.salvageOptions.all
             .filter(salvageOption => {
                 if (!salvageOption.value.requiresCatalysts) {
                     return true;
                 }
-                const ownedComponents = inventory.getContents();
+                needsCatalysts = true;
                 if (ownedComponents.isEmpty()) {
                     return false;
                 }
@@ -419,24 +406,18 @@ class DefaultCraftingAPI implements CraftingAPI {
             });
 
         // If there are available salvage options, the component can be salvaged.
-        if (availableSalvageOptions.length > 0) {
-            return new DefaultSalvageAssessment({
-                quantity,
-                id: component.id,
-                name: component.name,
-                imageUrl: component.imageUrl,
-                hasSalvage: true,
-            });
-        // If there are no available salvage options, the component cannot be salvaged.
-        } else {
-            return new ImpossibleSalvageAssessment({
-                quantity,
-                id: component.id,
-                name: component.name,
-                imageUrl: component.imageUrl,
-                hasSalvage: true,
-            });
-        }
+        const canBeSalvaged = availableSalvageOptions.length > 0;
+        return new DefaultSalvageAssessment({
+            quantity,
+            needsCatalysts,
+            id: component.id,
+            name: component.name,
+            imageUrl: component.imageUrl,
+            essences: componentEssenceUnits,
+            disabled: component.isDisabled,
+            hasSalvage: component.isSalvageable,
+            salvageable: canBeSalvaged,
+        });
 
     }
 
