@@ -40,7 +40,7 @@
     let targetActorDetails: ActorDetails = new NoActorDetails();
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
-    let craftingPlan: CraftingProcess = new NoCraftingProcess();
+    let craftingAssessment: CraftingProcess = new NoCraftingProcess();
     let salvagePlan: SalvagePlan = new NoSalvagePlan();
 
     /*
@@ -85,6 +85,12 @@
             }
             return salvageAssessment.componentName.search(new RegExp(searchSalvageName, "i")) >= 0;
         });
+
+    /*
+     * ===========================================================================
+     * Component member functions
+     * ===========================================================================
+     */
 
     async function loadActorDetails() {
         const sourceActor = await game.actors.get(sourceActorId);
@@ -157,11 +163,11 @@
     }
 
     function clearCraftingPlan() {
-        craftingPlan = new NoCraftingProcess();
+        craftingAssessment = new NoCraftingProcess();
     }
 
     function openCraftingAssessment(recipeSummary: CraftingAssessment) {
-        craftingPlan = new DefaultCraftingProcess({ recipeName: recipeSummary.recipeName });
+        craftingAssessment = new DefaultCraftingProcess({ recipeName: recipeSummary.recipeName });
     }
 
     onMount(async () => {
@@ -237,10 +243,10 @@
     </svelte:fragment>
     <slot>
         {#if view === ActorCraftingAppViewType.CRAFTING}
-            {#if craftingPlan.isReady}
+            {#if craftingAssessment.isReady}
                 <AppBar background="bg-surface-700 text-white">
                     <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingPlan}></i></svelte:fragment>
-                    <h2 class="text-lg">{craftingPlan.recipeName}</h2>
+                    <h2 class="text-lg">{craftingAssessment.recipeName}</h2>
                 </AppBar>
             {:else}
                 <AppBar background="bg-surface-700 text-white" slotDefault="space-x-4 flex">
