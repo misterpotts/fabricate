@@ -1318,6 +1318,12 @@ END COMMON STRUCTURAL STYLES
 
 /*
 =====================================================================
+  END FABRICATE CUSTOM WEB FONT STYLES
+=====================================================================
+*/
+
+/*
+=====================================================================
   BEGIN CSS RESET
 =====================================================================
 */
@@ -1330,6 +1336,7 @@ END COMMON STRUCTURAL STYLES
       text-shadow: none;
     }
   }
+
 }
 
 /*
@@ -1338,17 +1345,38 @@ END COMMON STRUCTURAL STYLES
 =====================================================================
 */
 
-
 /*
 =====================================================================
-  END FABRICATE CUSTOM WEB FONT STYLES
+  BEGIN FABRICATE TAILWIND SUPPORTING STYLES
 =====================================================================
 */
 
-img.avatar-image {
-  border: none;
-  border-radius: 0;
+:root [data-theme='fabricate-skeleton-theme'] {
+
+  .scroll-primary::-webkit-scrollbar-track {
+    box-shadow: 0 0 1px #999 inset;
+    border-radius: 3px;
+  }
+
+  .scroll-primary::-webkit-scrollbar-thumb {
+    outline: none;
+    border-radius: 3px;
+    background: #ac9e6c;
+    border: none;
+  }
+
+  img.avatar-image {
+    border: none;
+    border-radius: 0;
+  }
+
 }
+
+/*
+=====================================================================
+  END FABRICATE TAILWIND SUPPORTING STYLES
+=====================================================================
+*/
 
 /*
 =====================================================================

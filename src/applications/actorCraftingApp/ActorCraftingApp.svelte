@@ -240,55 +240,63 @@
         </AppBar>
     </div>
     <div class="flex flex-row w-full h-full">
-        <div class="flex flex-col w-4/5 h-full">
+        <div class="flex flex-col w-4/5  p-4 h-[660px]">
             {#if craftingAssessment.isReady}
                 <AppBar background="bg-surface-700 text-white">
                     <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingPlan}></i></svelte:fragment>
                     <h2 class="text-lg">{craftingAssessment.recipeName}</h2>
                 </AppBar>
             {:else}
-                <AppBar background="bg-surface-700 text-white" slotDefault="space-x-4 flex">
-                    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-                        <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchRecipeName} />
-                    </div>
-                    <label class="label flex items-center space-x-2">
-                        <span>Craftable only?</span>
-                        <input class="checkbox" type="checkbox" bind:checked={mustBeCraftable} />
-                    </label>
-                </AppBar>
-                <div class="grid grid-cols-6 gap-5 p-4">
-                    {#each craftingAssessmentsToDisplay as craftingAssessment}
-                        <div class="card variant-soft-primary rounded-none cursor-pointer" on:click={() => openCraftingAssessment(craftingAssessment)}>
-                            <header class="card-header bg-surface-800 h-1/3 text-center pb-4 grid grid-cols-1 grid-rows-1">
-                                <span class="place-self-center text-white">{truncate(craftingAssessment.recipeName, 24, 12)}</span>
-                            </header>
-                            <section class="relative">
-                                <Avatar src="{craftingAssessment.imageUrl}"
-                                        fallback="{Properties.ui.defaults.recipeImageUrl}"
-                                        width="w-full"
-                                        rounded="rounded-none" />
-                                {#if craftingAssessment.isDisabled}
-                                    <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                    <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
-                                        <i class="fa-solid fa-lock"></i>
-                                    </span>
-                                    </footer>
-                                {:else if !craftingAssessment.isCraftable}
-                                    <footer class="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                    <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
-                                        <i class="fa-solid fa-circle-xmark"></i>
-                                    </span>
-                                    </footer>
-                                {/if}
-                            </section>
+                <h2 class="text-center text-xl pb-4">Recipes</h2>
+                <div class="bg-surface-700 text-white grid grid-cols-3 grid-rows-1 p-4 gap-2 h-[64px] rounded-md">
+                    <div class="row-span-1 col-span-2 pb-1">
+                        <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+                            <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Recipe name..." bind:value={searchRecipeName} />
                         </div>
-                    {/each}
+                    </div>
+                    <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                        <input class="checkbox" type="checkbox" bind:checked={mustBeCraftable} />
+                        <span class="mt-0">Can be crafted</span>
+                    </label>
+                </div>
+                <div class="pt-4 pb-4 h-[552px]">
+                    <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-primary scroll-px-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            {#each craftingAssessmentsToDisplay as craftingAssessment}
+                                <div class="card overflow-hidden snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative">
+                                    <Avatar src="{craftingAssessment.imageUrl}"
+                                            fallback="{Properties.ui.defaults.recipeImageUrl}"
+                                            width="w-3/12"
+                                            rounded="rounded-r-none rounded-l-md" />
+                                    <div class="flex flex-col p-2 w-9/12">
+                                        <p class="font-bold text-white mb-2">
+                                            {truncate(craftingAssessment.recipeName, 38, 16)}
+                                        </p>
+                                    </div>
+                                    {#if craftingAssessment.isDisabled}
+                                        <div class="absolute e w-3/12 h-full bg-black bg-opacity-50 flex justify-center items-center">
+                                            <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
+                                                <i class="fa-solid fa-lock"></i>
+                                            </span>
+                                        </div>
+                                    {:else if !craftingAssessment.isCraftable}
+                                        <div class="absolute w-3/12 h-full bg-black bg-opacity-50 flex justify-center items-center">
+                                            <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
+                                                <i class="fa-solid fa-circle-xmark"></i>
+                                            </span>
+                                        </div>
+                                    {/if}
+                                </div>
+                            {/each}
+                        </div>
+                    </div>
                 </div>
             {/if}
         </div>
         <div class="flex flex-col w-2/5 p-4 h-[660px]">
-            <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px]">
+            <h2 class="text-center text-xl pb-4">Components</h2>
+            <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px] rounded-md">
                 <div class="row-span-1 col-span-2 pb-1">
                     <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
                         <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
@@ -312,11 +320,11 @@
                     <span class="mt-0">Needs catalysts</span>
                 </label>
             </div>
-            <div class="pt-4 pb-4 h-[480px]">
-                <div class="overflow-y-auto overflow-x-hidden h-full">
+            <div class="pt-4 pb-4 h-[436px]">
+                <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-primary scroll-px-4">
                     <div class="grid grid-cols-1 gap-3">
                         {#each salvageAssessmentsToDisplay as salvageAssessment}
-                            <div class="card col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative" class:cursor-pointer={salvageAssessment.isSalvageable}>
+                            <div class="card snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative" class:cursor-pointer={salvageAssessment.isSalvageable}>
                                 {#if salvageAssessment.isSalvageable}
                                 <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
                                     <i class="fa-solid fa-recycle"></i>
