@@ -13,7 +13,7 @@
     import truncate from "../common/Truncate";
     import Properties from "../../scripts/Properties";
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
-    import {NoSalvagePlan, type SalvagePlan} from "./SalvagePlan";
+    import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
     import type {SalvageAssessment} from "./SalvageAssessment";
 
     /*
@@ -40,8 +40,8 @@
     let targetActorDetails: ActorDetails = new NoActorDetails();
     let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
-    let craftingAssessment: CraftingProcess = new NoCraftingProcess();
-    let salvagePlan: SalvagePlan = new NoSalvagePlan();
+    let craftingProcess: CraftingProcess = new NoCraftingProcess();
+    let salvagePlan: SalvageProcess = new NoSalvageProcess();
 
     /*
      * ===========================================================================
@@ -172,12 +172,12 @@
         });
     }
 
-    function clearCraftingPlan() {
-        craftingAssessment = new NoCraftingProcess();
+    function clearCraftingProcess() {
+        craftingProcess = new NoCraftingProcess();
     }
 
-    function openCraftingAssessment(recipeSummary: CraftingAssessment) {
-        craftingAssessment = new DefaultCraftingProcess({ recipeName: recipeSummary.recipeName });
+    function openCraftingAssessment(craftingAssessment: CraftingAssessment) {
+        craftingProcess = new DefaultCraftingProcess({ recipeName: craftingAssessment.recipeName });
     }
 
     onMount(async () => {
@@ -209,7 +209,9 @@
                     <div class="flex w-full justify-start">
                         <div class="space-x-4 place-items-center cursor-pointer inline-flex" on:auxclick={clearSourceActor} on:click={toggleSourceActorSelectionMenu}>
                             <div class="relative">
-                                <span class="text-black badge-icon variant-filled-tertiary absolute -top-0 -right-0 z-10"><i class="fa-solid fa-box-open"></i></span>
+                                <span class="text-black text-lg badge-icon variant-filled-tertiary absolute -top-0 -right-0 z-10">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </span>
                                 <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
                             </div>
                             <h2 class="text-lg">{sourceActorDetails.name}</h2>
@@ -240,11 +242,11 @@
         </AppBar>
     </div>
     <div class="flex flex-row w-full h-full">
-        <div class="flex flex-col w-4/5  p-4 h-[660px]">
-            {#if craftingAssessment.isReady}
+        <div class="flex flex-col w-4/5  p-4 h-[654px]">
+            {#if craftingProcess.isReady}
                 <AppBar background="bg-surface-700 text-white">
-                    <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingPlan}></i></svelte:fragment>
-                    <h2 class="text-lg">{craftingAssessment.recipeName}</h2>
+                    <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingProcess}></i></svelte:fragment>
+                    <h2 class="text-lg">{craftingProcess.recipeName}</h2>
                 </AppBar>
             {:else}
                 <h2 class="text-center text-xl pb-4">Recipes</h2>
@@ -260,11 +262,13 @@
                         <span class="mt-0">Can be crafted</span>
                     </label>
                 </div>
-                <div class="pt-4 pb-4 h-[552px]">
+                <div class="pt-4 pb-4 h-[528px]">
                     <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-primary scroll-px-4">
                         <div class="grid grid-cols-2 gap-3">
                             {#each craftingAssessmentsToDisplay as craftingAssessment}
-                                <div class="card overflow-hidden snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative">
+                                <div class="card overflow-hidden snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative"
+                                     class:cursor-pointer={!craftingAssessment.isDisabled}
+                                     on:click={() => openCraftingAssessment(craftingAssessment)}>
                                     <Avatar src="{craftingAssessment.imageUrl}"
                                             fallback="{Properties.ui.defaults.recipeImageUrl}"
                                             width="w-3/12"
@@ -288,13 +292,23 @@
                                         </div>
                                     {/if}
                                 </div>
+                            {:else}
+                                {#if craftingAssessments.length > 0}
+                                    <div class="col-span-1 h-96 flex place-items-center">
+                                        <p class="w-full text-center leading-relaxed">No matching recipes. Broaden your search terms, or get more stuff.</p>
+                                    </div>
+                                {:else}
+                                    <div class="col-span-1 h-96 flex place-items-center">
+                                        <p class="w-full text-center leading-relaxed">{targetActorDetails.name} doesn't own any recipes.</p>
+                                    </div>
+                                {/if}
                             {/each}
                         </div>
                     </div>
                 </div>
             {/if}
         </div>
-        <div class="flex flex-col w-2/5 p-4 h-[660px]">
+        <div class="flex flex-col w-2/5 p-4 h-[654px]">
             <h2 class="text-center text-xl pb-4">Components</h2>
             <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px] rounded-md">
                 <div class="row-span-1 col-span-2 pb-1">
@@ -362,7 +376,7 @@
                                 </div>
                             {:else}
                                 <div class="col-span-1 h-96 flex place-items-center">
-                                    <p class="w-full text-center leading-relaxed">This actor doesn't own any components.</p>
+                                    <p class="w-full text-center leading-relaxed">{sourceActorDetails.name} doesn't own any components.</p>
                                 </div>
                             {/if}
                         {/each}
