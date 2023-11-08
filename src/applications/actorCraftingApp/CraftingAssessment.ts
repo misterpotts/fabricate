@@ -2,15 +2,15 @@ type SelectableRequirementOptionSummary = { name: string, id: string };
 
 export { SelectableRequirementOptionSummary }
 
-interface RecipeSummary {
+interface CraftingAssessment {
 
     isCraftable: boolean;
 
     isDisabled: boolean;
 
-    id: string;
+    recipeId: string;
 
-    name: string;
+    recipeName: string;
 
     imageUrl: string;
 
@@ -18,9 +18,9 @@ interface RecipeSummary {
 
 }
 
-export { RecipeSummary }
+export { CraftingAssessment }
 
-class DisabledRecipeSummary implements RecipeSummary {
+class DisabledCraftingAssessment implements CraftingAssessment {
 
     private readonly _id: string;
     private readonly _name: string;
@@ -40,11 +40,11 @@ class DisabledRecipeSummary implements RecipeSummary {
         return true;
     }
 
-    get id(): string {
+    get recipeId(): string {
         return this._id;
     }
 
-    get name(): string {
+    get recipeName(): string {
         return this._name;
     }
 
@@ -58,9 +58,9 @@ class DisabledRecipeSummary implements RecipeSummary {
 
 }
 
-export { DisabledRecipeSummary }
+export { DisabledCraftingAssessment }
 
-class CraftableRecipeSummary implements RecipeSummary {
+class DefaultCraftingAssessment implements CraftingAssessment {
 
     private readonly _id: string;
     private readonly _name: string;
@@ -92,11 +92,11 @@ class CraftableRecipeSummary implements RecipeSummary {
         return false;
     }
 
-    get id(): string {
+    get recipeId(): string {
         return this._id;
     }
 
-    get name(): string {
+    get recipeName(): string {
         return this._name;
     }
 
@@ -110,9 +110,9 @@ class CraftableRecipeSummary implements RecipeSummary {
 
 }
 
-export { CraftableRecipeSummary }
+export { DefaultCraftingAssessment }
 
-class UncraftableRecipeSummary implements RecipeSummary {
+class ImpossibleCraftingAssessment implements CraftingAssessment {
 
     private readonly _id: string;
     private readonly _name: string;
@@ -132,11 +132,11 @@ class UncraftableRecipeSummary implements RecipeSummary {
         return false;
     }
 
-    get id(): string {
+    get recipeId(): string {
         return this._id;
     }
 
-    get name(): string {
+    get recipeName(): string {
         return this._name;
     }
 
@@ -150,4 +150,4 @@ class UncraftableRecipeSummary implements RecipeSummary {
 
 }
 
-export { UncraftableRecipeSummary }
+export { ImpossibleCraftingAssessment }

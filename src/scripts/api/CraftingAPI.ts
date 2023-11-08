@@ -25,11 +25,15 @@ import {DefaultUnit, Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
 import {Option} from "../common/Options";
 import {
-    CraftableRecipeSummary,
-    DisabledRecipeSummary,
-    RecipeSummary, SelectableRequirementOptionSummary, UncraftableRecipeSummary
-} from "../../applications/actorCraftingApp/RecipeSummary";
+    DefaultCraftingAssessment,
+    DisabledCraftingAssessment,
+    CraftingAssessment, SelectableRequirementOptionSummary, ImpossibleCraftingAssessment
+} from "../../applications/actorCraftingApp/CraftingAssessment";
 import {Recipe} from "../crafting/recipe/Recipe";
+import {
+    DefaultSalvageAssessment,
+    SalvageAssessment
+} from "../../applications/actorCraftingApp/SalvageAssessment";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -223,8 +227,8 @@ interface CraftingAPI {
     setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
 
     /**
-     * Summarises all the recipes that the specified actor owns, describing the number of times each recipe can be
-     * crafted, if at all.
+     * Summarises all the recipes that the specified actor owns, describing whether each recipe can be crafted, if at
+     *  all.
      *
      * @param options - The options to use when summarising recipes.
      * @param options.sourceActorId - The optional ID of the actor to use as a source for components. Defaults to the
@@ -235,7 +239,20 @@ interface CraftingAPI {
      * @param options.craftableOnly - If true, only recipes that can be crafted will be included in the summary.
      * @returns A Promise that resolves with an array of recipe summaries.
      */
-    summariseRecipes(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<RecipeSummary[]>;
+    summariseRecipes(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<CraftingAssessment[]>;
+
+    /**
+     * Summarises all the components that the specified actor owns, describing whether each component can be salvaged,
+     *  if at all.
+     *
+     * @param options - The options to use when summarising components.
+     * @param options.actorId - The ID of the actor to use as a source for components
+     * @param options.craftingSystemId - The ID of the crafting system to limit the summary to. If not specified, all
+     *  components for all crafting systems will be summarised.
+     * @param options.salvageableOnly - If true, only components that can be salvaged will be included in the summary.
+     * @returns A Promise that resolves with an array of component summaries.
+     */
+    summariseComponents(options: { actorId: string, craftingSystemId?: string, salvageableOnly?: boolean }): Promise<SalvageAssessment[]>;
 
 }
 
@@ -297,7 +314,7 @@ class DefaultCraftingAPI implements CraftingAPI {
         targetActorId: string;
         craftingSystemId?: string;
         craftableOnly?: boolean;
-    }): Promise<RecipeSummary[]> {
+    }): Promise<CraftingAssessment[]> {
 
         const allRecipes = await this.recipeAPI.getAll();
         const includedCraftingSystemIds = craftingSystemId ? [craftingSystemId] : Array.from(allRecipes.values()).map(recipe => recipe.craftingSystemId);
@@ -332,16 +349,89 @@ class DefaultCraftingAPI implements CraftingAPI {
 
     }
 
+    async summariseComponents({
+        actorId,
+        craftingSystemId,
+        salvageableOnly,
+    }: {
+        actorId: string;
+        craftingSystemId?: string;
+        salvageableOnly?: boolean;
+    }): Promise<SalvageAssessment[]> {
+
+        const allComponents = await this.componentAPI.getAll();
+        const filteredComponents = craftingSystemId ? Array.from(allComponents.values()).filter(component => component.craftingSystemId === craftingSystemId) : Array.from(allComponents.values());
+        const allEssencesIds= filteredComponents
+            .flatMap(component => component.essences.members)
+            .map(essence => essence.id);
+        const allEssencesById = await this.essenceAPI.getAllById(allEssencesIds);
+
+        const gameSystemId = this.gameProvider.getGameSystemId();
+        const actor = await this.gameProvider.loadActor(actorId);
+        const inventory = this.inventoryFactory.make(gameSystemId, actor, filteredComponents);
+        const ownedComponents = inventory.getContents();
+        const salvageSummaries = await Promise.all(ownedComponents
+            .map(unit => this.summariseComponent(unit.element, unit.quantity, inventory, allEssencesById)));
+
+        if (salvageableOnly) {
+            return salvageSummaries.filter(summary => summary.isSalvageable);
+        } else {
+            return salvageSummaries;
+        }
+
+    }
+
+    private async summariseComponent(component: Component, quantity: number, inventory: Inventory, allEssencesById: Map<string, Essence>): Promise<SalvageAssessment> {
+
+        // todo: this can be smarter, or done in the UI
+        await component.load();
+
+        const componentEssenceUnits = component.essences
+            .convertElements(essenceReference => allEssencesById.get(essenceReference.id))
+            .units;
+
+        const ownedComponents = inventory.getContents();
+        let needsCatalysts = false;
+        // A component with salvage options can be salvaged if its requirements can be met.
+        const availableSalvageOptions = component.salvageOptions.all
+            .filter(salvageOption => {
+                if (!salvageOption.value.requiresCatalysts) {
+                    return true;
+                }
+                needsCatalysts = true;
+                if (ownedComponents.isEmpty()) {
+                    return false;
+                }
+                return ownedComponents.contains(salvageOption.value.catalysts);
+            });
+
+        // If there are available salvage options, the component can be salvaged.
+        const canBeSalvaged = availableSalvageOptions.length > 0;
+        return new DefaultSalvageAssessment({
+            quantity,
+            needsCatalysts,
+            id: component.id,
+            name: component.name,
+            imageUrl: component.imageUrl,
+            essences: componentEssenceUnits,
+            disabled: component.isDisabled,
+            hasSalvage: component.isSalvageable,
+            salvageable: canBeSalvaged,
+        });
+
+    }
+
     private async summariseRecipe(recipe: Recipe,
                             inventory: Inventory,
                             includedComponentsById: Map<string, Component>,
-                            includedEssencesById: Map<string, Essence>): Promise<RecipeSummary> {
+                            includedEssencesById: Map<string, Essence>): Promise<CraftingAssessment> {
 
+        // todo: this can be smarter, or done in the UI
         await recipe.load();
 
         // A disabled recipe cannot be crafted.
         if (recipe.isDisabled) {
-            return new DisabledRecipeSummary({
+            return new DisabledCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl
@@ -350,13 +440,14 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         // A recipe with no requirements can be crafted. It needs nothing! Bit strange, but no judgement here.
         if (!recipe.hasRequirements) {
-            return new CraftableRecipeSummary({
+            return new DefaultCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,
             });
         }
-        const selectableOptions: SelectableRequirementOptionSummary[] = recipe.requirementOptions.all
+
+        const availableOptions: SelectableRequirementOptionSummary[] = recipe.requirementOptions.all
             .map(requirementOption => {
                 const selection = this.makeSelections(requirementOption.value,
                     inventory.getContents(),
@@ -377,16 +468,16 @@ class DefaultCraftingAPI implements CraftingAPI {
             });
 
         // If there are selectable options, the recipe can be crafted.
-        if (selectableOptions.length > 0) {
-            return new CraftableRecipeSummary({
+        if (availableOptions.length > 0) {
+            return new DefaultCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,
-                selectableOptions,
+                selectableOptions: availableOptions,
             });
         // If there are no selectable options, the recipe cannot be crafted.
         } else {
-            return new UncraftableRecipeSummary({
+            return new ImpossibleCraftingAssessment({
                 id: recipe.id,
                 name: recipe.name,
                 imageUrl: recipe.imageUrl,

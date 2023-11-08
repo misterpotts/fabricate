@@ -24,7 +24,7 @@ export { ActorCraftingAppFactory }
 
 class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
 
-    private static readonly DEFAULT_VIEW: ActorCraftingAppViewType = ActorCraftingAppViewType.BROWSE_RECIPES;
+    private static readonly DEFAULT_VIEW: ActorCraftingAppViewType = ActorCraftingAppViewType.SALVAGING;
 
     private readonly localizationService: LocalizationService;
     private readonly fabricateAPI: FabricateAPI;
@@ -51,7 +51,7 @@ class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
         const applicationOptions = {
             title: this.localizationService.localize(`${Properties.module.id}.ActorCraftingApp.title`),
             id: Properties.ui.apps.actorCraftingApp.id,
-            resizable: true,
+            resizable: false,
             width: 1020,
             height: 780
         }
