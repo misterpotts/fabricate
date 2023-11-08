@@ -194,7 +194,7 @@
             <svelte:fragment slot="lead">
                 <div class="space-x-4 flex place-items-center">
                     <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
-                    <h1 class="mb-0 text-lg">{targetActorDetails.name}</h1>
+                    <h1 class="mb-0 text-xl">{targetActorDetails.name}</h1>
                 </div>
             </svelte:fragment>
             <svelte:fragment slot="trail">
@@ -209,12 +209,12 @@
                     <div class="flex w-full justify-start">
                         <div class="space-x-4 place-items-center cursor-pointer inline-flex" on:auxclick={clearSourceActor} on:click={toggleSourceActorSelectionMenu}>
                             <div class="relative">
-                                <span class="text-black text-lg badge-icon variant-filled-tertiary absolute -top-0 -right-0 z-10">
+                                <span class="text-black text-lg badge-icon variant-filled-tertiary absolute w-7 h-7 -top-0 -right-0 z-10">
                                     <i class="fa-solid fa-box-open"></i>
                                 </span>
                                 <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
                             </div>
-                            <h2 class="text-lg">{sourceActorDetails.name}</h2>
+                            <h2 class="text-xl">{sourceActorDetails.name}</h2>
                         </div>
                     </div>
                 {/if}
