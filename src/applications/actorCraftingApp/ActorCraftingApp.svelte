@@ -294,11 +294,11 @@
                                 </div>
                             {:else}
                                 {#if craftingAssessments.length > 0}
-                                    <div class="col-span-1 h-96 flex place-items-center">
+                                    <div class="col-span-2 h-96 flex place-items-center">
                                         <p class="w-full text-center leading-relaxed">No matching recipes. Broaden your search terms, or get more stuff.</p>
                                     </div>
                                 {:else}
-                                    <div class="col-span-1 h-96 flex place-items-center">
+                                    <div class="col-span-2 h-96 flex place-items-center">
                                         <p class="w-full text-center leading-relaxed">{targetActorDetails.name} doesn't own any recipes.</p>
                                     </div>
                                 {/if}
