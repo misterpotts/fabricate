@@ -15,6 +15,7 @@
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
     import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
     import type {SalvageAssessment} from "./SalvageAssessment";
+    import {DefaultSalvageProcess} from "./SalvageProcess.js";
 
     /*
      * ===========================================================================
@@ -38,10 +39,23 @@
 
     let sourceActorDetails: ActorDetails = new NoActorDetails();
     let targetActorDetails: ActorDetails = new NoActorDetails();
-    let availableSourceActors: ActorDetails[] = [];
     let showSourceActorSelection: boolean = false;
     let craftingProcess: CraftingProcess = new NoCraftingProcess();
-    let salvagePlan: SalvageProcess = new NoSalvageProcess();
+    let salvageProcess: SalvageProcess = new NoSalvageProcess();
+
+    /*
+     * ===========================================================================
+     * Recipe crafting assessments search
+     * ===========================================================================
+     */
+    let sourceActorName: string = "";
+    let availableSourceActors: ActorDetails[] = [];
+    $: filteredSourceActors = availableSourceActors.filter(actor => {
+        if (!sourceActorName) {
+            return true;
+        }
+        return actor.name.search(new RegExp(sourceActorName, "i")) >= 0;
+    });
 
     /*
      * ===========================================================================
@@ -176,8 +190,16 @@
         craftingProcess = new NoCraftingProcess();
     }
 
-    function openCraftingAssessment(craftingAssessment: CraftingAssessment) {
+    function clearSalvageProcess() {
+        salvageProcess = new NoSalvageProcess();
+    }
+
+    function startCraftingProcess(craftingAssessment: CraftingAssessment) {
         craftingProcess = new DefaultCraftingProcess({ recipeName: craftingAssessment.recipeName });
+    }
+
+    function startSalvageProcess(salvageAssessment: SalvageAssessment) {
+        salvageProcess = new DefaultSalvageProcess({ componentName: salvageAssessment.componentName });
     }
 
     onMount(async () => {
@@ -189,7 +211,7 @@
 </script>
 
 <div class="flex flex-col w-full h-full">
-    <div class="flex flex-row w-full">
+    <div class="flex flex-row">
         <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full h-full relative" background="bg-surface-600" class="w-full">
             <svelte:fragment slot="lead">
                 <div class="space-x-4 flex place-items-center">
@@ -219,36 +241,52 @@
                     </div>
                 {/if}
                 {#if showSourceActorSelection}
-                    <ListBox rounded="rounded" class="absolute bg-surface-700 top-14 -left-3 w-full border-surface-500 space-x-0">
-                        {#each availableSourceActors as availableSourceActor}
-                            <ListBoxItem bind:group={sourceActorDetails}
-                                         name="Source Actor"
-                                         hover="hover:bg-primary-500 hover:text-black"
-                                         value="{availableSourceActor}"
-                                         on:click={() => {setSourceActor(availableSourceActor);}}>
-                                <svelte:fragment slot="lead">
-                                    <Avatar src="{availableSourceActor.avatarUrl}"
-                                            initials="{availableSourceActor.initials}"
-                                            width="w-8"
-                                            rounded="rounded-full"
-                                            class="inline-flex" />
-                                </svelte:fragment>
-                                <span>{availableSourceActor.name}</span>
-                            </ListBoxItem>
-                        {/each}
-                    </ListBox>
+                    <div class="absolute rounded-lg bg-surface-700 top-14 -left-3 w-full border-primary-300 border space-x-0 z-10">
+                        <div class="p-4">
+                            <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+                                <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
+                                <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Actor name..." bind:value={sourceActorName} />
+                            </div>
+                        </div>
+                        <div class="scroll scroll-secondary overflow-x-hidden overflow-y-auto max-h-48">
+                            <ListBox>
+                                {#each filteredSourceActors as availableSourceActor}
+                                    <ListBoxItem bind:group={sourceActorDetails}
+                                                 name="Source Actor"
+                                                 hover="hover:bg-primary-400 hover:text-black"
+                                                 rounded="rounded-none"
+                                                 value="{availableSourceActor}"
+                                                 on:click={() => {setSourceActor(availableSourceActor);}}>
+                                        <svelte:fragment slot="lead">
+                                            <Avatar src="{availableSourceActor.avatarUrl}"
+                                                    initials="{availableSourceActor.initials}"
+                                                    width="w-8"
+                                                    rounded="rounded-full"
+                                                    class="inline-flex" />
+                                        </svelte:fragment>
+                                        <span>{availableSourceActor.name}</span>
+                                    </ListBoxItem>
+                                {/each}
+                            </ListBox>
+                        </div>
+                    </div>
                 {/if}
             </svelte:fragment>
         </AppBar>
     </div>
-    <div class="flex flex-row w-full h-full">
-        <div class="flex flex-col w-4/5  p-4 h-[654px]">
-            {#if craftingProcess.isReady}
-                <AppBar background="bg-surface-700 text-white">
-                    <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingProcess}></i></svelte:fragment>
-                    <h2 class="text-lg">{craftingProcess.recipeName}</h2>
-                </AppBar>
-            {:else}
+    {#if craftingProcess.isReady}
+        <AppBar background="bg-surface-700 text-white">
+            <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingProcess}></i></svelte:fragment>
+            <h2 class="text-lg">Crafting {craftingProcess.recipeName}</h2>
+        </AppBar>
+    {:else if salvageProcess.isReady}
+        <AppBar background="bg-surface-700 text-white">
+            <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearSalvageProcess}></i></svelte:fragment>
+            <h2 class="text-lg">Salvaging {salvageProcess.componentName}</h2>
+        </AppBar>
+    {:else}
+        <div class="flex flex-row h-full">
+            <div class="flex flex-col w-4/5  p-4 h-[654px]">
                 <h2 class="text-center text-xl pb-4">Recipes</h2>
                 <div class="bg-surface-700 text-white grid grid-cols-3 grid-rows-1 p-4 gap-2 h-[64px] rounded-md">
                     <div class="row-span-1 col-span-2 pb-1">
@@ -263,12 +301,12 @@
                     </label>
                 </div>
                 <div class="pt-4 pb-4 h-[528px]">
-                    <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-primary scroll-px-4">
+                    <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-secondary scroll-px-4">
                         <div class="grid grid-cols-2 gap-3">
                             {#each craftingAssessmentsToDisplay as craftingAssessment}
                                 <div class="card overflow-hidden snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative"
                                      class:cursor-pointer={!craftingAssessment.isDisabled}
-                                     on:click={() => openCraftingAssessment(craftingAssessment)}>
+                                     on:click={() => startCraftingProcess(craftingAssessment)}>
                                     <Avatar src="{craftingAssessment.imageUrl}"
                                             fallback="{Properties.ui.defaults.recipeImageUrl}"
                                             width="w-3/12"
@@ -306,85 +344,87 @@
                         </div>
                     </div>
                 </div>
-            {/if}
-        </div>
-        <div class="flex flex-col w-2/5 p-4 h-[654px]">
-            <h2 class="text-center text-xl pb-4">Components</h2>
-            <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px] rounded-md">
-                <div class="row-span-1 col-span-2 pb-1">
-                    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-                        <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Component name..." bind:value={searchComponentName} />
-                    </div>
-                </div>
-                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
-                    <input class="checkbox" type="checkbox" bind:checked={mustBeSalvageable} />
-                    <span class="mt-0">Can be salvaged</span>
-                </label>
-                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
-                    <input class="checkbox" type="checkbox" bind:checked={mustHaveSalvage} />
-                    <span class="mt-0">Has Salvage</span>
-                </label>
-                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
-                    <input class="checkbox" type="checkbox" bind:checked={mustHaveEssences} />
-                    <span class="mt-0">Has essences</span>
-                </label>
-                <label class="label flex items-center space-x-2 col-span-1 row-span-1">
-                    <input class="checkbox" type="checkbox" bind:checked={mustHaveCatalysts} />
-                    <span class="mt-0">Needs catalysts</span>
-                </label>
             </div>
-            <div class="pt-4 pb-4 h-[436px]">
-                <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-primary scroll-px-4">
-                    <div class="grid grid-cols-1 gap-3">
-                        {#each salvageAssessmentsToDisplay as salvageAssessment}
-                            <div class="card snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative" class:cursor-pointer={salvageAssessment.isSalvageable}>
-                                {#if salvageAssessment.isSalvageable}
-                                <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
-                                    <i class="fa-solid fa-recycle"></i>
-                                </span>
-                                {:else if salvageAssessment.hasSalvage}
-                                    <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
-                                    <i class="fa-solid fa-recycle"></i>
-                                </span>
-                                {/if}
-                                <Avatar src="{salvageAssessment.imageUrl}"
-                                        fallback="{Properties.ui.defaults.componentImageUrl}"
-                                        width="w-16"
-                                        rounded="rounded-r-none rounded-l-md" />
-                                <div class="flex flex-col p-2">
-                                    <p class="font-bold text-white mb-2">
-                                        {truncate(salvageAssessment.componentName, 18, 12)}
-                                    </p>
-                                    {#if salvageAssessment.hasEssences}
-                                        <div class="flex-row flex">
-                                            <p class="mr-2">Essences:</p>
-                                            {#each salvageAssessment.essences as essence}
-                                            <span class="text-l flex" data-tooltip="{essence.element.name}">
-                                                <span class="mr-1">{essence.quantity}</span>
-                                                <i class="{essence.element.iconCode}"></i>
-                                            </span>
-                                            {/each}
-                                        </div>
+            <div class="flex flex-col w-2/5 p-4 h-[654px]">
+                <h2 class="text-center text-xl pb-4">Components</h2>
+                <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px] rounded-md">
+                    <div class="row-span-1 col-span-2 pb-1">
+                        <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+                            <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Component name..." bind:value={searchComponentName} />
+                        </div>
+                    </div>
+                    <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                        <input class="checkbox" type="checkbox" bind:checked={mustBeSalvageable} />
+                        <span class="mt-0">Can be salvaged</span>
+                    </label>
+                    <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                        <input class="checkbox" type="checkbox" bind:checked={mustHaveSalvage} />
+                        <span class="mt-0">Has Salvage</span>
+                    </label>
+                    <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                        <input class="checkbox" type="checkbox" bind:checked={mustHaveEssences} />
+                        <span class="mt-0">Has essences</span>
+                    </label>
+                    <label class="label flex items-center space-x-2 col-span-1 row-span-1">
+                        <input class="checkbox" type="checkbox" bind:checked={mustHaveCatalysts} />
+                        <span class="mt-0">Needs catalysts</span>
+                    </label>
+                </div>
+                <div class="pt-4 pb-4 h-[436px]">
+                    <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-secondary scroll-px-4">
+                        <div class="grid grid-cols-1 gap-3">
+                            {#each salvageAssessmentsToDisplay as salvageAssessment}
+                                <div class="card snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row relative"
+                                     class:cursor-pointer={salvageAssessment.hasSalvage}
+                                    on:click={() => startSalvageProcess(salvageAssessment)}>
+                                    {#if salvageAssessment.isSalvageable}
+                                    <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
+                                        <i class="fa-solid fa-recycle"></i>
+                                    </span>
+                                    {:else if salvageAssessment.hasSalvage}
+                                        <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
+                                        <i class="fa-solid fa-recycle"></i>
+                                    </span>
                                     {/if}
-                                </div>
-                            </div>
-                        {:else}
-                            {#if salvageAssessments.length > 0}
-                                <div class="col-span-1 h-96 flex place-items-center">
-                                    <p class="w-full text-center leading-relaxed">No matching components. Broaden your search terms, or get more stuff.</p>
+                                    <Avatar src="{salvageAssessment.imageUrl}"
+                                            fallback="{Properties.ui.defaults.componentImageUrl}"
+                                            width="w-16"
+                                            rounded="rounded-r-none rounded-l-md" />
+                                    <div class="flex flex-col p-2">
+                                        <p class="font-bold text-white mb-2">
+                                            {truncate(salvageAssessment.componentName, 18, 12)}
+                                        </p>
+                                        {#if salvageAssessment.hasEssences}
+                                            <div class="flex-row flex">
+                                                <p class="mr-2">Essences:</p>
+                                                {#each salvageAssessment.essences as essence}
+                                                <span class="text-l flex" data-tooltip="{essence.element.name}">
+                                                    <span class="mr-1">{essence.quantity}</span>
+                                                    <i class="{essence.element.iconCode}"></i>
+                                                </span>
+                                                {/each}
+                                            </div>
+                                        {/if}
+                                    </div>
                                 </div>
                             {:else}
-                                <div class="col-span-1 h-96 flex place-items-center">
-                                    <p class="w-full text-center leading-relaxed">{sourceActorDetails.name} doesn't own any components.</p>
-                                </div>
-                            {/if}
-                        {/each}
+                                {#if salvageAssessments.length > 0}
+                                    <div class="col-span-1 h-96 flex place-items-center">
+                                        <p class="w-full text-center leading-relaxed">No matching components. Broaden your search terms, or get more stuff.</p>
+                                    </div>
+                                {:else}
+                                    <div class="col-span-1 h-96 flex place-items-center">
+                                        <p class="w-full text-center leading-relaxed">{sourceActorDetails.name} doesn't own any components.</p>
+                                    </div>
+                                {/if}
+                            {/each}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    {/if}
 </div>
 
 

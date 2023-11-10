@@ -1353,16 +1353,34 @@ END COMMON STRUCTURAL STYLES
 
 :root [data-theme='fabricate-skeleton-theme'] {
 
-  .scroll-primary::-webkit-scrollbar-track {
-    box-shadow: 0 0 1px #999 inset;
+  .scroll-thumb {
+    outline: none;
     border-radius: 3px;
+    border: none;
+  }
+
+  .scroll-track {
+    border-radius: 3px;
+    box-shadow: 0 0 1px #999 inset;
+  }
+
+  .scroll {
+    &::-webkit-scrollbar-track {
+      .scroll-track();
+    }
+    &::-webkit-scrollbar-thumb {
+      .scroll-thumb();
+    }
   }
 
   .scroll-primary::-webkit-scrollbar-thumb {
-    outline: none;
-    border-radius: 3px;
+    .scroll-thumb();
     background: #ac9e6c;
-    border: none;
+  }
+
+  .scroll-secondary::-webkit-scrollbar-thumb {
+    .scroll-thumb();
+    background: #bc9276;
   }
 
   img.avatar-image {
