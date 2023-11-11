@@ -251,10 +251,11 @@
                                 <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Actor name..." bind:value={sourceActorName} />
                             </div>
                         </div>
-                        <div class="scroll scroll-secondary overflow-x-hidden overflow-y-auto max-h-48">
+                        <div class="scroll scroll-secondary overflow-x-hidden overflow-y-auto max-h-48 snap-y snap-mandatory scroll-smooth scroll-px-4">
                             <ListBox>
                                 {#each filteredSourceActors as availableSourceActor}
                                     <ListBoxItem bind:group={sourceActorDetails}
+                                                 class="snap-start"
                                                  name="Source Actor"
                                                  hover="hover:bg-primary-400 hover:text-black"
                                                  rounded="rounded-none"
