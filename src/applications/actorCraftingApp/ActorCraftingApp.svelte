@@ -200,6 +200,9 @@
     }
 
     function startSalvageProcess(salvageAssessment: SalvageAssessment) {
+        if (!salvageAssessment.hasSalvage) {
+            return;
+        }
         salvageProcess = new DefaultSalvageProcess({ componentName: salvageAssessment.componentName });
     }
 
