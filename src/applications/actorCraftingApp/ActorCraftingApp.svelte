@@ -16,6 +16,7 @@
     import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
     import type {SalvageAssessment} from "./SalvageAssessment";
     import {DefaultSalvageProcess} from "./SalvageProcess.js";
+    import {clickOutside} from "../common/ClickOutside";
 
     /*
      * ===========================================================================
@@ -241,7 +242,9 @@
                     </div>
                 {/if}
                 {#if showSourceActorSelection}
-                    <div class="absolute rounded-lg bg-surface-700 top-14 -left-3 w-full border-primary-300 border space-x-0 z-10">
+                    <div class="absolute rounded-lg bg-surface-700 top-14 -left-3 w-full border-primary-300 border space-x-0 z-10"
+                         use:clickOutside
+                         on:clickOutside={() => { showSourceActorSelection = false; }}>
                         <div class="p-4">
                             <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
                                 <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
