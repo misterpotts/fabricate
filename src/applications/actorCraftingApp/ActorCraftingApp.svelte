@@ -15,6 +15,8 @@
     import type {SalvageAssessment} from "./SalvageAssessment";
     import {DefaultSalvageProcess} from "./SalvageProcess.js";
     import ActorCraftingAppHeader from "./ActorCraftingAppHeader.svelte";
+    import RecipeCraftingProcess from "./RecipeCraftingProcess.svelte";
+    import ComponentSalvageProcess from "./ComponentSalvageProcess.svelte";
 
     /*
      * ===========================================================================
@@ -110,14 +112,6 @@
         });
     }
 
-    function clearCraftingProcess() {
-        craftingProcess = new NoCraftingProcess();
-    }
-
-    function clearSalvageProcess() {
-        salvageProcess = new NoSalvageProcess();
-    }
-
     function startCraftingProcess(craftingAssessment: CraftingAssessment) {
         craftingProcess = new DefaultCraftingProcess({ recipeName: craftingAssessment.recipeName });
     }
@@ -145,18 +139,12 @@
 
 <div class="flex flex-col w-full h-full">
     <div class="flex flex-row">
-        <ActorCraftingAppHeader targetActorDetails={targetActorDetails} sourceActorDetails={sourceActorDetails} on:sourceActorChanged={handleSourceActorChanged} />
+        <ActorCraftingAppHeader localization={localization} targetActorDetails={targetActorDetails} sourceActorDetails={sourceActorDetails} on:sourceActorChanged={handleSourceActorChanged} />
     </div>
     {#if craftingProcess.isReady}
-        <AppBar background="bg-surface-700 text-white">
-            <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingProcess}></i></svelte:fragment>
-            <h2 class="text-lg">Crafting {craftingProcess.recipeName}</h2>
-        </AppBar>
+        <RecipeCraftingProcess fabricateAPI={fabricateAPI} localization={localization} bind:craftingProcess={craftingProcess} />
     {:else if salvageProcess.isReady}
-        <AppBar background="bg-surface-700 text-white">
-            <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearSalvageProcess}></i></svelte:fragment>
-            <h2 class="text-lg">Salvaging {salvageProcess.componentName}</h2>
-        </AppBar>
+        <ComponentSalvageProcess fabricateAPI={fabricateAPI} localization={localization} bind:salvageProcess={salvageProcess} />
     {:else}
         <div class="flex flex-row h-full">
             <div class="flex flex-col w-4/5  p-4 h-[654px]">
