@@ -14,13 +14,14 @@
     import {onMount} from "svelte";
     import type {CraftingAssessment} from "./CraftingAssessment";
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
-    import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
+    import {NoSalvageProcess, type SalvageOption, type SalvageProcess} from "./SalvageProcess";
     import type {SalvageAssessment} from "./SalvageAssessment";
     import {DefaultSalvageProcess} from "./SalvageProcess.js";
     import ActorCraftingAppHeader from "./ActorCraftingAppHeader.svelte";
     import RecipeCraftingProcess from "./RecipeCraftingProcess.svelte";
     import ComponentSalvageProcess from "./ComponentSalvageProcess.svelte";
     import ActorInventoryBrowser from "./ActorInventoryBrowser.svelte";
+    import {DefaultSelectableOptions} from "../../scripts/common/SelectableOptions";
 
     /*
      * ===========================================================================
@@ -55,14 +56,14 @@
      */
 
     async function prepareRecipes() {
-        craftingAssessments = await fabricateAPI.crafting.summariseRecipes({
+        craftingAssessments = await fabricateAPI.crafting.assessCrafting({
             targetActorId: targetActorDetails.id,
             sourceActorId: sourceActorDetails.id ? sourceActorDetails.id : undefined
         });
     }
 
     async function prepareComponents() {
-        salvageAssessments = await fabricateAPI.crafting.summariseComponents({
+        salvageAssessments = await fabricateAPI.crafting.assessSalvage({
             actorId: sourceActorDetails.id,
         });
     }
@@ -76,8 +77,11 @@
         craftingProcess = new DefaultCraftingProcess({ recipeName: event.detail.recipeName });
     }
 
-    function startSalvageProcess(event: CustomEvent<SalvageAssessment>) {
-        salvageProcess = new DefaultSalvageProcess({ componentName: event.detail.componentName });
+    async function startSalvageProcess(event: CustomEvent<SalvageAssessment>) {
+        salvageProcess = await fabricateAPI.crafting.getSalvageProcess({
+            componentId: event.detail.componentId,
+            actorId: sourceActorDetails.id
+        });
     }
 
     async function handleSourceActorChanged(event: CustomEvent<ActorDetails>) {
