@@ -8,6 +8,7 @@
 
     import {AppBar} from "@skeletonlabs/skeleton";
     import {NoCraftingProcess, type CraftingProcess} from "./CraftingProcess";
+    import type {LocalizationService} from "../common/LocalizationService";
 
     /*
      * ===========================================================================
@@ -15,6 +16,7 @@
      * ===========================================================================
      */
 
+    export let localization: LocalizationService;
     export let craftingProcess: CraftingProcess = new NoCraftingProcess();
 
     /*

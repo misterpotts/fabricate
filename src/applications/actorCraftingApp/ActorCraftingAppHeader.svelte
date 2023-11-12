@@ -12,6 +12,7 @@
     import {clickOutside} from "../common/ClickOutside";
     import {DefaultActorDetails, NoActorDetails} from "./ActorDetails";
     import {createEventDispatcher, onMount} from "svelte";
+    import type {LocalizationService} from "../common/LocalizationService";
 
     /*
      * ===========================================================================
@@ -19,6 +20,7 @@
      * ===========================================================================
      */
 
+    export let localization: LocalizationService;
     export let targetActorDetails: ActorDetails = new NoActorDetails();
     export let sourceActorDetails: ActorDetails = new NoActorDetails();
 
@@ -117,67 +119,69 @@
 
 </script>
 
-<AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full h-full relative" background="bg-surface-600" class="w-full">
-    <svelte:fragment slot="lead">
-        <div class="space-x-4 flex place-items-center">
-            <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
-            <h1 class="mb-0 text-xl">{targetActorDetails.name}</h1>
-        </div>
-    </svelte:fragment>
-    <svelte:fragment slot="trail">
-        {#if sourceActorDetails.id === targetActorDetails.id}
-            <div class="flex w-full justify-center">
-                <a class="btn variant-filled-primary text-sm text-black" on:click={toggleSourceActorSelectionMenu}>
-                    <span><i class="fa-solid fa-box-open"></i></span>
-                    <span>Craft from another source</span>
-                </a>
+<div class="flex flex-row">
+    <AppBar gridColumns="grid-cols-3" slotLead="place-self-start" slotTrail="w-full h-full relative" background="bg-surface-600" class="w-full">
+        <svelte:fragment slot="lead">
+            <div class="space-x-4 flex place-items-center">
+                <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
+                <h1 class="mb-0 text-xl">{targetActorDetails.name}</h1>
             </div>
-        {:else if availableSourceActors.length > 0}
-            <div class="flex w-full justify-start">
-                <div class="space-x-4 place-items-center cursor-pointer inline-flex" on:auxclick={clearSourceActor} on:click={toggleSourceActorSelectionMenu}>
-                    <div class="relative">
-                                <span class="text-black text-lg badge-icon variant-filled-tertiary absolute w-7 h-7 -top-0 -right-0 z-10">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </span>
-                        <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
-                    </div>
-                    <h2 class="text-xl">{sourceActorDetails.name}</h2>
+        </svelte:fragment>
+        <svelte:fragment slot="trail">
+            {#if sourceActorDetails.id === targetActorDetails.id}
+                <div class="flex w-full justify-center">
+                    <a class="btn variant-filled-primary text-sm text-black" on:click={toggleSourceActorSelectionMenu}>
+                        <span><i class="fa-solid fa-box-open"></i></span>
+                        <span>Craft from another source</span>
+                    </a>
                 </div>
-            </div>
-        {/if}
-        {#if showSourceActorSelection}
-            <div class="absolute rounded-lg bg-surface-700 top-14 -left-3 w-full border-primary-300 border space-x-0 z-10"
-                 use:clickOutside
-                 on:clickOutside={() => { showSourceActorSelection = false; }}>
-                <div class="p-4">
-                    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-                        <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Actor name..." bind:value={sourceActorNameSearchValue} />
+            {:else if availableSourceActors.length > 0}
+                <div class="flex w-full justify-start">
+                    <div class="space-x-4 place-items-center cursor-pointer inline-flex" on:auxclick={clearSourceActor} on:click={toggleSourceActorSelectionMenu}>
+                        <div class="relative">
+                                    <span class="text-black text-lg badge-icon variant-filled-tertiary absolute w-7 h-7 -top-0 -right-0 z-10">
+                                        <i class="fa-solid fa-box-open"></i>
+                                    </span>
+                            <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
+                        </div>
+                        <h2 class="text-xl">{sourceActorDetails.name}</h2>
                     </div>
                 </div>
-                <div class="scroll scroll-secondary overflow-x-hidden overflow-y-auto max-h-48 snap-y snap-mandatory scroll-smooth scroll-px-4">
-                    <ListBox>
-                        {#each filteredSourceActors as availableSourceActor}
-                            <ListBoxItem bind:group={sourceActorDetails}
-                                         class="snap-start"
-                                         name="Source Actor"
-                                         hover="hover:bg-primary-400 hover:text-black"
-                                         rounded="rounded-none"
-                                         value="{availableSourceActor}"
-                                         on:click={() => { setSourceActor(availableSourceActor); }}>
-                                <svelte:fragment slot="lead">
-                                    <Avatar src="{availableSourceActor.avatarUrl}"
-                                            initials="{availableSourceActor.initials}"
-                                            width="w-8"
-                                            rounded="rounded-full"
-                                            class="inline-flex" />
-                                </svelte:fragment>
-                                <span>{availableSourceActor.name}</span>
-                            </ListBoxItem>
-                        {/each}
-                    </ListBox>
+            {/if}
+            {#if showSourceActorSelection}
+                <div class="absolute rounded-lg bg-surface-700 top-14 -left-3 w-full border-primary-300 border space-x-0 z-10"
+                     use:clickOutside
+                     on:clickOutside={() => { showSourceActorSelection = false; }}>
+                    <div class="p-4">
+                        <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+                            <div class="input-group-shim"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <input class="input h-full rounded-none p-2 text-black placeholder-gray-500" type="search" placeholder="Actor name..." bind:value={sourceActorNameSearchValue} />
+                        </div>
+                    </div>
+                    <div class="scroll scroll-secondary overflow-x-hidden overflow-y-auto max-h-48 snap-y snap-mandatory scroll-smooth scroll-px-4">
+                        <ListBox>
+                            {#each filteredSourceActors as availableSourceActor}
+                                <ListBoxItem bind:group={sourceActorDetails}
+                                             class="snap-start"
+                                             name="Source Actor"
+                                             hover="hover:bg-primary-400 hover:text-black"
+                                             rounded="rounded-none"
+                                             value="{availableSourceActor}"
+                                             on:click={() => { setSourceActor(availableSourceActor); }}>
+                                    <svelte:fragment slot="lead">
+                                        <Avatar src="{availableSourceActor.avatarUrl}"
+                                                initials="{availableSourceActor.initials}"
+                                                width="w-8"
+                                                rounded="rounded-full"
+                                                class="inline-flex" />
+                                    </svelte:fragment>
+                                    <span>{availableSourceActor.name}</span>
+                                </ListBoxItem>
+                            {/each}
+                        </ListBox>
+                    </div>
                 </div>
-            </div>
-        {/if}
-    </svelte:fragment>
-</AppBar>
+            {/if}
+        </svelte:fragment>
+    </AppBar>
+</div>

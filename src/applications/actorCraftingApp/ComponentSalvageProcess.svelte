@@ -8,6 +8,7 @@
 
     import {AppBar} from "@skeletonlabs/skeleton";
     import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
+    import type {LocalizationService} from "../common/LocalizationService";
 
     /*
      * ===========================================================================
@@ -15,6 +16,7 @@
      * ===========================================================================
      */
 
+    export let localization: LocalizationService;
     export let salvageProcess: SalvageProcess = new NoSalvageProcess();
 
     /*
