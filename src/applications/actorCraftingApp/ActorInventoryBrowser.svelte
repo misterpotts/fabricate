@@ -105,7 +105,7 @@
 
 <div class="flex flex-row h-full">
     <div class="flex flex-col w-4/5  p-4 h-[654px]">
-        <h2 class="text-center text-xl pb-4">Recipes</h2>
+        <h2 class="text-center text-xl pb-4 text-white">Recipes</h2>
         <div class="bg-surface-700 text-white grid grid-cols-3 grid-rows-1 p-4 gap-2 h-[64px] rounded-md">
             <div class="row-span-1 col-span-2 pb-1">
                 <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
@@ -136,15 +136,15 @@
                             </div>
                             {#if craftingAssessment.isDisabled}
                                 <div class="absolute e w-3/12 h-full bg-black bg-opacity-50 flex justify-center items-center">
-                                            <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
-                                                <i class="fa-solid fa-lock"></i>
-                                            </span>
+                                    <span class="text-warning-900 text-2xl badge-icon variant-filled-warning w-10 h-10">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
                                 </div>
                             {:else if !craftingAssessment.isCraftable}
                                 <div class="absolute w-3/12 h-full bg-black bg-opacity-50 flex justify-center items-center">
-                                            <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
-                                                <i class="fa-solid fa-circle-xmark"></i>
-                                            </span>
+                                    <span class="text-error-900 text-2xl badge-icon variant-filled-error w-10 h-10">
+                                        <i class="fa-solid fa-circle-xmark"></i>
+                                    </span>
                                 </div>
                             {/if}
                         </div>
@@ -164,7 +164,7 @@
         </div>
     </div>
     <div class="flex flex-col w-2/5 p-4 h-[654px]">
-        <h2 class="text-center text-xl pb-4">Components</h2>
+        <h2 class="text-center text-xl pb-4 text-white">Components</h2>
         <div class="bg-surface-700 text-white grid grid-cols-2 grid-rows-3 p-4 gap-2 h-[156px] rounded-md">
             <div class="row-span-1 col-span-2 pb-1">
                 <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
@@ -197,13 +197,13 @@
                              class:cursor-pointer={salvageAssessment.hasSalvage}
                              on:click={() => startSalvageProcess(salvageAssessment)}>
                             {#if salvageAssessment.isSalvageable}
-                                    <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
-                                        <i class="fa-solid fa-recycle"></i>
-                                    </span>
+                                <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
+                                    <i class="fa-solid fa-recycle"></i>
+                                </span>
                             {:else if salvageAssessment.hasSalvage}
-                                    <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
-                                        <i class="fa-solid fa-recycle"></i>
-                                    </span>
+                                <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
+                                    <i class="fa-solid fa-recycle"></i>
+                                </span>
                             {/if}
                             <Avatar src="{salvageAssessment.imageUrl}"
                                     fallback="{Properties.ui.defaults.componentImageUrl}"
