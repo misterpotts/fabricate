@@ -201,7 +201,7 @@
                                         <i class="fa-solid fa-recycle"></i>
                                     </span>
                             {:else if salvageAssessment.hasSalvage}
-                                        <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
+                                    <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
                                         <i class="fa-solid fa-recycle"></i>
                                     </span>
                             {/if}

@@ -186,7 +186,7 @@ describe("Crafting System integration", () => {
 
         componentOne.addEssence(essenceOne.id, 1);
 
-        componentOne.salvageOptions.all.find(option => option.name === "salvageOptionOne").value.addResult(componentTwo.id, 1);
+        componentOne.salvageOptions.all.find(option => option.name === "salvageOptionOne").value.addProduct(componentTwo.id, 1);
 
         componentOne.setSalvageOption({
             name: "salvageOptionTwo",

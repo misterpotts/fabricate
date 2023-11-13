@@ -265,6 +265,7 @@ class DefaultOptions<T> implements Options<T> {
     public set(option: Option<T>) {
         if (option.id) {
             this._values.set(option.id, option);
+            return;
         }
         const id = this.nextId(Array.from(this._values.keys()));
         option = option.clone(id);

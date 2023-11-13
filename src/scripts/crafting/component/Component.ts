@@ -408,7 +408,7 @@ class DefaultComponent implements Component {
 
     async load(forceReload: boolean = false) {
         if (this.loaded && !forceReload) {
-            return;
+            return this;
         }
         this.itemData = await this.itemData.load();
         return this;

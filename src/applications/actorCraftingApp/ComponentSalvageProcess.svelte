@@ -6,10 +6,11 @@
      * ===========================================================================
      */
 
-    import {AppBar} from "@skeletonlabs/skeleton";
+    import {AppBar, Avatar} from "@skeletonlabs/skeleton";
     import {NoSalvageProcess, type SalvageOption, type SalvageProcess} from "./SalvageProcess";
     import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
+    import truncate from "../common/Truncate";
 
     /*
      * ===========================================================================
@@ -122,19 +123,37 @@
                     </div>
                 </div>
             {:else}
-                <h3>Products</h3>
-                <p>The following products are obtained by salvaging this component.</p>
-                <div class="grid grid-cols-6">
-                    {#each salvageProcessProducts.units as productUnit}
-                        {#await productUnit.element.load()}
-                            Loading...
-                        {:then loadedComponent}
-                            <div class="card snap-start col-span-1 row-span-1 w-full bg-surface-700 flex flex-row">
-                                <i class="fa-solid fa-circle-check text-success-500 mr-2"></i>
-                                <span>{loadedComponent.name}</span>
-                            </div>
-                        {/await}
-                    {/each}
+                <div class="pb-8 text-white">
+                    <h3 class="text-lg mb-2">Products</h3>
+                    <p class="">Salvaging this component produces the following components.</p>
+                </div>
+                <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-secondary scroll-px-4">
+                    <div class="grid grid-cols-3 grid-rows-4 h-full gap-4">
+                        {#each salvageProcessProducts.units as productUnit}
+                            {#await productUnit.element.load()}
+                                Loading...
+                            {:then loadedComponent}
+                                <div class="card snap-start h-full bg-surface-700 flex flex-row col-span-1 row-span-1 relative">
+                                    <Avatar class=""
+                                            src="{loadedComponent.imageUrl}"
+                                            alt="{loadedComponent.name}"
+                                            fallback="{Properties.ui.defaults.componentImageUrl}"
+                                            width="w-24"
+                                            rounded="rounded-r-none rounded-l-md"/>
+                                    {#if productUnit.quantity > 1}
+                                        <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
+                                        <i class="fa-solid fa-recycle"></i>
+                                    </span>
+                                    {/if}
+                                    <div class="flex flex-col p-2">
+                                        <p class="text-white mb-2 font-bold">
+                                            {truncate(loadedComponent.name, 18, 12)}
+                                        </p>
+                                    </div>
+                                </div>
+                            {/await}
+                        {/each}
+                    </div>
                 </div>
             {/if}
         </div>

@@ -49,7 +49,7 @@ class Salvage implements Serializable<SalvageJson> {
         return this._products;
     }
 
-    get hasResults(): boolean {
+    get hasProducts(): boolean {
         return !this._products.isEmpty();
     }
 
@@ -99,11 +99,11 @@ class Salvage implements Serializable<SalvageJson> {
         });
     }
 
-    addResult(componentId: string, quantity: number = 1) {
+    addProduct(componentId: string, quantity: number = 1) {
         this._products = this._products.addUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
     }
 
-    subtractResult(componentId: string, quantity: number = 1) {
+    subtractProduct(componentId: string, quantity: number = 1) {
         this._products = this._products.subtractUnit(new DefaultUnit(new ComponentReference(componentId), quantity));
     }
 

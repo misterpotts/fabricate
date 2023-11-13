@@ -124,7 +124,7 @@
         <svelte:fragment slot="lead">
             <div class="space-x-4 flex place-items-center">
                 <Avatar src="{targetActorDetails.avatarUrl}" initials="{targetActorDetails.initials}" width="w-16" rounded="rounded-full" />
-                <h1 class="mb-0 text-xl">{targetActorDetails.name}</h1>
+                <h1 class="mb-0 text-xl text-white">{targetActorDetails.name}</h1>
             </div>
         </svelte:fragment>
         <svelte:fragment slot="trail">
@@ -144,7 +144,7 @@
                                     </span>
                             <Avatar src="{sourceActorDetails.avatarUrl}" initials="{sourceActorDetails.initials}" width="w-16" rounded="rounded-full" class="no-img-border" />
                         </div>
-                        <h2 class="text-xl">{sourceActorDetails.name}</h2>
+                        <h2 class="text-xl text-white">{sourceActorDetails.name}</h2>
                     </div>
                 </div>
             {/if}
