@@ -526,6 +526,9 @@ class DefaultRecipe implements Recipe {
     }
 
     private isRequirementOptionConfig(requirementOption: any): requirementOption is RequirementOptionConfig {
+        if (requirementOption instanceof DefaultSerializableOption) {
+            return false;
+        }
         return requirementOption
             && requirementOption.name;
     }

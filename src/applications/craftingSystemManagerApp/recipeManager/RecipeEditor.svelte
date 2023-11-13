@@ -88,18 +88,18 @@
         recipeUpdated($selectedRecipe);
     }
 
-    async function incrementEssence(essence, requirementOption) {
-        requirementOption.addEssence(essence.id);
+    async function incrementEssence(essence, requirementOption: Option<Requirement>) {
+        requirementOption.value.addEssence(essence.id);
         $selectedRecipe.setRequirementOption(requirementOption)
         await recipeEditor.saveRecipe($selectedRecipe);
     }
 
-    async function decrementEssence(essence, requirementOption) {
-        if (!requirementOption.essences.has(essence.id)) {
+    async function decrementEssence(essence, requirementOption: Option<Requirement>) {
+        if (!requirementOption.value.essences.has(essence.id)) {
             return;
         }
-        requirementOption.subtractEssence(essence.id);
-        if (requirementOption.isEmpty) {
+        requirementOption.value.subtractEssence(essence.id);
+        if (requirementOption.value.isEmpty) {
             await deleteRequirementOption(requirementOption);
             return;
         }
@@ -112,7 +112,7 @@
         recipeUpdated($selectedRecipe);
     }
 
-    async function addComponentToRequirementOption(event, ingredientOption, asCatalyst) {
+    async function addComponentToRequirementOption(event, requirementOption: Option<Requirement>, asCatalyst) {
         const dropEventParser = new DropEventParser({
             localizationService: localization,
             documentManager: new DefaultDocumentManager(),
@@ -121,19 +121,19 @@
         });
         const dropData = await dropEventParser.parse(event);
         if (dropData.hasCraftingComponent) {
-            await addExistingComponentToRequirementOption(ingredientOption, dropData.component, asCatalyst);
+            await addExistingComponentToRequirementOption(requirementOption, dropData.component, asCatalyst);
             recipeUpdated($selectedRecipe);
             return;
         }
         if (dropData.hasItemData) {
-            await importNewComponent(dropData.itemData, ingredientOption, asCatalyst);
+            await importNewComponent(dropData.itemData, requirementOption, asCatalyst);
             recipeUpdated($selectedRecipe);
             return;
         }
         throw new Error("Something went wrong adding a component to an Ingredient option. ");
     }
 
-    async function importNewComponent(itemData, ingredientOption, asCatalyst) {
+    async function importNewComponent(itemData, requirementOption: Option<Requirement>, asCatalyst) {
         const doImport = await Dialog.confirm({
             title: localization.format(
                 `${localizationPath}.prompts.importItemAsComponent.title`,
@@ -151,41 +151,41 @@
         });
         if (doImport) {
             const component = await componentEditor.createComponent(itemData, $selectedCraftingSystem);
-            await addExistingComponentToRequirementOption(ingredientOption, component, asCatalyst);
+            await addExistingComponentToRequirementOption(requirementOption, component, asCatalyst);
         }
     }
 
-    async function addExistingComponentToRequirementOption(resultOption, component, asCatalyst) {
+    async function addExistingComponentToRequirementOption(requirementOption: Option<Requirement>, component, asCatalyst) {
         if (asCatalyst) {
-            resultOption.addCatalyst(component.id);
+            requirementOption.value.addCatalyst(component.id);
         } else {
-            resultOption.addIngredient(component.id);
+            requirementOption.value.addIngredient(component.id);
         }
-        $selectedRecipe.setRequirementOption(resultOption);
+        $selectedRecipe.setRequirementOption(requirementOption);
         await recipeEditor.saveRecipe($selectedRecipe);
     }
 
-    async function decrementRequirementOptionComponent(requirementOption, component, asCatalyst) {
+    async function decrementRequirementOptionComponent(requirementOption: Option<Requirement>, component, asCatalyst) {
         if (asCatalyst) {
-            requirementOption.subtractCatalyst(component.id);
+            requirementOption.value.subtractCatalyst(component.id);
         } else {
-            requirementOption.subtractIngredient(component.id);
+            requirementOption.value.subtractIngredient(component.id);
         }
-        if (requirementOption.isEmpty) {
+        if (requirementOption.value.isEmpty) {
             return deleteRequirementOption(requirementOption);
         }
         await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
-    async function incrementRequirementOptionComponent(requirementOption, component, event, asCatalyst) {
+    async function incrementRequirementOptionComponent(requirementOption: Option<Requirement>, component, event, asCatalyst) {
         if (event && event.shiftKey) {
             return decrementRequirementOptionComponent(requirementOption, component, asCatalyst);
         }
         if (asCatalyst) {
-            requirementOption.addCatalyst(component.id);
+            requirementOption.value.addCatalyst(component.id);
         } else {
-            requirementOption.addIngredient(component.id);
+            requirementOption.value.addIngredient(component.id);
         }
         await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
@@ -209,7 +209,7 @@
         recipeUpdated($selectedRecipe);
     }
 
-    async function addComponentToResultOption(event, resultOption) {
+    async function addComponentToResultOption(event, resultOption: Option<Result>) {
         const dropEventParser = new DropEventParser({
             strict: true,
             localizationService: localization,
@@ -218,23 +218,23 @@
             allowedCraftingComponents: $components
         });
         const component = (await dropEventParser.parse(event)).component;
-        resultOption.add(component);
+        resultOption.value.add(component.id);
         await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
-    async function incrementResultOptionComponent(resultOption, component, event) {
+    async function incrementResultOptionComponent(resultOption: Option<Result>, component, event) {
         if (event && event.shiftKey) {
             return decrementResultOptionComponent(resultOption, component);
         }
-        resultOption.add(component.id);
+        resultOption.value.add(component.id);
         await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);
     }
 
-    async function decrementResultOptionComponent(resultOption, component) {
-        resultOption.subtract(component.id);
-        if (resultOption.isEmpty) {
+    async function decrementResultOptionComponent(resultOption: Option<Result>, component) {
+        resultOption.value.subtract(component.id);
+        if (resultOption.value.isEmpty) {
             return deleteResultOption(resultOption);
         }
         await recipeEditor.saveRecipe($selectedRecipe);
@@ -308,7 +308,7 @@
                                                 <div class="fab-option-controls fab-row">
                                                     <div class="fab-option-name">
                                                         <p>{localization.localize(`${localizationPath}.recipe.labels.ingredientOptionName`)}</p>
-                                                        <div class="fab-editable" contenteditable="true" bind:textContent={requirementOption.name} on:input={scheduleSave}>{requirementOption.name}</div>
+                                                        <div class="fab-editable" contenteditable="true" bind:textContent={requirementOption.name} on:input={scheduleSave}>{requirementOption.value.name}</div>
                                                     </div>
                                                     <button class="fab-delete-ingredient-opt"
                                                             on:click={deleteRequirementOption(requirementOption)}>
@@ -317,11 +317,11 @@
                                                     </button>
                                                 </div>
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.ingredientsHeading`)}</h4>
-                                                {#if requirementOption.requiresIngredients}
+                                                {#if requirementOption.value.requiresIngredients}
                                                     <div class="fab-component-grid fab-grid-4 fab-scrollable fab-ingredient-option-actual" on:drop={(e) => addComponentToRequirementOption(e, requirementOption, false)}>
-                                                        {#each dereferenceComponentCombination(requirementOption.ingredients) as ingredientUnit}
+                                                        {#each dereferenceComponentCombination(requirementOption.value.ingredients) as ingredientUnit}
                                                             {#await ingredientUnit.element.load()}
-                                                                {:then nothing}
+                                                                {:then loadedComponent}
                                                                     <div class="fab-component"
                                                                          on:click={(e) => incrementRequirementOptionComponent(requirementOption, ingredientUnit.element, e, false)}
                                                                          on:auxclick={decrementRequirementOptionComponent(requirementOption, ingredientUnit.element, false)}>
@@ -347,9 +347,9 @@
                                                     </div>
                                                 {/if}
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.catalystsHeading`)}</h4>
-                                                {#if requirementOption.requiresCatalysts}
+                                                {#if requirementOption.value.requiresCatalysts}
                                                     <div class="fab-component-grid fab-grid-4 fab-scrollable fab-catalyst-option-actual" on:drop={(e) => addComponentToRequirementOption(e, requirementOption, true)}>
-                                                        {#each dereferenceComponentCombination(requirementOption.catalysts) as catalystUnit}
+                                                        {#each dereferenceComponentCombination(requirementOption.value.catalysts) as catalystUnit}
                                                             {#await catalystUnit.element.load()}
                                                                 {:then nothing}
                                                                     <div class="fab-component" on:click={(e) => incrementRequirementOptionComponent(requirementOption, catalystUnit.element, e, true)} on:auxclick={decrementRequirementOptionComponent(requirementOption, catalystUnit.element, true)}>
@@ -375,7 +375,7 @@
                                                     </div>
                                                 {/if}
                                                 <h4 class="fab-section-title">{localization.localize(`${localizationPath}.recipe.labels.essencesHeading`)}</h4>
-                                                {#if requirementOption.requiresEssences}
+                                                {#if requirementOption.value.requiresEssences}
                                                     <div class="fab-row fab-recipe-essences">
                                                         {#each $requirementOptionEssences.get(requirementOption.id) as essenceUnit}
                                                             <div class="fab-recipe-essence-adjustment">
@@ -580,7 +580,7 @@
                                                 </div>
                                                 <div class="fab-component-grid fab-grid-4 fab-scrollable fab-result-option-actual"
                                                      on:drop={(e) => addComponentToResultOption(e, resultOption)}>
-                                                    {#each dereferenceComponentCombination(resultOption.results) as resultUnit}
+                                                    {#each dereferenceComponentCombination(resultOption.value.products) as resultUnit}
                                                         {#await resultUnit.element.load()}
                                                             {:then nothing}
                                                                 <div class="fab-component"
