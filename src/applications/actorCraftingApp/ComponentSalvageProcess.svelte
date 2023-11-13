@@ -71,7 +71,7 @@
     </div>
     <svelte:fragment slot="trail">
         {#if salvageProcess.canStart}
-            <a class="btn variant-filled bg-success-600 text-black"><i class="fa-solid fa-screwdriver-wrench mr-2"></i> Salvage</a>
+            <a class="btn variant-filled bg-primary-500 text-black"><i class="fa-solid fa-screwdriver-wrench mr-2"></i> Salvage</a>
         {:else}
             <a class="btn variant-ghost-error text-error-600 cursor-not-allowed"><i class="fa-solid fa-ban mr-2"></i> Salvage</a>
         {/if}
