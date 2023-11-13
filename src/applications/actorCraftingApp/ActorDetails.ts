@@ -83,6 +83,7 @@ class DefaultActorDetails implements ActorDetails {
         const lastLetter = wordFirstLetters[wordFirstLetters.length - 1];
         return `${firstLetter}${lastLetter}`;
     }
+
 }
 
 export { DefaultActorDetails };
@@ -112,3 +113,39 @@ class NoActorDetails implements ActorDetails {
 }
 
 export { NoActorDetails };
+
+class PendingActorDetails implements ActorDetails {
+
+    private readonly _id: string;
+
+    constructor({
+        id
+    }: {
+        id: string;
+    }) {
+        this._id = id;
+    }
+
+    get id(): string {
+        return this._id;
+    }
+
+    get initials(): string {
+        return "?";
+    }
+
+    get avatarUrl(): string {
+        return Properties.ui.defaults.mysteryManImagePath;
+    }
+
+    get name(): string {
+        return "?";
+    }
+
+    hasAvatarImage(): boolean {
+        return true;
+    }
+
+}
+
+export { PendingActorDetails };

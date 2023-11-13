@@ -10,6 +10,9 @@ const Properties = {
         documents: {
             supportedTypes: ["Item"]
         },
+        repository: {
+            bugReportUrl: "https://github.com/misterpotts/fabricate/issues/new?assignees=&labels=bug%2C+triage&projects=&template=bug_report.md&title=",
+        }
     },
     ui: {
         defaults: {

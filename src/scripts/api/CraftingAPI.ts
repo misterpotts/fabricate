@@ -21,9 +21,9 @@ import {
 } from "../crafting/component/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {DefaultUnit, Unit} from "../common/Unit";
+import {DefaultUnit, Unit, Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
-import {Option} from "../common/Options";
+import {DefaultOption, Option} from "../common/Options";
 import {
     DefaultCraftingAssessment,
     DisabledCraftingAssessment,
@@ -34,6 +34,13 @@ import {
     DefaultSalvageAssessment,
     SalvageAssessment
 } from "../../applications/actorCraftingApp/SalvageAssessment";
+import {
+    DefaultSalvageOption,
+    DefaultSalvageProcess,
+    SalvageOption,
+    SalvageProcess
+} from "../../applications/actorCraftingApp/SalvageProcess";
+import {DefaultSelectableOptions} from "../common/SelectableOptions";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -227,8 +234,7 @@ interface CraftingAPI {
     setGameSystemItemQuantityPropertyPath(gameSystem: string, propertyPath: string): [string, string][];
 
     /**
-     * Summarises all the recipes that the specified actor owns, describing whether each recipe can be crafted, if at
-     *  all.
+     * Assesses the recipes that the specified actor owns, describing whether each recipe can be crafted, if at all.
      *
      * @param options - The options to use when summarising recipes.
      * @param options.sourceActorId - The optional ID of the actor to use as a source for components. Defaults to the
@@ -239,11 +245,11 @@ interface CraftingAPI {
      * @param options.craftableOnly - If true, only recipes that can be crafted will be included in the summary.
      * @returns A Promise that resolves with an array of recipe summaries.
      */
-    summariseRecipes(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<CraftingAssessment[]>;
+    assessCrafting(options: { sourceActorId?: string, targetActorId: string, craftingSystemId?: string, craftableOnly?: boolean }): Promise<CraftingAssessment[]>;
 
     /**
-     * Summarises all the components that the specified actor owns, describing whether each component can be salvaged,
-     *  if at all.
+     * Assesses the available components that the specified actor owns, describing whether each component can be
+     * salvaged, if at all.
      *
      * @param options - The options to use when summarising components.
      * @param options.actorId - The ID of the actor to use as a source for components
@@ -252,7 +258,17 @@ interface CraftingAPI {
      * @param options.salvageableOnly - If true, only components that can be salvaged will be included in the summary.
      * @returns A Promise that resolves with an array of component summaries.
      */
-    summariseComponents(options: { actorId: string, craftingSystemId?: string, salvageableOnly?: boolean }): Promise<SalvageAssessment[]>;
+    assessSalvage(options: { actorId: string, craftingSystemId?: string, salvageableOnly?: boolean }): Promise<SalvageAssessment[]>;
+
+    /**
+     * Gets the Salvage Process for the specified component and actor.
+     *
+     * @param options - The options to use when getting the Salvage Process.
+     * @param options.componentId - The ID of the component to salvage.
+     * @param options.actorId - The ID of the actor to use as a source for the component being salvaged.
+     * @returns A Promise that resolves with the Salvage Process.
+     */
+    getSalvageProcess(options: { componentId: string; actorId: string }): Promise<SalvageProcess>;
 
 }
 
@@ -304,7 +320,48 @@ class DefaultCraftingAPI implements CraftingAPI {
         this.componentSelectionStrategyFactory = componentSelectionStrategyFactory;
     }
 
-    async summariseRecipes({
+    async getSalvageProcess({ componentId, actorId }: { componentId: string; actorId: string }): Promise<SalvageProcess> {
+        const componentToSalvage = await this.componentAPI.getById(componentId);
+        await componentToSalvage.load();
+        const actor = await this.gameProvider.loadActor(actorId);
+        const gameSystemId = this.gameProvider.getGameSystemId();
+        const knownComponentsById = await this.componentAPI.getAllByCraftingSystemId(componentToSalvage.craftingSystemId);
+        const knownComponents = Array.from(knownComponentsById.values());
+        const knownRecipesById = await this.recipeAPI.getAllByCraftingSystemId(componentToSalvage.craftingSystemId);
+        const knownRecipes = Array.from(knownRecipesById.values());
+        const inventory = this.inventoryFactory.make(gameSystemId, actor, knownComponents, knownRecipes);
+        if (!inventory.getContents().has(componentToSalvage)) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.componentNotOwned`,
+                { componentName: componentToSalvage.name }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+        const salvageOptions = componentToSalvage.salvageOptions.all
+            .map(salvageOption => {
+                return new DefaultSalvageOption({
+                    id: salvageOption.id,
+                    name: salvageOption.name,
+                    catalysts: new TrackedCombination({
+                        target: salvageOption.value.catalysts.convertElements(componentReference => knownComponentsById.get(componentReference.id)),
+                        actual: salvageOption.value.catalysts.convertUnits(componentReferenceUnit => new DefaultUnit(knownComponentsById.get(componentReferenceUnit.element.id), inventory.getContents().amountFor(componentReferenceUnit.element.id))),
+                    }),
+                    products: salvageOption.value.products.convertElements(componentReference => knownComponentsById.get(componentReference.id)),
+                })
+            })
+            .map(salvageOption => new DefaultOption({
+                id: salvageOption.id,
+                name: salvageOption.name,
+                value: salvageOption,
+            }));
+        return new DefaultSalvageProcess({
+            options: new DefaultSelectableOptions<SalvageOption>({options: salvageOptions}),
+            componentName: componentToSalvage.name,
+        });
+    }
+
+    async assessCrafting({
         targetActorId,
         sourceActorId = targetActorId,
         craftingSystemId,
@@ -349,7 +406,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
     }
 
-    async summariseComponents({
+    async assessSalvage({
         actorId,
         craftingSystemId,
         salvageableOnly,

@@ -5,7 +5,6 @@ import {FabricateAPI} from "./FabricateAPI";
 import {GameProvider} from "../foundry/GameProvider";
 import {FabricatePatreonAPI} from "../patreon/FabricatePatreonAPI";
 import {ActorCraftingAppFactory} from "../../applications/actorCraftingApp/ActorCraftingAppFactory";
-import {ActorCraftingAppViewType} from "../../applications/actorCraftingApp/ActorCraftingAppViewType";
 
 /**
  * Represents an API for managing the Fabricate user interface.
@@ -141,7 +140,6 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
             const application = await this.actorCraftingAppFactory.make({
                 targetActorId,
                 sourceActorId,
-                view: ActorCraftingAppViewType.CRAFTING,
                 selectedRecipeId: selected.id
             });
             await application.render(true);
@@ -151,7 +149,6 @@ class DefaultFabricateUserInterfaceAPI implements FabricateUserInterfaceAPI {
             const application = await this.actorCraftingAppFactory.make({
                 targetActorId,
                 sourceActorId,
-                view: ActorCraftingAppViewType.SALVAGING,
                 selectedComponentId: selected.id
             });
             await application.render(true);

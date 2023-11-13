@@ -1,12 +1,10 @@
 import {SvelteApplication} from "../SvelteApplication";
-import {ActorCraftingAppViewType} from "./ActorCraftingAppViewType";
 import {LocalizationService} from "../common/LocalizationService";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
 import Properties from "../../scripts/Properties";
 import ActorCraftingApp from "./ActorCraftingApp.svelte";
 interface MakeOptions {
 
-    view?: ActorCraftingAppViewType;
     sourceActorId: string;
     targetActorId: string;
     selectedRecipeId?: string;
@@ -24,8 +22,6 @@ export { ActorCraftingAppFactory }
 
 class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
 
-    private static readonly DEFAULT_VIEW: ActorCraftingAppViewType = ActorCraftingAppViewType.SALVAGING;
-
     private readonly localizationService: LocalizationService;
     private readonly fabricateAPI: FabricateAPI;
 
@@ -41,7 +37,6 @@ class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
     }
 
     async make({
-        view = DefaultActorCraftingAppFactory.DEFAULT_VIEW,
         sourceActorId,
         targetActorId,
         selectedRecipeId,
@@ -64,7 +59,6 @@ class DefaultActorCraftingAppFactory implements ActorCraftingAppFactory {
                     props: {
                         localization: this.localizationService,
                         fabricateAPI: this.fabricateAPI,
-                        view,
                         sourceActorId,
                         targetActorId,
                         selectedRecipeId,
