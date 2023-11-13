@@ -140,7 +140,7 @@
                                                 width="w-24"
                                                 rounded="rounded-r-none rounded-l-md"/>
                                         {#if productUnit.quantity > 1}
-                                            <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10" data-tooltip="Not salvageable">
+                                            <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10">
                                                 {productUnit.quantity}
                                             </span>
                                         {/if}
@@ -209,7 +209,7 @@
                                             width="w-24"
                                             rounded="rounded-r-none rounded-l-md"/>
                                     {#if productUnit.quantity > 1}
-                                        <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10" data-tooltip="Not salvageable">
+                                        <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10">
                                             {productUnit.quantity}
                                         </span>
                                     {/if}
