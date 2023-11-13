@@ -21,7 +21,7 @@ import {
 } from "../crafting/component/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {DefaultUnit, Unit, Unit} from "../common/Unit";
+import {DefaultUnit, type Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
 import {DefaultOption, Option} from "../common/Options";
 import {
@@ -358,6 +358,8 @@ class DefaultCraftingAPI implements CraftingAPI {
         return new DefaultSalvageProcess({
             options: new DefaultSelectableOptions<SalvageOption>({options: salvageOptions}),
             componentName: componentToSalvage.name,
+            componentImageUrl: componentToSalvage.imageUrl,
+            ownedQuantity: inventory.getContents().amountFor(componentToSalvage),
         });
     }
 

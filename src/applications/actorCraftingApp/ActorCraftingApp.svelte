@@ -14,14 +14,12 @@
     import {onMount} from "svelte";
     import type {CraftingAssessment} from "./CraftingAssessment";
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
-    import {NoSalvageProcess, type SalvageOption, type SalvageProcess} from "./SalvageProcess";
+    import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
     import type {SalvageAssessment} from "./SalvageAssessment";
-    import {DefaultSalvageProcess} from "./SalvageProcess.js";
     import ActorCraftingAppHeader from "./ActorCraftingAppHeader.svelte";
     import RecipeCraftingProcess from "./RecipeCraftingProcess.svelte";
     import ComponentSalvageProcess from "./ComponentSalvageProcess.svelte";
     import ActorInventoryBrowser from "./ActorInventoryBrowser.svelte";
-    import {DefaultSelectableOptions} from "../../scripts/common/SelectableOptions";
 
     /*
      * ===========================================================================

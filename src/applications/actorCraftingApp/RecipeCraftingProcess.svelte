@@ -32,6 +32,8 @@
 </script>
 
 <AppBar background="bg-surface-700 text-white">
-    <svelte:fragment slot="lead"><i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearCraftingProcess}></i></svelte:fragment>
+    <svelte:fragment slot="lead">
+        <i class="fa-solid fa-circle-arrow-left text-xl text-primary-500 cursor-pointer" on:click={clearCraftingProcess}></i>
+    </svelte:fragment>
     <h2 class="text-lg">Crafting {craftingProcess.recipeName}</h2>
 </AppBar>
