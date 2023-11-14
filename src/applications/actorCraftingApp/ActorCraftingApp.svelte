@@ -86,6 +86,12 @@
     async function handleSourceActorChanged(event: CustomEvent<ActorDetails>) {
         sourceActorDetails = event.detail;
         await load();
+        if (salvageProcess.isReady) {
+            salvageProcess = await fabricateAPI.crafting.getSalvageProcess({
+                componentId: salvageProcess.componentId,
+                actorId: sourceActorDetails.id
+            });
+        }
     }
 
     async function salvageComponent(event: CustomEvent<SalvageProcess>) {
