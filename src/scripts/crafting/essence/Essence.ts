@@ -188,7 +188,7 @@ class DefaultEssence implements Essence {
 
     async load(forceReload = false): Promise<Essence> {
         if (!this.hasActiveEffectSource) {
-            return;
+            return this;
         }
         if (this.loaded && !forceReload) {
             return this;

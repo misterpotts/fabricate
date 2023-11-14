@@ -211,7 +211,7 @@
                                     rounded="rounded-r-none rounded-l-md" />
                             <div class="flex flex-col p-2">
                                 <p class="font-bold text-white mb-2">
-                                    {truncate(salvageAssessment.componentName, 18, 12)}
+                                    {truncate(salvageAssessment.componentName, 18, 12)} {#if salvageAssessment.quantity > 1}({salvageAssessment.quantity}){/if}
                                 </p>
                                 {#if salvageAssessment.hasEssences}
                                     <div class="flex-row flex">
