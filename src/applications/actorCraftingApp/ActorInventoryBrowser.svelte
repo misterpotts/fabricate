@@ -197,11 +197,11 @@
                              class:cursor-pointer={salvageAssessment.hasSalvage}
                              on:click={() => startSalvageProcess(salvageAssessment)}>
                             {#if salvageAssessment.isSalvageable}
-                                <span class="text-black text-lg badge-icon variant-filled-tertiary w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
+                                <span class="text-black text-lg badge-icon variant-filled-success w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Salvageable">
                                     <i class="fa-solid fa-recycle"></i>
                                 </span>
                             {:else if salvageAssessment.hasSalvage}
-                                <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
+                                <span class="text-black text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
                                     <i class="fa-solid fa-recycle"></i>
                                 </span>
                             {/if}

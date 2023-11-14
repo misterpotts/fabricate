@@ -40,6 +40,7 @@
      * ===========================================================================
      */
 
+    let batchSize: number = 1;
     let targetActorDetails: ActorDetails = new PendingActorDetails({id: targetActorId})
     let sourceActorDetails: ActorDetails = new PendingActorDetails({id: sourceActorId ?? targetActorId});
     let craftingProcess: CraftingProcess = new NoCraftingProcess();
@@ -87,9 +88,42 @@
         await load();
     }
 
+    async function salvageComponent(event: CustomEvent<SalvageProcess>) {
+        const salvageResult = await fabricateAPI.crafting.salvageComponent({
+            sourceActorId: sourceActorDetails.id,
+            targetActorId: targetActorDetails.id,
+            componentId: event.detail.componentId,
+            salvageOptionId: event.detail.selectedOption.id,
+            batchSize: batchSize < event.detail.ownedQuantity ? batchSize : event.detail.ownedQuantity
+        });
+        await load();
+        if (salvageResult.remaining.isEmpty()) {
+            salvageProcess = new NoSalvageProcess();
+            return;
+        }
+        salvageProcess = await fabricateAPI.crafting.getSalvageProcess({
+            componentId: event.detail.componentId,
+            actorId: sourceActorDetails.id
+        });
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+        if (event.shiftKey) {
+            batchSize = 5;
+        }
+    }
+
+    function onKeyUp(event: KeyboardEvent) {
+        if (!event.shiftKey) {
+            batchSize = 1;
+        }
+    }
+
     onMount(load);
 
 </script>
+
+<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} />
 
 <div class="flex flex-col w-full h-full">
     <ActorCraftingAppHeader localization={localization}
@@ -101,7 +135,9 @@
                                bind:craftingProcess={craftingProcess} />
     {:else if salvageProcess.isReady}
         <ComponentSalvageProcess localization={localization}
-                                 bind:salvageProcess={salvageProcess} />
+                                 bind:salvageProcess={salvageProcess}
+                                 on:salvageComponent={salvageComponent}
+                                 batchSize={batchSize} />
     {:else}
         <ActorInventoryBrowser localization={localization}
                                bind:craftingAssessments={craftingAssessments}

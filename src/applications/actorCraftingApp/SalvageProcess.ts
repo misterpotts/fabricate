@@ -74,6 +74,8 @@ interface SalvageProcess {
 
     readonly componentImageUrl: string;
 
+    readonly componentId: string;
+
     readonly ownedQuantity: number;
 
     readonly isReady: boolean;
@@ -96,24 +98,32 @@ class DefaultSalvageProcess implements SalvageProcess {
 
     private readonly _options: SelectableOptions<SalvageOption>;
     private readonly _ownedQuantity: number;
+    private readonly _componentId: string;
     private readonly _componentName: string;
     private readonly _componentImageUrl: string;
 
     constructor({
         options,
         ownedQuantity,
+        componentId,
         componentName,
         componentImageUrl,
     }: {
         options: SelectableOptions<SalvageOption>;
         ownedQuantity: number;
+        componentId: string;
         componentName: string;
         componentImageUrl: string;
     }) {
         this._options = options;
         this._ownedQuantity = ownedQuantity;
+        this._componentId = componentId;
         this._componentName = componentName;
         this._componentImageUrl = componentImageUrl;
+    }
+
+    get componentId(): string {
+        return this._componentId;
     }
 
     get ownedQuantity(): number {
@@ -163,6 +173,10 @@ class NoSalvageProcess implements SalvageProcess {
 
     get ownedQuantity(): number {
         return 0;
+    }
+
+    get componentId(): string {
+        return "NO_ID";
     }
 
     get canStart(): boolean {

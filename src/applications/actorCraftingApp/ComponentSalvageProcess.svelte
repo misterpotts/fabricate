@@ -11,6 +11,7 @@
     import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
     import truncate from "../common/Truncate";
+    import {createEventDispatcher} from "svelte";
 
     /*
      * ===========================================================================
@@ -20,6 +21,7 @@
 
     export let localization: LocalizationService;
     export let salvageProcess: SalvageProcess = new NoSalvageProcess();
+    export let batchSize: number = 1;
 
     /*
      * ===========================================================================
@@ -27,6 +29,8 @@
      * ===========================================================================
      */
 
+    const dispatch = createEventDispatcher();
+    $: displayAmount = calculateDisplayAmount(batchSize, salvageProcess.ownedQuantity);
     let selectedSalvageOption: SalvageOption = salvageProcess.selectedOption;
     $: salvageProcessProducts = selectedSalvageOption.products;
     $: salvageProcessCatalysts = selectedSalvageOption.catalysts;
@@ -54,6 +58,20 @@
         window.open(Properties.module.repository.bugReportUrl, '_blank').focus();
     }
 
+    function runSalvageProcess(salvageProcess: SalvageProcess) {
+        dispatch("salvageComponent", salvageProcess);
+    }
+
+    function calculateDisplayAmount(batchSize, ownedQuantity) {
+        if (batchSize <= 1 || ownedQuantity <= 1) {
+            return ""
+        }
+        if (ownedQuantity >= batchSize) {
+            return `(${batchSize})`
+        }
+        return `(${ownedQuantity})`
+    }
+
 </script>
 
 <AppBar background="bg-surface-700 text-white">
@@ -71,7 +89,9 @@
     </div>
     <svelte:fragment slot="trail">
         {#if salvageProcess.canStart}
-            <a class="btn variant-filled bg-primary-500 text-black"><i class="fa-solid fa-screwdriver-wrench mr-2"></i> Salvage</a>
+            <a class="btn variant-filled bg-primary-500 text-black" on:click={() => runSalvageProcess(salvageProcess)}>
+                <i class="fa-solid fa-screwdriver-wrench mr-2"></i> Salvage {displayAmount}
+            </a>
         {:else}
             <a class="btn variant-ghost-error text-error-600 cursor-not-allowed"><i class="fa-solid fa-ban mr-2"></i> Salvage</a>
         {/if}
