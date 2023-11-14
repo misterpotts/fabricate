@@ -36,7 +36,7 @@ import {
 } from "../../applications/actorCraftingApp/SalvageAssessment";
 import {
     DefaultSalvageOption,
-    DefaultSalvageProcess,
+    DefaultSalvageProcess, NoSalvageProcess,
     SalvageOption,
     SalvageProcess
 } from "../../applications/actorCraftingApp/SalvageProcess";
@@ -327,6 +327,7 @@ class DefaultCraftingAPI implements CraftingAPI {
     }
 
     async getSalvageProcess({ componentId, actorId }: { componentId: string; actorId: string }): Promise<SalvageProcess> {
+
         const componentToSalvage = await this.componentAPI.getById(componentId);
         await componentToSalvage.load();
         const actor = await this.gameProvider.loadActor(actorId);
@@ -336,14 +337,11 @@ class DefaultCraftingAPI implements CraftingAPI {
         const knownRecipesById = await this.recipeAPI.getAllByCraftingSystemId(componentToSalvage.craftingSystemId);
         const knownRecipes = Array.from(knownRecipesById.values());
         const inventory = this.inventoryFactory.make(gameSystemId, actor, knownComponents, knownRecipes);
+
         if (!inventory.getContents().has(componentToSalvage)) {
-            const message = this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.componentNotOwned`,
-                { componentName: componentToSalvage.name }
-            );
-            this.notificationService.error(message);
-            throw new Error(message);
+            return new NoSalvageProcess();
         }
+
         const salvageOptions = componentToSalvage.salvageOptions.all
             .map(salvageOption => {
                 return new DefaultSalvageOption({
@@ -361,6 +359,7 @@ class DefaultCraftingAPI implements CraftingAPI {
                 name: salvageOption.name,
                 value: salvageOption,
             }));
+
         return new DefaultSalvageProcess({
             options: new DefaultSelectableOptions<SalvageOption>({options: salvageOptions}),
             componentName: componentToSalvage.name,
@@ -368,6 +367,7 @@ class DefaultCraftingAPI implements CraftingAPI {
             componentImageUrl: componentToSalvage.imageUrl,
             ownedQuantity: inventory.getContents().amountFor(componentToSalvage),
         });
+
     }
 
     async assessCrafting({

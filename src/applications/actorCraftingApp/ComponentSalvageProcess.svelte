@@ -32,6 +32,9 @@
     const dispatch = createEventDispatcher();
     $: displayAmount = calculateDisplayAmount(batchSize, salvageProcess.ownedQuantity);
     let selectedSalvageOption: SalvageOption = salvageProcess.selectedOption;
+    $: {
+        selectedSalvageOption = salvageProcess.selectedOption;
+    }
     $: salvageProcessProducts = selectedSalvageOption.products;
     $: salvageProcessCatalysts = selectedSalvageOption.catalysts;
     $: selectedOptionName = selectedSalvageOption.name;
