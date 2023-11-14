@@ -10,9 +10,12 @@
     import {NoSalvageProcess, type SalvageOption, type SalvageProcess} from "./SalvageProcess";
     import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
-    import {createEventDispatcher} from "svelte";
+    import {createEventDispatcher, getContext} from "svelte";
     import ItemCard from "./ItemCard.svelte";
     import AwaitedItemCard from "./AwaitedItemCard.svelte";
+    import {key} from "./ActorCraftingAppManager";
+    import type {Essence} from "../../scripts/crafting/essence/Essence";
+    import type {Component} from "../../scripts/crafting/component/Component";
 
     /*
      * ===========================================================================
@@ -39,6 +42,14 @@
     $: salvageProcessProducts = selectedSalvageOption.products;
     $: salvageProcessCatalysts = selectedSalvageOption.catalysts;
     $: selectedOptionName = selectedSalvageOption.name;
+
+    const {
+        componentsById,
+        essencesById
+    }: {
+        componentsById: Map<string, Component>;
+        essencesById: Map<string, Essence>;
+    } = getContext(key);
 
     /*
      * ===========================================================================
@@ -74,6 +85,10 @@
             return `(${batchSize})`
         }
         return `(${ownedQuantity})`
+    }
+
+    function dereferenceEssences(component: Component) {
+        return component.essences.convertElements(essence => $essencesById.get(essence.id));
     }
 
 </script>
@@ -156,7 +171,10 @@
                                 {#await productUnit.element.load()}
                                     <AwaitedItemCard/>
                                 {:then loadedComponent}
-                                    <ItemCard quantity={productUnit.quantity} name={loadedComponent.name} imageUrl={loadedComponent.imageUrl}/>
+                                    <ItemCard quantity={productUnit.quantity}
+                                              name={loadedComponent.name}
+                                              imageUrl={loadedComponent.imageUrl}
+                                              essences={dereferenceEssences(loadedComponent)}/>
                                 {/await}
                             {/each}
                         </div>
@@ -191,7 +209,10 @@
                             {#await productUnit.element.load()}
                                 <AwaitedItemCard/>
                             {:then loadedComponent}
-                                <ItemCard quantity={productUnit.quantity} name={loadedComponent.name} imageUrl={loadedComponent.imageUrl}/>
+                                <ItemCard quantity={productUnit.quantity}
+                                          name={loadedComponent.name}
+                                          imageUrl={loadedComponent.imageUrl}
+                                          essences={dereferenceEssences(loadedComponent)}/>
                             {/await}
                         {/each}
                     </div>

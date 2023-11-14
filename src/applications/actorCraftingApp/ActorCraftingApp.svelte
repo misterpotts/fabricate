@@ -11,7 +11,7 @@
     import type {FabricateAPI} from "../../scripts/api/FabricateAPI";
     import type {ActorDetails} from "./ActorDetails";
     import {PendingActorDetails} from "./ActorDetails";
-    import {onMount} from "svelte";
+    import {onMount, setContext} from "svelte";
     import eventBus from "../common/EventBus";
     import type {CraftingAssessment} from "./CraftingAssessment";
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
@@ -21,6 +21,9 @@
     import RecipeCraftingProcess from "./RecipeCraftingProcess.svelte";
     import ComponentSalvageProcess from "./ComponentSalvageProcess.svelte";
     import ActorInventoryBrowser from "./ActorInventoryBrowser.svelte";
+    import {ComponentsStore} from "./ComponentsStore";
+    import {key} from "./ActorCraftingAppManager";
+    import {EssencesStore} from "./EssencesStore";
 
     /*
      * ===========================================================================
@@ -49,6 +52,10 @@
     let craftingAssessments: CraftingAssessment[] = [];
     let salvageAssessments: SalvageAssessment[] = [];
 
+    const componentsById = new ComponentsStore({ fabricateAPI });
+    const essencesById = new EssencesStore({ fabricateAPI, components: componentsById });
+    setContext(key, { componentsById, essencesById });
+
     /*
      * ===========================================================================
      * Component member functions
@@ -71,6 +78,7 @@
     async function load() {
         await prepareRecipes();
         await prepareComponents();
+        await componentsById.loadAll();
     }
 
     function startCraftingProcess(event: CustomEvent<CraftingAssessment>) {
@@ -155,7 +163,7 @@
         <ComponentSalvageProcess localization={localization}
                                  bind:salvageProcess={salvageProcess}
                                  on:salvageComponent={salvageComponent}
-                                 batchSize={batchSize} />
+                                 batchSize={batchSize}/>
     {:else}
         <ActorInventoryBrowser localization={localization}
                                bind:craftingAssessments={craftingAssessments}
