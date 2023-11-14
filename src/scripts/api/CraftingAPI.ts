@@ -21,7 +21,7 @@ import {
 } from "../crafting/component/ComponentSelectionStrategy";
 import {ComponentSelection, DefaultComponentSelection, EmptyComponentSelection} from "../component/ComponentSelection";
 import {TrackedCombination} from "../common/TrackedCombination";
-import {DefaultUnit, Unit, Unit} from "../common/Unit";
+import {DefaultUnit, type Unit} from "../common/Unit";
 import {Essence} from "../crafting/essence/Essence";
 import {DefaultOption, Option} from "../common/Options";
 import {
@@ -59,16 +59,22 @@ interface ComponentSalvageOptions {
 
     /**
      * The optional ID of the Actor to which any produced components should be added. If not specified, the
-     * sourceActorId is used. Specify a different targetActorId when salvaging from a container or shared inventory to
-     * another character.
+     *  sourceActorId is used. Specify a different targetActorId when salvaging from a container or shared inventory to
+     *  another character.
      */
     targetActorId?: string;
 
     /**
      * The optional ID of the Salvage Option to use. Not required if the component has only one Salvage Option. If the
-     * component has multiple Salvage Options this must be specified.
+     *  component has multiple Salvage Options this must be specified.
      */
     salvageOptionId?: string;
+
+    /**
+     * An optional number of times to perform the salvage operation. If not specified, the salvage will be performed
+     *  once.
+     */
+    batchSize?: number;
 
 }
 
@@ -358,6 +364,9 @@ class DefaultCraftingAPI implements CraftingAPI {
         return new DefaultSalvageProcess({
             options: new DefaultSelectableOptions<SalvageOption>({options: salvageOptions}),
             componentName: componentToSalvage.name,
+            componentId: componentToSalvage.id,
+            componentImageUrl: componentToSalvage.imageUrl,
+            ownedQuantity: inventory.getContents().amountFor(componentToSalvage),
         });
     }
 
@@ -575,7 +584,8 @@ class DefaultCraftingAPI implements CraftingAPI {
         componentId,
         sourceActorId,
         targetActorId = sourceActorId,
-        salvageOptionId
+        salvageOptionId,
+        batchSize = 1
     }: ComponentSalvageOptions): Promise<SalvageResult> {
 
         /**
@@ -613,7 +623,29 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         /**
          * =============================================================================================================
-         * Check component is owned by Source Actor
+         * Check component has valid item data
+         * =============================================================================================================
+         */
+
+        await component.load();
+
+        if (component.itemData.hasErrors) {
+            const message = this.localizationService.format(
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.invalidItemData`,
+                { componentId, cause: component.itemData.errors.join(", ") }
+            );
+            this.notificationService.error(message);
+            return new NoSalvageResult({
+                component,
+                sourceActorId,
+                targetActorId,
+                description: message
+            });
+        }
+
+        /**
+         * =============================================================================================================
+         * Check component is owned by Source Actor in the required quantity
          * =============================================================================================================
          */
 
@@ -637,18 +669,16 @@ class DefaultCraftingAPI implements CraftingAPI {
             });
         }
 
-        /**
-         * =============================================================================================================
-         * Check component has valid item data
-         * =============================================================================================================
-         */
-
-        await component.load();
-
-        if (component.itemData.hasErrors) {
+        const ownedQuantity = ownedItems.amountFor(component);
+        if (ownedQuantity < batchSize) {
             const message = this.localizationService.format(
-                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.invalidItemData`,
-                { componentId, cause: component.itemData.errors.join(", ") }
+                `${DefaultCraftingAPI._LOCALIZATION_PATH}.salvage.insufficientQuantity`,
+                {
+                    actorName: sourceActor.name,
+                    componentName: component.name,
+                    requiredQuantity: batchSize,
+                    actualQuantity: ownedQuantity,
+                }
             );
             this.notificationService.error(message);
             return new NoSalvageResult({
@@ -837,7 +867,7 @@ class DefaultCraftingAPI implements CraftingAPI {
 
         const action = new SimpleInventoryAction({
             additions: selectedSalvageOption.value.products.convertElements(componentReference => includedComponentsById.get(componentReference.id)),
-            removals: DefaultCombination.of(component),
+            removals: DefaultCombination.of(component, batchSize),
         });
         await this.applyInventoryAction(sourceActorId, targetActorId, action, craftingSystem.id);
         const description = this.localizationService.localize(`${DefaultCraftingAPI._LOCALIZATION_PATH}.salvageResult.success`);
@@ -846,8 +876,9 @@ class DefaultCraftingAPI implements CraftingAPI {
             description,
             sourceActorId,
             targetActorId,
-            consumed: component,
+            consumed: DefaultCombination.of(component, batchSize),
             produced: action.additions,
+            remaining: ownedItems.just(component).subtract(action.removals),
         });
 
     }

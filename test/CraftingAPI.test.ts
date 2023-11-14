@@ -39,7 +39,7 @@ describe("Crafting API", () => {
             expect(result.produced.size).toEqual(2);
             expect(result.produced.amountFor(testComponentThree)).toEqual(2);
             expect(result.component.id).toEqual(testComponentFour.id);
-            expect(result.consumed.id).toEqual(testComponentFour.id);
+            expect(result.consumed.amountFor(testComponentFour)).toEqual(1);
             expect(result.isSuccessful).toBe(true);
             expect(result.sourceActorId).toEqual(stubActor.id);
             expect(result.targetActorId).toEqual(stubActor.id);
@@ -64,7 +64,7 @@ describe("Crafting API", () => {
             expect(result.isSuccessful).toEqual(false);
             expect(result.produced.isEmpty()).toBe(true);
             expect(result.component.id).toEqual(testComponentFour.id);
-            expect(result.consumed).toBeUndefined();
+            expect(result.consumed.isEmpty()).toBe(true);
             expect(result.sourceActorId).toEqual(stubActor.id);
             expect(result.targetActorId).toEqual(stubActor.id);
 

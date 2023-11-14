@@ -128,6 +128,7 @@
       "salvage": {
         "componentNotFound": "The component with id {componentId} could not be found. ",
         "componentNotOwned": "The component with name {componentName} is not owned by the Actor {actorName}. ",
+        "insufficientQuantity": "The Actor {actorName} does not have enough of the component {componentName} to salvage. Required {requiredQuantity}, but only had {actualQuantity}. ",
         "disabledComponent": "The component {componentName} is disabled and cannot be salvaged.",
         "unsalvageableComponent": "The component {componentName} has no usable salvage options.",
         "invalidItemData": "The component with ID \"{componentId}\" has a problem with its item data. Caused by: {cause}",

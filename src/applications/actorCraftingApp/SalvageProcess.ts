@@ -2,6 +2,7 @@ import {Combination, DefaultCombination} from "../../scripts/common/Combination"
 import {Component} from "../../scripts/crafting/component/Component";
 import {SelectableOptions} from "../../scripts/common/SelectableOptions";
 import {TrackedCombination} from "../../scripts/common/TrackedCombination";
+import Properties from "../../scripts/Properties";
 
 interface SalvageOption {
 
@@ -71,6 +72,12 @@ interface SalvageProcess {
 
     readonly componentName: string;
 
+    readonly componentImageUrl: string;
+
+    readonly componentId: string;
+
+    readonly ownedQuantity: number;
+
     readonly isReady: boolean;
 
     selectNextOption(): SalvageOption;
@@ -89,25 +96,49 @@ export { SalvageProcess };
 
 class DefaultSalvageProcess implements SalvageProcess {
 
-    private readonly _componentName: string;
     private readonly _options: SelectableOptions<SalvageOption>;
+    private readonly _ownedQuantity: number;
+    private readonly _componentId: string;
+    private readonly _componentName: string;
+    private readonly _componentImageUrl: string;
 
     constructor({
         options,
+        ownedQuantity,
+        componentId,
         componentName,
+        componentImageUrl,
     }: {
         options: SelectableOptions<SalvageOption>;
+        ownedQuantity: number;
+        componentId: string;
         componentName: string;
+        componentImageUrl: string;
     }) {
         this._options = options;
+        this._ownedQuantity = ownedQuantity;
+        this._componentId = componentId;
         this._componentName = componentName;
+        this._componentImageUrl = componentImageUrl;
+    }
+
+    get componentId(): string {
+        return this._componentId;
+    }
+
+    get ownedQuantity(): number {
+        return this._ownedQuantity;
     }
 
     get canStart(): boolean {
         if (!this._options.selected.value.requiresCatalysts) {
             return true;
         }
-        return !this._options.selected.value.catalysts.isSufficient;
+        return this._options.selected.value.catalysts.isSufficient;
+    }
+
+    get componentImageUrl() {
+        return this._componentImageUrl;
     }
 
     get componentName() {
@@ -140,8 +171,20 @@ export { DefaultSalvageProcess };
 
 class NoSalvageProcess implements SalvageProcess {
 
+    get ownedQuantity(): number {
+        return 0;
+    }
+
+    get componentId(): string {
+        return "NO_ID";
+    }
+
     get canStart(): boolean {
         return false;
+    }
+
+    get componentImageUrl() {
+        return Properties.ui.defaults.componentImageUrl;
     }
 
     selectNextOption(): SalvageOption {

@@ -11,6 +11,7 @@
     import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
     import truncate from "../common/Truncate";
+    import {createEventDispatcher} from "svelte";
 
     /*
      * ===========================================================================
@@ -20,6 +21,7 @@
 
     export let localization: LocalizationService;
     export let salvageProcess: SalvageProcess = new NoSalvageProcess();
+    export let batchSize: number = 1;
 
     /*
      * ===========================================================================
@@ -27,8 +29,11 @@
      * ===========================================================================
      */
 
+    const dispatch = createEventDispatcher();
+    $: displayAmount = calculateDisplayAmount(batchSize, salvageProcess.ownedQuantity);
     let selectedSalvageOption: SalvageOption = salvageProcess.selectedOption;
     $: salvageProcessProducts = selectedSalvageOption.products;
+    $: salvageProcessCatalysts = selectedSalvageOption.catalysts;
     $: selectedOptionName = selectedSalvageOption.name;
 
     /*
@@ -53,18 +58,42 @@
         window.open(Properties.module.repository.bugReportUrl, '_blank').focus();
     }
 
+    function runSalvageProcess(salvageProcess: SalvageProcess) {
+        dispatch("salvageComponent", salvageProcess);
+    }
+
+    function calculateDisplayAmount(batchSize, ownedQuantity) {
+        if (batchSize <= 1 || ownedQuantity <= 1) {
+            return ""
+        }
+        if (ownedQuantity >= batchSize) {
+            return `(${batchSize})`
+        }
+        return `(${ownedQuantity})`
+    }
+
 </script>
 
 <AppBar background="bg-surface-700 text-white">
     <svelte:fragment slot="lead">
-        <i class="fa-solid fa-circle-arrow-left text-lg text-primary-500 cursor-pointer" on:click={clearSalvageProcess}></i>
+        <i class="fa-solid fa-circle-arrow-left text-xl text-primary-500 cursor-pointer" on:click={clearSalvageProcess}></i>
     </svelte:fragment>
-    <h2 class="text-lg">Salvaging {salvageProcess.componentName}</h2>
+    <div class="flex flex-row items-center">
+        <Avatar class="mr-2 ml-2 flex"
+                src="{salvageProcess.componentImageUrl}"
+                alt="{salvageProcess.componentName}"
+                fallback="{Properties.ui.defaults.componentImageUrl}"
+                width="w-10"
+                rounded="rounded-lg"/>
+        <span class="text-lg flex">Salvaging {salvageProcess.componentName} ({salvageProcess.ownedQuantity})</span>
+    </div>
     <svelte:fragment slot="trail">
         {#if salvageProcess.canStart}
-            <a class="btn variant-filled-success text-black"><i class="fa-solid fa-screwdriver-wrench mr-2"></i> Salvage</a>
+            <a class="btn variant-filled bg-primary-500 text-black" on:click={() => runSalvageProcess(salvageProcess)}>
+                <i class="fa-solid fa-screwdriver-wrench mr-2"></i> Salvage {displayAmount}
+            </a>
         {:else}
-            <a class="btn variant-ghost-error text-error-600 cursor-not-allowed"> <i class="fa-solid fa-ban mr-2"></i>Salvage</a>
+            <a class="btn variant-ghost-error text-error-600 cursor-not-allowed"><i class="fa-solid fa-ban mr-2"></i> Salvage</a>
         {/if}
     </svelte:fragment>
 </AppBar>
@@ -95,9 +124,9 @@
     {:else}
         <div class="flex flex-col p-4 h-full w-full">
             {#if salvageProcess.hasOptions}
-                <div class="flex text-lg flex-row border-b border-surface-400">
+                <div class="flex text-lg flex-row items-center border-b border-surface-400 pb-4 mb-4 text-white">
                     <div class="flex flex-1 justify-start">
-                        <a class="btn" on:click={selectPreviousOption}>
+                        <a class="btn variant-filled bg-surface-600 border border-surface-400" on:click={selectPreviousOption}>
                             <i class="fa-solid fa-arrow-left mr-2"></i> Previous option
                         </a>
                     </div>
@@ -105,7 +134,7 @@
                         {selectedOptionName}
                     </div>
                     <div class="flex flex-1 justify-end">
-                        <a class="btn" on:click={selectNextOption}>
+                        <a class="btn variant-filled bg-surface-600 border border-surface-400" on:click={selectNextOption}>
                             Next option <i class="fa-solid fa-arrow-right ml-2"></i>
                         </a>
                     </div>
@@ -113,19 +142,78 @@
             {/if}
             {#if selectedSalvageOption.requiresCatalysts}
                 <div class="flex flex-row w-full h-full">
-                    <div class="flex flex-col w-1/2 h-full">
-                        <h3>Products</h3>
-                        <p>The following products are obtained by salvaging this component.</p>
+                    <div class="flex flex-col w-2/3 h-full">
+                        <div class="pb-8 text-white">
+                            <h3 class="text-lg mb-2">Products</h3>
+                            <p>The following products are obtained by salvaging this component.</p>
+                        </div>
+                        <div class="grid grid-cols-2 grid-rows-4 h-full gap-4">
+                            {#each salvageProcessProducts.units as productUnit}
+                                {#await productUnit.element.load()}
+                                    Loading...
+                                {:then loadedComponent}
+                                    <div class="card snap-start h-full bg-surface-700 flex flex-row col-span-1 row-span-1 relative">
+                                        <Avatar class=""
+                                                src="{loadedComponent.imageUrl}"
+                                                alt="{loadedComponent.name}"
+                                                fallback="{Properties.ui.defaults.componentImageUrl}"
+                                                width="w-24"
+                                                rounded="rounded-r-none rounded-l-md"/>
+                                        {#if productUnit.quantity > 1}
+                                            <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10">
+                                                {productUnit.quantity}
+                                            </span>
+                                        {/if}
+                                        <div class="flex flex-col p-2">
+                                            <p class="text-white mb-2 font-bold">
+                                                {truncate(loadedComponent.name, 18, 12)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                {/await}
+                            {/each}
+                        </div>
                     </div>
-                    <div class="flex flex-col w-1/2 h-full">
-                        <h3>Catalysts</h3>
-                        <p>The following catalysts are required to salvage this component.</p>
+                    <div class="flex flex-col w-1/3 h-full pl-8">
+                        <div class="pb-4 text-white">
+                            <h3 class="text-lg mb-2">Catalysts</h3>
+                            <p>The following catalysts are required to salvage this component.</p>
+                        </div>
+                        <div class="grid grid-cols-1 grid-rows-4 h-full gap-4">
+                            {#each salvageProcessCatalysts.units as catalystUnit}
+                                {#await catalystUnit.target.element.load()}
+                                    Loading...
+                                {:then loadedComponent}
+                                    <div class="card snap-start h-full bg-surface-700 flex flex-row col-span-1 row-span-1 relative">
+                                        <Avatar src="{loadedComponent.imageUrl}"
+                                                alt="{loadedComponent.name}"
+                                                fallback="{Properties.ui.defaults.componentImageUrl}"
+                                                width="w-24"
+                                                rounded="rounded-r-none rounded-l-md"/>
+                                        {#if catalystUnit.isSufficient}
+                                            <span class="absolute bottom-0 left-0 rounded-bl-lg w-24 bg-success-500 text-center text-black font-bold h-5 leading-5">
+                                                {catalystUnit.actual.quantity} / {catalystUnit.target.quantity}
+                                            </span>
+                                        {:else}
+                                            <span class="absolute bottom-0 left-0 rounded-bl-lg w-24 bg-error-500 text-center text-black font-bold h-5 leading-5">
+                                                {catalystUnit.actual.quantity} / {catalystUnit.target.quantity}
+                                            </span>
+                                        {/if}
+                                        <div class="flex flex-col p-2">
+                                            <p class="text-white mb-2 font-bold">
+                                                {truncate(loadedComponent.name, 18, 12)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                {/await}
+                            {/each}
+                        </div>
                     </div>
                 </div>
             {:else}
                 <div class="pb-8 text-white">
                     <h3 class="text-lg mb-2">Products</h3>
-                    <p class="">Salvaging this component produces the following components.</p>
+                    <p>Salvaging this component produces the following components.</p>
                 </div>
                 <div class="overflow-y-auto overflow-x-hidden h-full snap-y snap-mandatory scroll-smooth scroll-secondary scroll-px-4">
                     <div class="grid grid-cols-3 grid-rows-4 h-full gap-4">
@@ -141,9 +229,9 @@
                                             width="w-24"
                                             rounded="rounded-r-none rounded-l-md"/>
                                     {#if productUnit.quantity > 1}
-                                        <span class="text-error-900 text-lg badge-icon variant-filled-error w-6 h-6 absolute left-1 top-1 z-10" data-tooltip="Not salvageable">
-                                        <i class="fa-solid fa-recycle"></i>
-                                    </span>
+                                        <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10">
+                                            {productUnit.quantity}
+                                        </span>
                                     {/if}
                                     <div class="flex flex-col p-2">
                                         <p class="text-white mb-2 font-bold">

@@ -7,8 +7,9 @@ interface SalvageResult {
     readonly targetActorId: string;
     readonly sourceActorId: string;
     readonly description: string;
-    readonly consumed: Component | undefined;
+    readonly consumed: Combination<Component>;
     readonly produced: Combination<Component>;
+    readonly remaining: Combination<Component>;
     readonly isSuccessful: boolean;
 
 }
@@ -18,25 +19,33 @@ export { SalvageResult }
 class NoSalvageResult implements SalvageResult {
 
     private readonly _component: Component;
+    private readonly _remaining: Combination<Component>;
     private readonly _description: string;
     private readonly _sourceActorId: string;
     private readonly _targetActorId: string;
 
     constructor({
         component,
+        remaining = DefaultCombination.EMPTY(),
         description,
         sourceActorId,
         targetActorId,
     }: {
         component: Component;
+        remaining?: Combination<Component>;
         description: string;
         sourceActorId: string;
         targetActorId: string;
     }) {
         this._component = component;
+        this._remaining = remaining;
         this._description = description;
         this._sourceActorId = sourceActorId;
         this._targetActorId = targetActorId;
+    }
+
+    get remaining(): Combination<Component> {
+        return this._remaining;
     }
 
     get component(): Component {
@@ -47,8 +56,8 @@ class NoSalvageResult implements SalvageResult {
         return DefaultCombination.EMPTY();
     }
 
-    get consumed(): Component {
-        return undefined
+    get consumed(): Combination<Component> {
+        return DefaultCombination.EMPTY();
     }
 
     get isSuccessful(): boolean {
@@ -77,8 +86,9 @@ class SuccessfulSalvageResult implements SalvageResult {
     private readonly _description: string;
     private readonly _sourceActorId: string;
     private readonly _targetActorId: string;
-    private readonly _consumed: Component;
+    private readonly _consumed: Combination<Component>;
     private readonly _produced: Combination<Component>;
+    private readonly _remaining: Combination<Component>;
 
     constructor({
         component,
@@ -87,13 +97,15 @@ class SuccessfulSalvageResult implements SalvageResult {
         targetActorId,
         consumed,
         produced,
+        remaining,
     }: {
         component: Component;
         description: string;
         sourceActorId: string;
         targetActorId: string;
-        consumed: Component;
+        consumed: Combination<Component>;
         produced: Combination<Component>;
+        remaining: Combination<Component>;
     }) {
         this._component = component;
         this._description = description;
@@ -101,13 +113,18 @@ class SuccessfulSalvageResult implements SalvageResult {
         this._targetActorId = targetActorId;
         this._consumed = consumed;
         this._produced = produced;
+        this._remaining = remaining;
+    }
+
+    get remaining(): Combination<Component> {
+        return this._remaining;
     }
 
     get component(): Component {
         return this._component;
     }
 
-    get consumed(): Component {
+    get consumed(): Combination<Component> {
         return this._consumed;
     }
 
@@ -138,27 +155,35 @@ export { SuccessfulSalvageResult };
 class UnsuccessfulSalvageResult implements SalvageResult {
 
     private readonly _component: Component;
+    private readonly _consumed: Combination<Component>;
+    private readonly _remaining: Combination<Component>;
     private readonly _description: string;
     private readonly _sourceActorId: string;
-    private readonly _consumed: Component;
 
     constructor({
         component,
+        consumed = DefaultCombination.EMPTY(),
+        remaining = DefaultCombination.EMPTY(),
         description,
         sourceActorId,
-        consumed
     }: {
         component: Component;
+        consumed?: Combination<Component>;
+        remaining?: Combination<Component>;
         description: string;
         sourceActorId: string;
-        consumed: Component;
     }) {
+        this._consumed = consumed;
+        this._remaining = remaining;
         this._component = component;
         this._description = description;
         this._sourceActorId = sourceActorId;
-        this._consumed = consumed;
+
     }
 
+    get remaining(): Combination<Component> {
+        return this._remaining;
+    }
 
     get component(): Component {
         return this._component;
@@ -168,7 +193,7 @@ class UnsuccessfulSalvageResult implements SalvageResult {
         return DefaultCombination.EMPTY();
     }
 
-    get consumed(): Component {
+    get consumed(): Combination<Component> {
         return this._consumed;
     }
 
