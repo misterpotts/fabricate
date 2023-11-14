@@ -10,8 +10,9 @@
     import {NoSalvageProcess, type SalvageOption, type SalvageProcess} from "./SalvageProcess";
     import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";
-    import truncate from "../common/Truncate";
     import {createEventDispatcher} from "svelte";
+    import ItemCard from "./ItemCard.svelte";
+    import AwaitedItemCard from "./AwaitedItemCard.svelte";
 
     /*
      * ===========================================================================
@@ -153,26 +154,9 @@
                         <div class="grid grid-cols-2 grid-rows-4 h-full gap-4">
                             {#each salvageProcessProducts.units as productUnit}
                                 {#await productUnit.element.load()}
-                                    Loading...
+                                    <AwaitedItemCard/>
                                 {:then loadedComponent}
-                                    <div class="card snap-start h-full bg-surface-700 flex flex-row col-span-1 row-span-1 relative">
-                                        <Avatar class=""
-                                                src="{loadedComponent.imageUrl}"
-                                                alt="{loadedComponent.name}"
-                                                fallback="{Properties.ui.defaults.componentImageUrl}"
-                                                width="w-24"
-                                                rounded="rounded-r-none rounded-l-md"/>
-                                        {#if productUnit.quantity > 1}
-                                            <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10">
-                                                {productUnit.quantity}
-                                            </span>
-                                        {/if}
-                                        <div class="flex flex-col p-2">
-                                            <p class="text-white mb-2 font-bold">
-                                                {truncate(loadedComponent.name, 18, 12)}
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <ItemCard quantity={productUnit.quantity} name={loadedComponent.name} imageUrl={loadedComponent.imageUrl}/>
                                 {/await}
                             {/each}
                         </div>
@@ -185,29 +169,12 @@
                         <div class="grid grid-cols-1 grid-rows-4 h-full gap-4">
                             {#each salvageProcessCatalysts.units as catalystUnit}
                                 {#await catalystUnit.target.element.load()}
-                                    Loading...
+                                    <AwaitedItemCard/>
                                 {:then loadedComponent}
-                                    <div class="card snap-start h-full bg-surface-700 flex flex-row col-span-1 row-span-1 relative">
-                                        <Avatar src="{loadedComponent.imageUrl}"
-                                                alt="{loadedComponent.name}"
-                                                fallback="{Properties.ui.defaults.componentImageUrl}"
-                                                width="w-24"
-                                                rounded="rounded-r-none rounded-l-md"/>
-                                        {#if catalystUnit.isSufficient}
-                                            <span class="absolute bottom-0 left-0 rounded-bl-lg w-24 bg-success-500 text-center text-black font-bold h-5 leading-5">
-                                                {catalystUnit.actual.quantity} / {catalystUnit.target.quantity}
-                                            </span>
-                                        {:else}
-                                            <span class="absolute bottom-0 left-0 rounded-bl-lg w-24 bg-error-500 text-center text-black font-bold h-5 leading-5">
-                                                {catalystUnit.actual.quantity} / {catalystUnit.target.quantity}
-                                            </span>
-                                        {/if}
-                                        <div class="flex flex-col p-2">
-                                            <p class="text-white mb-2 font-bold">
-                                                {truncate(loadedComponent.name, 18, 12)}
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <ItemCard quantity={catalystUnit.actual.quantity}
+                                              requiredQuantity={catalystUnit.target.quantity}
+                                              name={loadedComponent.name}
+                                              imageUrl={loadedComponent.imageUrl}/>
                                 {/await}
                             {/each}
                         </div>
@@ -222,26 +189,9 @@
                     <div class="grid grid-cols-3 grid-rows-4 h-full gap-4">
                         {#each salvageProcessProducts.units as productUnit}
                             {#await productUnit.element.load()}
-                                Loading...
+                                <AwaitedItemCard/>
                             {:then loadedComponent}
-                                <div class="card snap-start h-full bg-surface-700 flex flex-row col-span-1 row-span-1 relative">
-                                    <Avatar class=""
-                                            src="{loadedComponent.imageUrl}"
-                                            alt="{loadedComponent.name}"
-                                            fallback="{Properties.ui.defaults.componentImageUrl}"
-                                            width="w-24"
-                                            rounded="rounded-r-none rounded-l-md"/>
-                                    {#if productUnit.quantity > 1}
-                                        <span class="text-black badge-icon text-lg font-light variant-filled-secondary w-7 h-7 absolute left-2 top-2 z-10">
-                                            {productUnit.quantity}
-                                        </span>
-                                    {/if}
-                                    <div class="flex flex-col p-2">
-                                        <p class="text-white mb-2 font-bold">
-                                            {truncate(loadedComponent.name, 18, 12)}
-                                        </p>
-                                    </div>
-                                </div>
+                                <ItemCard quantity={productUnit.quantity} name={loadedComponent.name} imageUrl={loadedComponent.imageUrl}/>
                             {/await}
                         {/each}
                     </div>

@@ -12,6 +12,7 @@
     import type {ActorDetails} from "./ActorDetails";
     import {PendingActorDetails} from "./ActorDetails";
     import {onMount} from "svelte";
+    import eventBus from "../common/EventBus";
     import type {CraftingAssessment} from "./CraftingAssessment";
     import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
     import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
@@ -125,13 +126,24 @@
         }
     }
 
+    function handleOwnedItemChanged(event: CustomEvent<{item: any, sourceId: string, actor:Actor}>) {
+        console.log("reload", event.detail);
+        if (event.detail.actor.id === sourceActorDetails.id) {
+            load();
+        }
+    }
+
     onMount(load);
 
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} />
 
-<div class="flex flex-col w-full h-full">
+<div class="flex flex-col w-full h-full"
+     use:eventBus={["itemUpdated", "itemCreated", "itemDeleted"]}
+     on:itemUpdated={handleOwnedItemChanged}
+     on:itemCreated={handleOwnedItemChanged}
+     on:itemDeleted={handleOwnedItemChanged}>
     <ActorCraftingAppHeader localization={localization}
                             targetActorDetails={targetActorDetails}
                             sourceActorDetails={sourceActorDetails}
