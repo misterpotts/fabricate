@@ -1,5 +1,5 @@
 import {CraftingSystemAPI, CraftingSystemImportData} from "../../../src/scripts/api/CraftingSystemAPI";
-import {DefaultCraftingSystem} from "../../../src/scripts/crafting/system/CraftingSystem";
+import {CraftingSystem, DefaultCraftingSystem} from "../../../src/scripts/crafting/system/CraftingSystem";
 import {NotificationService} from "../../../src/scripts/foundry/NotificationService";
 
 class StubCraftingSystemAPI implements CraftingSystemAPI {
@@ -9,11 +9,15 @@ class StubCraftingSystemAPI implements CraftingSystemAPI {
     private readonly _valuesById: Map<string, DefaultCraftingSystem>;
 
     constructor({
-        valuesById = new Map()
-    }: {
+                    valuesById = new Map()
+                }: {
         valuesById?: Map<string, DefaultCraftingSystem>;
     } = {}) {
         this._valuesById = valuesById;
+    }
+
+    getAllById(_ids: string[]): Promise<Map<string, CraftingSystem>> {
+        throw new Error("Method not implemented.");
     }
 
     cloneById(_craftingSystemId: string): Promise<DefaultCraftingSystem> {
