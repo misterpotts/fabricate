@@ -6,8 +6,17 @@ import {IdentityFactory} from "../foundry/IdentityFactory";
 import {EntityValidationResult} from "./EntityValidator";
 import {ComponentValidator} from "../crafting/component/ComponentValidator";
 import {NotificationService} from "../foundry/NotificationService";
-import {SalvageJson} from "../crafting/component/Salvage";
+import {SalvageOptionJson} from "../crafting/component/Salvage";
 import {ComponentExportModel} from "../repository/import/FabricateExportModel";
+import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
+import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
+
+type FabricateCompendiumFlags = Record<string, {
+    id?: string;
+    type: "Recipe" | "Component";
+    essences?: Record<string, number>;
+    salvageOptions?: Record<string, SalvageOptionJson>;
+}>
 
 /**
  * A value object representing an option for salvaging a component
@@ -237,7 +246,6 @@ interface ComponentAPI {
      */
     insertMany(componentData: ComponentExportModel[]): Promise<Component[]>;
 
-
     /**
      * Clones all provided Components to a target Crafting System, optionally substituting each Component's essences with
      *   new IDs. Components are cloned by value and the copies will be assigned new IDs. The cloned Components will be
@@ -266,6 +274,18 @@ interface ComponentAPI {
      */
     saveAll(components: Component[]): Promise<Component[]>;
 
+    /**
+     * Imports all components from the specified compendium into the specified crafting system.
+     *
+     * @async
+     * @param options - The options for the import.
+     * @param options.craftingSystemId - The ID of the crafting system to import the components into.
+     * @param options.compendiumId - The ID of the compendium to import the components from.
+     * @returns {Promise<Component[]>} A Promise that resolves with the imported components, or rejects with an error if
+     *  any of the components cannot be saved.
+     */
+    importCompendium(options: { craftingSystemId: string; compendiumId: string; }): Promise<Component[]>;
+
 }
 
 export { ComponentAPI };
@@ -279,29 +299,95 @@ class DefaultComponentAPI implements ComponentAPI {
     private readonly localizationService: LocalizationService;
     private readonly componentStore: EntityDataStore<ComponentJson, Component>;
     private readonly identityFactory: IdentityFactory;
+    private readonly gameProvider: GameProvider;
+    private readonly documentManager: DocumentManager;
 
     constructor({
         componentValidator,
         notificationService,
         localizationService,
         componentStore,
-        identityFactory
+        identityFactory,
+        gameProvider = new DefaultGameProvider(),
+        documentManager = new DefaultDocumentManager(),
     }: {
         componentValidator: ComponentValidator;
         notificationService: NotificationService;
         localizationService: LocalizationService;
         componentStore: EntityDataStore<ComponentJson, Component>;
         identityFactory: IdentityFactory;
+        gameProvider?: GameProvider;
+        documentManager?: DocumentManager;
     }) {
         this.componentValidator = componentValidator;
         this.notificationService = notificationService;
         this.localizationService = localizationService;
         this.componentStore = componentStore;
         this.identityFactory = identityFactory;
+        this.gameProvider = gameProvider;
+        this.documentManager = documentManager;
     }
 
     get notifications(): NotificationService {
         return this.notificationService;
+    }
+
+    async importCompendium({ craftingSystemId, compendiumId }: { craftingSystemId: string; compendiumId: string; }): Promise<Component[]> {
+
+        const game = this.gameProvider.get();
+
+        const compendium = game.packs.get(compendiumId);
+
+        if (!compendium) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.compendium.notFound`,
+                { compendiumId }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        if (!Properties.module.compendiums.supportedTypes.includes(compendium.metadata.type)) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.compendium.invalidType`,
+                {
+                    compendiumId,
+                    allowedTypes: Properties.module.compendiums.supportedTypes.join(", "),
+                    suppliedType: compendium.metadata.type
+                }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        const compendiumContentsByItemUUid = await this.documentManager
+            .loadItemDataForDocumentsByUuid(compendium.index.contents.map(item => item.uuid));
+        const compendiumContents = Array.from(compendiumContentsByItemUUid.values());
+
+        const contentWithErrors = compendiumContents.filter(itemData => itemData.hasErrors);
+
+        if (contentWithErrors.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultComponentAPI._LOCALIZATION_PATH}.errors.compendium.invalidItemData`,
+                {
+                    itemIdsWithErrors: contentWithErrors.map(itemData => itemData.uuid).join(", "),
+                    compendiumId
+                }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        const compendiumFlags = compendium.metadata.flags;
+        const fabricateCompendiumFlags: FabricateCompendiumFlags = compendiumFlags[Properties.module.id] ?? {};
+        const creates = compendium.index.contents
+            .filter(item => typeof fabricateCompendiumFlags[item.uuid] === "undefined" || fabricateCompendiumFlags[item.uuid].type === "Component")
+            .map(item => {
+                if (typeof fabricateCompendiumFlags[item.uuid] === "undefined") {
+                    return this.create({ craftingSystemId, itemUuid: item.uuid });
+                }
+            });
+        return Promise.all(creates);
     }
 
     async cloneById(componentId: string): Promise<Component> {
@@ -339,7 +425,7 @@ class DefaultComponentAPI implements ComponentAPI {
                 ...salvageOption
             };
             return result;
-        }, <Record<string, SalvageJson>>{});
+        }, <Record<string, SalvageOptionJson>>{});
 
         const entityJson: ComponentJson = {
             id,
@@ -444,7 +530,7 @@ class DefaultComponentAPI implements ComponentAPI {
                     ...salvageOption
                 };
             return result;
-        }, <Record<string, SalvageJson>>{});
+        }, <Record<string, SalvageOptionJson>>{});
         const componentJson = {
             id,
             craftingSystemId,
@@ -533,7 +619,7 @@ class DefaultComponentAPI implements ComponentAPI {
                     return false;
                 }
                 const firstMatchingSalvage = component.salvageOptions.all
-                    .map(salvageOption => salvageOption.results)
+                    .map(salvageOption => salvageOption.value.products)
                     .find(salvage => salvage.has(componentId));
                 return !!firstMatchingSalvage;
             });

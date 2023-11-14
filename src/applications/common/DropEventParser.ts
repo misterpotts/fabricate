@@ -2,110 +2,260 @@ import {DocumentManager, FabricateItemData} from "../../scripts/foundry/Document
 import Properties from "../../scripts/Properties";
 import {Component} from "../../scripts/crafting/component/Component";
 import {LocalizationService} from "./LocalizationService";
+import {DefaultGameProvider, GameProvider} from "../../scripts/foundry/GameProvider";
 
-class DropData {
-    private readonly _itemData: FabricateItemData;
-    private readonly _component: Component;
+type RawItemDropData = {
 
-    constructor({
-        itemData,
-        component
-    }: {
-        itemData?: FabricateItemData;
-        component?: Component;
-    }) {
-        this._itemData = itemData;
-        this._component = component;
-    }
+    uuid: string;
 
-    get itemData(): FabricateItemData {
-        return this._itemData;
-    }
+    type: "Item";
 
-    get component(): Component {
-        return this._component;
-    }
+}
 
-    get hasItemData(): boolean {
-        return !!this._itemData;
-    }
+type RawCompendiumDropData = {
 
-    get hasCraftingComponent(): boolean {
-        return !!this._component;
+    id: string;
+
+    type: "Compendium";
+
+}
+
+type RawDropData = RawItemDropData | RawCompendiumDropData;
+
+type KnownComponentData = {
+
+    component: Component;
+
+    isKnownComponent: true;
+
+    item: FabricateItemData;
+
+}
+
+export { KnownComponentData }
+
+type UnknownComponentData = {
+
+    component: undefined;
+
+    isKnownComponent: false;
+
+    item: FabricateItemData;
+
+}
+
+export { UnknownComponentData }
+
+type ComponentData = KnownComponentData | UnknownComponentData;
+
+interface ItemDropEvent {
+
+    type: "Item";
+
+    data: ComponentData;
+
+}
+
+export { ItemDropEvent }
+
+class DefaultItemDropEvent implements ItemDropEvent {
+
+    public readonly type = "Item";
+
+    public readonly data: ComponentData;
+
+    constructor({ data }: { data: ComponentData }) {
+        this.data = data;
     }
 
 }
 
+export { DefaultItemDropEvent }
+
+interface CompendiumDropEvent {
+
+    type: "Compendium";
+
+    data: {
+
+        contents: ComponentData[];
+
+        metadata: CompendiumMetadata;
+
+    }
+
+}
+
+export { CompendiumDropEvent }
+
+class DefaultCompendiumDropEvent implements CompendiumDropEvent {
+
+    public readonly type = "Compendium";
+
+    public readonly data: {
+
+        contents: ComponentData[];
+
+        metadata: CompendiumMetadata;
+
+    };
+
+    constructor({ contents, metadata }: { contents: ComponentData[], metadata: CompendiumMetadata }) {
+        this.data = { contents, metadata };
+    }
+
+}
+
+export { DefaultCompendiumDropEvent }
+
+interface UnknownDropEvent {
+
+    type: "Unknown";
+
+    source: Event;
+
+}
+
+export { UnknownDropEvent }
+
+class DefaultUnknownDropEvent implements UnknownDropEvent {
+
+    public readonly type = "Unknown";
+
+    public readonly source: InputEvent;
+
+    constructor({ source }: { source: InputEvent }) {
+        this.source = source;
+    }
+
+}
+
+export { DefaultUnknownDropEvent }
+
+type DropEvent = ItemDropEvent | CompendiumDropEvent | UnknownDropEvent;
+
+export { DropEvent }
+
 class DropEventParser {
 
-    private readonly _localizationService: LocalizationService;
-    private readonly _partType: string;
-    private readonly _strict: boolean;
+    private readonly _gameProvider: GameProvider;
     private readonly _documentManager: DocumentManager;
+    private readonly _localizationService: LocalizationService;
     private readonly _allowedCraftingComponentsById: Map<string, Component>;
     private readonly _allowedCraftingComponentsByItemUuid: Map<string, Component>;
 
     constructor({
-        localizationService,
-        partType,
-        allowedCraftingComponents = [],
+        gameProvider = new DefaultGameProvider(),
         documentManager,
-        strict = false
+        localizationService,
+        allowedCraftingComponents = [],
     }: {
-        localizationService: LocalizationService;
-        partType: string;
-        allowedCraftingComponents?: Component[];
+        gameProvider?: GameProvider;
         documentManager: DocumentManager;
-        strict?: boolean;
+        localizationService: LocalizationService;
+        allowedCraftingComponents?: Component[];
     }) {
+        this._gameProvider = gameProvider;
+        this._documentManager = documentManager;
         this._localizationService = localizationService;
-        this._partType = partType;
         this._allowedCraftingComponentsById = new Map(allowedCraftingComponents.map(component => [component.id, component]));
         this._allowedCraftingComponentsByItemUuid = new Map(allowedCraftingComponents.map(component => [component.itemUuid, component]));
-        this._documentManager = documentManager
-        this._strict = strict;
     }
     
-    public async parseFoundryItemData(elementData: any): Promise<DropData> {
+    public async parseFoundryDropEvent(elementData: any, event: InputEvent): Promise<DropEvent> {
         if (!elementData) {
-            const message = this._localizationService.format(`${Properties.module.id}.DropEventParser.errors.noElementData`, { partType: this._partType });
+            const message = this._localizationService.localize(
+                `${Properties.module.id}.DropEventParser.errors.noElementData`,
+            );
             ui.notifications.warn(message);
         }
         try {
-            const dropData = JSON.parse(elementData);
-            const documentType = dropData.type;
-            if (!Properties.module.documents.supportedTypes.includes(documentType)) {
-                const message = this._localizationService.format(
-                    `${Properties.module.id}.DropEventParser.errors.invalidDocumentType`,
-                    {
-                        suppliedType: documentType,
-                        allowedTypes: Properties.module.documents.supportedTypes.join(", "),
-                        partType: this._partType
-                    }
-                );
-                ui.notifications.warn(message);
-                return new DropData({});
+            const dropData: RawDropData = JSON.parse(elementData);
+            const dropDataType = dropData.type;
+
+            if (dropDataType === "Compendium") {
+
+                const compendium = this._gameProvider.get().packs.get(dropData.id);
+                if (!compendium) {
+                    const message = this._localizationService.format(
+                        `${Properties.module.id}.DropEventParser.errors.unrecognisedCompendium`,
+                        {
+                            compendiumId: dropData.id
+                        }
+                    );
+                    ui.notifications.warn(message);
+                    return new DefaultUnknownDropEvent({ source: event });
+                }
+
+                const contents = compendium.index.contents;
+                const metadata: CompendiumMetadata = compendium.metadata;
+                const itemsData = await this._documentManager.loadItemDataForDocumentsByUuid(contents.map(content => content.uuid));
+                const componentData = Array.from(itemsData.values())
+                    .map(itemData => {
+                        const isKnownComponent = this._allowedCraftingComponentsByItemUuid.has(itemData.uuid);
+                        let componentData: ComponentData;
+                        if (isKnownComponent) {
+                            componentData = {
+                                isKnownComponent: true,
+                                component: this._allowedCraftingComponentsByItemUuid.get(itemData.uuid),
+                                item: itemData
+                            }
+                        } else {
+                            componentData = {
+                                isKnownComponent: false,
+                                component: undefined,
+                                item: itemData
+                            }
+                        }
+                        return componentData;
+                    });
+                return new DefaultCompendiumDropEvent({ contents: componentData, metadata });
             }
-            const itemData = await this._documentManager.loadItemDataByDocumentUuid(dropData.uuid);
-            if (this._strict && ! this._allowedCraftingComponentsByItemUuid.has(itemData.uuid)) {
-                const message = this._localizationService.format(
-                    `${Properties.module.id}.DropEventParser.errors.unrecognisedComponent`,
-                    {
-                        componentName: itemData.name
+
+            if (dropDataType === "Item") {
+                // @ts-ignore
+                const itemData = await this._documentManager.loadItemDataByDocumentUuid(dropData.uuid);
+                const isKnownComponent = this._allowedCraftingComponentsByItemUuid.has(itemData.uuid);
+                let dropData: ComponentData;
+                if (isKnownComponent) {
+                    dropData = {
+                        isKnownComponent: true,
+                        component: this._allowedCraftingComponentsByItemUuid.get(itemData.uuid),
+                        item: itemData
                     }
-                );
-                ui.notifications.warn(message);
-                return new DropData({});
+                } else {
+                    dropData = {
+                        isKnownComponent: false,
+                        component: undefined,
+                        item: itemData
+                    }
+                }
+                return new DefaultItemDropEvent({
+                    data: dropData
+                });
             }
-            const component = this._allowedCraftingComponentsByItemUuid.get(dropData.uuid);
-            return new DropData({ itemData, component });
+
+            const message = this._localizationService.format(
+                `${Properties.module.id}.DropEventParser.errors.unsupportedDropEventType`,
+                {
+                    dropEventType: dropDataType,
+                    allowedTypes: "Item, Compendium",
+                }
+            );
+            ui.notifications.warn(message);
+            return new DefaultUnknownDropEvent({ source: event });
+
         } catch (e) {
-            const message = this._localizationService.format(`${Properties.module.id}.DropEventParser.errors.invalidJson`, { partType: this._partType });
+
+            const message = this._localizationService.localize(
+                `${Properties.module.id}.DropEventParser.errors.invalidJson`
+            );
             ui.notifications.error(message);
         }
+
     }
 
-    public async parseFabricateComponentData(elementData: any): Promise<DropData> {
+    public async parseFabricateDropEvent(elementData: any, event: InputEvent): Promise<ItemDropEvent | UnknownDropEvent> {
         try {
             const dropData = JSON.parse(elementData);
             const componentId = dropData.componentId;
@@ -113,36 +263,46 @@ class DropEventParser {
                 const message = this._localizationService.format(
                     `${Properties.module.id}.DropEventParser.errors.unrecognisedComponent`,
                     {
+                        componentId,
                         componentName: dropData.name
                     }
                 );
                 ui.notifications.warn(message);
-                return new DropData({});
+                return new DefaultUnknownDropEvent({ source: event });
             }
             const component = this._allowedCraftingComponentsById.get(componentId);
-            return new DropData({ component });
+            return new DefaultItemDropEvent({ data: { component, isKnownComponent: true, item: dropData } });
         } catch (e) {
-            const message = this._localizationService.format(`${Properties.module.id}.DropEventParser.errors.invalidJson`, { partType: this._partType });
+            const message = this._localizationService.localize(
+                `${Properties.module.id}.DropEventParser.errors.invalidJson`
+            );
             ui.notifications.error(message);
         }
     }
 
-    public async parse(event: any): Promise<DropData> {
+    public async parse(event: InputEvent): Promise<DropEvent> {
+
         const rawFoundryData = event
             ?.dataTransfer
             ?.getData("text/plain");
         if (rawFoundryData) {
-            return this.parseFoundryItemData(rawFoundryData);
+            return this.parseFoundryDropEvent(rawFoundryData, event);
         }
+
         const rawComponentData = event
             ?.dataTransfer
             ?.getData("application/json");
         if (rawComponentData) {
-            return this.parseFabricateComponentData(rawComponentData);
+            return this.parseFabricateDropEvent(rawComponentData, event);
         }
-        const message = this._localizationService.format(`${Properties.module.id}.DropEventParser.errors.noElementData`, { partType: this._partType });
+
+        const message = this._localizationService.localize(
+            `${Properties.module.id}.DropEventParser.errors.noElementData`
+        );
         ui.notifications.warn(message);
-        return new DropData({});
+
+        return new DefaultUnknownDropEvent({ source: event });
+
     }
 
     public static serialiseComponentData(component: Component): string {
@@ -151,4 +311,4 @@ class DropEventParser {
 
 }
 
-export { DropEventParser, DropData }
+export { DropEventParser }

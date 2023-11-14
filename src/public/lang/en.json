@@ -69,6 +69,11 @@
         }
       },
       "errors": {
+        "compendium": {
+          "notFound": "The compendium with ID {compendiumId} could not be found. ",
+          "invalidItemData": "The compendium with ID \"{compendiumId}\" has a problem with its item data. Unable to load items its UUIDs: \"{itemIdsWithErrors}\".",
+          "invalidType": "The compendium with ID \"{compendiumId}\" is of type {suppliedType}. Fabricate only allows {allowedTypes}."
+        },
         "invalidRead": "The stored value for the setting {settingPath} is not valid, and could not be read. {errors}",
         "invalidWrite": "The provided value for the setting {settingPath} is not valid, and could not be saved. {errors}",
         "craftingSystem": {
@@ -187,10 +192,11 @@
     },
     "DropEventParser": {
       "errors": {
-        "noElementData": "{partType} import error: Could not read element data from drop event. ",
-        "invalidDocumentType": "{partType} import error: \"{suppliedType}\" cannot be imported as a {partType}. Fabricate only allows the following document types: {allowedTypes}. ",
-        "invalidJson": "{partType} import error: Could not parse JSON data from drop event. ",
-        "unrecognisedComponent": "The Crafting Component {componentName} is not a part of this crafting system. "
+        "noElementData": "Could not read element data from drop event. ",
+        "unsupportedFoundryDropEventType": "Fabricate does not support the Foundry VTT drop event type \"{dropEventType}\". Supported types are: {supportedTypes}. ",
+        "invalidJson": "Could not parse JSON data from drop event. ",
+        "unrecognisedCompendium": "The compendium with ID \"{compendiumId}\" could not be found by Fabricate. ",
+        "unrecognisedComponent": "The component with name \"{componentName}\" and ID \"{componentId}\" could not be found by Fabricate. "
       }
     },
     "ActorCraftingApp": {
