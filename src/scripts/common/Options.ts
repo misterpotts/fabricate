@@ -65,7 +65,7 @@ export {Option}
 class DefaultOption<T> implements Option<T> {
 
     private readonly _id: string;
-    private readonly _name: string;
+    private _name: string;
     private readonly _value: T;
 
     constructor({
@@ -92,6 +92,10 @@ class DefaultOption<T> implements Option<T> {
 
     get value(): T {
         return this._value;
+    }
+
+    set name(name: string) {
+        this._name = name;
     }
 
     clone(id: string): Option<T> {
@@ -152,6 +156,10 @@ class DefaultSerializableOption<J, T extends Serializable<J>> implements Seriali
 
     get value(): T {
         return this._option.value;
+    }
+
+    set name(name: string) {
+        this._option.name = name;
     }
 
     public toJson(): OptionJson<J> {
