@@ -74,30 +74,47 @@
     }
 
     async function loadActorDetails() {
+
         const sourceActor = await game.actors.get(sourceActorDetails.id);
         if (!sourceActor) {
             throw new Error(`Fabricate | ActorCraftingApp: Unable to find actor with id ${sourceActorDetails.id}`);
         }
+
         sourceActorDetails = new DefaultActorDetails({
             id: sourceActorDetails.id,
             name: sourceActor.name,
             avatarUrl: sourceActor.img,
             initials: DefaultActorDetails.getInitialsFromName(sourceActor.name)
         });
+
         if (targetActorDetails.id === sourceActorDetails.id) {
             targetActorDetails = sourceActorDetails;
+
+            dispatch("actorDetailsLoaded", {
+                sourceActorDetails: sourceActorDetails,
+                targetActorDetails: targetActorDetails
+            });
+
             return;
         }
+
         const targetActor = await game.actors.get(targetActorDetails.id);
         if (!targetActor) {
             throw new Error(`Fabricate | ActorCraftingApp: Unable to find actor with id ${targetActorDetails.id}`);
         }
+
         targetActorDetails = new DefaultActorDetails({
             id: targetActorDetails.id,
             name: targetActor.name,
             avatarUrl: targetActor.img,
             initials: DefaultActorDetails.getInitialsFromName(targetActor.name)
         });
+
+        dispatch("actorDetailsLoaded", {
+            sourceActorDetails: sourceActorDetails,
+            targetActorDetails: targetActorDetails
+        });
+
     }
 
     async function setSourceActor(value: ActorDetails) {
