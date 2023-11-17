@@ -168,6 +168,7 @@
         <ActorInventoryBrowser localization={localization}
                                bind:craftingAssessments={craftingAssessments}
                                bind:salvageAssessments={salvageAssessments}
+                               sourceActorDetails={sourceActorDetails}
                                on:startCraftingProcess={startCraftingProcess}
                                on:startSalvageProcess={startSalvageProcess} />
     {/if}
