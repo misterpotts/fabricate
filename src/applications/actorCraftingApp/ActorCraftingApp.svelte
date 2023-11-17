@@ -169,6 +169,7 @@
                                bind:craftingAssessments={craftingAssessments}
                                bind:salvageAssessments={salvageAssessments}
                                sourceActorDetails={sourceActorDetails}
+                               targetActorDetails={targetActorDetails}
                                on:startCraftingProcess={startCraftingProcess}
                                on:startSalvageProcess={startSalvageProcess} />
     {/if}
