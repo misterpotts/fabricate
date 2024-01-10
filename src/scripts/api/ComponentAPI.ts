@@ -11,13 +11,6 @@ import {ComponentExportModel} from "../repository/import/FabricateExportModel";
 import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 
-type FabricateCompendiumFlags = Record<string, {
-    id?: string;
-    type: "Recipe" | "Component";
-    essences?: Record<string, number>;
-    salvageOptions?: Record<string, SalvageOptionJson>;
-}>
-
 /**
  * A value object representing an option for salvaging a component
  *
@@ -92,6 +85,27 @@ interface ComponentAPI {
      * @throws {Error} - If there is an error creating the component.
      */
     create(componentOptions: ComponentCreationOptions): Promise<Component>;
+
+    /**
+     * Creates multiple components with the given options.
+     *
+     * @async
+     * @param itemUuids - The UUIDs of the items to create components for.
+     * @param craftingSystemId - The ID of the crafting system that the components belong to.
+     * @param componentOptionsByItemUuid - Optional map of component options keyed on item UUID.
+     * @returns {Promise<Component[]>} - A promise that resolves with the newly created components. As document data is loaded
+     *   during validation, the created components are returned with item data loaded.
+     * @throws {Error} - If there is an error creating the components.
+     */
+    createMany({
+        itemUuids,
+        craftingSystemId,
+        componentOptionsByItemUuid,
+    }: {
+        itemUuids: string[];
+        craftingSystemId: string;
+        componentOptionsByItemUuid?: Map<string, ComponentCreationOptions>
+    }): Promise<Component[]>;
 
     /**
      * Returns all components.
@@ -361,7 +375,7 @@ class DefaultComponentAPI implements ComponentAPI {
         }
 
         const compendiumContentsByItemUUid = await this.documentManager
-            .loadItemDataForDocumentsByUuid(compendium.index.contents.map(item => item.uuid));
+            .loadItemDataForDocumentsByUuid(compendium.contents.map(item => item.uuid));
         const compendiumContents = Array.from(compendiumContentsByItemUUid.values());
 
         const contentWithErrors = compendiumContents.filter(itemData => itemData.hasErrors);
@@ -378,16 +392,15 @@ class DefaultComponentAPI implements ComponentAPI {
             throw new Error(message);
         }
 
-        const compendiumFlags = compendium.metadata.flags;
-        const fabricateCompendiumFlags: FabricateCompendiumFlags = compendiumFlags[Properties.module.id] ?? {};
-        const creates = compendium.index.contents
-            .filter(item => typeof fabricateCompendiumFlags[item.uuid] === "undefined" || fabricateCompendiumFlags[item.uuid].type === "Component")
-            .map(item => {
-                if (typeof fabricateCompendiumFlags[item.uuid] === "undefined") {
-                    return this.create({ craftingSystemId, itemUuid: item.uuid });
-                }
-            });
-        return Promise.all(creates);
+        const existingComponentsById = await this.getAllByCraftingSystemId(craftingSystemId);
+        const existingComponentUuids = Array.from(existingComponentsById.values())
+            .map(component => component.itemUuid);
+        const newComponentUuids = compendium.contents
+            .filter(item => !existingComponentUuids.includes(item.uuid))
+            .map(item => item.uuid);
+
+        return this.createMany({ craftingSystemId, itemUuids: newComponentUuids });
+
     }
 
     async cloneById(componentId: string): Promise<Component> {
@@ -407,16 +420,57 @@ class DefaultComponentAPI implements ComponentAPI {
         return this.save(clone);
     }
 
-    async create({
-        essences = {},
-        itemUuid,
-        disabled = false,
-        craftingSystemId,
-        salvageOptions = []
-     }: ComponentCreationOptions): Promise<Component> {
+    async create(componentCreationOptions: ComponentCreationOptions): Promise<Component> {
 
         const assignedIds = await this.componentStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
+        const componentJson = this.buildComponentJson(id, componentCreationOptions);
+
+        const component = await this.componentStore.buildEntity(componentJson);
+
+        return this.save(component);
+
+    }
+
+    async createMany({
+         itemUuids = [],
+         craftingSystemId,
+         componentOptionsByItemUuid = new Map(),
+     }: {
+        itemUuids: string[];
+        craftingSystemId: string;
+        componentOptionsByItemUuid?: Map<string, ComponentCreationOptions>
+    }): Promise<Component[]> {
+
+        if (itemUuids.length === 0) {
+            return [];
+        }
+
+        const assignedIds = await this.componentStore.listAllEntityIds();
+        const components = await Promise.all(itemUuids
+            .map(itemUuid => {
+                const componentOptions = componentOptionsByItemUuid.get(itemUuid) || {};
+                return this.buildComponentJson(this.identityFactory.make(assignedIds), {
+                    ...componentOptions,
+                    itemUuid,
+                    craftingSystemId
+                });
+            })
+            .map(componentJson => this.componentStore.buildEntity(componentJson)));
+
+        return this.saveAll(components);
+
+    }
+
+    private buildComponentJson(
+        id: string,
+        {
+            essences = {},
+            itemUuid,
+            disabled = false,
+            salvageOptions = [],
+            craftingSystemId
+        }: ComponentCreationOptions): ComponentJson {
 
         const mappedSalvageOptions = salvageOptions.reduce((result, salvageOption) => {
             const optionId = this.identityFactory.make();
@@ -427,18 +481,15 @@ class DefaultComponentAPI implements ComponentAPI {
             return result;
         }, <Record<string, SalvageOptionJson>>{});
 
-        const entityJson: ComponentJson = {
+        return {
             id,
             embedded: false,
-            craftingSystemId,
-            itemUuid,
-            essences,
-            disabled,
+            craftingSystemId: craftingSystemId,
+            itemUuid: itemUuid,
+            essences: essences,
+            disabled: disabled,
             salvageOptions: mappedSalvageOptions
         };
-
-        const component = await this.componentStore.buildEntity(entityJson);
-        return this.save(component);
 
     }
 
@@ -720,6 +771,7 @@ class DefaultComponentAPI implements ComponentAPI {
         return components;
 
     }
+
 }
 
 export { DefaultComponentAPI };

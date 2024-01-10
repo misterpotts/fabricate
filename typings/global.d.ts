@@ -133,7 +133,9 @@ declare interface Compendium {
 
         contents: Item[];
 
-    }
+    };
+
+    contents: Item[];
 }
 
 /**
