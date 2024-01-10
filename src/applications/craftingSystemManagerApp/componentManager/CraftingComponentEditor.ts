@@ -38,14 +38,14 @@ class CraftingComponentEditor {
             return;
         }
         if (dropEvent.type === "Compendium") {
-            return this.importCompendiumComponent(dropEvent.data.metadata, selectedSystem);
+            return this.importCompendiumComponents(dropEvent.data.metadata, selectedSystem);
         }
         if (dropEvent.type === "Item") {
             return this.createComponent(dropEvent.data.item, selectedSystem);
         }
     }
 
-    public async importCompendiumComponent(compendiumMetadata: CompendiumMetadata, selectedSystem: CraftingSystem): Promise<Component[]> {
+    public async importCompendiumComponents(compendiumMetadata: CompendiumMetadata, selectedSystem: CraftingSystem): Promise<Component[]> {
         const components = await this._fabricateAPI.components.importCompendium({
             craftingSystemId: selectedSystem.id,
             compendiumId: compendiumMetadata.id

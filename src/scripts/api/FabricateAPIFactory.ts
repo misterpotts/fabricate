@@ -135,7 +135,9 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             craftingSystemAPI,
             essenceAPI,
             componentAPI,
-            recipeStore
+            recipeStore,
+            this.gameProvider,
+            this.documentManager
         );
 
         const settingMigrationAPI = this.makeSettingMigrationAPI(
@@ -251,13 +253,17 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
                           craftingSystemAPI: CraftingSystemAPI,
                           essenceAPI: EssenceAPI,
                           componentAPI: ComponentAPI,
-                          recipeStore: EntityDataStore<RecipeJson, Recipe>): RecipeAPI {
+                          recipeStore: EntityDataStore<RecipeJson, Recipe>,
+                          gameProvider: GameProvider,
+                          documentManager: DocumentManager): RecipeAPI {
         return new DefaultRecipeAPI({
             notificationService: new DefaultNotificationService(this.uiProvider),
             identityFactory,
             localizationService,
             recipeValidator: new DefaultRecipeValidator({essenceAPI, componentAPI, craftingSystemAPI}),
-            recipeStore
+            recipeStore,
+            gameProvider,
+            documentManager
         });
     }
 

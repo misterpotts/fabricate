@@ -11,6 +11,7 @@ import {Requirement} from "../../../scripts/crafting/recipe/Requirement";
 import {Result} from "../../../scripts/crafting/recipe/Result";
 import {Essence} from "../../../scripts/crafting/essence/Essence";
 import {Option} from "../../../scripts/common/Options";
+import {Component} from "../../../scripts/crafting/component/Component";
 
 class RecipeEditor {
 
@@ -42,13 +43,26 @@ class RecipeEditor {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.recipe.singular`)
         })
-        const dropData = await dropEventParser.parse(event);
-        if (!dropData.hasItemData) {
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type === "Unknown") {
             return;
         }
-        await this.createRecipe(dropData.itemData, selectedSystem);
+        if (dropEvent.type === "Compendium") {
+            return this.importCompendiumRecipes(dropEvent.data.metadata, selectedSystem);
+        }
+        if (dropEvent.type === "Item") {
+            return this.createRecipe(dropEvent.data.item, selectedSystem);
+        }
+    }
+
+    public async importCompendiumRecipes(compendiumMetadata: CompendiumMetadata, selectedSystem: CraftingSystem): Promise<Recipe[]> {
+        const recipes = await this._fabricateAPI.recipes.importCompendium({
+            craftingSystemId: selectedSystem.id,
+            compendiumId: compendiumMetadata.id
+        });
+        recipes.forEach(recipe => this._recipes.insert(recipe));
+        return recipes;
     }
 
     public async createRecipe(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<Recipe> {
