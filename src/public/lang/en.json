@@ -43,7 +43,8 @@
     "settings": {
       "settingDeleted": "The setting {settingPath} was deleted. ",
       "craftingSystem": {
-        "deleted": "Deleted crafting system \"{systemName}\"",
+        "deleted": "Deleted crafting system with \"{systemName}\"",
+        "deletedById": "Deleted crafting system with ID \"{craftingSystemId}\"",
         "created": "Created crafting system \"{systemName}\"",
         "updated": "Updated crafting system \"{systemName}\"",
         "import": {
