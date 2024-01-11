@@ -141,6 +141,11 @@
         }
     }
 
+    function handleActorDetailsLoaded(event: CustomEvent<{ targetActorDetails: ActorDetails; sourceActorDetails: ActorDetails }>) {
+        sourceActorDetails = event.detail.sourceActorDetails;
+        targetActorDetails = event.detail.targetActorDetails;
+    }
+
     onMount(load);
 
 </script>
@@ -155,7 +160,8 @@
     <ActorCraftingAppHeader localization={localization}
                             targetActorDetails={targetActorDetails}
                             sourceActorDetails={sourceActorDetails}
-                            on:sourceActorChanged={handleSourceActorChanged} />
+                            on:sourceActorChanged={handleSourceActorChanged}
+                            on:actorDetailsLoaded={handleActorDetailsLoaded} />
     {#if craftingProcess.isReady}
         <RecipeCraftingProcess localization={localization}
                                bind:craftingProcess={craftingProcess} />
@@ -168,6 +174,8 @@
         <ActorInventoryBrowser localization={localization}
                                bind:craftingAssessments={craftingAssessments}
                                bind:salvageAssessments={salvageAssessments}
+                               sourceActorDetails={sourceActorDetails}
+                               targetActorDetails={targetActorDetails}
                                on:startCraftingProcess={startCraftingProcess}
                                on:startSalvageProcess={startSalvageProcess} />
     {/if}
