@@ -16,7 +16,7 @@
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
-    "@skeletonlabs/skeleton": "^2.5.1",
+    "@skeletonlabs/skeleton": "^2.7.0",
     "@skeletonlabs/tw-plugin": "^0.2.4",
     "@sveltejs/vite-plugin-svelte": "^2.5.3",
     "@tsconfig/svelte": "^5.0.2",
