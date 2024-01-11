@@ -10,7 +10,6 @@
     import {ComponentSearchStore} from "../../stores/ComponentSearchStore";
     import {DropEventParser} from "../../common/DropEventParser";
     import {recipeUpdated} from "../../common/EventBus";
-    import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import {DefaultUnit} from "../../../scripts/common/Unit";
     import {RecipeRequirementOptionEssenceStore} from "../../stores/RecipeRequirementOptionEssenceStore";
     import type {Option} from "../../../scripts/common/Options";
@@ -113,20 +112,14 @@
     }
 
     async function addComponentToRequirementOption(event, requirementOption: Option<Requirement>, asCatalyst) {
-        const dropEventParser = new DropEventParser({
-            localizationService: localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $components
-        });
-        const dropData = await dropEventParser.parse(event);
-        if (dropData.hasCraftingComponent) {
-            await addExistingComponentToRequirementOption(requirementOption, dropData.component, asCatalyst);
+        const itemDropEvent = await recipeEditor.parseItemDropEvent(event);
+        if (itemDropEvent.data.isKnownComponent) {
+            await addExistingComponentToRequirementOption(requirementOption, itemDropEvent.data.component, asCatalyst);
             recipeUpdated($selectedRecipe);
             return;
         }
-        if (dropData.hasItemData) {
-            await importNewComponent(dropData.itemData, requirementOption, asCatalyst);
+        if (!itemDropEvent.data.item.hasErrors) {
+            await importNewComponent(itemDropEvent.data.item, requirementOption, asCatalyst);
             recipeUpdated($selectedRecipe);
             return;
         }
@@ -210,14 +203,7 @@
     }
 
     async function addComponentToResultOption(event, resultOption: Option<Result>) {
-        const dropEventParser = new DropEventParser({
-            strict: true,
-            localizationService: localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $components
-        });
-        const component = (await dropEventParser.parse(event)).component;
+        const component = await recipeEditor.getComponentFromDropEvent(event);
         resultOption.value.add(component.id);
         await recipeEditor.saveRecipe($selectedRecipe);
         recipeUpdated($selectedRecipe);

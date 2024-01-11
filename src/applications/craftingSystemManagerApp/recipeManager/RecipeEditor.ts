@@ -1,4 +1,4 @@
-import {DropEventParser} from "../../common/DropEventParser";
+import {DropEventParser, ItemDropEvent} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {LocalizationService} from "../../common/LocalizationService";
@@ -117,11 +117,16 @@ class RecipeEditor {
     public async replaceItem(event: any, selectedRecipe: Recipe) {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.recipe.singular`)
+            documentManager: new DefaultDocumentManager()
         })
-        const dropData = await dropEventParser.parse(event);
-        selectedRecipe.itemData = dropData.itemData;
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type !== "Item") {
+            return;
+        }
+        if (!dropEvent.data.isKnownComponent) {
+            return;
+        }
+        selectedRecipe.itemData = dropEvent.data.item;
         return this.saveRecipe(selectedRecipe);
     }
 
@@ -153,19 +158,25 @@ class RecipeEditor {
     }
 
     // todo: prompt to import unknown items as components
-    private async getComponentFromDropEvent(event: any, rejectUnknownItems: boolean = true) {
-        const dropEventParser = new DropEventParser({
-            strict: rejectUnknownItems,
-            localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: this._components.get(),
-        });
-        const component = (await dropEventParser.parse(event)).component;
-        if (!component) {
+    public async getComponentFromDropEvent(event: any): Promise<Component> {
+        const dropEvent = await this.parseItemDropEvent(event);
+        if (!dropEvent.data.component) {
             throw new Error("No component found in drop data.");
         }
-        return component;
+        return dropEvent.data.component;
+    }
+
+    public async parseItemDropEvent(event: any): Promise<ItemDropEvent> {
+        const dropEventParser = new DropEventParser({
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            allowedCraftingComponents: this._components.get(),
+        });
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type !== "Item") {
+            throw new Error(`Invalid drop data type "${dropEvent.type}".}`);
+        }
+        return dropEvent;
     }
 
     private generateOptionName(existingNames: string[]) {

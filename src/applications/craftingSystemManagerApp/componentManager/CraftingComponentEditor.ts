@@ -1,4 +1,4 @@
-import {DropEventParser} from "../../common/DropEventParser";
+import {DropEventParser, ItemDropEvent} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {Component, SalvageOptionConfig} from "../../../scripts/crafting/component/Component";
@@ -61,6 +61,28 @@ class CraftingComponentEditor {
         });
         this._components.insert(component);
         return component;
+    }
+
+    // todo: prompt to import unknown items as components
+    public async getComponentFromDropEvent(event: any): Promise<Component> {
+        const dropEvent = await this.parseItemDropEvent(event);
+        if (!dropEvent.data.component) {
+            throw new Error("No component found in drop data.");
+        }
+        return dropEvent.data.component;
+    }
+
+    public async parseItemDropEvent(event: any): Promise<ItemDropEvent> {
+        const dropEventParser = new DropEventParser({
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            allowedCraftingComponents: this._components.get(),
+        });
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type !== "Item") {
+            throw new Error(`Invalid drop data type "${dropEvent.type}".}`);
+        }
+        return dropEvent;
     }
 
     public async deleteComponent(event: any, component: Component, selectedSystem: CraftingSystem): Promise<Component | undefined> {
@@ -138,24 +160,6 @@ class CraftingComponentEditor {
         });
         await this.saveComponent(selectedComponent);
         return selectedComponent;
-    }
-
-    // todo: prompt to import unknown items as components
-    private async getComponentFromDropEvent(event: any): Promise<Component> {
-        const dropEventParser = new DropEventParser({
-            localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            allowedCraftingComponents: this._components.get(),
-        });
-        const dropEvent = await dropEventParser.parse(event);
-        if (dropEvent.type !== "Item") {
-            throw new Error("Invalid drop data type.");
-        }
-        const component = dropEvent.data.component;
-        if (!component) {
-            throw new Error("No component found in drop data.");
-        }
-        return component;
     }
 
     private generateOptionName(component: Component) {

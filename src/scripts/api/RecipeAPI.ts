@@ -470,16 +470,34 @@ class DefaultRecipeAPI implements RecipeAPI {
         return entityJson;
     }
 
-    createMany({
+    async createMany({
         itemUuids,
         craftingSystemId,
-        recipeOptionsByItemUuid,
+        recipeOptionsByItemUuid = new Map<string, RecipeOptions>(),
     }: {
         itemUuids: string[];
         craftingSystemId: string;
         recipeOptionsByItemUuid?: Map<string, RecipeOptions>
     }): Promise<Recipe[]> {
-        return Promise.resolve([]);
+
+        if (itemUuids.length === 0) {
+            return [];
+        }
+
+        const assignedIds = await this.recipeStore.listAllEntityIds();
+        const components = await Promise.all(itemUuids
+            .map(itemUuid => {
+                const recipeOptions = recipeOptionsByItemUuid.get(itemUuid) || {};
+                return this.buildRecipeJson(this.identityFactory.make(assignedIds), {
+                    ...recipeOptions,
+                    itemUuid,
+                    craftingSystemId
+                });
+            })
+            .map(componentJson => this.recipeStore.buildEntity(componentJson)));
+
+        return this.saveAll(components);
+
     }
 
     async getById(recipeId: string): Promise<Recipe | undefined> {
@@ -696,14 +714,14 @@ class DefaultRecipeAPI implements RecipeAPI {
             throw new Error(message);
         }
 
-        const existingComponentsById = await this.getAllByCraftingSystemId(craftingSystemId);
-        const existingComponentUuids = Array.from(existingComponentsById.values())
-            .map(component => component.itemUuid);
-        const newComponentUuids = compendium.contents
-            .filter(item => !existingComponentUuids.includes(item.uuid))
+        const existingRecipesById = await this.getAllByCraftingSystemId(craftingSystemId);
+        const existingRecipeItemUuids = Array.from(existingRecipesById.values())
+            .map(recipe => recipe.itemUuid);
+        const newRecipeItemUuids = compendium.contents
+            .filter(item => !existingRecipeItemUuids.includes(item.uuid))
             .map(item => item.uuid);
 
-        return this.createMany({ craftingSystemId, itemUuids: newComponentUuids });
+        return this.createMany({ craftingSystemId, itemUuids: newRecipeItemUuids });
 
     }
 
