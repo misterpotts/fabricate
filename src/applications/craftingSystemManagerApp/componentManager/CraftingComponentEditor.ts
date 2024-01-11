@@ -130,11 +130,11 @@ class CraftingComponentEditor {
             localizationService: this._localization,
             documentManager: new DefaultDocumentManager()
         })
-        const dropData = await dropEventParser.parse(event);
-        if (dropData.type !== "Item") {
-            throw new Error("Invalid drop data type.");
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type !== "Item") {
+            return;
         }
-        selectedComponent.itemData = dropData.data.item;
+        selectedComponent.itemData = dropEvent.data.item;
         const updatedComponent = await this._fabricateAPI.components.save(selectedComponent);
         this._components.insert(updatedComponent);
         return updatedComponent;

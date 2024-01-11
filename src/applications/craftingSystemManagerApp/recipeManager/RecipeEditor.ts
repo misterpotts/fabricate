@@ -123,9 +123,6 @@ class RecipeEditor {
         if (dropEvent.type !== "Item") {
             return;
         }
-        if (!dropEvent.data.isKnownComponent) {
-            return;
-        }
         selectedRecipe.itemData = dropEvent.data.item;
         return this.saveRecipe(selectedRecipe);
     }
