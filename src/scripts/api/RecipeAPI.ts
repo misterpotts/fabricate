@@ -7,6 +7,8 @@ import {IdentityFactory} from "../foundry/IdentityFactory";
 import {RecipeValidator} from "../crafting/recipe/RecipeValidator";
 import {NotificationService} from "../foundry/NotificationService";
 import {RecipeExportModel} from "../repository/import/FabricateExportModel";
+import {GameProvider} from "../foundry/GameProvider";
+import {DocumentManager} from "../foundry/DocumentManager";
 
 /**
  * A value object representing a Requirement option
@@ -105,6 +107,27 @@ interface RecipeAPI {
      * @throws {Error} - If there is an error creating the recipe.
      */
     create(recipeOptions: RecipeOptions): Promise<Recipe>;
+
+    /**
+     * Creates multiple recipes with the given options.
+     *
+     * @async
+     * @param itemUuids - The UUIDs of the items to create recipes for.
+     * @param craftingSystemId - The ID of the crafting system that the recipes belong to.
+     * @param componentOptionsByItemUuid - Optional map of recipe options keyed on item UUID.
+     * @returns {Promise<Component[]>} - A promise that resolves with the newly created recipes. As document data is loaded
+     *   during validation, the created recipes are returned with item data loaded.
+     * @throws {Error} - If there is an error creating the recipes.
+     */
+    createMany({
+        itemUuids,
+        craftingSystemId,
+        recipeOptionsByItemUuid,
+    }: {
+        itemUuids: string[];
+        craftingSystemId: string;
+        recipeOptionsByItemUuid?: Map<string, RecipeOptions>
+    }): Promise<Recipe[]>;
 
     /**
      * Returns all recipes.
@@ -279,6 +302,18 @@ interface RecipeAPI {
      */
     cloneAll(recipes: Recipe[], targetCraftingSystemId?: string, substituteEssenceIds?: Map<string, string>, substituteComponentIds?: Map<string, string>): Promise<{ recipes: Recipe[], idLinks: Map<string, string> }>;
 
+    /**
+     * Imports all items from the specified compendium into the specified crafting system as recipes.
+     *
+     * @async
+     * @param options - The options for the import.
+     * @param options.craftingSystemId - The ID of the crafting system to import the recipes into.
+     * @param options.compendiumId - The ID of the compendium to import the recipes from.
+     * @returns {Promise<Component[]>} A Promise that resolves with the imported recipes, or rejects with an error if
+     *  any of the recipes cannot be saved.
+     */
+    importCompendium(options: { craftingSystemId: string; compendiumId: string; }): Promise<Recipe[]>;
+
 }
 
 export { RecipeAPI };
@@ -292,25 +327,33 @@ class DefaultRecipeAPI implements RecipeAPI {
     private readonly localizationService: LocalizationService;
     private readonly recipeStore: EntityDataStore<RecipeJson, Recipe>;
     private readonly identityFactory: IdentityFactory;
+    private readonly gameProvider: GameProvider;
+    private readonly documentManager: DocumentManager;
 
     constructor({
         notificationService,
         localizationService,
         recipeValidator,
         recipeStore,
-        identityFactory
+        identityFactory,
+        gameProvider,
+        documentManager,
     }: {
         notificationService: NotificationService;
         localizationService: LocalizationService;
         recipeValidator: RecipeValidator;
         recipeStore: EntityDataStore<RecipeJson, Recipe>;
         identityFactory: IdentityFactory;
+        gameProvider: GameProvider;
+        documentManager: DocumentManager;
     }) {
         this.notificationService = notificationService;
         this.localizationService = localizationService;
         this.recipeValidator = recipeValidator;
         this.recipeStore = recipeStore;
         this.identityFactory = identityFactory;
+        this.gameProvider = gameProvider;
+        this.documentManager = documentManager;
     }
 
     get notifications() {
@@ -377,17 +420,26 @@ class DefaultRecipeAPI implements RecipeAPI {
 
     }
 
-    async create({
-        itemUuid,
-        craftingSystemId,
-        disabled = false,
-        requirementOptions = [],
-        resultOptions = [],
-    }: RecipeOptions): Promise<Recipe> {
+    async create(recipeOptions: RecipeOptions): Promise<Recipe> {
 
         const assignedIds = await this.recipeStore.listAllEntityIds();
         const id = this.identityFactory.make(assignedIds);
 
+        const recipeJson = this.buildRecipeJson(id, recipeOptions);
+
+        const recipe = await this.recipeStore.buildEntity(recipeJson);
+        return this.save(recipe);
+    }
+
+    private buildRecipeJson(
+        id: string,
+        {
+            itemUuid,
+            craftingSystemId,
+            disabled = false,
+            requirementOptions = [],
+            resultOptions = [],
+        }: RecipeOptions) {
         const mappedRequirementOptions = requirementOptions.reduce((result, requirementOption) => {
             const optionId = this.identityFactory.make();
             result[optionId] = {
@@ -415,9 +467,37 @@ class DefaultRecipeAPI implements RecipeAPI {
             resultOptions: mappedResultOptions,
             requirementOptions: mappedRequirementOptions,
         };
+        return entityJson;
+    }
 
-        const recipe = await this.recipeStore.buildEntity(entityJson);
-        return this.save(recipe);
+    async createMany({
+        itemUuids,
+        craftingSystemId,
+        recipeOptionsByItemUuid = new Map<string, RecipeOptions>(),
+    }: {
+        itemUuids: string[];
+        craftingSystemId: string;
+        recipeOptionsByItemUuid?: Map<string, RecipeOptions>
+    }): Promise<Recipe[]> {
+
+        if (itemUuids.length === 0) {
+            return [];
+        }
+
+        const assignedIds = await this.recipeStore.listAllEntityIds();
+        const components = await Promise.all(itemUuids
+            .map(itemUuid => {
+                const recipeOptions = recipeOptionsByItemUuid.get(itemUuid) || {};
+                return this.buildRecipeJson(this.identityFactory.make(assignedIds), {
+                    ...recipeOptions,
+                    itemUuid,
+                    craftingSystemId
+                });
+            })
+            .map(componentJson => this.recipeStore.buildEntity(componentJson)));
+
+        return this.saveAll(components);
+
     }
 
     async getById(recipeId: string): Promise<Recipe | undefined> {
@@ -585,6 +665,63 @@ class DefaultRecipeAPI implements RecipeAPI {
             recipes: savedClones,
             idLinks: cloneData.ids,
         };
+
+    }
+
+    async importCompendium({ craftingSystemId, compendiumId }: { craftingSystemId: string; compendiumId: string; }): Promise<Recipe[]> {
+
+        const game = this.gameProvider.get();
+
+        const compendium = game.packs.get(compendiumId);
+
+        if (!compendium) {
+            const message = this.localizationService.format(
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.compendium.notFound`,
+                { compendiumId }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        if (!Properties.module.compendiums.supportedTypes.includes(compendium.metadata.type)) {
+            const message = this.localizationService.format(
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.compendium.invalidType`,
+                {
+                    compendiumId,
+                    allowedTypes: Properties.module.compendiums.supportedTypes.join(", "),
+                    suppliedType: compendium.metadata.type
+                }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        const compendiumContentsByItemUUid = await this.documentManager
+            .loadItemDataForDocumentsByUuid(compendium.contents.map(item => item.uuid));
+        const compendiumContents = Array.from(compendiumContentsByItemUUid.values());
+
+        const contentWithErrors = compendiumContents.filter(itemData => itemData.hasErrors);
+
+        if (contentWithErrors.length > 0) {
+            const message = this.localizationService.format(
+                `${DefaultRecipeAPI._LOCALIZATION_PATH}.errors.compendium.invalidItemData`,
+                {
+                    itemIdsWithErrors: contentWithErrors.map(itemData => itemData.uuid).join(", "),
+                    compendiumId
+                }
+            );
+            this.notificationService.error(message);
+            throw new Error(message);
+        }
+
+        const existingRecipesById = await this.getAllByCraftingSystemId(craftingSystemId);
+        const existingRecipeItemUuids = Array.from(existingRecipesById.values())
+            .map(recipe => recipe.itemUuid);
+        const newRecipeItemUuids = compendium.contents
+            .filter(item => !existingRecipeItemUuids.includes(item.uuid))
+            .map(item => item.uuid);
+
+        return this.createMany({ craftingSystemId, itemUuids: newRecipeItemUuids });
 
     }
 

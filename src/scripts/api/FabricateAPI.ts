@@ -401,7 +401,9 @@ class DefaultFabricateAPI implements FabricateAPI {
             this.recipeAPI.deleteByCraftingSystemId(id),
         ]);
 
-        const message = this.localizationService.format(`${Properties.module.id}.settings.craftingSystem.deleted`, { systemName: craftingSystem.details.name });
+        const message = craftingSystem ?
+            this.localizationService.format(`${Properties.module.id}.settings.craftingSystem.deleted`, { systemName: craftingSystem.details.name })
+            : this.localizationService.format(`${Properties.module.id}.settings.craftingSystem.deletedById`, { craftingSystemId: id });
         this.notificationService.info(message);
 
         return {

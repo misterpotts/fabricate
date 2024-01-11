@@ -2,7 +2,6 @@
     import {key} from "../CraftingSystemManagerApp";
     import Properties from "../../../scripts/Properties.js";
     import {DropEventParser} from "../../common/DropEventParser";
-    import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
     import truncate from "../../common/Truncate";
     import {Tab, Tabs} from "../../common/FabricateTabs.js";
     import TabList from "../../common/TabList.svelte";
@@ -14,6 +13,12 @@
     import {DefaultUnit} from "../../../scripts/common/Unit";
     import type {Option} from "../../../scripts/common/Options";
     import {Salvage} from "../../../scripts/crafting/component/Salvage";
+    import type {LocalizationService} from "../../common/LocalizationService";
+    import type {Component} from "../../../scripts/crafting/component/Component";
+    import type {Readable} from "svelte/store";
+    import type {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
+    import {CraftingComponentEditor} from "./CraftingComponentEditor";
+    import type {Essence} from "../../../scripts/crafting/essence/Essence";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectSalvageTab;
@@ -25,6 +30,13 @@
         selectedCraftingSystem,
         componentEditor,
         essences
+    }: {
+        localization: LocalizationService,
+        selectedComponent: Readable<Component>,
+        components: Readable<Component[]>,
+        selectedCraftingSystem: Readable<CraftingSystem>,
+        componentEditor: CraftingComponentEditor,
+        essences: Readable<Essence[]>,
     } = getContext(key);
 
     const salvageSearchResults = new SalvageSearchStore({ selectedComponent, components });
@@ -47,12 +59,12 @@
     
     async function incrementEssence(essence) {
         $selectedComponent.essences = $selectedComponent.essences.addUnit(new DefaultUnit(essence.toReference(), 1));
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent);
     }
 
     async function decrementEssence(essence) {
         $selectedComponent.essences = $selectedComponent.essences.subtractUnit(new DefaultUnit(essence.toReference(), 1));
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent);
     }
 
     function clearSearch() {
@@ -77,31 +89,25 @@
     function scheduleSave() {
         clearTimeout(scheduledSave);
         scheduledSave = setTimeout(async () => {
-            await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+            await componentEditor.saveComponent($selectedComponent);
         }, 1000);
     }
     
     async function deleteSalvageOption(optionToDelete: Option<Salvage>) {
         $selectedComponent.deleteSalvageOptionById(optionToDelete.id);
-        await componentEditor.saveComponent($selectedComponent, $selectedCraftingSystem);
+        await componentEditor.saveComponent($selectedComponent);
         componentUpdated($selectedComponent);
     }
 
     async function addComponentToSalvageOption(event, salvageOption: Option<Salvage>, addAsCatalyst = false) {
-        const dropEventParser = new DropEventParser({
-            localizationService: localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: $components
-        });
-        const dropData = await dropEventParser.parse(event);
-        if (dropData.hasCraftingComponent) {
-            await addExistingComponentToSalvageOption(salvageOption, dropData.component, addAsCatalyst);
+        const itemDropEvent = await componentEditor.parseItemDropEvent(event);
+        if (itemDropEvent.data.isKnownComponent) {
+            await addExistingComponentToSalvageOption(salvageOption, itemDropEvent.data.component, addAsCatalyst);
             componentUpdated($selectedComponent);
             return;
         }
-        if (dropData.hasItemData) {
-            await importNewComponent(dropData.itemData, salvageOption, addAsCatalyst);
+        if (!itemDropEvent.data.item.hasErrors) {
+            await importNewComponent(itemDropEvent.data.item, salvageOption, addAsCatalyst);
             componentUpdated($selectedComponent);
             return;
         }

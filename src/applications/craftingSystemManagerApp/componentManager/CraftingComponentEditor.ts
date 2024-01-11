@@ -1,4 +1,4 @@
-import {DropEventParser} from "../../common/DropEventParser";
+import {DropEventParser, ItemDropEvent} from "../../common/DropEventParser";
 import {DefaultDocumentManager, FabricateItemData} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {Component, SalvageOptionConfig} from "../../../scripts/crafting/component/Component";
@@ -31,14 +31,27 @@ class CraftingComponentEditor {
     public async importComponent(event: any, selectedSystem: CraftingSystem) {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`)
+            documentManager: new DefaultDocumentManager()
         })
-        const dropData = await dropEventParser.parse(event);
-        if (!dropData.hasItemData) {
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type === "Unknown") {
             return;
         }
-        await this.createComponent(dropData.itemData, selectedSystem);
+        if (dropEvent.type === "Compendium") {
+            return this.importCompendiumComponents(dropEvent.data.metadata, selectedSystem);
+        }
+        if (dropEvent.type === "Item") {
+            return this.createComponent(dropEvent.data.item, selectedSystem);
+        }
+    }
+
+    public async importCompendiumComponents(compendiumMetadata: CompendiumMetadata, selectedSystem: CraftingSystem): Promise<Component[]> {
+        const components = await this._fabricateAPI.components.importCompendium({
+            craftingSystemId: selectedSystem.id,
+            compendiumId: compendiumMetadata.id
+        });
+        components.forEach(component => this._components.insert(component));
+        return components;
     }
 
     public async createComponent(itemData: FabricateItemData, selectedSystem: CraftingSystem): Promise<Component> {
@@ -48,6 +61,28 @@ class CraftingComponentEditor {
         });
         this._components.insert(component);
         return component;
+    }
+
+    // todo: prompt to import unknown items as components
+    public async getComponentFromDropEvent(event: any): Promise<Component> {
+        const dropEvent = await this.parseItemDropEvent(event);
+        if (!dropEvent.data.component) {
+            throw new Error("No component found in drop data.");
+        }
+        return dropEvent.data.component;
+    }
+
+    public async parseItemDropEvent(event: any): Promise<ItemDropEvent> {
+        const dropEventParser = new DropEventParser({
+            localizationService: this._localization,
+            documentManager: new DefaultDocumentManager(),
+            allowedCraftingComponents: this._components.get(),
+        });
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type !== "Item") {
+            throw new Error(`Invalid drop data type "${dropEvent.type}".}`);
+        }
+        return dropEvent;
     }
 
     public async deleteComponent(event: any, component: Component, selectedSystem: CraftingSystem): Promise<Component | undefined> {
@@ -93,11 +128,13 @@ class CraftingComponentEditor {
     public async replaceItem(event: any, selectedComponent: Component): Promise<Component> {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`)
+            documentManager: new DefaultDocumentManager()
         })
-        const dropData = await dropEventParser.parse(event);
-        selectedComponent.itemData = dropData.itemData;
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type !== "Item") {
+            return;
+        }
+        selectedComponent.itemData = dropEvent.data.item;
         const updatedComponent = await this._fabricateAPI.components.save(selectedComponent);
         this._components.insert(updatedComponent);
         return updatedComponent;
@@ -123,21 +160,6 @@ class CraftingComponentEditor {
         });
         await this.saveComponent(selectedComponent);
         return selectedComponent;
-    }
-
-    // todo: prompt to import unknown items as components
-    private async getComponentFromDropEvent(event: any): Promise<Component> {
-        const dropEventParser = new DropEventParser({
-            localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.component.singular`),
-            allowedCraftingComponents: this._components.get(),
-        });
-        const component = (await dropEventParser.parse(event)).component;
-        if (!component) {
-            throw new Error("No component found in drop data.");
-        }
-        return component;
     }
 
     private generateOptionName(component: Component) {

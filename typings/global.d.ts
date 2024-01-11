@@ -119,6 +119,27 @@ declare interface User {
 
 /**
  * =====================================================================================================================
+ * Foundry Compendium class.
+ * Documentation for Foundry VTT V11 can be found at: https://foundryvtt.com/api/v11/classes/client.Compendium.html
+ * =====================================================================================================================
+ */
+declare interface Compendium {
+
+    metadata: CompendiumMetadata;
+
+    index: {
+
+        get(id: string): Item;
+
+        contents: Item[];
+
+    };
+
+    contents: Item[];
+}
+
+/**
+ * =====================================================================================================================
  * Foundry Game global object accessed from the `globalThis` namespace (partially documented at
  * https://foundryvtt.com/api/v11/modules/client.globalThis.html#ui).
  * Documentation for Foundry VTT V11 can be found at: https://foundryvtt.com/api/v11/classes/client.Game.html
@@ -142,7 +163,11 @@ declare interface Game {
         patreon: any;
         api: any;
         ui: any;
-    }
+    };
+
+    packs: {
+        get(packId: string): Compendium;
+    };
 
 }
 
@@ -258,6 +283,8 @@ declare interface Document {
  */
 declare interface Item extends Document {
 
+    uuid: string;
+
     isOwned: boolean;
 
 }
@@ -271,6 +298,40 @@ declare interface Item extends Document {
  */
 declare interface ActiveEffect {}
 
+/**
+ * =====================================================================================================================
+ * Foundry Compendium Metadata Class
+ * Documentation for Foundry VTT V11 can be found at: https://foundryvtt.com/api/v11/classes/client.Compendium.html#metadata
+ * =====================================================================================================================
+ */
+declare interface CompendiumMetadata {
+
+    id: string;
+
+    flags: Record<string, any>;
+
+    label: string;
+
+    name: string;
+
+    type: string;
+
+    ownership: {
+        PLAYER: string;
+        ASSISTANT: string;
+    };
+
+    package: string;
+
+    packageName: string;
+
+    packageType: string;
+
+    path: string;
+
+    system: string;
+
+}
 
 /**
  * =====================================================================================================================
