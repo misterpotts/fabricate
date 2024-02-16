@@ -134,7 +134,7 @@ Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
     const headerButton = {
         label: "Crafting",
         tooltip: "Fabricate Crafting",
-        class: "fab-actor-sheet-header-button",
+        class: "fab-actor-sheet-header-button header-button",
         icon: "fas fabricate-icon-logo",
         onclick: async () => {
             await fabricateUserInterfaceAPI.renderActorCraftingApp({
@@ -142,7 +142,7 @@ Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
             });
         }
     };
-    const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i>${headerButton.label}</a>`);
+    const button = $(`<a class="${headerButton.class}" data-tooltip="${headerButton.tooltip}"><i class="${headerButton.icon}"></i><span class="fab-button-text">${headerButton.label}</span></a>`);
     button.on("click", headerButton.onclick);
     button.insertAfter(title);
 
