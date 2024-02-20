@@ -134,7 +134,7 @@ Hooks.on("renderActorSheet", async (actorSheet: ActorSheet, html: any) => {
     const headerButton = {
         label: "Crafting",
         tooltip: "Fabricate Crafting",
-        class: "fab-actor-sheet-header-button header-button",
+        class: "fab-actor-sheet-header-button",
         icon: "fas fabricate-icon-logo",
         onclick: async () => {
             await fabricateUserInterfaceAPI.renderActorCraftingApp({
