@@ -1348,13 +1348,21 @@ END COMMON STRUCTURAL STYLES
 =====================================================================
 */
 
-#fab-tw-application-container {
-  @import (inline) "preflight-reset.css";
-
+.scrollbar-reset {
   * {
     scrollbar-color: initial;
     scrollbar-width: initial;
   }
+}
+
+.fab-application-container {
+  .scrollbar-reset();
+}
+
+#fab-tw-application-container {
+  @import (inline) "preflight-reset.css";
+
+  .scrollbar-reset();
 
   a {
     &:hover {
