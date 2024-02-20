@@ -122,6 +122,18 @@ class StubRecipeAPI implements RecipeAPI {
         return recipe;
     }
 
+    createMany(_options: {
+        itemUuids: string[];
+        craftingSystemId: string;
+        recipeOptionsByItemUuid?: Map<string, RecipeOptions>
+    }): Promise<Recipe[]> {
+        throw new Error(StubRecipeAPI._USE_REAL_INSTEAD_MESSAGE);
+    }
+
+    importCompendium(_options: { craftingSystemId: string; compendiumId: string }): Promise<Recipe[]> {
+        throw new Error(StubRecipeAPI._USE_REAL_INSTEAD_MESSAGE);
+    }
+
 }
 
 export { StubRecipeAPI };
