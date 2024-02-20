@@ -36,11 +36,11 @@
             rounded={imageRounding}/>
     {#if typeof requiredQuantity !== "undefined"}
         {#if quantity >= requiredQuantity}
-            <span class="absolute bottom-0 left-0 rounded-bl-lg w-24 bg-success-500 text-center text-black font-bold h-5 leading-5">
+            <span class="absolute bottom-0 left-0 rounded-bl-lg {imageWidth} bg-success-500 text-center text-black font-bold h-5 leading-5">
                 {quantity} / {requiredQuantity}
             </span>
         {:else}
-            <span class="absolute bottom-0 left-0 rounded-bl-lg w-24 bg-error-500 text-center text-black font-bold h-5 leading-5">
+            <span class="absolute bottom-0 left-0 rounded-bl-lg {imageWidth} bg-error-500 text-center text-black font-bold h-5 leading-5">
                 {quantity} / {requiredQuantity}
             </span>
         {/if}

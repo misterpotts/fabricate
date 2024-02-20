@@ -174,6 +174,7 @@
                                     <ItemCard quantity={productUnit.quantity}
                                               name={loadedComponent.name}
                                               imageUrl={loadedComponent.imageUrl}
+                                              imageWidth="w-[104px]"
                                               essences={dereferenceEssences(loadedComponent)}/>
                                 {/await}
                             {/each}
@@ -192,7 +193,8 @@
                                     <ItemCard quantity={catalystUnit.actual.quantity}
                                               requiredQuantity={catalystUnit.target.quantity}
                                               name={loadedComponent.name}
-                                              imageUrl={loadedComponent.imageUrl}/>
+                                              imageUrl={loadedComponent.imageUrl}
+                                              imageWidth="w-[104px]" />
                                 {/await}
                             {/each}
                         </div>
@@ -212,6 +214,7 @@
                                 <ItemCard quantity={productUnit.quantity}
                                           name={loadedComponent.name}
                                           imageUrl={loadedComponent.imageUrl}
+                                          imageWidth="w-[104px]"
                                           essences={dereferenceEssences(loadedComponent)}/>
                             {/await}
                         {/each}
