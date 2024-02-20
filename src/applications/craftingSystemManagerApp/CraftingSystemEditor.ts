@@ -170,7 +170,10 @@ class CraftingSystemEditor {
     }
 
     async deleteComponent(component: Component): Promise<Component> {
-        return this._fabricateAPI.components.deleteById(component.id);
+        const result = await this._fabricateAPI.components.deleteById(component.id);
+        await this._fabricateAPI.components.removeSalvageReferences(component.id, component.craftingSystemId);
+        await this._fabricateAPI.recipes.removeComponentReferences(component.id, component.craftingSystemId);
+        return result;
     }
 
     async saveComponent(craftingComponent: Component): Promise<Component> {

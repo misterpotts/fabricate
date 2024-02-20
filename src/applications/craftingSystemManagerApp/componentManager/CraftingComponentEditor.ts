@@ -110,6 +110,8 @@ class CraftingComponentEditor {
             return undefined;
         }
         const deletedComponent = await this._fabricateAPI.components.deleteById(component.id);
+        await this._fabricateAPI.components.removeSalvageReferences(component.id, component.craftingSystemId);
+        await this._fabricateAPI.recipes.removeComponentReferences(component.id, component.craftingSystemId);
         this._components.remove(deletedComponent);
     }
 
