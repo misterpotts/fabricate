@@ -17,6 +17,13 @@ class StubComponentAPI implements ComponentAPI {
         this._valuesById = valuesById;
     }
 
+    createMany(_options: { itemUuids: string[]; craftingSystemId: string; componentOptionsByItemUuid?: Map<string, ComponentCreationOptions>; }): Promise<Component[]> {
+        throw new Error("Method not implemented.");
+    }
+    importCompendium(_options: { craftingSystemId: string; compendiumId: string; }): Promise<Component[]> {
+        throw new Error("Method not implemented.");
+    }
+
     get notifications(): NotificationService {
         throw new Error("This is a stub. Stubs do not provide user interface notifications. ");
     }

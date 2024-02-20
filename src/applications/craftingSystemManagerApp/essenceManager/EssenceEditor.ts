@@ -6,10 +6,14 @@ import {DefaultDocumentManager} from "../../../scripts/foundry/DocumentManager";
 import Properties from "../../../scripts/Properties";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {EssencesStore} from "../../stores/EssenceStore";
+import {ComponentsStore} from "../../stores/ComponentsStore";
+import {RecipesStore} from "../../stores/RecipesStore";
 
 class EssenceEditor {
 
     private readonly _essences: EssencesStore;
+    private readonly _components: ComponentsStore;
+    private readonly _recipes: RecipesStore;
     private readonly _fabricateAPI: FabricateAPI;
     private readonly _localization: LocalizationService;
 
@@ -17,14 +21,20 @@ class EssenceEditor {
 
     constructor({
         essences,
+        components,
+        recipes,
         fabricateAPI,
         localization,
     }: {
         essences: EssencesStore;
+        components: ComponentsStore;
+        recipes: RecipesStore;
         fabricateAPI: FabricateAPI;
         localization: LocalizationService;
     }) {
         this._essences = essences;
+        this._components = components;
+        this._recipes = recipes;
         this._fabricateAPI = fabricateAPI;
         this._localization = localization;
     }
@@ -60,18 +70,35 @@ class EssenceEditor {
         if (!doDelete) {
             return;
         }
-        await this._fabricateAPI.essences.deleteById(essence.id);
-        this._essences.remove(essence);
+        const deletedEssence = await this._fabricateAPI.essences.deleteById(essence.id);
+        const modifiedComponents = await this._fabricateAPI.components.removeEssenceReferences(essence.id, essence.craftingSystemId);
+        const modifiedComponentsById = new Map(modifiedComponents.map(component => [component.id, component]));
+        const modifiedRecipes = await this._fabricateAPI.recipes.removeEssenceReferences(essence.id, essence.craftingSystemId);
+        const modifiedRecipesById = new Map(modifiedRecipes.map(recipe => [recipe.id, recipe]));
+        this._essences.remove(deletedEssence);
+        this._components.update((components) => {
+            return components.map(component => modifiedComponentsById.get(component.id) || component);
+        });
+        this._recipes.update((recipes) => {
+            return recipes.map(recipe => modifiedRecipesById.get(recipe.id) || recipe);
+        });
     }
 
     public async setActiveEffectSource(event: any, essence: Essence) {
         const dropEventParser = new DropEventParser({
             localizationService: this._localization,
-            documentManager: new DefaultDocumentManager(),
-            partType: this._localization.localize(`${Properties.module.id}.typeNames.activeEffectSource.singular`)
+            documentManager: new DefaultDocumentManager()
         })
-        const dropData = await dropEventParser.parse(event);
-        essence.activeEffectSource = dropData.itemData;
+        const dropEvent = await dropEventParser.parse(event);
+        if (dropEvent.type === "Unknown") {
+            return;
+        }
+        if (dropEvent.type === "Compendium") {
+            return;
+        }
+        if (dropEvent.type === "Item") {
+            essence.activeEffectSource = dropEvent.data.item;
+        }
         await this._fabricateAPI.essences.save(essence);
         this._essences.insert(essence);
         return essence;

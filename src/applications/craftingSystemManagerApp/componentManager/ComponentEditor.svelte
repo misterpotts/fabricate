@@ -19,6 +19,7 @@
     import type {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
     import {CraftingComponentEditor} from "./CraftingComponentEditor";
     import type {Essence} from "../../../scripts/crafting/essence/Essence";
+    import {ComponentsStore} from "../../stores/ComponentsStore";
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
     let selectSalvageTab;
@@ -33,7 +34,7 @@
     }: {
         localization: LocalizationService,
         selectedComponent: Readable<Component>,
-        components: Readable<Component[]>,
+        components: ComponentsStore,
         selectedCraftingSystem: Readable<CraftingSystem>,
         componentEditor: CraftingComponentEditor,
         essences: Readable<Essence[]>,

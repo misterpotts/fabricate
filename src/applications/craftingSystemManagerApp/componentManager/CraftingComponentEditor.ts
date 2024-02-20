@@ -6,26 +6,31 @@ import {LocalizationService} from "../../common/LocalizationService";
 import {CraftingSystem} from "../../../scripts/crafting/system/CraftingSystem";
 import {FabricateAPI} from "../../../scripts/api/FabricateAPI";
 import {ComponentsStore} from "../../stores/ComponentsStore";
+import {RecipesStore} from "../../stores/RecipesStore";
 
 class CraftingComponentEditor {
 
     private readonly _fabricateAPI: FabricateAPI;
     private readonly _components: ComponentsStore;
+    private readonly _recipes: RecipesStore;
     private readonly _localization: LocalizationService;
     private readonly  _localizationPath = `${Properties.module.id}.CraftingSystemManagerApp.tabs.components`;
 
     constructor({
         localization,
         fabricateAPI,
-        components
+        components,
+        recipes
     }: {
         localization: LocalizationService;
         fabricateAPI: FabricateAPI;
         components: ComponentsStore;
+        recipes: RecipesStore;
     }) {
         this._localization = localization;
         this._fabricateAPI = fabricateAPI;
         this._components = components;
+        this._recipes = recipes;
     }
 
     public async importComponent(event: any, selectedSystem: CraftingSystem) {
@@ -110,7 +115,17 @@ class CraftingComponentEditor {
             return undefined;
         }
         const deletedComponent = await this._fabricateAPI.components.deleteById(component.id);
-        this._components.remove(deletedComponent);
+        const modifiedComponents = await this._fabricateAPI.components.removeSalvageReferences(component.id, component.craftingSystemId);
+        const modifiedComponentsById = new Map(modifiedComponents.map(component => [component.id, component]));
+        const modifiedRecipes = await this._fabricateAPI.recipes.removeComponentReferences(component.id, component.craftingSystemId);
+        const modifiedRecipesById = new Map(modifiedRecipes.map(recipe => [recipe.id, recipe]));
+        this._components.update((components) => {
+            return components.filter(component => component.id !== deletedComponent.id)
+                .map(component => modifiedComponentsById.get(component.id) || component);
+        });
+        this._recipes.update((recipes) => {
+            return recipes.map(recipe => modifiedRecipesById.get(recipe.id) || recipe);
+        });
     }
 
     public async saveComponent(craftingComponent: Component): Promise<Component> {

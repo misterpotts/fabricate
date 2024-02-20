@@ -22,9 +22,11 @@
     import {EssencesStore} from "../stores/EssenceStore";
     import EssenceEditorComponent from "./essenceManager/EssenceEditorComponent.svelte";
     import {EssenceEditor} from "./essenceManager/EssenceEditor";
+    import type {LocalizationService} from "../common/LocalizationService";
+    import type {FabricateAPI} from "../../scripts/api/FabricateAPI";
 
-    export let localization;
-    export let fabricateAPI;
+    export let localization: LocalizationService;
+    export let fabricateAPI: FabricateAPI;
 
     const localizationPath = `${Properties.module.id}.CraftingSystemManagerApp`
 
@@ -32,18 +34,17 @@
     const selectedCraftingSystem = new SelectedCraftingSystemStore({ craftingSystems });
 
     const essences = new EssencesStore({ selectedCraftingSystem, fabricateAPI });
-    const essenceEditor = new EssenceEditor({ fabricateAPI, essences, localization });
-
     const components = new ComponentsStore({ selectedCraftingSystem, fabricateAPI, initialValue: [] });
-    const componentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization });
-
     const recipes = new RecipesStore({ selectedCraftingSystem, fabricateAPI });
+
+    const essenceEditor = new EssenceEditor({ fabricateAPI, essences, localization, components, recipes });
+    const componentEditor = new CraftingComponentEditor({ fabricateAPI, components: components, localization, recipes });
     const recipeEditor = new RecipeEditor({ fabricateAPI, recipes, components, localization });
 
     const selectedRecipe = new SelectedRecipeStore({recipes: recipes});
     const selectedComponent = new SelectedCraftingComponentStore({craftingComponents: components});
 
-    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization, components: components });
+    const craftingSystemEditor = new CraftingSystemEditor({fabricateAPI, craftingSystems, localization, components, recipes });
 
     setContext(key, {
         craftingSystems,

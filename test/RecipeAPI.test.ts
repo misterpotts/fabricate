@@ -41,6 +41,7 @@ import {
 } from "../src/scripts/foundry/DocumentManager";
 import Properties from "../src/scripts/Properties";
 import {StubRecipeValidator} from "./stubs/StubRecipeValidator";
+import {StubGameProvider} from "./stubs/foundry/StubGameProvider";
 
 const identityFactory = new StubIdentityFactory();
 const localizationService = new StubLocalizationService();
@@ -172,7 +173,9 @@ describe("Create", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory("3456abcd")
+            identityFactory: new StubIdentityFactory("3456abcd"),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.create({ itemUuid, craftingSystemId });
@@ -197,7 +200,9 @@ describe("Create", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const itemUuid = "1234abcd";
@@ -224,7 +229,9 @@ describe("Create", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const itemUuid = "1234abcd";
@@ -248,7 +255,9 @@ describe("Create", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.save(testRecipeOne);
@@ -271,7 +280,9 @@ describe("Create", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const modified = new DefaultRecipe({
@@ -302,7 +313,9 @@ describe("Create", () => {
             localizationService,
             recipeValidator: new StubRecipeValidator(false),
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         expect.assertions(1);
@@ -328,7 +341,9 @@ describe("Access", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.getById("notAValidId");
@@ -351,7 +366,9 @@ describe("Access", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.getById(testRecipeOne.id);
@@ -387,7 +404,9 @@ describe("Access", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.getAllById([ testRecipeOne.id, testRecipeTwo.id, testRecipeThree.id, "notAValidId" ]);
@@ -421,7 +440,9 @@ describe("Access", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.getAll();
@@ -453,7 +474,9 @@ describe("Access", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.getAllByCraftingSystemId(testCraftingSystemOne.id);
@@ -485,7 +508,9 @@ describe("Access", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.getAllByItemUuid(testRecipeOne.itemUuid);
@@ -518,7 +543,9 @@ describe("Edit", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const result = await underTest.cloneById(testRecipeOne.id);
@@ -545,7 +572,9 @@ describe("Edit", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const recipeToEdit = await underTest.getById(testRecipeOne.id);
@@ -590,7 +619,9 @@ describe("Delete", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -627,7 +658,9 @@ describe("Delete", () => {
                 essenceAPI: essenceAPI
             }),
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -659,7 +692,9 @@ describe("Delete", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -693,11 +728,13 @@ describe("Delete", () => {
             localizationService,
             recipeValidator: new DefaultRecipeValidator({
                 craftingSystemAPI: emptyCraftingSystemApi,
-                componentAPI: componentAPI,
-                essenceAPI: essenceAPI
+                essenceAPI: essenceAPI,
+                componentAPI: componentAPI
             }),
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -729,7 +766,9 @@ describe("Delete", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const before = await underTest.getById(testRecipeOne.id);
@@ -761,7 +800,9 @@ describe("Delete", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const componentIdToDelete = testComponentThree.id;
@@ -797,7 +838,9 @@ describe("Delete", () => {
             localizationService,
             recipeValidator,
             recipeStore: recipeDataStore,
-            identityFactory: new StubIdentityFactory()
+            identityFactory: new StubIdentityFactory(),
+            documentManager: new StubDocumentManager(),
+            gameProvider: new StubGameProvider()
         });
 
         const essenceIdToDelete = elementalFire.id;
