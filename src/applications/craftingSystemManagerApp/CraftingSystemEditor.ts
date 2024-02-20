@@ -5,11 +5,14 @@ import {LocalizationService} from "../common/LocalizationService";
 import {FabricateAPI} from "../../scripts/api/FabricateAPI";
 import {FabricateExportModel} from "../../scripts/repository/import/FabricateExportModel";
 import {Component} from "../../scripts/crafting/component/Component";
+import {ComponentsStore} from "../stores/ComponentsStore";
+import {RecipesStore} from "../stores/RecipesStore";
 
 class CraftingSystemEditor {
 
     private readonly _craftingSystems: Writable<CraftingSystem[]>;
-    private readonly _components: Writable<Component[]>;
+    private readonly _components: ComponentsStore;
+    private readonly _recipes: RecipesStore;
     private readonly _localization: LocalizationService;
     private readonly _fabricateAPI: FabricateAPI;
 
@@ -18,16 +21,19 @@ class CraftingSystemEditor {
     constructor({
         craftingSystems,
         components,
+        recipes,
         localization,
         fabricateAPI,
     }: {
         craftingSystems: Writable<CraftingSystem[]>;
-        components: Writable<Component[]>;
+        components: ComponentsStore;
+        recipes: RecipesStore;
         localization: LocalizationService;
         fabricateAPI: FabricateAPI;
     }) {
         this._fabricateAPI = fabricateAPI;
         this._components = components;
+        this._recipes = recipes;
         this._craftingSystems = craftingSystems;
         this._localization = localization;
     }
@@ -50,6 +56,12 @@ class CraftingSystemEditor {
                 this._craftingSystems.update((craftingSystems) => {
                     return craftingSystems.filter(craftingSystem => craftingSystem.id !== craftingSystemToDelete.id);
                 });
+                this._components.update((components => {
+                    return components.filter(component => component.craftingSystemId !== craftingSystemToDelete.id);
+                }));
+                this._recipes.update((recipes => {
+                    return recipes.filter(recipe => recipe.craftingSystemId !== craftingSystemToDelete.id);
+                }));
             }
         });
     }
@@ -167,13 +179,6 @@ class CraftingSystemEditor {
             return filtered;
         });
         return updatedCraftingSystem;
-    }
-
-    async deleteComponent(component: Component): Promise<Component> {
-        const result = await this._fabricateAPI.components.deleteById(component.id);
-        await this._fabricateAPI.components.removeSalvageReferences(component.id, component.craftingSystemId);
-        await this._fabricateAPI.recipes.removeComponentReferences(component.id, component.craftingSystemId);
-        return result;
     }
 
     async saveComponent(craftingComponent: Component): Promise<Component> {
