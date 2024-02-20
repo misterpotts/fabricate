@@ -1293,6 +1293,7 @@ END COMMON STRUCTURAL STYLES
 
 .dnd5e2 {
   .fab-actor-sheet-header-button {
+    margin-top: 4px !important;
     .fab-button-text {
       display: none;
     }
@@ -1347,8 +1348,21 @@ END COMMON STRUCTURAL STYLES
 =====================================================================
 */
 
+.scrollbar-reset {
+  * {
+    scrollbar-color: initial;
+    scrollbar-width: initial;
+  }
+}
+
+.fab-application-container {
+  .scrollbar-reset();
+}
+
 #fab-tw-application-container {
   @import (inline) "preflight-reset.css";
+
+  .scrollbar-reset();
 
   a {
     &:hover {
@@ -1379,7 +1393,7 @@ END COMMON STRUCTURAL STYLES
   }
 
   .scroll-track {
-    border-radius: 3px;
+    border-radius: 6px;
     box-shadow: 0 0 1px #999 inset;
   }
 
@@ -1390,16 +1404,23 @@ END COMMON STRUCTURAL STYLES
     &::-webkit-scrollbar-thumb {
       .scroll-thumb();
     }
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
   }
 
-  .scroll-primary::-webkit-scrollbar-thumb {
-    .scroll-thumb();
-    background: #ac9e6c;
+  .scroll-primary {
+    &::-webkit-scrollbar-thumb {
+      .scroll-thumb();
+      background: #ac9e6c;
+    }
   }
 
-  .scroll-secondary::-webkit-scrollbar-thumb {
-    .scroll-thumb();
-    background: #bc9276;
+  .scroll-secondary {
+    &::-webkit-scrollbar-thumb {
+      .scroll-thumb();
+      background: #bc9276;
+    }
   }
 
   img.avatar-image {
