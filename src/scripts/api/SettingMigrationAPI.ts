@@ -46,8 +46,9 @@ interface SettingMigrationAPI {
      *   embedded crafting systems.
      *
      * @async
+     * @param skipInstalled - do not restore embedded systems that are installed, only insert missing systems. Defaults to `false`.
      */
-    restoreEmbeddedCraftingSystems(): Promise<void>;
+    restoreEmbeddedCraftingSystems(skipInstalled?: boolean): Promise<void>;
 
     /**
      * WARNING: This function will remove all user-defined crafting systems and restore the embedded crafting systems to
@@ -128,8 +129,8 @@ class DefaultSettingMigrationAPI implements SettingMigrationAPI {
         }
     }
 
-    async restoreEmbeddedCraftingSystems(): Promise<void> {
-        await this._embeddedCraftingSystemManager.restoreForGameSystem(this._gameSystemId);
+    async restoreEmbeddedCraftingSystems(skipInstalled: boolean = false): Promise<void> {
+        await this._embeddedCraftingSystemManager.restoreForGameSystem(this._gameSystemId, skipInstalled);
     }
 
     async clear(): Promise<void> {

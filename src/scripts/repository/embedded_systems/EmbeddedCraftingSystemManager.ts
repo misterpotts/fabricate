@@ -9,7 +9,7 @@ import Properties from "../../Properties";
 
 interface EmbeddedCraftingSystemManager {
 
-    restoreForGameSystem(gameSystemId: string): Promise<void>;
+    restoreForGameSystem(gameSystemId: string, skipInstalled: boolean): Promise<void>;
 
 }
 
@@ -47,9 +47,13 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
         this._embeddedCraftingSystems = embeddedCraftingSystems;
     }
 
-    async restoreForGameSystem(gameSystemId: string): Promise<void> {
+    async restoreForGameSystem(gameSystemId: string, skipInstalled: boolean): Promise<void> {
         const embeddedCraftingSystemsForGameSystem = this._embeddedCraftingSystems
             .filter(embeddedSystemDefinition => embeddedSystemDefinition.supportedGameSystem === gameSystemId);
+        if (skipInstalled) {
+            await Promise.all(embeddedCraftingSystemsForGameSystem.map(embeddedSystemDefinition => this._restoreEmbeddedCraftingSystemIfNotInstalled(embeddedSystemDefinition)));
+            return;
+        }
         await Promise.all(embeddedCraftingSystemsForGameSystem.map(embeddedSystemDefinition => this._restoreEmbeddedCraftingSystem(embeddedSystemDefinition)));
     }
 
@@ -66,7 +70,22 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
         await this._restoreRecipes(embeddedSystemDefinition.recipes);
     }
 
+    private async _restoreEmbeddedCraftingSystemIfNotInstalled(embeddedSystemDefinition: EmbeddedCraftingSystemDefinition): Promise<void> {
+        const isInstalled = await this._craftingSystemStore.has(embeddedSystemDefinition.craftingSystem.id);
+        if (isInstalled) {
+            console.log(`Fabricate | Embedded crafting system ${embeddedSystemDefinition.craftingSystem.id} is already installed. Skipping installation.`);
+            return;
+        }
+        console.log(`Fabricate | Installing embedded crafting system ${embeddedSystemDefinition.craftingSystem.id}.`)
+        return this._restoreEmbeddedCraftingSystem(embeddedSystemDefinition);
+    }
+
     private async _restoreCraftingSystem(craftingSystem: CraftingSystem): Promise<void> {
+        const systemInstalled = await this._craftingSystemStore.has(craftingSystem.id);
+        if (systemInstalled) {
+            const installedSystem = await this._craftingSystemStore.getById(craftingSystem.id);
+            craftingSystem.isDisabled = installedSystem.isDisabled;
+        }
         await this._craftingSystemStore.insert(craftingSystem);
     }
 
