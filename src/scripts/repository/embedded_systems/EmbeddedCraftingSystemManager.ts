@@ -73,8 +73,10 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
     private async _restoreEmbeddedCraftingSystemIfNotInstalled(embeddedSystemDefinition: EmbeddedCraftingSystemDefinition): Promise<void> {
         const isInstalled = await this._craftingSystemStore.has(embeddedSystemDefinition.craftingSystem.id);
         if (isInstalled) {
+            console.log(`Fabricate | Embedded crafting system ${embeddedSystemDefinition.craftingSystem.id} is already installed. Skipping installation.`);
             return;
         }
+        console.log(`Fabricate | Installing embedded crafting system ${embeddedSystemDefinition.craftingSystem.id}.`)
         return this._restoreEmbeddedCraftingSystem(embeddedSystemDefinition);
     }
 
