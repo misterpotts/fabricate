@@ -67,6 +67,11 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
     }
 
     private async _restoreCraftingSystem(craftingSystem: CraftingSystem): Promise<void> {
+        const systemInstalled = await this._craftingSystemStore.has(craftingSystem.id);
+        if (systemInstalled) {
+            const installedSystem = await this._craftingSystemStore.getById(craftingSystem.id);
+            craftingSystem.isDisabled = installedSystem.isDisabled;
+        }
         await this._craftingSystemStore.insert(craftingSystem);
     }
 
