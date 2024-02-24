@@ -9,6 +9,10 @@
     import {AppBar} from "@skeletonlabs/skeleton";
     import {NoCraftingProcess, type CraftingProcess} from "./CraftingProcess";
     import type {LocalizationService} from "../common/LocalizationService";
+    import {createEventDispatcher} from "svelte";
+    import type {SalvageOption} from "./SalvageProcess";
+    import {Requirement} from "../../scripts/crafting/recipe/Requirement";
+    import {Option} from "../../scripts/common/Options";
 
     /*
      * ===========================================================================
@@ -18,6 +22,23 @@
 
     export let localization: LocalizationService;
     export let craftingProcess: CraftingProcess = new NoCraftingProcess();
+
+    /*
+     * ===========================================================================
+     * Private component properties
+     * ===========================================================================
+     */
+
+    const dispatch = createEventDispatcher();
+
+    let selectedRequirementOption: Option<Requirement> = craftingProcess.selectedRequirementOption;
+    $: {
+        selectedRequirementOption = craftingProcess.selectedRequirementOption;
+    }
+    $: requiredEssences = selectedRequirementOption.value.essences;
+    $: requiredCatalysts = selectedRequirementOption.value.catalysts;
+    $: requiredIngredients = selectedRequirementOption.value.ingredients;
+    $: requirementOptionName = selectedRequirementOption.name;
 
     /*
      * ===========================================================================
