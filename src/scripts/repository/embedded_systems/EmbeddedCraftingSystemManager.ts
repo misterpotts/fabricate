@@ -9,7 +9,7 @@ import Properties from "../../Properties";
 
 interface EmbeddedCraftingSystemManager {
 
-    restoreForGameSystem(gameSystemId: string): Promise<void>;
+    restoreForGameSystem(gameSystemId: string, skipInstalled: boolean): Promise<void>;
 
 }
 
@@ -47,9 +47,13 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
         this._embeddedCraftingSystems = embeddedCraftingSystems;
     }
 
-    async restoreForGameSystem(gameSystemId: string): Promise<void> {
+    async restoreForGameSystem(gameSystemId: string, skipInstalled: boolean): Promise<void> {
         const embeddedCraftingSystemsForGameSystem = this._embeddedCraftingSystems
             .filter(embeddedSystemDefinition => embeddedSystemDefinition.supportedGameSystem === gameSystemId);
+        if (skipInstalled) {
+            await Promise.all(embeddedCraftingSystemsForGameSystem.map(embeddedSystemDefinition => this._restoreEmbeddedCraftingSystemIfNotInstalled(embeddedSystemDefinition)));
+            return;
+        }
         await Promise.all(embeddedCraftingSystemsForGameSystem.map(embeddedSystemDefinition => this._restoreEmbeddedCraftingSystem(embeddedSystemDefinition)));
     }
 
@@ -64,6 +68,14 @@ class DefaultEmbeddedCraftingSystemManager implements EmbeddedCraftingSystemMana
 
         await this.deleteRecipesForCraftingSystem(embeddedSystemDefinition.craftingSystem.id);
         await this._restoreRecipes(embeddedSystemDefinition.recipes);
+    }
+
+    private async _restoreEmbeddedCraftingSystemIfNotInstalled(embeddedSystemDefinition: EmbeddedCraftingSystemDefinition): Promise<void> {
+        const isInstalled = await this._craftingSystemStore.has(embeddedSystemDefinition.craftingSystem.id);
+        if (isInstalled) {
+            return;
+        }
+        return this._restoreEmbeddedCraftingSystem(embeddedSystemDefinition);
     }
 
     private async _restoreCraftingSystem(craftingSystem: CraftingSystem): Promise<void> {
