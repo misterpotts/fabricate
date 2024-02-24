@@ -102,6 +102,8 @@ Hooks.once(`${Properties.module.id}.ready`, async (fabricateAPI: FabricateAPI) =
         await fabricateAPI.migration.migrateAll();
     }
 
+    await fabricateAPI.migration.restoreEmbeddedCraftingSystems(true);
+
 });
 
 Hooks.on("deleteItem", async (item: any) => {
