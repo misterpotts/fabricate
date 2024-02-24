@@ -12,6 +12,7 @@ import {FabricateUserInterfaceAPI} from "./api/FabricateUserInterfaceAPI";
 import {DefaultFabricatePatreonAPIFactory} from "./patreon/PatreonAPIFactory";
 import {DefaultPatreonFeature} from "./patreon/PatreonFeature";
 import {FabricatePatreonAPI} from "./patreon/FabricatePatreonAPI";
+import {SettingVersion} from "./repository/migration/SettingVersion";
 
 let fabricateAPI: FabricateAPI;
 let fabricateUserInterfaceAPI: FabricateUserInterfaceAPI;
@@ -38,7 +39,7 @@ Hooks.once('ready', async () => {
             [Properties.settings.essences.key, { entities: {}, collections: {} }],
             [Properties.settings.components.key, { entities: {}, collections: {} }],
             [Properties.settings.craftingSystems.key, { entities: {}, collections: {} }],
-            [Properties.settings.modelVersion.key, ""],
+            [Properties.settings.modelVersion.key, SettingVersion.V3],
         ])
     });
 
