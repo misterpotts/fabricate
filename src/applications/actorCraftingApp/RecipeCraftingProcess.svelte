@@ -10,9 +10,8 @@
     import {NoCraftingProcess, type CraftingProcess} from "./CraftingProcess";
     import type {LocalizationService} from "../common/LocalizationService";
     import {createEventDispatcher} from "svelte";
-    import type {SalvageOption} from "./SalvageProcess";
     import {Requirement} from "../../scripts/crafting/recipe/Requirement";
-    import {Option} from "../../scripts/common/Options";
+    import type {Option} from "../../scripts/common/Options";
 
     /*
      * ===========================================================================
