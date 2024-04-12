@@ -13,7 +13,7 @@ import {DocumentManager} from "../foundry/DocumentManager";
 /**
  * A value object representing a Requirement option
  */
-interface RequirementOptionValue {
+export interface RequirementOptionValue {
 
     /**
      * The name of the requirement option.
@@ -43,7 +43,7 @@ interface RequirementOptionValue {
 /**
  * A value object representing a Result option
  */
-interface ResultOptionValue {
+export interface ResultOptionValue {
 
     /**
      * The name of the result option.
