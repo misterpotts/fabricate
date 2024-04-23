@@ -17,8 +17,8 @@
         $selectedCraftingSystem = await craftingSystemEditor.createNewCraftingSystem();
     }
 
-    async function importCraftingSystem(targetCraftingSystemId) {
-        await craftingSystemEditor.importCraftingSystem(targetCraftingSystemId);
+    async function importCraftingSystem() {
+        await craftingSystemEditor.importCraftingSystem();
     }
 
 </script>

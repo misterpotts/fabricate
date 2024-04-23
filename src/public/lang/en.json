@@ -454,7 +454,13 @@
         },
         "importCraftingSystem": {
           "title": "Import Crafting System",
-          "hint": "the Crafting System with the same ID as the Crafting System in the uploaded document, or create a new one,",
+          "description": {
+            "update": "Re-import this Crafting System definition by uploading a JSON file. This will overwrite the existing Crafting System. This operation cannot be undone.",
+            "create": "Import a new Crafting System from a JSON file. This will create a new Crafting System matching the imported definition."
+          },
+          "labels": {
+            "fileType": "File Type"
+          },
           "buttons": {
             "import": "Import",
             "cancel": "Cancel"

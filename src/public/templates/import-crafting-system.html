@@ -1,0 +1,14 @@
+<form autocomplete="off" onsubmit="preventDefault()">
+    <p class="notes">{{details}}</p>
+    <div class="form-group">
+        <label for="data">Source Data</label>
+        <input type="file" name="data" accept=".json">
+    </div>
+    <div class="form-group">
+        <label for="fileType">{{fileTypeLabel}}</label>
+        <select name="fileType" id="fileType">
+            <option value="fabricate">Fabricate Crafting System Definition</option>
+            <option value="mastercrafted">MasterCrafted Recipe Book</option>
+        </select>
+    </div>
+</form>

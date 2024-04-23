@@ -67,11 +67,10 @@ class CraftingSystemEditor {
     }
 
     async importCraftingSystem(targetCraftingSystem?: CraftingSystem): Promise<void> {
-        const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
-        const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
-        const content = await renderTemplate("templates/apps/import-data.html", {
-            hint1: this._localization.format("DOCUMENT.ImportDataHint1", {document: craftingSystemTypeName}),
-            hint2: this._localization.format("DOCUMENT.ImportDataHint2", {name: importActionHint})
+        const importType = targetCraftingSystem ? "update" : "create";
+        const content = await renderTemplate(`modules/${Properties.module.id}/templates/import-crafting-system.html`, {
+            details: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.description.${importType}`),
+            fileTypeLabel: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.labels.fileType`),
         });
         await new Dialog({
             title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.title`),
