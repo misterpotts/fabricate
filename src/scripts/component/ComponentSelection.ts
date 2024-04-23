@@ -42,6 +42,13 @@ class DefaultComponentSelection implements ComponentSelection {
     private readonly _ingredients: TrackedCombination<Component>;
     private readonly _essenceSources: Combination<Component>;
 
+    public static EMPTY = new DefaultComponentSelection({
+        catalysts: TrackedCombination.EMPTY(),
+        essences: TrackedCombination.EMPTY(),
+        ingredients: TrackedCombination.EMPTY(),
+        essenceSources: DefaultCombination.EMPTY()
+    });
+
     constructor({
         catalysts,
         essences,

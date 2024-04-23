@@ -12,6 +12,7 @@
     import {createEventDispatcher} from "svelte";
     import {Requirement} from "../../scripts/crafting/recipe/Requirement";
     import type {Option} from "../../scripts/common/Options";
+    import NoCraftingProcessComponent from "./NoCraftingProcessComponent.svelte";
 
     /*
      * ===========================================================================
@@ -57,3 +58,8 @@
     </svelte:fragment>
     <h2 class="text-lg">Crafting {craftingProcess.recipeName}</h2>
 </AppBar>
+<div class="h-full w-full flex flex-row">
+    {#if craftingProcess instanceof NoCraftingProcess}
+        <NoCraftingProcessComponent {craftingProcess} />
+    {/if}
+</div>

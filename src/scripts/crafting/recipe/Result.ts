@@ -24,6 +24,8 @@ interface ResultJson {
 
 }
 
+export {ResultJson};
+
 class Result implements Serializable<ResultJson> {
 
     private _products: Combination<ComponentReference>;
@@ -91,4 +93,3 @@ class Result implements Serializable<ResultJson> {
 }
 
 export {Result};
-export {ResultJson};

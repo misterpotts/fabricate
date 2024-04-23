@@ -129,6 +129,7 @@
       }
     },
     "crafting": {
+      "recipeNotFound": "The recipe with id {recipeId} could not be found. ",
       "actorNotFound": "The Actor with id {actorId} could not be found. ",
       "disabledCraftingSystem": "{name} belongs to the crafting system {craftingSystemName}, which is disabled and cannot be used.",
       "salvage": {

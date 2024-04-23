@@ -41,11 +41,13 @@ class Requirement implements Serializable<RequirementJson> {
         essences?: Combination<EssenceReference>;
         catalysts?: Combination<ComponentReference>;
         ingredients?: Combination<ComponentReference>;
-    }) {
+    } = {}) {
         this._essences = essences;
         this._catalysts = catalysts;
         this._ingredients = ingredients;
     }
+
+    static EMPTY = new Requirement();
 
     get essences(): Combination<EssenceReference> {
         return this._essences;

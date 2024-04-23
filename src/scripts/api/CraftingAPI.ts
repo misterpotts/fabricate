@@ -41,6 +41,7 @@ import {
     SalvageProcess
 } from "../../applications/actorCraftingApp/SalvageProcess";
 import {DefaultSelectableOptions} from "../common/SelectableOptions";
+import {CraftingProcess, DefaultCraftingProcess} from "../../applications/actorCraftingApp/CraftingProcess";
 
 /**
  * Options used when salvaging a component using the Crafting API.
@@ -275,6 +276,16 @@ interface CraftingAPI {
      * @returns A Promise that resolves with the Salvage Process.
      */
     getSalvageProcess(options: { componentId: string; actorId: string }): Promise<SalvageProcess>;
+
+    /**
+     * Gets the Crafting Process for the specified recipe and actor.
+     *
+     * @param options - The options to use when getting the Crafting Process.
+     * @param options.actorId - The ID of the actor to use as a source for the recipe being crafted.
+     * @param options.recipeId - The ID of the recipe to craft.
+     * @returns A Promise that resolves with the Crafting Process.
+     */
+    getCraftingProcess(options: { actorId: string; recipeId: string }): Promise<CraftingProcess>;
 
 }
 
@@ -1426,6 +1437,37 @@ class DefaultCraftingAPI implements CraftingAPI {
         return { selected: selectedComponents, missing: missingComponents };
 
     }
+
+    async getCraftingProcess({ actorId, recipeId }: { actorId: string; recipeId: string }): Promise<CraftingProcess> {
+        const recipe = await this.recipeAPI.getById(recipeId);
+        if (!recipe) {
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipeNotFound`, { recipeId });
+            throw new Error(message);
+        }
+        await recipe.load();
+        if (recipe.hasErrors) {
+            const message = this.localizationService.format(`${DefaultCraftingAPI._LOCALIZATION_PATH}.recipe.invalidItemData`, { recipeId, cause: recipe.itemData.errors.join(", ") });
+            throw new Error(message);
+        }
+        const ownedComponents = await this.getOwnedComponentsForCraftingSystem(actorId, recipe.craftingSystemId);
+        if (!recipe.hasRequirements) {
+            const emptyRequirementOption: Option<Requirement> = new DefaultOption({ id: "1", name: "No requirements", value: Requirement.EMPTY });
+            const selectedResultOption: Option<Result> = recipe.resultOptions.byId.values().next().value;
+            return new DefaultCraftingProcess({
+                recipeName: recipe.name,
+                selectedRequirementOption: emptyRequirementOption,
+                componentSelection: DefaultComponentSelection.EMPTY,
+                selectedResultOption: selectedResultOption
+            });
+        }
+        const allComponentsForCraftingSystem = await this.componentAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
+        const allEssencesForCraftingSystem = await this.essenceAPI.getAllByCraftingSystemId(recipe.craftingSystemId);
+        const selectedRequirementOption: Option<Requirement> = recipe.requirementOptions.byId.values().next().value;
+        const selectedResultOption: Option<Result> = recipe.resultOptions.byId.values().next().value;
+        const componentSelection = this.makeSelections(selectedRequirementOption.value, ownedComponents, allComponentsForCraftingSystem, allEssencesForCraftingSystem);
+        return new DefaultCraftingProcess({ recipeName: recipe.name, selectedRequirementOption, componentSelection, selectedResultOption });
+    }
+
 }
 
 export { DefaultCraftingAPI };

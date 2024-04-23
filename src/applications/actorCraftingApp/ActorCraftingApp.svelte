@@ -14,7 +14,7 @@
     import {onMount, setContext} from "svelte";
     import eventBus from "../common/EventBus";
     import type {CraftingAssessment} from "./CraftingAssessment";
-    import {type CraftingProcess, DefaultCraftingProcess, NoCraftingProcess} from "./CraftingProcess";
+    import {type CraftingProcess, NoCraftingProcess} from "./CraftingProcess";
     import {NoSalvageProcess, type SalvageProcess} from "./SalvageProcess";
     import type {SalvageAssessment} from "./SalvageAssessment";
     import ActorCraftingAppHeader from "./ActorCraftingAppHeader.svelte";
@@ -81,8 +81,12 @@
         await componentsById.loadAll();
     }
 
-    function startCraftingProcess(event: CustomEvent<CraftingAssessment>) {
-        craftingProcess = new DefaultCraftingProcess({ recipeName: event.detail.recipeName });
+    async function startCraftingProcess(event: CustomEvent<CraftingAssessment>) {
+        const recipeId = event.detail.recipeId;
+        craftingProcess = await fabricateAPI.crafting.getCraftingProcess({
+            recipeId,
+            actorId: sourceActorDetails.id
+        });
     }
 
     async function startSalvageProcess(event: CustomEvent<SalvageAssessment>) {
