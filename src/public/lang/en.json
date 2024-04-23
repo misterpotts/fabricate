@@ -245,6 +245,11 @@
         }
       }
     },
+    "CraftingSystemDataExchanger": {
+      "errors": {
+        "importIdMismatch": "Cannot import Crafting System definition for {systemName}. The ID in the uploaded file does not match that of {systemName}. Wanted {expectedId}, but got {actualId}. Perhaps you uploaded the wrong file, or meant to use the Import new button below?"
+      }
+    },
     "CraftingSystemManagerApp": {
       "title": "Fabricate | Crafting System Manager",
       "tabs": {
@@ -466,9 +471,9 @@
             "cancel": "Cancel"
           },
           "errors": {
+            "invalidFileType": "Invalid file type. Fabricate accepts \"fabricate\" or \"mastercrafted\" when importing Crafting Systems.",
             "noFileUploaded": "You must select a file to upload",
             "couldNotParseFile": "Unable to parse JSON file.",
-            "importIdMismatch": "Cannot import Crafting System definition for {systemName}. The ID in the uploaded file does not match that of {systemName}. Wanted {expectedId}, but got {actualId}. Perhaps you uploaded the wrong file, or meant to use the Import new button below?",
             "targetSystemNotFound": "Could not import Crafting System definition for {systemName}. {systemName} doesn't seem to exist, which is really strange. This should never happen."
           },
           "success": "Successfully Imported the {systemName} Crafting System"

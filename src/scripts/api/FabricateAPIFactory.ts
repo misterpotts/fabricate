@@ -2,7 +2,7 @@ import {DefaultGameProvider, GameProvider} from "../foundry/GameProvider";
 import {DefaultUIProvider, UIProvider} from "../foundry/UIProvider";
 import {DefaultDocumentManager, DocumentManager} from "../foundry/DocumentManager";
 import {DefaultIdentityFactory, IdentityFactory} from "../foundry/IdentityFactory";
-import {DefaultLocalizationService} from "../../applications/common/LocalizationService";
+import {DefaultLocalizationService, LocalizationService} from "../../applications/common/LocalizationService";
 import {DefaultSettingMigrationAPI, SettingMigrationAPI} from "./SettingMigrationAPI";
 import {CraftingSystemAPI, DefaultCraftingSystemAPI} from "./CraftingSystemAPI";
 import {DefaultNotificationService} from "../foundry/NotificationService";
@@ -45,6 +45,8 @@ import {DefaultInventoryFactory} from "../actor/InventoryFactory";
 import {
     DefaultComponentSelectionStrategyFactory
 } from "../crafting/component/ComponentSelectionStrategy";
+import {DataExchangeAPI, DefaultDataExchangeAPI} from "./DataExchangeAPI";
+import {DefaultFabricateDataExchanger, DefaultMasterCraftedDataExchanger} from "./CraftingSystemDataExchanger";
 
 interface FabricateAPIFactory {
 
@@ -156,6 +158,15 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             this.gameProvider
         );
 
+        const dataExchangeAPI = this.makeDataExchangeAPI(
+            recipeAPI,
+            essenceAPI,
+            componentAPI,
+            craftingSystemAPI,
+            localizationService,
+            this.uiProvider
+        );
+
         return new DefaultFabricateAPI({
             recipeAPI,
             essenceAPI,
@@ -165,8 +176,35 @@ class DefaultFabricateAPIFactory implements FabricateAPIFactory {
             settingMigrationAPI,
             localizationService,
             notificationService: new DefaultNotificationService(this.uiProvider),
+            dataExchangeAPI
         });
 
+    }
+
+    private makeDataExchangeAPI(recipeAPI: RecipeAPI,
+                                essenceAPI: EssenceAPI,
+                                componentAPI: ComponentAPI,
+                                craftingSystemAPI: CraftingSystemAPI,
+                                localizationService: LocalizationService,
+                                uiProvider: UIProvider): DataExchangeAPI {
+        return new DefaultDataExchangeAPI({
+            fabricateDataExchanger: new DefaultFabricateDataExchanger({
+                recipeAPI,
+                essenceAPI,
+                componentAPI,
+                craftingSystemAPI,
+                localizationService,
+                notificationService: new DefaultNotificationService(uiProvider)
+            }),
+            masterCraftedDataExchanger: new DefaultMasterCraftedDataExchanger({
+                recipeAPI,
+                essenceAPI,
+                componentAPI,
+                craftingSystemAPI,
+                localizationService,
+                notificationService: new DefaultNotificationService(uiProvider)
+            })
+        });
     }
 
     private makeSettingManger<T>(settingKey: string): SettingManager<T> {
