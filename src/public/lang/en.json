@@ -451,11 +451,13 @@
         "saveCraftingSystem": {
           "success": "The Crafting System {systemName} was successfully updated."
         },
-        "exportCraftingSystem": {
-          "success": "The Crafting System {systemName} was successfully exported to {fileName}."
-        },
         "duplicateCraftingSystem": {
           "complete": "Duplicated {sourceSystemName} as {duplicatedSystemName}."
+        },
+        "exportCraftingSystem": {
+          "success": "The Crafting System {systemName} was successfully exported to {fileName}.",
+          "title": "Export Crafting System",
+          "description": "Export this Crafting System definition to a JSON file. You can export the data in Fabricate's external format, or in a format compatible with the MasterCrafted module. Which format would you like to use?"
         },
         "importCraftingSystem": {
           "title": "Import Crafting System",
@@ -473,8 +475,7 @@
           "errors": {
             "invalidFileType": "Invalid file type. Fabricate accepts \"fabricate\" or \"mastercrafted\" when importing Crafting Systems.",
             "noFileUploaded": "You must select a file to upload",
-            "couldNotParseFile": "Unable to parse JSON file.",
-            "targetSystemNotFound": "Could not import Crafting System definition for {systemName}. {systemName} doesn't seem to exist, which is really strange. This should never happen."
+            "couldNotParseFile": "Unable to parse JSON file."
           },
           "success": "Successfully Imported the {systemName} Crafting System"
         }

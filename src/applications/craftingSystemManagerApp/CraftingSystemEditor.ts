@@ -149,14 +149,39 @@ class CraftingSystemEditor {
     }
 
     public async exportCraftingSystem(craftingSystem: CraftingSystem) {
-        // Todo - add a dialog to allow the user to choose the export format
-        const exportData = await this._fabricateAPI.dataExchangeAPI.fabricate.export(craftingSystem.id);
-        const fileContents = JSON.stringify(exportData, null, 2);
-        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
-        const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
-        saveDataToFile(fileContents, "application/json", fileName);
-        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
-        ui.notifications.info(message);
+        await new Dialog({
+            title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.title`),
+            content: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.description`),
+            buttons: {
+                fabricate: {
+                    label: "Fabricate",
+                    callback: async () => {
+                        const exportData = await this._fabricateAPI.dataExchangeAPI.fabricate.export(craftingSystem.id);
+                        const fileContents = JSON.stringify(exportData, null, 2);
+                        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
+                        const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
+                        saveDataToFile(fileContents, "application/json", fileName);
+                        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
+                        ui.notifications.info(message);
+                    }
+                },
+                masterCrafted: {
+                    label: "MasterCrafted",
+                    callback: async () => {
+                        const exportData = await this._fabricateAPI.dataExchangeAPI.masterCrafted.export(craftingSystem.id);
+                        const fileContents = JSON.stringify(exportData, null, 2);
+                        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
+                        const fileName = `mastercrafted-recipe-book-${exportData.name.slugify()}.json`;
+                        saveDataToFile(fileContents, "application/json", fileName);
+                        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
+                        ui.notifications.info(message);
+                    }
+                },
+            },
+            default: "fabricate",
+        }, {}).render(true);
+
+
     }
 
     async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
