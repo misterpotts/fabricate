@@ -18,7 +18,7 @@
   "devDependencies": {
     "@skeletonlabs/skeleton": "^2.11.0",
     "@skeletonlabs/tw-plugin": "^0.4.1",
-    "@sveltejs/vite-plugin-svelte": "^2.5.3",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tsconfig/svelte": "^5.0.4",
     "@types/jest": "^29.5.14",
     "@types/jquery": "^3.5.32",
