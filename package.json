@@ -36,7 +36,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
-    "vite": "^4.5.9"
+    "vite": "^6.2.3"
   },
   "dependencies": {
     "@types/node": "^22.13.13"
