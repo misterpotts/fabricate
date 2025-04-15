@@ -540,7 +540,7 @@ describe("Export and import data", () => {
         const underTest = fabricateAPIFactory.make();
 
         const alchemistsSupplies = new AlchemistsSuppliesV16SystemDefinition();
-        const exportData = await underTest.export(alchemistsSupplies.craftingSystem.id);
+        const exportData = await underTest.dataExchangeAPI.fabricate.export(alchemistsSupplies.craftingSystem.id);
 
         expect(exportData).not.toBeNull();
         expect(exportData.version).toBe("V2");
