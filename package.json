@@ -28,7 +28,7 @@
     "jest": "^29.7.0",
     "less": "^4.3.0",
     "lodash": "^4.17.21",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.4",
     "svelte": "^5.28.2",
     "svelte-check": "^4.1.7",
     "tailwindcss": "^3.4.17",
