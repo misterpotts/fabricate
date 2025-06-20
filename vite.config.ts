@@ -1,9 +1,9 @@
-import type {UserConfig} from 'vite';
+import { defineConfig } from 'vite';
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 import * as path from "path";
 
-const config: UserConfig = {
+export default defineConfig({
     publicDir: "public",
     base: "/modules/fabricate/",
     root: "src/",
@@ -44,6 +44,4 @@ const config: UserConfig = {
             configFile: path.resolve(__dirname, "svelte.config.js")
         })
     ]
-}
-
-export default config;
+});
