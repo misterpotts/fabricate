@@ -2,11 +2,12 @@ import {Writable} from "svelte/store";
 import {CraftingSystem} from "../../scripts/crafting/system/CraftingSystem";
 import Properties from "../../scripts/Properties";
 import {LocalizationService} from "../common/LocalizationService";
-import {FabricateAPI} from "../../scripts/api/FabricateAPI";
+import {CraftingSystemData, FabricateAPI} from "../../scripts/api/FabricateAPI";
 import {FabricateExportModel} from "../../scripts/repository/import/FabricateExportModel";
 import {Component} from "../../scripts/crafting/component/Component";
 import {ComponentsStore} from "../stores/ComponentsStore";
 import {RecipesStore} from "../stores/RecipesStore";
+import {RecipeBookMasterCrafted} from "../../scripts/api/CraftingSystemDataExchanger";
 
 class CraftingSystemEditor {
 
@@ -38,6 +39,31 @@ class CraftingSystemEditor {
         this._localization = localization;
     }
 
+    private async importMasterCraftedData(fileData: any, targetCraftingSystem?: CraftingSystem): Promise<void> {
+        const dataToImport = fileData as RecipeBookMasterCrafted;
+        const importResult = await this._fabricateAPI.dataExchangeAPI.masterCrafted.import(dataToImport, targetCraftingSystem);
+        this.refresh(importResult);
+    }
+
+    private async importFabricateData(dataToImport: any, targetCraftingSystem?: CraftingSystem): Promise<void> {
+        dataToImport = dataToImport as FabricateExportModel;
+        const importResult = await this._fabricateAPI.dataExchangeAPI.fabricate.import(dataToImport, targetCraftingSystem);
+        this.refresh(importResult);
+    }
+
+    private refresh(craftingSystemData: CraftingSystemData) {
+        this._craftingSystems.update((craftingSystems) => {
+            const found = craftingSystems.find(craftingSystem => craftingSystem.id === craftingSystemData.craftingSystem.id);
+            if (!found) {
+                craftingSystems.push(craftingSystemData.craftingSystem);
+                return craftingSystems;
+            }
+            return craftingSystems
+                .filter(craftingSystem => craftingSystem.id !== craftingSystemData.craftingSystem.id)
+                .concat(craftingSystemData.craftingSystem);
+        });
+    }
+
     public async createNewCraftingSystem(): Promise<CraftingSystem> {
         const result = await this._fabricateAPI.systems.create();
         this._craftingSystems.update((craftingSystems) => {
@@ -67,11 +93,10 @@ class CraftingSystemEditor {
     }
 
     async importCraftingSystem(targetCraftingSystem?: CraftingSystem): Promise<void> {
-        const craftingSystemTypeName = this._localization.localize(`${Properties.module.id}.typeNames.craftingSystem.singular`);
-        const importActionHint = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.hint`);
-        const content = await renderTemplate("templates/apps/import-data.html", {
-            hint1: this._localization.format("DOCUMENT.ImportDataHint1", {document: craftingSystemTypeName}),
-            hint2: this._localization.format("DOCUMENT.ImportDataHint2", {name: importActionHint})
+        const importType = targetCraftingSystem ? "update" : "create";
+        const content = await renderTemplate(`modules/${Properties.module.id}/templates/import-crafting-system.html`, {
+            details: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.description.${importType}`),
+            fileTypeLabel: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.labels.fileType`),
         });
         await new Dialog({
             title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.title`),
@@ -91,7 +116,7 @@ class CraftingSystemEditor {
                         }
                         const fileData = await readTextFromFile(form.data.files[0]);
 
-                        let dataToImport: FabricateExportModel;
+                        let dataToImport: any;
                         try {
                             dataToImport = JSON.parse(fileData);
                         } catch (e: any) {
@@ -100,31 +125,17 @@ class CraftingSystemEditor {
                             throw new Error(message);
                         }
 
-                        if (targetCraftingSystem && (targetCraftingSystem.id !== dataToImport.craftingSystem.id)) {
-                            const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.importIdMismatch`, {
-                                systemName: targetCraftingSystem.details.name,
-                                expectedId: targetCraftingSystem.id,
-                                actualId: dataToImport.craftingSystem.id,
-                            })
-                            ui.notifications.error(message);
-                            throw new Error(message);
+                        const dataType: "fabricate" | "mastercrafted" = form.fileType.value;
+                        switch (dataType) {
+                            case "mastercrafted":
+                                return this.importMasterCraftedData(dataToImport, targetCraftingSystem);
+                            case "fabricate":
+                                return this.importFabricateData(dataToImport, targetCraftingSystem);
+                            default:
+                                const errorMessage = this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.importCraftingSystem.errors.invalidFileType`);
+                                ui.notifications.error(errorMessage);
+                                throw new Error(errorMessage);
                         }
-
-                        const importResult = await this._fabricateAPI.import(dataToImport);
-                        if (!importResult) {
-                            return;
-                        }
-                        this._craftingSystems.update((craftingSystems) => {
-                            const found = craftingSystems.find(craftingSystem => craftingSystem.id === importResult.craftingSystem.id);
-                            if (!found) {
-                                craftingSystems.push(importResult.craftingSystem);
-                                return craftingSystems;
-                            }
-                            return craftingSystems
-                                .filter(craftingSystem => craftingSystem.id !== importResult.craftingSystem.id)
-                                .concat(importResult.craftingSystem);
-                        });
-
                     }
                 },
                 no: {
@@ -138,13 +149,39 @@ class CraftingSystemEditor {
     }
 
     public async exportCraftingSystem(craftingSystem: CraftingSystem) {
-        const exportData = await this._fabricateAPI.export(craftingSystem.id);
-        const fileContents = JSON.stringify(exportData, null, 2);
-        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
-        const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
-        saveDataToFile(fileContents, "application/json", fileName);
-        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
-        ui.notifications.info(message);
+        await new Dialog({
+            title: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.title`),
+            content: this._localization.localize(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.description`),
+            buttons: {
+                fabricate: {
+                    label: "Fabricate",
+                    callback: async () => {
+                        const exportData = await this._fabricateAPI.dataExchangeAPI.fabricate.export(craftingSystem.id);
+                        const fileContents = JSON.stringify(exportData, null, 2);
+                        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
+                        const fileName = `fabricate-crafting-system-${craftingSystem.details.name.slugify()}.json`;
+                        saveDataToFile(fileContents, "application/json", fileName);
+                        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
+                        ui.notifications.info(message);
+                    }
+                },
+                masterCrafted: {
+                    label: "MasterCrafted",
+                    callback: async () => {
+                        const exportData = await this._fabricateAPI.dataExchangeAPI.masterCrafted.export(craftingSystem.id);
+                        const fileContents = JSON.stringify(exportData, null, 2);
+                        //@ts-ignore todo: figure out why String doesn't have a slugify method with the current tsconfig
+                        const fileName = `mastercrafted-recipe-book-${exportData.name.slugify()}.json`;
+                        saveDataToFile(fileContents, "application/json", fileName);
+                        const message = this._localization.format(`${CraftingSystemEditor._dialogLocalizationPath}.exportCraftingSystem.success`, { systemName: craftingSystem.details.name, fileName });
+                        ui.notifications.info(message);
+                    }
+                },
+            },
+            default: "fabricate",
+        }, {}).render(true);
+
+
     }
 
     async duplicateCraftingSystem(sourceCraftingSystem: CraftingSystem): Promise<CraftingSystem> {
