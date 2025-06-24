@@ -108,6 +108,66 @@ If you find an issue to work on, you are welcome to self-assign the issue and op
 Commit the changes once you are happy with them. 
 Don't forget to speed up the review process:zap:.
 
+#### Commit Message Format
+
+Fabricate uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
+This allows us to automatically generate changelogs and determine the next version number based on the types of changes made.
+
+The commit message should be structured as follows:
+
+```
+<type>(<scope>): <description>
+
+<body>
+
+<footer>
+```
+
+The `type` must be one of the following:
+
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes that affect the build system or external dependencies
+- `ci`: Changes to our CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files
+
+The `scope` is optional and can be anything specifying the place of the commit change.
+
+The `description` is a short summary of the change.
+
+The `body` is optional and should include the motivation for the change and contrast this with previous behavior.
+
+The `footer` is optional and should contain any information about Breaking Changes and is also the place to reference GitHub issues that this commit closes.
+
+**Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
+
+Examples:
+
+```
+feat(ui): add new button component
+
+Add a new button component that can be used throughout the application.
+
+Closes #123
+```
+
+```
+fix(api): prevent racing of requests
+
+Introduce a request id and a reference to the latest request. Dismiss
+incoming responses other than from the latest request.
+
+BREAKING CHANGE: The API now requires a request ID to be provided.
+```
+
+The CI pipeline will validate your commit messages against this format.
+If your commit message doesn't comply, your PR will fail the CI checks.
+
 ### Pull request
 
 When you're finished with the changes, create a pull request, also known as a PR.

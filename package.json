@@ -11,11 +11,15 @@
     "serve": "vite",
     "coverageTest": "jest --collect-coverage --collect-coverage-from='./src/**/*.ts'",
     "jekyll": "cd docs && bundle exec jekyll serve",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "commitlint": "commitlint --edit",
+    "prepare": "husky"
   },
   "author": "Matthew Potts",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^19.2.1",
+    "@commitlint/config-conventional": "^19.1.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.3",
@@ -30,6 +34,7 @@
     "@types/lodash": "^4.17.18",
     "autoprefixer": "^10.4.21",
     "fs-extra": "^11.3.0",
+    "husky": "^9.0.11",
     "jest": "^29.7.0",
     "less": "^4.3.0",
     "lodash": "^4.17.21",
@@ -48,5 +53,10 @@
   },
   "dependencies": {
     "@types/node": "^24.0.3"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }
