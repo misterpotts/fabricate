@@ -76,29 +76,73 @@ jobs:
           echo "Running semantic-release dry run to preview what would be released..." >> preview.md
           echo "" >> preview.md
           
-          # Capture the dry run output
-          if OUTPUT=$(npx semantic-release --dry-run --no-ci 2>&1); then
+          # Temporarily override branch configuration for dry run
+          # Create a temporary config that allows releases from any branch
+          cat > .releaserc.temp.json << 'EOF'
+          {
+            "branches": [
+              "main",
+              {
+                "name": "*",
+                "prerelease": false
+              }
+            ],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator"
+            ]
+          }
+          EOF
+          
+          # Run dry-run with temporary config
+          if OUTPUT=$(npx semantic-release --dry-run --no-ci --extends ./.releaserc.temp.json 2>&1); then
             # Check if a release would be made
             if echo "$OUTPUT" | grep -q "The next release version is"; then
               VERSION=$(echo "$OUTPUT" | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+')
               echo "🚀 **A new release would be created: \`v$VERSION\`**" >> preview.md
               echo "" >> preview.md
           
-              # Extract release notes if available
-              if echo "$OUTPUT" | grep -q "Release note"; then
+              # Extract release type
+              if echo "$OUTPUT" | grep -q "major"; then
+                echo "📈 **Release Type:** Major (breaking changes)" >> preview.md
+              elif echo "$OUTPUT" | grep -q "minor"; then
+                echo "📈 **Release Type:** Minor (new features)" >> preview.md
+              elif echo "$OUTPUT" | grep -q "patch"; then
+                echo "📈 **Release Type:** Patch (bug fixes)" >> preview.md
+              fi
+              echo "" >> preview.md
+          
+              # Extract and format release notes
+              if echo "$OUTPUT" | grep -A 50 "Release note" | grep -q "###\|##\|#"; then
                 echo "### 📝 Release Notes Preview" >> preview.md
-                echo '```' >> preview.md
-                echo "$OUTPUT" | sed -n '/Release note/,/^$/p' | head -20 >> preview.md
+                echo '```markdown' >> preview.md
+                echo "$OUTPUT" | sed -n '/Release note/,/^[[:space:]]*$/p' | head -20 >> preview.md
                 echo '```' >> preview.md
               fi
             else
               echo "ℹ️ **No release would be created** - no relevant changes detected." >> preview.md
               echo "" >> preview.md
               echo "Changes in this PR don't trigger a release based on conventional commit format." >> preview.md
+              echo "" >> preview.md
+              echo "💡 **Tip:** Use conventional commits to trigger releases:" >> preview.md
+              echo "- \`feat:\` for new features (minor version)" >> preview.md
+              echo "- \`fix:\` for bug fixes (patch version)" >> preview.md
+              echo "- \`feat!:\` or \`BREAKING CHANGE:\` for breaking changes (major version)" >> preview.md
             fi
           else
             echo "⚠️ **Could not determine release preview** - there may be an issue with the semantic-release configuration." >> preview.md
+            echo "" >> preview.md
+            echo "<details><summary>Debug output</summary>" >> preview.md  
+            echo "" >> preview.md
+            echo '```' >> preview.md
+            echo "$OUTPUT" >> preview.md
+            echo '```' >> preview.md
+            echo "" >> preview.md
+            echo "</details>" >> preview.md
           fi
+          
+          # Clean up temporary config
+          rm -f .releaserc.temp.json
           
           echo "" >> preview.md
           echo "---" >> preview.md
