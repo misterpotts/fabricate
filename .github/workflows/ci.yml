@@ -76,7 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x .github/scripts/preview-release.sh 
-          echo .github/scripts/preview-release.sh "${{ github.ref }}"
+          .github/scripts/preview-release.sh "${{ github.ref }}"
 
       - name: Comment PR
         uses: actions/github-script@v7
@@ -84,19 +84,19 @@ jobs:
           script: |
             const fs = require('fs');
              const preview = fs.readFileSync('preview.md', 'utf8');
-            
+
              // Check if we already have a preview comment
              const { data: comments } = await github.rest.issues.listComments({
                owner: context.repo.owner,
                repo: context.repo.repo,
                issue_number: context.issue.number,
              });
-            
+
              const botComment = comments.find(comment => 
                comment.user.type === 'Bot' && 
                comment.body.includes('## 📦 Release Preview')
              );
-            
+
              if (botComment) {
                // Update existing comment
                await github.rest.issues.updateComment({
