@@ -10,6 +10,10 @@ echo "" >> preview.md
 
 # Run dry-run
 if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "$BRANCH_REF" --plugins "@semantic-release/commit-analyzer, @semantic-release/release-notes-generator, @semantic-release/changelog" 2>&1); then
+  # Echo the output to make it visible in the GitHub Actions logs
+  echo "=== semantic-release dry-run output ==="
+  echo "$OUTPUT"
+  echo "=== End of semantic-release dry-run output ==="
   if echo "$OUTPUT" | grep -q "Release note for version"; then
     VERSION=$(echo "$OUTPUT" | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+')
     echo "🚀 **A new release would be created: \`v$VERSION\`**" >> preview.md
@@ -43,6 +47,11 @@ if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "$BRANCH_REF" --pl
     echo "- \`feat!:\` or \`BREAKING CHANGE:\` for breaking changes (major version)" >> preview.md
   fi
 else
+  # Echo the output to make it visible in the GitHub Actions logs even in case of failure
+  echo "=== semantic-release dry-run output (failed) ==="
+  echo "$OUTPUT"
+  echo "=== End of semantic-release dry-run output ==="
+
   echo "⚠️ **Could not determine release preview** - there may be an issue with the semantic-release configuration." >> preview.md
   echo "" >> preview.md
   echo "<details><summary>Debug output</summary>" >> preview.md
