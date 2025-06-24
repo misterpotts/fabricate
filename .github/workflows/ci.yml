@@ -72,8 +72,8 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Get PR branch name
-        run:
-          echo "PR branch name is: $GITHUB_HEAD_REF"
+        run: |
+          echo "PR branch name is: ${{ GITHUB_HEAD_REF }}"
 
       - name: Preview release
         id: preview
