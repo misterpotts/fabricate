@@ -78,7 +78,7 @@ jobs:
           
           # Run dry-run
           if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" --plugins "@semantic-release/commit-analyzer,@semantic-release/release-notes-generator" 2>&1); then
-            if echo "$OUTPUT" | grep -q "The next release version is"; then
+            if echo "$OUTPUT" | grep -q "Release note for version"; then
               VERSION=$(echo "$OUTPUT" | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+')
               echo "🚀 **A new release would be created: \`v$VERSION\`**" >> preview.md
               echo "" >> preview.md
