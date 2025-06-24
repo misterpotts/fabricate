@@ -3,6 +3,9 @@
 # Get the branch ref from the first argument
 BRANCH_REF="$1"
 
+# Log the branch ref for debugging
+echo "BRANCH_REF=$BRANCH_REF"
+
 echo "## 📦 Release Preview" > preview.md
 echo "" >> preview.md
 echo "Running semantic-release dry run to preview what would be released..." >> preview.md
