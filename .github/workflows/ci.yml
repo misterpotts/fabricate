@@ -66,9 +66,14 @@ jobs:
           path: dist
           retention-days: 1
 
-      - name: Print branch name
-        run: |
-          echo "Current branch: ${GITHUB_REF##*/}"
+      - name: Debug GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Get PR branch name
+        run:
+          echo "PR branch name is: $GITHUB_HEAD_REF"
 
       - name: Preview release
         id: preview
