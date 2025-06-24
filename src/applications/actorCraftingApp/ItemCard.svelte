@@ -8,7 +8,7 @@
 
     import Properties from "../../scripts/Properties";
     import truncate from "../common/Truncate";
-    import {Avatar} from "@skeletonlabs/skeleton";
+    import {Avatar} from "@skeletonlabs/skeleton-svelte";
     import type {Essence} from "../../scripts/crafting/essence/Essence";
     import {type Combination, DefaultCombination} from "../../scripts/common/Combination";
 
