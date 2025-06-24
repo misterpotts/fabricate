@@ -66,11 +66,6 @@ jobs:
           path: dist
           retention-days: 1
 
-      - name: Get branch name
-        shell: bash
-        run: echo "value=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: branch
-
       - name: Preview release
         id: preview
         env:
@@ -82,7 +77,7 @@ jobs:
           echo "" >> preview.md
           
           # Run dry-run
-          if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "${{steps.branch.outputs.value }}" --plugins "@semantic-release/commit-analyzer,@semantic-release/release-notes-generator" 2>&1); then
+          if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "refs/pull/**" --plugins "@semantic-release/commit-analyzer,@semantic-release/release-notes-generator" 2>&1); then
             echo "Semantic Release Dry Run Output:"
             echo "$OUTPUT"
             if echo "$OUTPUT" | grep -q "Release note for version"; then
