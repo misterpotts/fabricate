@@ -6,7 +6,7 @@
      * ===========================================================================
      */
 
-    import {AppBar, Avatar} from "@skeletonlabs/skeleton";
+    import {AppBar, Avatar} from "@skeletonlabs/skeleton-svelte";
     import {NoSalvageProcess, type SalvageOption, type SalvageProcess} from "./SalvageProcess";
     import type {LocalizationService} from "../common/LocalizationService";
     import Properties from "../../scripts/Properties";

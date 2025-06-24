@@ -7,7 +7,7 @@
      * ===========================================================================
      */
 
-    import {AppBar, Avatar, ListBox, ListBoxItem} from "@skeletonlabs/skeleton";
+    import {AppBar, Avatar} from "@skeletonlabs/skeleton-svelte";
     import type {ActorDetails} from "./ActorDetails";
     import {clickOutside} from "../common/ClickOutside";
     import {DefaultActorDetails, NoActorDetails} from "./ActorDetails";
@@ -176,26 +176,22 @@
                         </div>
                     </div>
                     <div class="scroll scroll-secondary overflow-x-hidden overflow-y-auto max-h-48 snap-y snap-mandatory scroll-smooth scroll-px-4">
-                        <ListBox>
+                        <ul class="list-none p-0 m-0">
                             {#each filteredSourceActors as availableSourceActor}
-                                <ListBoxItem bind:group={sourceActorDetails}
-                                             class="snap-start"
-                                             name="Source Actor"
-                                             hover="hover:bg-primary-400 hover:text-black"
-                                             rounded="rounded-none"
-                                             value="{availableSourceActor}"
-                                             on:click={() => { setSourceActor(availableSourceActor); }}>
-                                    <svelte:fragment slot="lead">
+                                <li class="flex items-center p-2 snap-start cursor-pointer hover:bg-primary-400 hover:text-black"
+                                    class:bg-primary-300={JSON.stringify(sourceActorDetails) === JSON.stringify(availableSourceActor)}
+                                    on:click={() => { setSourceActor(availableSourceActor); }}>
+                                    <div class="mr-2">
                                         <Avatar src="{availableSourceActor.avatarUrl}"
                                                 initials="{availableSourceActor.initials}"
                                                 width="w-8"
                                                 rounded="rounded-full"
                                                 class="inline-flex" />
-                                    </svelte:fragment>
+                                    </div>
                                     <span>{availableSourceActor.name}</span>
-                                </ListBoxItem>
+                                </li>
                             {/each}
-                        </ListBox>
+                        </ul>
                     </div>
                 </div>
             {/if}

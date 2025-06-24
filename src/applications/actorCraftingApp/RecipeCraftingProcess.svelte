@@ -6,7 +6,7 @@
      * ===========================================================================
      */
 
-    import {AppBar} from "@skeletonlabs/skeleton";
+    import {AppBar} from "@skeletonlabs/skeleton-svelte";
     import {NoCraftingProcess, type CraftingProcess} from "./CraftingProcess";
     import type {LocalizationService} from "../common/LocalizationService";
 

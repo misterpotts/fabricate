@@ -10,7 +10,7 @@
     import truncate from "../common/Truncate";
     import type {CraftingAssessment} from "./CraftingAssessment";
     import type {SalvageAssessment} from "./SalvageAssessment";
-    import {Avatar} from "@skeletonlabs/skeleton";
+    import {Avatar} from "@skeletonlabs/skeleton-svelte";
     import {type ActorDetails, NoActorDetails} from "./ActorDetails";
     import {createEventDispatcher} from "svelte";
     import type {LocalizationService} from "../common/LocalizationService";
