@@ -76,27 +76,8 @@ jobs:
           echo "Running semantic-release dry run to preview what would be released..." >> preview.md
           echo "" >> preview.md
           
-          # Temporarily override branch configuration for dry run
-          # Create a temporary config that allows releases from any branch
-          cat > .releaserc.temp.json << 'EOF'
-          {
-            "branches": [
-              "main",
-              {
-                "name": "*",
-                "prerelease": false
-              }
-            ],
-            "plugins": [
-              "@semantic-release/commit-analyzer",
-              "@semantic-release/release-notes-generator"
-            ]
-          }
-          EOF
-          
-          # Run dry-run with temporary config
-          if OUTPUT=$(npx semantic-release --dry-run --no-ci --extends ./.releaserc.temp.json 2>&1); then
-            # Check if a release would be made
+          # Run dry-run
+          if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" --plugins "@semantic-release/commit-analyzer,@semantic-release/release-notes-generator" 2>&1); then
             if echo "$OUTPUT" | grep -q "The next release version is"; then
               VERSION=$(echo "$OUTPUT" | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+')
               echo "🚀 **A new release would be created: \`v$VERSION\`**" >> preview.md
@@ -140,9 +121,6 @@ jobs:
             echo "" >> preview.md
             echo "</details>" >> preview.md
           fi
-          
-          # Clean up temporary config
-          rm -f .releaserc.temp.json
           
           echo "" >> preview.md
           echo "---" >> preview.md
