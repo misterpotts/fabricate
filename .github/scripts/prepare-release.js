@@ -13,7 +13,7 @@ if (!version) {
 async function prepareRelease() {
     try {
         // 1. Update module.json version
-        const moduleJsonPath = path.join(__dirname, '../dist/module.json');
+        const moduleJsonPath = path.join(__dirname, '../../dist/module.json');
         if (fs.existsSync(moduleJsonPath)) {
             const moduleJson = JSON.parse(fs.readFileSync(moduleJsonPath, 'utf8'));
             moduleJson.version = version;
@@ -22,7 +22,7 @@ async function prepareRelease() {
         }
 
         // 2. Get includes from module.json
-        const getIncludesScript = path.join(__dirname, '../.github/scripts/get-includes.js');
+        const getIncludesScript = path.join(__dirname, 'get-includes.js');
         const includes = execSync(`node ${getIncludesScript}`, { encoding: 'utf8' }).trim();
         console.log(`Files to include: ${includes}`);
 
