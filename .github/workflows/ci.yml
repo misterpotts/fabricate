@@ -6,13 +6,24 @@ on:
       - main
   pull_request:
 
-jobs: 
-  build:
-    runs-on: ubuntu-latest
-    steps:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs: 
+  lint-commit-message:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -20,15 +31,36 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      - name: Install
-        shell: bash
+      - name: Install dependencies
         run: npm install
 
-      - name: Test
+      - name: Lint commit messages
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        shell: bash
+        run: npm ci
+
+      - name: Run tests
         shell: bash
         run: npm run coverageTest
 
-      - name: Build
+      - name: Build project
         shell: bash
         run: npm run build
 
@@ -36,15 +68,65 @@ jobs:
         with:
           name: dist
           path: dist
+          retention-days: 1
+
+      - name: Preview release
+        id: preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GITHUB_REF=${{ github.head_ref }}
+          chmod +x .github/scripts/preview-release.sh
+          .github/scripts/preview-release.sh ${{ github.head_ref }}
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+             const preview = fs.readFileSync('preview.md', 'utf8');
+
+             // Check if we already have a preview comment
+             const { data: comments } = await github.rest.issues.listComments({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               issue_number: context.issue.number,
+             });
+
+             const botComment = comments.find(comment => 
+               comment.user.type === 'Bot' && 
+               comment.body.includes('## 📦 Release Preview')
+             );
+
+             if (botComment) {
+               // Update existing comment
+               await github.rest.issues.updateComment({
+                 owner: context.repo.owner,
+                 repo: context.repo.repo,
+                 comment_id: botComment.id,
+                 body: preview
+               });
+             } else {
+               // Create new comment
+               await github.rest.issues.createComment({
+                 owner: context.repo.owner,
+                 repo: context.repo.repo,
+                 issue_number: context.issue.number,
+                 body: preview
+               });
+             }
 
   release:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     needs:
-      build
+      build-and-test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -57,46 +139,7 @@ jobs:
           name: dist
           path: dist
 
-      # Get the version from 'package.json'
-      - name: Get Version
-        shell: bash
-        id: get-version
-        run: echo "version=$(node ./.github/scripts/get-version.js)" >> $GITHUB_OUTPUT
-
-      # Get the includes from 'module.json'
-      - name: Get Includes
-        shell: bash
-        id: get-includes
-        run: echo "files=$(node ./.github/scripts/get-includes.js)" >> $GITHUB_OUTPUT
-
-      # Substitute the Manifest and Download URLs,as well as the version, in module.json
-      - name: Substitute Manifest and Download Links For Versioned Ones
-        id: sub_manifest_link_version
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: './dist/module.json'
+      - name: Release
         env:
-          url: https://github.com/${{github.repository}}
-          manifest: https://github.com/${{github.repository}}/releases/latest/download/module.json
-          download: https://github.com/${{github.repository}}/releases/download/${{steps.get-version.outputs.version}}/module.zip
-          version: ${{steps.get-version.outputs.version}}
-
-      # Create a zip file with all files required by the module to add to the release
-      - name: Zip Files
-        working-directory: ./dist
-        run: zip -r ../module.zip ${{steps.get-includes.outputs.files}}
-
-      # Create a release for this specific version
-      - name: Create Version Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        with:
-          skipIfReleaseExists: true # If a release already exists for this version, skip it
-          allowUpdates: false # Releases are immutable, so we don't want to allow updates
-          generateReleaseNotes: true # Always generate release notes
-          name: Release ${{ steps.get-version.outputs.version }}
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: './dist/module.json,./module.zip'
-          tag: ${{ steps.get-version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
