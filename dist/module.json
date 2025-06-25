@@ -1,0 +1,54 @@
+{
+  "id": "fabricate",
+  "title": "Fabricate",
+  "version": "1.0.0",
+  "description": "A system-agnostic, flexible crafting module for FoundryVTT",
+  "authors": [
+    {
+      "name": "misterpotts",
+      "email": "matt@misterpotts.uk",
+      "discord": "MisterPotts#0255",
+      "url": "https://www.patreon.com/misterpotts"
+    }
+  ],
+  "compatibility": {
+    "minimum": "10",
+    "verified": "11.308.0"
+  },
+  "url": "https://github.com/misterpotts/fabricate",
+  "manifest": "",
+  "download": "",
+  "bugs": "https://github.com/misterpotts/fabricate/issues",
+  "packs": [
+    {
+      "name": "alchemists-supplies-v16",
+      "label": "Alchemist's Supplies (v1.6)",
+      "path": "./packs/alchemists-supplies-v16.db",
+      "type": "Item",
+      "module": "fabricate",
+      "system": "dnd5e"
+    }
+  ],
+  "includes": [
+    "./assets/**",
+    "./lang/**",
+    "fabricate.js",
+    "style.css",
+    "./packs/**",
+    "./templates/**",
+    "./module.json"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "esmodules": [
+    "fabricate.js"
+  ],
+  "styles": [
+    "style.css"
+  ]
+}

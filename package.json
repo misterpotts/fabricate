@@ -1,6 +1,6 @@
 {
   "name": "fabricate",
-  "version": "0.10.24",
+  "version": "1.0.0",
   "description": "A system-agnostic, flexible crafting module for FoundryVT",
   "main": "index.js",
   "type": "module",
