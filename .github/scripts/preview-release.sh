@@ -33,7 +33,7 @@ if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "$BRANCH_NAME" --p
     if echo "$OUTPUT" | grep -A 50 "Release note" | grep -q "###\|##\|#"; then
       echo "### 📝 Release Notes Preview" >> preview.md
       echo '```markdown' >> preview.md
-      echo "$OUTPUT" | sed -n '/Release note/,/^[[:space:]]*$/p' | head -20 >> preview.md
+      echo "$OUTPUT" | sed -n '/Release note/,/=== End of semantic-release dry-run output ===/p' | sed '$d' >> preview.md
       echo '```' >> preview.md
     fi
   else
