@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const version = process.argv[2];
 if (!version) {
@@ -27,8 +31,8 @@ async function prepareRelease() {
         console.log(`Files to include: ${includes}`);
 
         // 3. Create zip file
-        const distDir = path.join(__dirname, '../dist');
-        const zipPath = path.join(__dirname, '../module.zip');
+        const distDir = path.join(__dirname, '../../dist');
+        const zipPath = path.join(__dirname, '../../module.zip');
 
         // Remove existing zip if it exists
         if (fs.existsSync(zipPath)) {
