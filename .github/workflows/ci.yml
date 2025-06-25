@@ -75,8 +75,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Trick semantic-release into thinking we're not in a CI environment
-          unset GITHUB_ACTIONS
           chmod +x .github/scripts/preview-release.sh
           .github/scripts/preview-release.sh ${{ github.head_ref }}
 
