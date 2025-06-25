@@ -2,11 +2,7 @@
   "branches": [
     "main",
     {
-      "name": "ci/*",
-      "prerelease": true
-    },
-    {
-      "name": "feat/*",
+      "name": "release-dry-run",
       "prerelease": true
     }
   ],
