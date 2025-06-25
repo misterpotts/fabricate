@@ -75,8 +75,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          chmod +x .github/scripts/preview-release.sh 
-          .github/scripts/preview-release.sh
+          chmod +x .github/scripts/preview-release.sh
+          .github/scripts/preview-release.sh {{ github.ref_name }}
 
       - name: Comment PR
         uses: actions/github-script@v7

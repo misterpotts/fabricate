@@ -1,12 +1,14 @@
 #!/bin/bash
 
+BRANCH_NAME="$1"
+
 echo "## 📦 Release Preview" > preview.md
 echo "" >> preview.md
 echo "Running semantic-release dry run to preview what would be released..." >> preview.md
 echo "" >> preview.md
 
 # Run dry-run
-if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "main" --plugins "@semantic-release/commit-analyzer, @semantic-release/release-notes-generator, @semantic-release/changelog" 2>&1); then
+if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "$BRANCH_NAME" --plugins "@semantic-release/commit-analyzer, @semantic-release/release-notes-generator, @semantic-release/changelog" 2>&1); then
   # Echo the output to make it visible in the GitHub Actions logs
   echo "=== semantic-release dry-run output ==="
   echo "$OUTPUT"
