@@ -84,6 +84,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          GITHUB_REF=${{ github.head_ref }}
           chmod +x .github/scripts/preview-release.sh
           .github/scripts/preview-release.sh ${{ github.head_ref }}
 
