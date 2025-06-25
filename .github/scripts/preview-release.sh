@@ -37,7 +37,7 @@ if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "$BRANCH_NAME" --p
       echo '```' >> preview.md
     fi
   else
-    echo "ℹ️ **No release would be created** - no relevant changes detected." >> preview.md
+    echo "ℹ️ **No release will be created** - no relevant changes detected." >> preview.md
     echo "" >> preview.md
     echo "Changes in this PR don't trigger a release based on conventional commit format." >> preview.md
     echo "" >> preview.md
@@ -65,4 +65,4 @@ fi
 
 echo "" >> preview.md
 echo "---" >> preview.md
-echo "*This preview is based on the conventional commit format. Actual release will happen when PR is merged to main.*" >> preview.md
+echo "*This is a preview. The actual release will happen when PR is merged to main.*" >> preview.md
