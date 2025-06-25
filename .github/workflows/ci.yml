@@ -80,6 +80,7 @@ jobs:
           .github/scripts/preview-release.sh ${{ github.head_ref }}
 
       - name: Comment PR
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
