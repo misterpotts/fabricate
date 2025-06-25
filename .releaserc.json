@@ -15,7 +15,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "node ../.github/scripts/prepare-release.js ${nextRelease.version}"
+        "prepareCmd": "node .github/scripts/prepare-release.js ${nextRelease.version}"
       }
     ],
     [
