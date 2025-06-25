@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BRANCH_NAME="$1"
+echo "Debug: Branch name is $BRANCH_NAME"
 
 echo "## 📦 Release Preview" > preview.md
 echo "" >> preview.md
