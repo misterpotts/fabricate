@@ -15,7 +15,7 @@ if OUTPUT=$(npx semantic-release --dry-run --no-ci --branches "$BRANCH_NAME" --p
   echo "$OUTPUT"
   echo "=== End of semantic-release dry-run output ==="
   if echo "$OUTPUT" | grep -q "Release note for version"; then
-    VERSION=$(echo "$OUTPUT" | grep -oP 'The next release version is \K[0-9]+\.[0-9]+\.[0-9]+')
+    VERSION=$(echo "$OUTPUT" | grep -oP '(?:The )?next release version is \K[0-9]+\.[0-9]+\.[0-9]+')
     echo "🚀 **A new release would be created: \`v$VERSION\`**" >> preview.md
     echo "" >> preview.md
 
