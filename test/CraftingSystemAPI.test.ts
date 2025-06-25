@@ -239,7 +239,7 @@ describe("Update", () => {
             })
         ))
             .rejects
-            .toThrowError();
+            .toThrow()
 
         await expect(craftingSystemStore.size()).resolves.toEqual(2);
         const allEntities = await craftingSystemStore.getAllEntities();
@@ -342,7 +342,7 @@ describe("Update", () => {
 
        await expect(underTest.save(update))
            .rejects
-           .toThrowError();
+           .toThrow();
 
         expect(notificationService.invocations.length).toEqual(1);
         expect(notificationService.invocations[0].level).toEqual("error");
@@ -419,7 +419,7 @@ describe("Delete", () => {
 
         await expect(underTest.deleteById(testCraftingSystemTwo.id))
             .rejects
-            .toThrowError();
+            .toThrow();
 
         expect(notificationService.invocations.length).toEqual(1);
         expect(notificationService.invocations[0].level).toEqual("error");
