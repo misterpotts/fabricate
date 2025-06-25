@@ -75,6 +75,7 @@ jobs:
         run: |
           GITHUB_REF=${{ github.head_ref }}
           npx semantic-release --no-ci --dry-run --plugins @semantic-release/commit-analyzer,@semantic-release/release-notes-generator --branches ${{ github.head_ref }} > output.txt
+          OUTPUT=$(cat output.txt)
           echo $OUTPUT
           echo "name=releaseNote::$OUTPUT" >> $GITHUB_OUTPUT
 
