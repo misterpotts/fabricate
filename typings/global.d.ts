@@ -1,6 +1,6 @@
 declare interface DialogButtonConfig {
 
-    icon: string;
+    icon?: string;
 
     label: string;
 
