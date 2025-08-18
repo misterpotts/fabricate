@@ -28,7 +28,7 @@
     "@skeletonlabs/skeleton-svelte": "^1.2.3",
     "@skeletonlabs/tw-plugin": "^0.4.1",
     "@sveltejs/vite-plugin-svelte": "^5.1.0",
-    "@tailwindcss/postcss": "^4.1.10",
+    "@tailwindcss/postcss": "^4.1.12",
     "@tsconfig/svelte": "^5.0.4",
     "@types/jest": "^30.0.0",
     "@types/jquery": "^3.5.32",
