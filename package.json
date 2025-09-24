@@ -54,10 +54,5 @@
   },
   "dependencies": {
     "@types/node": "^24.0.3"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
   }
 }
