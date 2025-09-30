@@ -46,7 +46,7 @@
     "svelte": "^5.39.7",
     "svelte-check": "^4.3.2",
     "tailwindcss": "^4.1.13",
-    "ts-jest": "^29.4.0",
+    "ts-jest": "^29.4.4",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
