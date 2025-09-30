@@ -23,7 +23,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.3",
+    "@semantic-release/github": "^11.0.6",
     "@skeletonlabs/skeleton": "^3.2.0",
     "@skeletonlabs/skeleton-svelte": "^1.5.2",
     "@skeletonlabs/tw-plugin": "^0.4.1",
