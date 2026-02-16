@@ -4,7 +4,7 @@
 ![Total Release Download Count](https://img.shields.io/github/downloads/misterpotts/fabricate/total?label=total%20downloads&style=for-the-badge)
 <!--- Social badges -->
 [![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dmisterpotts%26type%3Dpatrons&style=for-the-badge)](https://patreon.com/misterpotts)
-[![Discord](https://dcbadge.limes.pink/api/server/INVITE)](https://discord.gg/QNGn6cznJs)
+[![Discord](https://dcbadge.limes.pink/api/server/INVITE)](https://discord.gg/APHyMzhPTk)
 
 <!--- Forge Bazaar Install % Badge -->
 <!--- replace <your-module-name> with the `name` in your manifest -->
