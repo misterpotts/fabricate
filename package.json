@@ -53,6 +53,6 @@
     "vite": "^7.1.9"
   },
   "dependencies": {
-    "@types/node": "^24.7.2"
+    "@types/node": "^24.9.1"
   }
 }
